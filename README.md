@@ -21,6 +21,14 @@ ratings, genres, filters, favorites, day/night mode, import/export
 > Everything runs locally — nothing leaves your PC except the database queries
 > (MangaBaka/AniList etc.) used to enrich your list.
 
+## Updates
+
+SyncManga keeps itself up to date: after each sync it checks this repo's
+Releases. By default it only notifies you (tray menu → **"Check for updates…"**
+installs with one click); enable **"Update automatically"** in the tray menu
+and new versions install themselves. Every download is verified before use:
+HTTPS only, pinned to this repository, exact size and SHA-256 checksum.
+
 ## Languages
 
 English & German — the app follows your Windows display language automatically.
@@ -29,5 +37,6 @@ English & German — the app follows your Windows display language automatically
 
 Inside the list: **⇅ Import/Export → ❓ Quick guide → 🐛 Report a bug** — a short
 mail is enough, reports feed straight into fixes.
+
 
 <img width="1656" height="879" alt="grafik" src="https://github.com/user-attachments/assets/896dab03-31fc-431c-bccd-29c899a9b0d9" />
