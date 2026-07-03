@@ -29,3 +29,5 @@ English & German — the app follows your Windows display language automatically
 
 Inside the list: **⇅ Import/Export → ❓ Quick guide → 🐛 Report a bug** — a short
 mail is enough, reports feed straight into fixes.
+
+<img width="1656" height="879" alt="grafik" src="https://github.com/user-attachments/assets/896dab03-31fc-431c-bccd-29c899a9b0d9" />
