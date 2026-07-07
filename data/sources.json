@@ -1,0 +1,75 @@
+{
+ "_doc": "Alternativ-Reader (Community-Top 2026), getrennt nach Manga (Japan) vs. Manhwa/Manhua (Korea/China). EINE Quelle der Wahrheit: wird beim Start in BEIDE Builds geladen (syncmanga.config apply_sources); spaeter ueber das Dashboard auswaehlbar. Format je Eintrag: [Anzeigename, Domain]. MangaDex absichtlich nicht enthalten (eigener MD-Link je Zeile). Fehlt/defekt -> eingebaute Defaults.",
+ "manga": [
+  [
+   "MangaFire",
+   "mangafire.to"
+  ],
+  [
+   "WeebCentral",
+   "weebcentral.com"
+  ],
+  [
+   "Bato",
+   "bato.to"
+  ],
+  [
+   "Comick",
+   "comick.io"
+  ],
+  [
+   "MangaKatana",
+   "mangakatana.com"
+  ]
+ ],
+ "manhwa": [
+  [
+   "Bato",
+   "bato.to"
+  ],
+  [
+   "Comick",
+   "comick.io"
+  ],
+  [
+   "WeebCentral",
+   "weebcentral.com"
+  ],
+  [
+   "Toonily",
+   "toonily.com"
+  ],
+  [
+   "Webtoons",
+   "webtoons.com"
+  ]
+ ],
+ "paused": [],
+ "_paused_doc": "TEMPORAER pausierte Reader (nur ANZEIGE: Aktion zeigt die erste lebende Reserve, Links bleiben im Cache). LEER = Standard (JB-Regel 05.07.2026: nie etwas standardmaessig pausiert - Pause NUR ueber die Auto-Pause bei fehlgeschlagenem Reader-Check). mangafire-Umbau abgeschlossen (Reader-Check meldet 05.07. wieder 'ok'), manuelle Pause aufgehoben. Diese Liste absichtlich leer lassen; Eintraege sind nur ein Notbehelf fuer echte Ausfaelle, die der Check nicht sieht.",
+ "dead": [
+  "automanga",
+  "bato.si",
+  "comick.dev",
+  "ineptbastards",
+  "kunmanga",
+  "fascans",
+  "mangarock",
+  "manhwaclan",
+  "mangasushi",
+  "zeroscan",
+  "ninjascans",
+  "readheroacademia",
+  "valhalla",
+  "trashscanlation",
+  "lhtranslation",
+  "1stkissmanga",
+  "arangscans",
+  "kissmanga",
+  "merakiscans",
+  "immanitys",
+  "wuxiaworld",
+  "inkr",
+  "vinlandsagamanga",
+  "jjk0"
+ ]
+}

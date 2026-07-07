@@ -1,0 +1,281 @@
+{
+  "_doc": "Seltene Titel-Korrekturen (reine DATEN, kein Code) - ersetzt das fruehere hartcodierte NAME_FIX. Key = norm(Name aus Verlauf/Lesezeichen), siehe syncmanga.parse.norm. Werte: name = erzwungener Anzeigename, search = Suchbegriff fuer die Anreicherung. Wird beim Laden VERBATIM uebernommen (kein erneutes Normalisieren), damit bewusst gesetzte Keys wie 'ch17...' nicht mit 'bokudake...' kollidieren.",
+  "overrides": {
+    "dungeonmeshi": {
+      "mb_id": 6886,
+      "name": "Dungeon Meshi (Delicious in Dungeon)"
+    },
+    "shuumatsunovalkyrie": {
+      "mb_id": 21,
+      "name": "Record of Ragnarok"
+    },
+    "koukouseiwebsakkanomoteseikatsuantagakamisakkanawakenaideshoutobokuwofuttaosanajimigakoukaishiterukedomouosoii": {
+      "mb_id": 6125,
+      "name": "The Teen Web Novelist is a Girl Magnet: Now My Crush Feels Bad for Rejecting Me!"
+    },
+    "sonomononochinichapter": {
+      "mb_id": 8096,
+      "name": "The One. Later On..."
+    },
+    "alicetozouroku": {
+      "mb_id": 26326,
+      "name": "Alice & Zoroku"
+    },
+    "rankerwholivessecondtimechapter": {
+      "mb_id": 1378,
+      "name": "Second Life Ranker"
+    },
+    "class199": {
+      "mb_id": 81319,
+      "name": "Class 1-9"
+    },
+    "masekigurumemamononochikaraotabetaorewasaikyou": {
+      "mb_id": 1502,
+      "name": "Magic Stone Gourmet: Eating Magical Power Made Me The Strongest"
+    },
+    "masekigurumemamononochikarawotabetaorewasaikyouu": {
+      "mb_id": 1502,
+      "name": "Magic Stone Gourmet: Eating Magical Power Made Me The Strongest"
+    },
+    "kouryakuhonokushisurusaikyounomahoutsukaimeireisaserotowaiwasenaioreryuumaotobatsusaizenruuto": {
+      "mb_id": 5237,
+      "name": "I Picked Up This World's Strategy Guide"
+    },
+    "dungeonmeshichapter": {
+      "mb_id": 6886,
+      "name": "Dungeon Meshi (Delicious in Dungeon)"
+    },
+    "loveandleasheslatestchapterslatestupdatesfreetoreadcomicless": {
+      "mb_id": 29983,
+      "name": "Love and Leashes"
+    },
+    "onepunchmanwebcomicoriginal": {
+      "mb_id": 4088,
+      "name": "One-Punch Man (Webcomic, ONE)",
+      "search": "Onepunch-Man ONE webcomic",
+      "type": "manga"
+    },
+    "onepunchmanwebcomic": {
+      "mb_id": 4088,
+      "name": "One-Punch Man (Webcomic, ONE)",
+      "search": "Onepunch-Man ONE webcomic",
+      "type": "manga"
+    },
+    "youkaishoujomonsuga": {
+      "name": "Yokai Girls",
+      "search": "Yokai Girls Youkai Shoujo"
+    },
+    "asportablegearsofdestiny": {
+      "name": "Mahou Shoujo Lyrical Nanoha A's Portable - The Gears of Destiny - Material Musume",
+      "search": "Mahou Shoujo Lyrical Nanoha A's Portable Gears of Destiny"
+    },
+    "bokuranokiseki": {
+      "name": "Our Miracle",
+      "search": "Bokura no Kiseki Our Miracle"
+    },
+    "genjitsushugishanooukokukaizouki": {
+      "name": "How a Realist Hero Rebuilt the Kingdom",
+      "search": "How a Realist Hero Rebuilt the Kingdom"
+    },
+    "genjitsushugiyuushanooukokusaikenki": {
+      "name": "How a Realist Hero Rebuilt the Kingdom",
+      "search": "How a Realist Hero Rebuilt the Kingdom"
+    },
+    "100mannoinochinoueniorewatatteiru": {
+      "name": "I'm Standing on a Million Lives",
+      "search": "I'm Standing on a Million Lives"
+    },
+    "100mannoinochinoueniorewatatteiruvol": {
+      "name": "I'm Standing on a Million Lives",
+      "search": "I'm Standing on a Million Lives"
+    },
+    "asobininwakenjanitenshokudekirutteshittemashitayuushapartyotsuihousaretalv99": {
+      "name": "Did You Know That a Playboy Can Change His Job to a Sage?",
+      "search": "Did You Know That a Playboy Can Change His Job to a Sage Jester"
+    },
+    "bokudakeshitteruichinomiyasan": {
+      "name": "The Ichinomiya-san Only I Know",
+      "search": "Boku dake Shitteru Ichinomiya-san"
+    },
+    "ch17bokudakeshitteruichinomiyasan": {
+      "name": "The Ichinomiya-san Only I Know",
+      "search": "Boku dake Shitteru Ichinomiya-san"
+    },
+    "hwasanjeonsaeng": {
+      "name": "Volcanic Age",
+      "search": "Volcanic Age"
+    },
+    "killingbites": {
+      "name": "Killing Bites",
+      "search": "Killing Bites"
+    },
+    "whitedragondukependragonchapter": {
+      "name": "Duke Pendragon: Master of the White Dragon",
+      "baka": 1258
+    },
+    "shionokikanmotoyuushanoorejibungasoshikishitachuunibyouhimitsukesshawotomerutamenifutatabiisekainishoukansareteshimau": {
+      "name": "The Return of the Corpse King",
+      "baka": 98127
+    },
+    "mrsserie": {
+      "name": "Mrs Serie",
+      "search": "",
+      "hide": true
+    },
+    "novelarchive": {
+      "name": "Blue Archive dj - Alice mo Level Up Shitai desu!",
+      "search": "",
+      "hide": true
+    },
+    "bluearchivedjalicemolevelupshitaidesu": {
+      "name": "Blue Archive dj - Alice mo Level Up Shitai desu!",
+      "search": "",
+      "hide": true
+    },
+    "rentadigital": {
+      "name": "Renta! - Official digital",
+      "search": "",
+      "hide": true
+    },
+    "ylgnevolutionbeginswithbigtree": {
+      "name": "Evolution Begins With A Big Tree",
+      "baka": 494246
+    },
+    "evolutionbeginswithbigtree": {
+      "name": "Evolution Begins With A Big Tree",
+      "baka": 494246
+    },
+    "oneshotjikanteishiyuushabusoukaijoudoujinshi": {
+      "name": "Jikan Teishi Yuusha (Doujinshi)",
+      "search": "",
+      "hide": true
+    },
+    "callgirlinanotherworld": {
+      "name": "Call Girl in Another World",
+      "search": "Isekai demo Fuuzokujou Yattemita Call Girl in Another World"
+    },
+    "bakihanmabaki": {
+      "name": "Baki Hanma - Son of Ogre",
+      "baka": 3193
+    },
+    "saidokushinwaisekaidejiyuuniikitakatta": {
+      "name": "A 29 years old guy living single, transported to a new world to live freely... at least he wanted to",
+      "baka": 33462
+    },
+    "buchimaruchaosnaniscans": {
+      "mb_id": 27878,
+      "name": "Buchimaru Chaos"
+    },
+    "chandrahasineptbastards": {
+      "mb_id": 35882,
+      "name": "Chandra Has"
+    },
+    "heartwarmingmealswithmotherfenririneptbastards": {
+      "mb_id": 33551,
+      "name": "Heart-warming Meals with Mother Fenrir"
+    },
+    "ibecamemotherofstrongestdemonlords10childreninanotherworld": {
+      "mb_id": 33453,
+      "name": "I Guess I Became the Mother of the Great Demon King's 10 Children in Another World"
+    },
+    "level1dakedouniqueskilldesaikyoudesu": {
+      "mb_id": 28875,
+      "name": "My Unique Skill Makes Me OP even at Level 1"
+    },
+    "manukenafpsplayergaisekaieochitabaaivalhallascans": {
+      "mb_id": 26023,
+      "name": "When a Clueless First-Person Shooter Player Falls into Another World"
+    },
+    "seireigensoukiminazukifutago": {
+      "mb_id": 8052,
+      "name": "Seirei Gensouki: Spirit Chronicles"
+    },
+    "sonomononochininariieshinichirou": {
+      "mb_id": 8096,
+      "name": "The One. Later On..."
+    },
+    "takarakujide40okuatattandakedoisekainiijuusuru": {
+      "mb_id": 9839,
+      "name": "I Won 4 Billion in a Lottery But I Went to Another World"
+    },
+    "dadisheromomisspiritimreincarnatornaniscans": {
+      "mb_id": 33343,
+      "name": "Reincarnated as the Daughter of the Legendary Hero and the Queen of Spirits"
+    },
+    "henkyounoroukishibardloennaniscans": {
+      "mb_id": 28617,
+      "name": "Old Knight in the Frontier: Bard Roehn"
+    },
+    "1000yenhero": {
+      "mb_id": 26606,
+      "name": "1000 Yen Hero"
+    },
+    "shishunkibitterchange": {
+      "mb_id": 18655,
+      "name": "Shishunki Bitter Change"
+    },
+    "roomofswords": {
+      "author": "Toonimated"
+    },
+    "letsplay": {
+      "author": "Leeanne M. Krecic (Mongie)"
+    },
+    "waybackmachine": {
+      "hide": true
+    },
+    "kou": {
+      "name": "Classmate, Kamimura Yuuka wa Kou Itta",
+      "search": "Classmate Kamimura Yuuka wa Kou Itta"
+    },
+    "yuukatokou": {
+      "name": "Yuuka to Kou",
+      "hide": true
+    },
+    "overlord": {
+      "name": "Overlord",
+      "search": "Overlord",
+      "mb_id": 20703
+    },
+    "maharadja": {
+      "name": "Maharadja",
+      "hide": true
+    },
+    "dicecubethatchangeseverythingchapter": {
+      "name": "Dice - The Cube that Changes Everything",
+      "search": "Dice The Cube that Changes Everything",
+      "mb_id": 1
+    },
+    "aposimz19": {
+      "mb_id": 81319,
+      "name": "Class 1-9"
+    },
+    "starembracingswordmasterasurascan": {
+      "mb_id": 588,
+      "name": "The Stellar Swordmaster"
+    },
+    "somaliandforestspiriten": {
+      "mb_id": 23279,
+      "name": "Somali and the Forest Spirit"
+    },
+    "quintessentialquintupletscolored": {
+      "mb_id": 25174,
+      "name": "The Quintessential Quintuplets"
+    },
+    "magicacademy039sgeniusblinker": {
+      "mb_id": 7893,
+      "name": "Blink Master of the Magic Academy"
+    },
+    "storybetweendumbprefectandhighschoolgirlwithinappropriateskirtlengtchapter": {
+      "mb_id": 2728,
+      "name": "The Klutzy Class Monitor and the Girl with the Short Skirt"
+    },
+    "yuikamioletsloosehiroshishiibashi": {
+      "mb_id": 35142,
+      "name": "Yui Kamio Lets Loose"
+    },
+    "waterdragonsbride": {
+      "mb_id": 4284,
+      "name": "The Water Dragon's Bride"
+    }
+  }
+}

@@ -1,0 +1,7 @@
+# Laufzeit-Abhaengigkeiten von SyncManga. Der Rest ist Python-Standardbibliothek.
+pystray>=0.19      # Tray-Symbol
+Pillow>=9          # Icon-Rendering fuer das Tray
+keyring>=24        # AniList-Token sicher im OS-Schluesselspeicher (optional, nur fuer Auto-Sync)
+
+# Nur fuer den .exe-Build (nicht zur Laufzeit noetig):
+# pyinstaller

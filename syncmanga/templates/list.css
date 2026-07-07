@@ -1,0 +1,349 @@
+/* =============================================================================
+   Manga-Leseliste - Stylesheet (Dark-Default + ☀/🌙-Tag-Modus via body.light)
+   -----------------------------------------------------------------------------
+   Das ist die LESBARE Quelle. render.py baut sie ueber _minify_css() minifiziert
+   in die HTML ein -> die ausgelieferte Datei bleibt klein/schnell. Die REGEL-
+   REIHENFOLGE ist bewusst 1:1 wie die minifizierte Auslieferung (kein Umsortieren
+   -> keine Spezifitaets-/Kaskaden-Ueberraschungen). Farbwelt: Terracotta (#d67756)
+   auf warmem Dunkelbraun (#14110f).
+   ============================================================================= */
+
+/* --- Grundlayout ---------------------------------------------------------- */
+body{font-family:system-ui,Segoe UI,sans-serif;margin:22px;background:#14110f;color:#eee}
+h1{font-size:20px;margin:0 0 4px}
+/* 📖-Knopf neben dem Titel: dezent, beim Hover deutlich (JB: Anleitung direkt an der Liste) */
+a.hguide{font-size:15px;text-decoration:none;opacity:.55;vertical-align:2px}
+a.hguide:hover{opacity:1;text-decoration:none}
+.sub{color:#999;font-size:13px;margin-bottom:12px}
+
+/* --- Suchfeld + Filter-Buttons -------------------------------------------- */
+input{padding:8px 12px;width:230px;border-radius:8px;border:1px solid #444;background:#1e1a17;color:#eee}
+.btn{padding:7px 11px;border-radius:8px;border:1px solid #444;background:#1e1a17;color:#ccc;cursor:pointer;margin-right:5px;font-size:13px}
+.btn.on{background:#d67756;color:#111}                 /* aktiver Filter */
+
+/* --- Tabelle + Spalten ---------------------------------------------------- */
+table{border-collapse:collapse;width:100%;font-size:14px;margin-top:12px}
+th,td{padding:7px 10px;border-bottom:1px solid #2a2522;text-align:left}
+th{cursor:pointer;color:#d67756;position:sticky;top:0;background:#14110f}   /* Kopf bleibt beim Scrollen */
+td.c{text-align:center;font-weight:600;white-space:nowrap}   /* Kapitel gelesen/neu */
+td.d{color:#aaa;white-space:nowrap}                          /* Zuletzt */
+td.pub{color:#9ab;font-size:12px}                            /* Publikations-Status */
+
+/* --- User-Fortschritt (Status-Spalte) + ⚠-Melde-Pille --------------------- */
+/* nowrap: beim Filtern passt die Tabelle die Spaltenbreiten dem sichtbaren Inhalt an — ohne
+   nowrap brach "Lese gerade" dann mitten im Wort um (JB-Fund beim Lese-gerade-/Neu-Filter). */
+.st{font-size:12px;white-space:nowrap}
+.st.r{color:#6fcf7f}     /* Lese gerade */
+.st.u{color:#e6c34a}     /* Pausiert (bis ~3 Monate) */
+.st.ulong{color:#c56b4a;font-weight:600}   /* laenger als ~3 Monate pausiert -> deutlicher */
+.st.f{color:#7f93a3}     /* Aufgeholt (alles Verfuegbare gelesen, wartet auf Neues - blaugrau, "ruhend") */
+.st.fin{color:#3a9d8f;font-weight:600}   /* Fertig */
+.finb{font-size:.85em}                    /* 🏁-Badge */
+.pill.rep{opacity:.55;cursor:pointer;padding:2px 7px;margin-left:4px}   /* "Link kaputt" melden */
+.pill.rep:hover{opacity:1;border-color:#c9952b}
+.pill.rep.on{opacity:1;color:#e6c34a;border-color:#c9952b}
+.nw{white-space:nowrap}
+td.repcell{text-align:center;width:1%;white-space:nowrap;padding-left:0}
+
+/* --- Statistik-/Empfehlungs-Akkordeon ------------------------------------- */
+details.stats{margin:-2px 0;position:relative}
+details.stats>summary{display:inline-block;cursor:pointer;list-style:none}
+details.stats[open]>summary{opacity:.6}
+
+/* --- Statistik-Kacheln + Links + Zeilen-Hover ----------------------------- */
+/* Aufgeklappt als DROPDOWN (JB 05.07.2026): der ganze Panel-Inhalt (.pdrop) schwebt unter dem
+   Button, die Button-Reihe bleibt stehen (kein Zeilenumbruch der Buttons). Inhalt bricht UM
+   (kein horizontales Überlaufen -> alle Titel sichtbar) und scrollt bei Bedarf, statt alles zu
+   überdecken (JB: 'springt über alles / sehe nicht alle Titel'). */
+.statgrid{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+details.stats[open]>.pdrop{position:absolute;top:100%;left:0;z-index:60;margin-top:4px;
+padding:8px 10px;background:#1e1a17;border:1px solid #2a2522;border-radius:9px;
+box-shadow:0 6px 18px rgba(0,0,0,.5);width:max-content;max-width:min(94vw,760px);
+max-height:min(70vh,460px);overflow:auto}
+.pdrop>.statgrid{margin-top:0}
+.stile{background:#1e1a17;border:1px solid #2a2522;border-radius:8px;padding:6px 11px;font-size:13px}
+/* Empfehlungs-Kacheln sind LINKS (extern, AniList) -> wie Kacheln aussehen, beim Hover aufleuchten */
+a.stile{color:inherit;text-decoration:none;display:inline-block}
+a.stile:hover{border-color:#e0956a;color:#e0b56a}
+a{color:#e58;text-decoration:none}
+a:hover{text-decoration:underline}
+tr:hover{background:#1c1815}
+
+/* --- +Alt-Akkordeon (inline; offen -> Summary blasser) -------------------- */
+details.alt{display:inline}
+details.alt>summary{display:inline;list-style:none;cursor:pointer}
+details.alt[open]>summary{opacity:.6}
+
+/* --- Pills (Aktion/DB/+Alt/Site) ------------------------------------------ */
+.pill{display:inline-block;padding:2px 9px;margin:1px 3px;border-radius:999px;font-size:12px;line-height:1.7;border:1px solid #3a332e;background:#221d19;color:#d7c7bd}
+.pill:hover{background:#2f2823;text-decoration:none}
+/* öffnen/weiterlesen (primaer). Feste Mindestbreite -> "suchen"/+Alt beginnen in ALLEN Zeilen an
+   derselben Stelle (JB: Aktionen spaltensynchron, "öffnen" ist sonst schmaler als "weiterlesen"). */
+.pill.go{background:#d67756;color:#1a1310;border-color:#d67756;font-weight:600;min-width:104px;text-align:center}
+.pill.go:hover{background:#e6906f}
+.pill.md{color:#7db3ff;border-color:#34506e}     /* Baka/AL-DB-Link */
+.pill.alt{color:#e0b56a;border-color:#5a4a2f}    /* +Alt-Menue */
+.pill.site{color:#b6e3b0;border-color:#2f5a34}
+
+/* --- Aktion-/Bewertung-Spalte + Select ------------------------------------ */
+td.act{line-height:2.2;width:100%}   /* nimmt den freien Platz -> Serie/Autor schrumpft auf Inhalt */
+td.rt{text-align:center;font-weight:700;color:#e6c34a;white-space:nowrap}
+select.btn{padding:7px 8px;width:auto}
+
+/* Serie/Autor bleibt EINZEILIG (keine feste max-width -> Land/Typ/Titel dynamisch in einer Zeile);
+   erst im schmalen Fenster bricht es um (die Aktion-Spalte schrumpft zuerst). */
+#t td:first-child .nmline{white-space:nowrap}
+@media(max-width:760px){#t td:first-child .nmline{white-space:normal}}
+
+/* --- Autor-Zeile + Typ-/18+-Badges ---------------------------------------- */
+.au{color:#8a7d74;font-size:11px;margin-top:1px}
+.unk{color:#7a6f66;font-style:italic}    /* unbekannt / braucht Hilfe */
+.med{display:inline-block;font-size:10px;padding:1px 6px;border-radius:999px;border:1px solid #3a332e;background:#221d19;color:#c2a88f;vertical-align:1px}   /* Typ-Badge (Manga/Manhwa/…) */
+.adult,.adult-v{display:inline-block;font-size:10px;font-weight:700;padding:1px 6px;border-radius:999px;vertical-align:1px}
+.adult{border:1px solid #8a2f6f;background:#3a1c2e;color:#f08ad0}     /* 18+ sexuell (pink) */
+.adult-v{border:1px solid #7a5226;background:#3a2a18;color:#e0a86a}   /* 18+ Gewalt/Gore */
+
+/* --- Archiv-Icons je Zeile (nur im Archiv-Modus/-Ansicht sichtbar) -------- */
+.arch,.unarch{display:none;cursor:pointer;font-weight:700;margin-right:8px}
+.arch{color:#c2a08a}
+.arch:hover{color:#e6b58a}
+.unarch{color:#6fcf7f}
+.unarch:hover{color:#9be0a8}
+body.archmode .arch{display:inline}      /* Archiv-Modus: 🗃 zum Archivieren */
+body.archview .unarch{display:inline}    /* Archiv-Ansicht: ↩ zum Zurueckholen */
+body.archmode tr:hover{background:#23201c}
+
+/* --- Sortier-Sub-Header (Serie/Autor) + Steuerleiste ---------------------- */
+.sh{cursor:pointer;color:#cf9b6f;font-weight:400}
+.sh:hover{color:#e6b58a}
+.ctrl{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.wrap{overflow-x:auto}
+
+/* --- Archiv-Knoepfe schweben oben rechts und folgen dem Scrollen ---------- */
+/* Oben rechts angepinntes 2x2-Raster: Archiv/Archivieren, darunter Favoriten/Favorit. grid=1fr 1fr ->
+   alle vier GLEICH breit (keine Asynchronitaet). Bewegt sich mit dem Scrollen (fixed); die Ampel links
+   bleibt im Fluss (siehe .statusrow padding-right) und scrollt normal weg. (JB-Wunsch) */
+.pinbox{position:fixed;top:12px;right:12px;z-index:50;display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.pinbox .btn{width:100%;box-shadow:0 2px 8px rgba(0,0,0,.4)}
+/* Titel/Untertitel rechts freihalten, damit die angepinnte Box sie nicht verdeckt. Die Ampel (.statusrow)
+   steht darunter (nicht auf Box-Hoehe) und bleibt so ohnehin frei + voll lesbar. */
+h1,.sub{padding-right:275px}
+
+/* --- Mobile: kompakter; nur Serie·Autor·Land / ⭐ / Kap. / Bewertung / Aktion zeigen.
+       Ausgeblendet: User(3) Status(4) Zuletzt(6) Quelle(7) ⚠(10). (JB-Wunsch) --- */
+@media(max-width:760px){body{margin:10px}h1{font-size:18px}table{font-size:13px}th,td{padding:5px 6px}input{flex:1;min-width:120px}#t th:nth-child(3),#t td:nth-child(3),#t th:nth-child(4),#t td:nth-child(4),#t th:nth-child(6),#t td:nth-child(6),#t th:nth-child(7),#t td:nth-child(7),#t th:nth-child(10),#t td:nth-child(10){display:none}
+/* Mobile: Pin-Box kompakter, weniger Freihaltung (schmaler Screen) */
+.pinbox{gap:4px}.pinbox .btn{font-size:11px;padding:4px 7px}h1,.sub{padding-right:150px}.statusbar{padding-right:150px}}
+
+/* --- Tag-Modus (JB): manueller ☀/🌙-Schalter (list.js applyTheme; ohne gespeicherte Wahl
+       zaehlt die OS-Einstellung). KEIN grelles Weiss: warmes Creme (#f3ecdc), alle Flaechen/
+       Kontraste angepasst — VOLLSTAENDIG (auch Kacheln/Chips/Menues/Willkommen), sonst bleiben
+       dunkle Inseln mit dunkler Schrift zurueck. Dunkel bleibt Default. ------------------- */
+body.light{background:#f3ecdc;color:#26201a}
+body.light .sub{color:#6f6557}
+body.light input{background:#fbf6ea;color:#26201a;border-color:#cfc2ab}
+body.light .btn{background:#fbf6ea;color:#4a4033;border-color:#cfc2ab}
+body.light .btn.on{background:#d67756;color:#fff}
+body.light th,body.light td{border-bottom-color:#e2d7c1}
+body.light th{color:#b85e3e;background:#f3ecdc}
+body.light td.d{color:#7a7064}
+body.light td.pub{color:#5b6b78}
+body.light .st.r{color:#2e9e4f}
+body.light .st.u{color:#a8821a}
+body.light .st.ulong{color:#b04a2a}
+body.light .st.f{color:#5f7585}
+body.light .st.fin{color:#2a7a6f}
+body.light a{color:#b1486d}
+body.light tr:hover{background:#ebe1cc}
+body.light .pill{background:#ece2cc;border-color:#d6c9ae;color:#57493c}
+body.light .pill:hover{background:#e4d8bf}
+body.light .pill.go{background:#d67756;color:#fff;border-color:#d67756}
+body.light .pill.go:hover{background:#c96543}
+body.light .pill.md{color:#3a6fae;border-color:#9bb6d6}
+body.light .pill.alt{color:#96691c;border-color:#cbb27a}
+body.light .pill.site{color:#3f7a44;border-color:#a4c9a7}
+body.light td.rt{color:#a8821a}
+body.light .au{color:#6f6557}
+body.light .unk{color:#8a7f76}
+body.light .sh{color:#b06a3f}
+body.light .arch{color:#a07a5a}
+body.light .unarch{color:#2e9e4f}
+body.light.archmode tr:hover{background:#e7dcc4}
+/* Kacheln, Chips, Menues, Boxen — die im alten Auto-Theme vergessenen Flaechen */
+body.light .stile{background:#fbf6ea;border-color:#ddd0b6}
+body.light a.stile:hover{border-color:#c47a4e;color:#8a5a1f}
+body.light .med{background:#efe5cf;border-color:#d6c9ae;color:#7a5f3f}
+body.light .gchip{background:#efe5cf;border-color:#d6c9ae;color:#57493c}
+body.light .gchip.on{background:#d67756;color:#fff;border-color:#d67756}
+body.light .xpanel{background:#fbf6ea;border-color:#ddd0b6;box-shadow:0 4px 14px rgba(120,95,60,.28)}
+body.light .xpanel label{color:#57493c}
+body.light .colbxs{background:#fbf6ea;border-color:#ddd0b6}
+body.light .colbox{color:#57493c}
+body.light .welcome{background:#fbf6ea;border-color:#ddd0b6;color:#5f5347}
+body.light tr.fav{background:#efe3c8}
+body.light tr.fav:hover{background:#eadcbc}
+body.light tr.lucky td{background:#f0dfb5}
+body.light .rlegend{border-left-color:#ddd0b6}
+body.light .pinbox .btn{box-shadow:0 2px 8px rgba(120,95,60,.3)}
+body.light .adult{border-color:#c26aa5;background:#f6dfee;color:#a02c78}
+body.light .adult-v{border-color:#b07a3a;background:#f4e6d2;color:#8a5a1f}
+body.light .cfm.on{color:#2e9e4f}
+/* Flaggen-Emojis (🇯🇵 = weisse Flaeche) brauchen auf Creme einen dunklen Rahmen (JB) */
+body.light .fl{border:1px solid #26201a;border-radius:3px;padding:0 1px;line-height:1.1;display:inline-block}
+body.light .tile img,body.light .tile .noimg{background:#efe5cf;border-color:#ddd0b6}
+body.light .tname{color:#4a4033}
+body.light #covfly{background:#fbf6ea;border-color:#ddd0b6;box-shadow:0 6px 20px rgba(120,95,60,.4)}
+body.light #covfly img{background:#efe5cf}
+body.light #syncbar{background:#fbf6ea;border-color:#ddd0b6;color:#57493c;box-shadow:0 2px 8px rgba(120,95,60,.3)}
+body.light #syncbar .track{background:#e4d8bf}
+body.light details.xguide>summary,body.light .xhelp{color:#6f6557}
+body.light details.xguide>summary:hover{color:#96691c}
+body.light .xhelp a{color:#96691c}
+body.light .xhelp code{background:#efe5cf}
+
+/* --- Genre-Chips (Mehrfach-Filter mit Live-Counts + Ausgrauen) ------------ */
+.gchip{display:inline-block;cursor:pointer;margin:2px;padding:2px 9px;border-radius:999px;font-size:12px;border:1px solid #3a332e;background:#221d19;color:#d7c7bd}
+.gchip i{opacity:.55;font-style:normal}                /* Live-Count je Genre */
+.gchip.on{background:#d67756;color:#1a1310;border-color:#d67756;font-weight:600}
+.gchip.off{opacity:.3;pointer-events:none}             /* 0 Treffer -> ausgegraut */
+.gchips{max-width:700px;margin:6px 0 2px}
+details.genres{display:inline-block;position:relative}
+details.genres>summary{display:inline-block;list-style:none}
+/* Genre-Filter klappt als DROPDOWN auf (JB 05.07.2026): nach unten/rechts, die Filterzeile
+   bewegt sich NICHT; Klick woanders schliesst (JS). */
+details.genres[open]>.gchips{position:absolute;top:100%;left:0;z-index:60;margin:4px 0 0;
+padding:8px 10px;background:#1e1a17;border:1px solid #2a2522;border-radius:9px;
+box-shadow:0 6px 18px rgba(0,0,0,.5);width:max-content;max-width:min(92vw,700px)}
+/* Panels (Statistik/Empfehlungen/Spalten/Pausen) unausgeklappt DIREKT nebeneinander (JB: enger Abstand) */
+.panels{display:flex;flex-wrap:wrap;gap:4px 8px;align-items:flex-start}
+/* Aufgeklappt = DROPDOWN unter dem Button (JB 05.07.2026): die Button-Reihe bleibt stehen,
+   kein Zeilenumbruch der Buttons; nur EIN Panel offen (JS-Akkordeon). */
+.panels>details{position:relative}
+.panels>details[open]>.colbxs{position:absolute;top:100%;left:0;z-index:60;margin-top:4px}
+
+/* --- Quellen-/Reader-Ampel (statusbar rechts eine gemeinsame Legende) ------ */
+/* Ampel: die ZEILEN (Chips) enden vor der angepinnten Box; die LEGENDE sitzt rechts UNTER der
+   Favorit-Box, mit etwas Abstand nach oben (JB-Wunsch, Runde 3). */
+.statusbar{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;font-size:12px;opacity:.9;margin:14px 0 12px}
+.statusrows{flex:1}
+.statusrow{line-height:1.85;padding-right:255px}
+.rlegend{margin-top:8px}
+.srcchip{margin-right:10px;white-space:nowrap}
+a.srcchip{color:inherit;text-decoration:none;cursor:pointer}   /* klickbare Quelle/Lese-Seite */
+a.srcchip:hover{text-decoration:underline}
+.rlegend{display:flex;flex-direction:column;gap:3px;font-size:11px;opacity:.75;white-space:nowrap;text-align:left;border-left:1px solid #2a2522;padding-left:14px}
+
+/* --- ausgegrauter Filter-Button (0 Treffer) ------------------------------- */
+.btn.off{opacity:.35;pointer-events:none}
+
+/* --- Favoriten: ⭐-Stern je Zeile. Wie das Archiv-Icon: normal versteckt; Favoriten zeigen ihn
+       aber IMMER (gefuellt, auch auf Mobil), im "Favorit-Modus" erscheinen ALLE Sterne zum Anklicken. */
+.favi{display:none;cursor:pointer;margin-right:6px;opacity:.3;font-size:.95em}
+tr.fav .favi{display:inline;opacity:1}        /* Favorit -> Stern immer sichtbar + hell */
+body.favmode .favi{display:inline}            /* Favorit-Modus -> alle Sterne (nicht-Favorit blass) */
+.favi:hover{opacity:.7}
+tr.fav{background:#221b12}                      /* Favoriten leicht warm hervorheben */
+tr.fav:hover{background:#2a2016}
+#fm.on{background:#e0b56a;color:#1a1310;border-color:#e0b56a}   /* Favorit-Modus aktiv */
+#vfb.dim{opacity:.5}                            /* Favoriten ausgeblendet */
+
+/* --- ⤴ Export-Menue (3b): kleines Dropdown in der Steuerleiste (MAL-XML/JSON + Optionen) --- */
+details.xport{display:inline-block;position:relative}
+details.xport>summary{display:inline-block;list-style:none;cursor:pointer}
+/* kompakt: Panel schmiegt sich an den Text (JB), kleine Schrift/Buttons, minimale Abstaende */
+.xpanel{position:absolute;right:0;top:110%;z-index:60;display:flex;flex-direction:column;gap:3px;background:#1e1a17;border:1px solid #2a2522;border-radius:7px;padding:5px 8px;white-space:nowrap;width:max-content;box-shadow:0 4px 14px rgba(0,0,0,.5)}
+.xpanel label{font-size:11px;color:#d7c7bd;cursor:pointer;display:inline-flex;align-items:center;gap:3px}
+.xpanel label input{margin:0;width:12px;height:12px}
+.xpanel .btn{font-size:11px;padding:2px 8px;text-align:left}
+/* ❓ Kurzanleitung im Export-Menue (JB): klein, umbruchfaehig, mit Links zu MAL/AniList */
+details.xguide{margin-top:2px}
+details.xguide>summary{list-style:none;cursor:pointer;font-size:11px;color:#b8a99c}
+details.xguide>summary:hover{color:#e0b56a}
+.xhelp{font-size:11px;line-height:1.55;color:#b8a99c;white-space:normal;width:330px;margin-top:3px}
+.xhelp a{color:#e0b56a}
+.xhelp code{background:#2a2522;padding:0 4px;border-radius:4px}
+/* --- Erster Start ohne Serien: freundlicher Hinweis statt leerer Tabelle (kein Alarm-Gefuehl) --- */
+.welcome{margin:18px 0;padding:22px;text-align:center;color:#c9bdb4;font-size:14px;background:#1e1a17;border:1px solid #2a2522;border-radius:10px}
+/* --- Genre-Ausschluss (3. Zustand): rot + durchgestrichen = dieses Genre ausblenden --- */
+.gchip.ex{border-color:#c0392b;color:#c0392b;text-decoration:line-through}
+/* --- Lesestand-Klick: Kapitel-Zelle ist editierbar --- */
+td.c{cursor:pointer}
+/* --- 🎲 Treffer kurz aufleuchten lassen --- */
+tr.lucky td{background:#3a2a1f;transition:background 2s}
+/* --- Kompakt-Modus (JB): schmalere Zeilen, kleinere Pills --- */
+body.dense th,body.dense td{padding:3px 6px;font-size:12px}
+body.dense .pill{padding:1px 7px;font-size:11px;line-height:1.5}
+body.dense .pill.go{min-width:88px}
+#dns.on{background:#e0b56a;color:#1a1310;border-color:#e0b56a}
+/* ☀/☾-Knopf: IMMER gelb (JB), sitzt rechts direkt neben Im-/Export */
+#thm{color:#e6c34a;border-color:#5a4a2f;font-size:14px;min-width:34px}
+body.light #thm{color:#a8821a;border-color:#cbb27a;background:#fbf6ea}
+/* --- Titel-Bestaetigung: ✔ auf unsicheren Matches (Klick = "Titel stimmt", Wochen-Lauf pinnt fest) --- */
+.cfm{cursor:pointer;opacity:.45;margin-right:3px}
+.cfm:hover{opacity:1}
+.cfm.on{color:#6fcf7f;opacity:1}
+/* --- Stern-Spalte (eigener schmaler Reiter links neben User) --- */
+.favh,td.favcol{width:1%;text-align:center;padding-left:4px;padding-right:4px;white-space:nowrap}
+.favh{cursor:default}
+/* --- Spalten ein/ausblenden: body.hc<n> versteckt die n-te Spalte (Kopf + Zellen) --- */
+body.hc3 #t th:nth-child(3),body.hc3 #t td:nth-child(3),body.hc4 #t th:nth-child(4),body.hc4 #t td:nth-child(4),body.hc5 #t th:nth-child(5),body.hc5 #t td:nth-child(5),body.hc6 #t th:nth-child(6),body.hc6 #t td:nth-child(6),body.hc7 #t th:nth-child(7),body.hc7 #t td:nth-child(7),body.hc8 #t th:nth-child(8),body.hc8 #t td:nth-child(8){display:none}
+details.cols{display:inline-block}
+details.cols>summary{display:inline-block;list-style:none}
+/* Spalten-Menue: minimaler Streifen — Kaestchen klebt am Wort (gap 2px), enge Gruppen (JB-Wunsch) */
+.colbxs{display:flex;flex-direction:row;flex-wrap:wrap;gap:1px 8px;margin:4px 0 2px;background:#1e1a17;border:1px solid #2a2522;border-radius:7px;padding:2px 7px;width:fit-content}
+.colbox{font-size:11px;color:#d7c7bd;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:2px}
+.colbox input{margin:0;width:12px;height:12px}
+/* ⏸-Pausen-Menue (JB Runde 38): viele Reader -> begrenzte Hoehe + Scrollen; Status-Punkt je Seite */
+.pausebxs{max-height:230px;overflow-y:auto;max-width:540px}
+.pausebxs .dot{margin:0 2px 0 1px}
+/* 💡-Empfehlungen: 📖 = Kapitel-1-Direktlink neben dem DB-Verweis (JB Runde 38, Feature 4) */
+.rwrap{display:inline-flex;align-items:center;gap:3px}
+.rgo{text-decoration:none;font-size:13px}
+/* Konsolidierungs-Badge (×n) + Sammelgruppe der Ein-Serien-Domains (aufklappbar) */
+.pbadge{font-size:9px;color:#9a8a80;margin-left:2px}
+.ssg{flex-basis:100%;margin-top:2px;border-top:1px dashed #2a2522;padding-top:2px}
+.ssg>summary{list-style:none;cursor:pointer;display:inline-block}
+.ssg>summary::before{content:'▸ ';font-size:10px;color:#9a8a80}
+.ssg[open]>summary::before{content:'▾ '}
+.ssgi{display:flex;flex-wrap:wrap;gap:1px 8px;padding:2px 0 0 14px}
+body.light .ssg{border-top-color:#ddd0b6}
+/* --- ▦ Kachel-Ansicht (JB): Cover-Grid. Zahl links = dein Stand (User-Status-Farbe),
+       Zahl rechts = Gesamt (Verlags-Status-Farbe). Klick aufs Cover = weiterlesen/öffnen. --- */
+#tiles{display:none}
+/* Kachel-Ansicht: der Tabellen-KOPF bleibt als Sortierleiste stehen (JB: 'Sortierfunktion an
+   gleicher Stelle') — nur der Tabellen-Koerper weicht dem Grid; jede Kopf-Sortierung ordnet
+   die Kacheln live um (buildTiles haengt an pinFavs). */
+body.tiles #t tbody{display:none}
+/* Kacheln haben keine Aktions-Knoepfe -> nur das WORT 'Aktion' unsichtbar machen (JB).
+   Die Spalte behaelt ihre Breite: die Kopfzeile bleibt ein 1:1-Spiegel der Listenansicht
+   (JB-Regel Runde 30: 'es sollte immer identisch aussehen wie in der Listenansicht'). */
+body.tiles #t thead th:nth-child(9){color:transparent}
+/* Trennlinie zwischen Favoriten-Kacheln und dem Rest (JB): volle Grid-Breite */
+.tsep{grid-column:1/-1;border-top:2px solid rgba(214,119,86,.5);margin:4px 0}
+body.tiles #tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px 12px;margin-top:10px}
+.tile a{display:block}
+.tile img,.tile .noimg{width:100%;aspect-ratio:2/3;object-fit:cover;border-radius:9px;background:#221d19;border:1px solid #2a2522}
+.tile img{display:block}
+.tile .noimg{display:flex;align-items:center;justify-content:center;font-size:36px;opacity:.55}
+.tile a:hover img,.tile a:hover .noimg{border-color:#d67756}
+.tchap{margin-top:5px;font-size:13px;font-weight:600}
+.tchap .tl{color:#8a7d74}
+.tl.pOn{color:#6fcf7f}.tl.pDone{color:#3a9d8f}.tl.pHia{color:#e6c34a}.tl.pStop{color:#c56b4a}.tl.pSoon{color:#9aa}
+.tname{font-size:12px;color:#d7c7bd;line-height:1.3;margin-top:2px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+#til.on{background:#e0b56a;color:#1a1310;border-color:#e0b56a}
+/* --- Cover-Vorschau beim Hover (JB): schwebendes Bild neben dem Serientitel, lazy geladen --- */
+#covfly{position:fixed;z-index:70;pointer-events:none;display:none;background:#1e1a17;border:1px solid #3a332e;border-radius:8px;padding:4px;box-shadow:0 6px 20px rgba(0,0,0,.55)}
+#covfly img{display:block;width:140px;height:auto;min-height:60px;border-radius:5px;background:#2a2522}
+@media(max-width:760px){#covfly{display:none!important}}
+/* --- ⬆ nach-oben-Knopf (JB): unten rechts, erscheint erst ab etwas Scrolltiefe --- */
+#top{position:fixed;right:14px;bottom:14px;z-index:60;display:none;width:38px;height:38px;border-radius:50%;border:1px solid #3a332e;background:#221d19;color:#e0b56a;font-size:16px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4)}
+#top:hover{background:#2f2823}
+body.light #top{background:#fbf6ea;border-color:#cbb27a;color:#96691c;box-shadow:0 2px 8px rgba(120,95,60,.3)}
+/* --- Fortschrittsbalken (JB): oben rechts neben der Pin-Box, nur waehrend eines laufenden Syncs --- */
+#syncbar{position:fixed;top:12px;right:300px;z-index:49;display:none;width:230px;background:#1e1a17;border:1px solid #2a2522;border-radius:8px;padding:6px 10px;font-size:11px;color:#c9bdb4;box-shadow:0 2px 8px rgba(0,0,0,.4)}
+#syncbar .track{height:6px;background:#2a2522;border-radius:4px;overflow:hidden;margin-top:4px}
+#syncbar .fill{height:100%;width:0;background:#d67756;transition:width .6s}
+/* pausiert (Tray geschlossen / kein Herzschlag mehr): ausgegraut statt kommentarlos weg (JB) */
+#syncbar.pau{opacity:.55}
+#syncbar.pau .fill{background:#8a7d74}
+@media(max-width:760px){#syncbar{display:none!important}}

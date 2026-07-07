@@ -1,0 +1,49 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+
+# --- PyInstaller Build-Ausgabe ---
+/build/*/
+*.exe
+*.exe.sha256
+SyncManga.spec.bak
+
+# --- SyncManga Laufzeit-/Nutzerdaten (entstehen lokal, gehoeren NICHT ins Repo) ---
+Manga_Leseliste.html
+md_cache.json
+config.json
+# kuratierte Direktlinks + gescrapte Kataloge bleiben bewusst DRAUSSEN
+data/series_overrides.json
+data/readers_moe.json
+data/*_map.json.gz
+# persoenliche Laufzeit-Artefakte
+data/anilist_synced.json
+data/imported_series.json
+data/list_state.json
+data/list_rows.js
+data/sync_progress.*
+data/reader_status.json
+data/recs_cache.json
+data/new_chapters.json
+data/projects.json
+data/link_audit.json
+data/broken_links*.json
+data/benchmark_report.json
+data/duplicate_report.json
+data/host_audit.md
+data/backups/
+
+# --- Secrets (Sicherheitsnetz - duerfen hier ohnehin nie liegen) ---
+*token*.json
+client_secret*.json
+*.key
+*.pem
+
+# --- OS ---
+Thumbs.db
+.DS_Store
+desktop.ini
