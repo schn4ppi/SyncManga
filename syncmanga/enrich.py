@@ -622,15 +622,17 @@ def select_todo(items, cache, cache_ver, force=False):
     (leerer Status/Flagge/Stand) - die probieren wir ueber die naechsten Laeufe erneut gegen MangaBaka,
     bis es klappt (bis RETRY_MAX). So heilen 429-Aussetzer sich selbst statt "unbekannt" zu bleiben.
     force=True: ALLE neu, mit frischer Link-Pruefung (stale=False)."""
-    todo = []
+    todo, retries = [], []
     for k, e in items.items():
         c = cache.get(k)
         stale = c is not None and c.get("v", 1) < cache_ver
         weak = (not c.get("md_id")) or c.get("src") == "fallback" if c else False
         retry = c is not None and weak and c.get("tries", 0) < RETRY_MAX
         if force or c is None or retry or stale:
-            todo.append((k, e, c, False if force else stale))
-    return todo
+            item = (k, e, c, False if force else stale)
+            # R6: hartnaeckige Retry-Faelle ZUERST -> werden im cap nicht von neuen/stale ausgehungert.
+            (retries if (retry and not force) else todo).append(item)
+    return retries + todo
 
 
 def _consume_broken(cache):
@@ -731,6 +733,53 @@ def keep_last_good(links, cache_entry):
     return _live_links(cache_entry.get("read_urls")) or links
 
 
+def bake_overrides(cache, items):
+    """Kuratierte series_overrides deterministisch (OHNE Netz, ohne Verifikation) in den GESAMTEN
+    Cache einbacken und die Zahl reparierter Serien zurueckgeben.
+
+    Warum noetig: Die normale Anreicherung wendet Overrides nur auf die ~cap Serien an, die pro
+    Lauf frisch bearbeitet werden. Alt-Eintraege (z.B. aus einer Cache-Panne mit leeren read_urls)
+    behalten sonst ihren leeren Link und fallen in der Anzeige auf 'Alternative' zurueck, OBWOHL ein
+    kuratierter Direktlink existiert (JB 07.07.2026: 'warum ueberall Alternative?'). Dieser Pass
+    laeuft jeden Build und sorgt dafuer, dass ein Override IMMER als Primaerlink erscheint —
+    unabhaengig davon, ob die Serie gerade neu angereichert wurde.
+
+    Nicht-destruktiv: der Override wird nur VORNE angestellt, vorhandene Reserven bleiben erhalten;
+    Novels und Serien ohne passenden Override bleiben unberuehrt. Die Override-Vorrang-Entscheidung
+    ist identisch zum Anreicherungs-Pfad (Kapitel-Override zaehlt nur bei bekanntem Lesestand)."""
+    fixed = 0
+    for k, c in cache.items():
+        if not isinstance(c, dict) or c.get("novel"):
+            continue
+        it = items.get(k) if items else None
+        chap = (it or {}).get("chap") or c.get("read_chap") or c.get("chap")
+        chap_known = bool(chap)
+        next_chap = int(chap) if chap else 1
+        lat = c.get("latest")
+        if lat and next_chap > lat and (c.get("conf") or 0) >= 0.7:   # nie ueber das neueste Kapitel
+            next_chap = int(lat)
+        cands = [c.get("title_en"), c.get("title_romaji"), c.get("title"), k,
+                 (it or {}).get("name")] + (c.get("alt_titles") or [])
+        ov_url, ov_site, ov_tpl, _pin = readerlink.override_info([x for x in cands if x], next_chap)
+        if not ov_url:
+            continue
+        links = [list(x) for x in (c.get("read_urls") or []) if x and x[0]]
+        ov_chap = bool(ov_tpl or readerlink.has_chapter_token(ov_url))
+        ov_used = (_pin
+                   or (ov_chap and chap_known)
+                   or (not ov_chap and (not links or not readerlink.has_chapter_token(links[0][0])))
+                   or (ov_chap and not chap_known and not links))
+        if not ov_used or (links and links[0][0] == ov_url):    # nichts zu tun / schon vorne
+            continue
+        c["read_urls"] = [[ov_url, ov_site]] + [ln for ln in links if ln[0] != ov_url]
+        c["read_url"], c["read_site"] = ov_url, ov_site
+        c["ov"] = True
+        if not c.get("read_chap"):
+            c["read_chap"] = next_chap
+        fixed += 1
+    return fixed
+
+
 def _save_cache(cache, cache_path):
     """Cache ATOMAR schreiben (tmp + os.replace, wie ueberall sonst im Projekt). Ein Kill mitten im
     Checkpoint (JB-Vorfall: parallele Laeufe gestoppt) darf die 1-MB-Datei nie halb geschrieben
@@ -751,6 +800,12 @@ def enrich(items, cache_path, health_dir, cap, name_fix=None, cache_ver=CACHE_VE
         except Exception:
             cache = {}
     _consume_broken(cache)          # ⚠-Meldungen -> betroffene Serien in diesem Lauf neu (JB-Wunsch)
+    try:                            # kuratierte Direktlinks IMMER einbacken (kein Netz) -> nie 'Alternative'
+        _baked = bake_overrides(cache, items)      # trotz vorhandenem Override (JB 07.07.2026)
+        if _baked:
+            print(f"  {_baked} Serien: kuratierten Direktlink eingebacken (Override-Backfill).", flush=True)
+    except Exception as ex:
+        print(f"  [Override-Backfill] uebersprungen: {type(ex).__name__}: {ex}", flush=True)
     if relink:
         # Relink: gecachte Metadaten behalten, NUR den 'weiterlesen'-Link neu aufloesen (Override-Vorrang).
         # Kein MangaBaka -> schnell. Alle bereits gecachten (aktuellen) Serien kommen dran.
@@ -858,6 +913,8 @@ def enrich(items, cache_path, health_dir, cap, name_fix=None, cache_ver=CACHE_VE
             # SAUBEREN Titel gegen MangaBaka suchen (der rohe Scan-Name ist oft verrauscht).
             extra = [c["title"]] if (c and c.get("title") and not str(c.get("md_id") or "").startswith("mb:")) else []
             rec, conf, src, needs_help = resolve(e, extra)
+        if src == "error":          # R6 (JB 07.07.2026): transienter Quellen-Fehler (429/Netz) verbraucht
+            tries = c.get("tries", 0) if c else 0   # KEINEN Retry -> Serie bleibt dran, bis MangaBaka echt antwortet
         rec = rec or {}
         mb_id = rec.get("mb_id")
         did = (f"mb:{mb_id}" if isinstance(mb_id, int) else mb_id) if mb_id else None
@@ -1149,6 +1206,7 @@ def assemble_rows(items, cache, name_fix):
                                                # ohne das Feld gewann der zuerst gesehene 'Vol.'-
                                                # Zwilling (Kapitel 6) gegen den 112er.
                                                "read_chap", "last_group",
+                                               "lh_status",     # Link-Health (R7): fuer den Anzeige-Marker
                                                "mal_id", "al_id", "cover",
                                                # Titel-Varianten fuer die Archiv-Migration (Runde 35):
                                                # alte localStorage-Schluessel = norm(alter Anzeigetitel)

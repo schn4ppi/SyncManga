@@ -669,17 +669,75 @@ def find_chapter(titles, chapter, fetch=None):
 SERIES_OVERRIDES = {}        # norm(name) -> {"name":..., "chapter": "...{n}..."}
 
 
+_DEAD_MF_READ = re.compile(r"^https?://(?:www\.)?mangafire\.to/read/", re.I)
+
+
+def is_dead_read_scheme(url):
+    """True fuer das ALTE, tote mangafire-Reader-Schema `/read/{slug}.{id}/en/chapter-N` (JB/linkhealth
+    07.07.2026): seit dem MangaFire-Umbau leitet es per 200 auf die Titelseite um. Solche Overrides
+    duerfen nicht mehr greifen — sonst ueberschatten sie (pin) den echten `/title/`-Link aus dem Verlauf."""
+    return bool(_DEAD_MF_READ.match(url or ""))
+
+
 def load_overrides(path):
-    """data/series_overrides.json laden -> SERIES_OVERRIDES (norm(name) -> Eintrag). Fehlt -> leer."""
+    """data/series_overrides.json laden -> SERIES_OVERRIDES (norm(name) -> Eintrag). Fehlt -> leer.
+    Eintraege im toten mangafire-`/read/`-Schema werden dabei uebersprungen (is_dead_read_scheme)."""
     global SERIES_OVERRIDES
     try:
         with open(path, encoding="utf-8") as f:
             ov = (json.load(f).get("overrides") or {})
         SERIES_OVERRIDES = {norm(k): v for k, v in ov.items()
-                            if isinstance(v, dict) and v.get("chapter")}   # {n} optional (auch Serien-Seite)
+                            if isinstance(v, dict) and v.get("chapter")   # {n} optional (auch Serien-Seite)
+                            and not is_dead_read_scheme(v["chapter"])}     # totes /read/-Schema raus
     except (OSError, ValueError, AttributeError):
         pass
     return SERIES_OVERRIDES
+
+
+def _templatize_chapter(url):
+    """Bestaetigten Kapitel-Link -> {n}-Vorlage: die ERSTE Kapitelnummer wird durch {n} ersetzt,
+    damit der Override mit dem Lesefortschritt mitwaechst. Keine Kapitelnummer erkennbar -> URL
+    unveraendert (dann ein Serien-Seiten-Override). Vorhandenes {n} bleibt (idempotent)."""
+    if not url or "{n}" in url:
+        return url or ""
+
+    def _repl(m):
+        return m.group(0)[: m.start(1) - m.start(0)] + "{n}"        # Praefix (z.B. 'chapter-') + {n}
+
+    return _CHAPTOK.sub(_repl, url, count=1)
+
+
+def save_series_override(path, key, name, url, pin=True, template=True):
+    """Einen von JB BESTAETIGTEN Direktlink NICHT-destruktiv in series_overrides.json schreiben.
+
+    template=True: Kapitel-Link wird zur {n}-Vorlage (waechst mit dem Lesefortschritt) — richtig fuer
+    Reader mit nummern-basierten URLs (chapter-N/episode-N: mgeko, webtoons, mangaread, mangahub …).
+    template=False: URL wird UNVERAENDERT gepinnt — noetig fuer Reader mit OPAKEN Kapitel-IDs
+    (mangafire /title/…/chapter/8110971, comix, mangadex/chapter/UUID), deren Nummer nicht in der
+    URL steht; hier waere eine {n}-Vorlage falsch. "trust" spart die Netz-Pruefung (JB verbuergt sich),
+    "pin" macht den Link zur verbindlichen Aktion der Serie. Andere Eintraege + der _hinweis-Kommentar
+    bleiben; geschrieben wird atomar. Gibt den geschriebenen Eintrag zurueck."""
+    key = norm(key or "")
+    if not key or not name or not url:
+        raise ValueError("key, name und url sind Pflicht")
+    data = {}
+    if os.path.exists(path):
+        try:
+            with open(path, encoding="utf-8") as f:
+                data = json.load(f)
+        except ValueError:
+            data = {}
+    if not isinstance(data, dict):
+        data = {}
+    ov = data.setdefault("overrides", {})
+    entry = {"name": name, "chapter": _templatize_chapter(url) if template else url,
+             "trust": True, "pin": bool(pin)}
+    ov[key] = entry
+    tmp = path + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=1)
+    os.replace(tmp, path)
+    return entry
 
 
 # Viele Mangas haben eine EIGENE Lesedomain (SEO-Manga-Seiten). Typische Domain-Endungen + Pfade;

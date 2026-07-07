@@ -2,6 +2,12 @@
   "_hinweis": "Automatisch gepflegt vom Discovery-Tool. type: manga/manhwa/any; chapter: URL-Vorlage mit {slug}/{n}; Links werden per echtem 404 geprueft.",
   "readers": [
     {
+      "name": "Mgeko",
+      "host": "mgeko.cc",
+      "type": "any",
+      "chapter": "https://www.mgeko.cc/reader/en/{slug}-chapter-{n}-eng-li/"
+    },
+    {
       "name": "MangaBolt",
       "host": "mangabolt.com",
       "type": "manga",

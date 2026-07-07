@@ -461,9 +461,18 @@ def _alt_cell(e, s, sites_q, nxt, full):
         if "mangadex.org/chapter/" in u:
             return s["alt_verified_en"]
         return s["alt_verified_tip"]
+    # Jede Kandidaten-Quelle bekommt ein ✔-Pin: EIN Klick bestaetigt sie als richtige Quelle
+    # (JB 07.07.2026) -> localStorage -> naechster Sync pinnt sie fest (apply_source_confirms).
     res_inner = ''.join(
+        f'<span class=altrow>'
         f'<a class="pill go"{pp} href="{html.escape(u)}" target=_blank title="{html.escape(_res_tip(u))}">'
-        f'{html.escape(nm)}</a>' for u, nm, pp in reserves if u)
+        f'{html.escape(nm)}</a>'
+        f'<button type=button class=pin onclick="cfmSrc(this)" title="{html.escape(s["src_confirm"])}">✔</button>'
+        f'</span>' for u, nm, pp in reserves if u)
+    # …und fuer Serien ohne Kandidat (die 'Alternative'-Faelle): eigenen, per 'suchen' gefundenen
+    # Link einfuegen und bestaetigen.
+    own = (f'<button type=button class="pill alt srcown" onclick="cfmSrcOwn(this)">'
+           f'{s["src_confirm_own"]}</button>')
     # HTML-Diaet: die Kombi-Such-URL (enthaelt die IDENTISCHE Reader-Domain-Liste, frueher x786 im
     # HTML) baut das JS-Boot aus data-n/data-rc + I.sq -> hier nur ein leerer galt-Anker.
     gcombined = '<a class="pill go galt" href="#" target=_blank>🔍 Google</a>'
@@ -471,7 +480,7 @@ def _alt_cell(e, s, sites_q, nxt, full):
     # Weiterleitungs-Skripte ab und landete auf fremden Mangas — mehr Verwirrung als Rettung.
     # Manuelle Funde (z.B. Blogspot-Archive) laufen stattdessen als series_overrides-Eintrag.
     return (f'<details class=alt><summary class="pill alt">{s["alt_menu"]}</summary>'
-            f'{gcombined}{res_inner}</details>')
+            f'{gcombined}{res_inner}{own}</details>')
 
 
 def _cols_menu(s):
@@ -724,7 +733,7 @@ def render(rows, out_dir, out_html, namelen=NAMELEN, lang="de", readers_snap=Non
                     mig[al] = key
         plabel = s[uprog]
         trs.append(
-            f'<tr data-s="{html.escape(plabel)}"{help_attr} data-c="{html.escape(e.get("country") or "")}" data-medium="{med}" data-gen="{html.escape(" ".join(e.get("genres") or []))}" data-adult="{html.escape(e.get("adult_kind") or "")}" data-h="{html.escape(key)}" data-au="{html.escape(author.lower())}" data-n="{html.escape(full.lower())}" data-mal="{e.get("mal_id") or ""}" data-mst="{MAL_STATUS.get(uprog, "Reading")}" data-rc="{int(_read or 0)}"{f' data-cov="{html.escape(_cov)}"' if (_cov := cover_url(e.get("cover"))) else ""}>'
+            f'<tr data-s="{html.escape(plabel)}"{help_attr} data-c="{html.escape(e.get("country") or "")}" data-medium="{med}" data-gen="{html.escape(" ".join(e.get("genres") or []))}" data-adult="{html.escape(e.get("adult_kind") or "")}" data-h="{html.escape(key)}"{f' data-lh="{html.escape(e["lh_status"])}"' if e.get("lh_status") else ""} data-au="{html.escape(author.lower())}" data-n="{html.escape(full.lower())}" data-mal="{e.get("mal_id") or ""}" data-mst="{MAL_STATUS.get(uprog, "Reading")}" data-rc="{int(_read or 0)}"{f' data-cov="{html.escape(_cov)}"' if (_cov := cover_url(e.get("cover"))) else ""}>'
             # HTML-Diaet (JB): die STATISCHEN Tooltip-Texte stehen NICHT mehr je Zeile im HTML
             # (6 Attribute x ~800 Zeilen = mehrere 100 KB), sondern einmal in I.tt — das JS-Boot
             # setzt sie beim Laden (applyTips). Dynamische Titles (voller Name, dsite) bleiben inline.

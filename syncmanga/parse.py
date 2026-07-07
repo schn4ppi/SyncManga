@@ -91,6 +91,7 @@ def slug_from_url(u):
 
 def clean_title(t):
     t = html.unescape(t or '').strip()        # HTML-Entities dekodieren (&#039; -> ', &amp; -> &)
+    orig = t                                  # Original fuer den End-Range-Guard (s.u.)
     t = re.sub(r'^\s*anime\s+', '', t, flags=re.I)   # Lesezeichen-Ordner-Praefix "Anime ..." weg
     t = re.sub(r'^\s*(?:ylgn|oneshot)\s*[-–—:]?\s+', '', t, flags=re.I)   # weitere Ordner-/Scan-Praefixe
     t = re.sub(r'\s+vol(?:ume)?\.?\s*\d+\s*$', '', t, flags=re.I)   # "... Vol 22"-Suffix weg
@@ -129,7 +130,15 @@ def clean_title(t):
     s = re.sub(r'\s*\((?:Manga|Manhwa|Manhua|Novel|Webtoon|Comic|Official)\)\s*$', '', s, flags=re.I)
     s = re.sub(r'[\s\-–—|:,]+$', '', s)                                    # nachlaufende Satzzeichen/Dashes
     s = re.sub(r'\s+(?:Manga|Manhwa|Manhua)$', '', s, flags=re.I)          # "WSR Manga" -> "WSR"
-    return re.sub(r'\s{2,}', ' ', s).strip(' -–—|:,.•\'"')
+    result = re.sub(r'\s{2,}', ' ', s).strip(' -–—|:,.•\'"')
+    # Guard (JB 07.07.2026, 'Class 1-9' -> 'Class'): ein abschliessender Zahlen-RANGE (1-9, 1-99)
+    # ist meist Teil des Titels, kein Kapitel. Hat die Reinigung genau diesen Range abgeschnitten
+    # (Rest == Titel ohne Range), stellen wir den Originaltitel wieder her. Einzelne End-Nummern
+    # ('Naruto 700' = Kapitel) bleiben unberuehrt.
+    m_rng = re.match(r'^(.*\S)\s+\d+\s*[-–]\s*\d+$', orig)
+    if m_rng and result.replace(' ', '').lower() == m_rng.group(1).replace(' ', '').lower():
+        return re.sub(r'\s{2,}', ' ', orig).strip()
+    return result
 
 
 MAX_CHAPTER = 5000   # kein Manga hat >5000 Kapitel -> groessere Zahl = Parse-Fehler (URL-ID/Datum)

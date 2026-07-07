@@ -14,7 +14,9 @@ import importlib
 import sys
 import time
 
-TOOLS = ["tools.fix_broken", "tools.discover_dedicated", "tools.discover_sitemap"]
+# apply_source_confirms zuerst: von JB bestaetigte Direktlinks haben Vorrang, danach fuellt die
+# Discovery nur noch Serien OHNE Override -> bestaetigte Quellen bleiben unangetastet.
+TOOLS = ["tools.apply_source_confirms", "tools.fix_broken", "tools.discover_dedicated", "tools.discover_sitemap"]
 
 
 def main():

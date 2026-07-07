@@ -284,6 +284,29 @@ fetch('http://127.0.0.1:8765/broken',{method:'POST',headers:{'Content-Type':'app
 // beim Laden bereits gemeldete Zeilen (aus localStorage) wieder markieren
 (function(){var a=brkGet();brkSave(a);var n={};a.forEach(function(x){n[x.name]=1});document.querySelectorAll('#t tbody tr').forEach(function(tr){if(n[tr.dataset.n]){var b=tr.querySelector('.rep');if(b){b.classList.add('on');b.textContent='⚠ ✓'}}})})();
 
+// --- ✔ Quelle bestaetigen (JB 07.07.2026): einen Direktlink als richtige Quelle merken (localStorage
+// 'srcCfm') -> Export source_confirms.json ({key:{url,name,site}}); apply_source_confirms pinnt ihn
+// beim naechsten Sync fest als Override. Gleiches Muster wie 'Link kaputt' (POST + Datei-Fallback). ---
+function srcGet(){try{return JSON.parse(localStorage.getItem('srcCfm')||'{}')}catch(e){return{}}}
+function srcSave(o){localStorage.setItem('srcCfm',JSON.stringify(o));var n=Object.keys(o).length,b=document.getElementById('scb');if(b){b.textContent='✔ Quellen speichern ('+n+')';b.style.display=n?'':'none'}}
+function _srcHost(u){try{return new URL(u).host}catch(e){return''}}
+function cfmSrcAdd(tr,url){if(!tr||!url)return;var o=srcGet(),mb=url.match(/mangabaka\.(?:org|dev)\/(?:v\d+\/series\/)?(\d+)/i);
+if(mb){o[tr.dataset.h]={mb_id:parseInt(mb[1],10),name:tr.dataset.n||''}}   // MangaBaka-Seite -> ID-Pin (Metadaten)
+else{o[tr.dataset.h]={url:url,name:tr.dataset.n||'',site:_srcHost(url)}}   // sonst Reader-Direktlink
+srcSave(o)}
+function cfmSrc(btn){var a=btn.previousElementSibling,tr=btn.closest('tr');if(a&&a.href){cfmSrcAdd(tr,a.href);btn.classList.add('on');btn.textContent='✔✓'}}
+function cfmSrcOwn(btn){var tr=btn.closest('tr'),u=window.prompt('Direktlink zum aktuellen Kapitel einfügen (wird als deine Quelle gespeichert):','');if(u&&/^https?:\/\//.test(u.trim())){cfmSrcAdd(tr,u.trim());btn.classList.add('on');btn.textContent='✔✓ gemerkt'}}
+function showSrc(){var o=srcGet();if(!Object.keys(o).length)return;
+var dl=function(){var b=new Blob([JSON.stringify(o,null,2)],{type:'application/json'}),u=URL.createObjectURL(b),el=document.createElement('a');el.href=u;el.download='source_confirms.json';el.click();URL.revokeObjectURL(u)};
+if(typeof fetch==='undefined'){dl();return}
+var ctl=(typeof AbortController!=='undefined')?new AbortController():null;if(ctl)setTimeout(function(){ctl.abort()},2500);
+fetch('http://127.0.0.1:8765/confirm-source',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(o),signal:ctl?ctl.signal:undefined})
+.then(function(r){if(!r.ok)throw 0;return r.json()})
+.then(function(){localStorage.removeItem('srcCfm');srcSave({});document.querySelectorAll('button.pin.on').forEach(function(b){b.classList.remove('on');b.textContent='✔'});alert('✔ Quelle(n) gemerkt — der nächste Sync übernimmt sie fest als deinen Direktlink.')})
+.catch(function(){dl()})}
+// Floating-Badge (wie ⬆), erscheint sobald Bestaetigungen anstehen -> ein Klick speichert alle.
+(function(){var b=document.createElement('button');b.id='scb';b.className='savebadge';b.type='button';b.onclick=showSrc;document.body.appendChild(b);srcSave(srcGet())})();
+
 // +Alt-Akkordeon: oeffnet man ein Alternativen-Menue, schliessen sich die anderen (Aesthetik).
 document.addEventListener('toggle',function(e){var d=e.target;if(d.tagName==='DETAILS'&&d.classList.contains('alt')&&d.open){document.querySelectorAll('details.alt[open]').forEach(function(o){if(o!==d)o.open=false})}},true);
 

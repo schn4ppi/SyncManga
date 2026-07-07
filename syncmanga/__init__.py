@@ -4,7 +4,7 @@ syncmanga â€” gemeinsamer Manga-Kern.
 
 Aus diesem Paket entstehen ZWEI Builds (gleicher Code, keine Forks):
   - extern: Standalone-App â€žSyncManga" (nur Manga, weitergebbar)
-  - privat: als Kern einer groesseren Suite optional mitnutzbar
+  - privat: JBs Vollsuite (Mail + Belege + Manga), die diesen Kern mitnutzt
 
 Der Kern importiert NIEMALS Mail-/Beleg-Code und enthÃ¤lt keine privaten Daten/Secrets.
 

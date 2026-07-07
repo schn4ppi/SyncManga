@@ -183,12 +183,14 @@ def load_overrides(path):
     return out
 
 
-def save_override(path, key, name, search=None):
+def save_override(path, key, name, search=None, mb_id=None):
     """Eine Titel-Korrektur in overrides.json schreiben (nicht-destruktiv).
 
     Laedt die bestehende Datei, ergaenzt/ueberschreibt NUR den einen Key (alle anderen
     Eintraege und der _doc-Kommentar bleiben erhalten) und schreibt sie zurueck. `key` wird
-    VERBATIM gesetzt (kein norm). Gibt das gespeicherte {"name","search"} zurueck.
+    VERBATIM gesetzt (kein norm). Gibt das gespeicherte {"name","search"[,"mb_id"]} zurueck.
+    `mb_id` (MangaBaka-ID) = Ground-Truth-Pin: die Anreicherung holt den Record dann per
+    catalog.lookup_id statt per Suche (kein Fehlmatch, JB 07.07.2026).
     Das ist die Datei-Haelfte des "Braucht Hilfe"-Flows (Spec §2a) — reine Nutzer-Daten."""
     import os
     import json
@@ -209,6 +211,11 @@ def save_override(path, key, name, search=None):
         ov = {}
         data["overrides"] = ov
     entry = {"name": name, "search": search or name}
+    if mb_id is not None and str(mb_id).strip():
+        try:
+            entry["mb_id"] = int(mb_id)
+        except (TypeError, ValueError):
+            entry["mb_id"] = mb_id
     ov[key] = entry
     tmp = path + ".tmp"
     with open(tmp, "w", encoding="utf-8") as f:

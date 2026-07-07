@@ -426,6 +426,7 @@ def lookup(name, slugs=None, read_chap=None, prefer_novel=False):
     `read_chap`/`prefer_novel` = Lese-Fortschritt + Roman-Quelle (fuer die Roman-vs-Comic-Wahl in mb_search).
     """
     queries = [name] + [s for s in (slugs or []) if s and norm(s) != norm(name)]
+    mb_erred = False
     # MangaBaka pro Serie neu versuchen (KEIN sticky-down): ein 429-Burst darf den Katalog nicht
     # dauerhaft abschalten. Schlaegt der Call (nach Backoff) fehl, faellt NUR diese Serie zurueck.
     try:
@@ -468,15 +469,22 @@ def lookup(name, slugs=None, read_chap=None, prefer_novel=False):
         if best:
             return _normalize(best), conf, "mangabaka"
     except Exception as ex:
+        mb_erred = True
         srcstatus.record("mangabaka", False, ex)
     rec = _fallback(name)
-    return rec, (0.5 if rec else 0.0), ("fallback" if rec else "none")
+    if rec:
+        return rec, 0.5, "fallback"
+    # "error" (MangaBaka geworfen -> 429/Netz, Fallback leer) vs. "none" (MangaBaka hat geantwortet,
+    # aber nichts gefunden): R6 (JB 07.07.2026) zaehlt NUR "none" auf das Retry-Limit; ein transientes
+    # "error" wird endlos erneut probiert, statt nach RETRY_MAX Aussetzern dauerhaft "unbekannt".
+    return {}, 0.0, ("error" if mb_erred else "none")
 
 
 def lookup_id(mb_id):
     """Ground-Truth-Pin: Record DIREKT per MangaBaka-ID holen (Override `mb_id`), ohne Suche/Rateuerei.
     Fuer Faelle, in denen die Suche unweigerlich falsch matcht (gleichnamige Stub schlaegt Hauptserie,
-    Alias-Verschmutzung). -> (rec_norm, 1.0, "mangabaka-pin"). Fehlschlag -> ({}, 0.0, "none")."""
+    Alias-Verschmutzung). -> (rec_norm, 1.0, "mangabaka-pin"). Fehlschlag -> ({}, 0.0, "error"/"none")."""
+    erred = False
     try:
         t0 = time.time()
         rec = _canonical(_mb_get(mb_id))
@@ -484,5 +492,7 @@ def lookup_id(mb_id):
         if rec:
             return _normalize(rec), 1.0, "mangabaka-pin"
     except Exception as ex:
+        erred = True
         srcstatus.record("mangabaka", False, ex)
-    return {}, 0.0, "none"
+    # 429/Netz beim Pin -> "error" (R6: wird erneut probiert); leere ID-Antwort -> "none".
+    return {}, 0.0, ("error" if erred else "none")
