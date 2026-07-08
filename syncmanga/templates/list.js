@@ -126,7 +126,10 @@ function cfGet(){try{return JSON.parse(localStorage.getItem('chapFix')||'{}')}ca
 function cfSave(o){localStorage.setItem('chapFix',JSON.stringify(o))}
 // Kapitel-Nummer in einer Reader-URL austauschen (chapter-16, /chapter/16, episode_no=7 ...) ->
 // die AKTION-Spalte folgt dem manuell gesetzten Lesestand (JB-Wunsch).
-function cfRelink(tr,n){var a=tr.querySelector('a.pill.go');if(!a)return;if(a.dataset.orighref==null)a.dataset.orighref=a.href;var u=a.dataset.orighref;var v=u.replace(/((?:chapter|episode|chap|ch)[-_\/]?)(\d+(?:[.-]\d+)?)/i,function(m,p){return p+n}).replace(/([?&]episode_no=)\d+/i,function(m,p){return p+n});if(v!==u)a.href=v}
+function cfRelink(tr,n){var a=tr.querySelector('a.pill.go');if(!a)return;if(a.dataset.orighref==null)a.dataset.orighref=a.href;var u=a.dataset.orighref;
+// OPAKE Kapitel-IDs (mangafire/comix: /chapter/7518136) NIE umschreiben (JB 08.07.2026, One-Piece-
+// Fund: Lesestand 987 zerstoerte den Pin) — >5000 ist nie eine Kapitelnummer (MAX_CHAPTER-Regel).
+var v=u.replace(/((?:chapter|episode|chap|ch)[-_\/]?)(\d+(?:[.-]\d+)?)/i,function(m,p,num){return parseFloat(num)>5000?m:p+n}).replace(/([?&]episode_no=)\d+/i,function(m,p){return p+n});if(v!==u)a.href=v}
 function cfUnlink(tr){var a=tr.querySelector('a.pill.go');if(a&&a.dataset.orighref!=null)a.href=a.dataset.orighref}
 function cfSet(td,n){var tr=td.closest('tr');if(td.dataset.orig==null){td.dataset.orig=td.innerHTML;td.dataset.origun=td.dataset.un;td.dataset.origrc=tr.dataset.rc}var lat=parseFloat(td.dataset.lat)||0;if(lat>0&&n>lat)n=lat;var badge=td.querySelector('span.unk'),bh=badge?badge.outerHTML:'',fmt=function(x){return x%1?x:Math.round(x)};td.innerHTML=fmt(n)+' / '+(lat>n?fmt(lat):(fmt(n)||'?'))+bh;td.dataset.un=Math.max(0,Math.round((lat||n)-n));tr.dataset.rc=Math.floor(n);cfRelink(tr,fmt(n));return n}
 function cfReset(td){var tr=td.closest('tr');if(td.dataset.orig!=null){td.innerHTML=td.dataset.orig;td.dataset.un=td.dataset.origun;tr.dataset.rc=td.dataset.origrc;cfUnlink(tr)}}

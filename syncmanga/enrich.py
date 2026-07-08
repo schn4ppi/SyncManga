@@ -832,8 +832,17 @@ def promote_history_chapters(cache, items):
                 continue
             if not readerlink.has_chapter_token(u) or readerlink.series_page_of(u) == u:
                 continue                 # nur echte Kapitel-URLs, keine getarnte Serien-Seite
-            if chapter_of(u, "") != want:
-                continue                 # nur EXAKT das Ziel-Kapitel (kein Raten)
+            # Kapitelnummer: aus der URL — oder, bei OPAKEN Kapitel-IDs (mangafire
+            # /chapter/7544676, JB 08.07.2026 Berserk/One Piece), aus dem SEITENTITEL,
+            # den der Scan bereits geparst hat (r['chap']). Beides bleibt EXAKT (kein Raten).
+            got = chapter_of(u, "")
+            if got is None:
+                got = r.get("chap")
+            elif "mangafire" in hh:
+                continue                 # mangafire mit NUMERISCHEM /chapter/N = totes Rate-Schema
+                                         # (leitet zur Serienseite; echte Kapitel = opake ID -> oben)
+            if got != want:
+                continue                 # nur EXAKT das Ziel-Kapitel
             vis = r.get("visits") or 0
             if not best or vis > best[0]:
                 best = (vis, u, hh)
