@@ -151,7 +151,10 @@ def alt_for(snap, mtype):
 STATUS_OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "data",
                           "reader_status.json")
 
-# (Anzeigename, Host, Beispiel-URL) — die geteilten Haupt-Hosts (Eigendomains je 1x nicht relevant).
+# (Anzeigename, Host, Beispiel-URL) — KERN-Checks mit praezisen Tiefen-URLs (aussagekraeftiger
+# als ein Root-Ping). Die Ampel selbst ist seit 08.07.2026 DYNAMISCH (ampel_targets): sie zeigt
+# immer die Seiten mit den MEISTEN Serien in der Liste; diese Kern-Checks liefern dafuer die
+# besseren Pruef-URLs und ergaenzen hinten, falls die Liste einen Kern-Host kaum nutzt.
 READERS = [
     ("MangaFire", "mangafire.to", "https://mangafire.to/read/one-piecee.dkw/en/chapter-1"),
     ("comix.to", "comix.to", "https://comix.to/title/mnwgy-inspectre"),
@@ -164,6 +167,61 @@ READERS = [
     ("Webtoons", "webtoons.com", "https://www.webtoons.com/en/"),
     ("arenascan", "arenascan.com", "https://arenascan.com/the-housekeeper-in-the-dungeon-24/"),
 ]
+
+AMPEL_MAX = 14           # so viele Seiten zeigt die Ampel hoechstens (JB 08.07.2026: "mehr!")
+
+
+def _cache_host_counts(cache_path=None):
+    """Serien je Host (PRIMAERLINK) aus dem Cache zaehlen -> Counter. Best-effort, wirft nie.
+    Das ist JBs Mass fuer die Ampel: 'immer die Seiten mit den meisten Serien in der Liste'."""
+    from collections import Counter
+    here = os.path.dirname(os.path.abspath(__file__))
+    cands = [cache_path] if cache_path else [
+        os.path.join(here, "..", "..", "Core", "md_cache.json"),
+        os.path.join(os.getcwd(), "cache", "md_cache.json"),
+        os.path.join(os.getcwd(), "md_cache.json")]
+    ct = Counter()
+    for p in cands:
+        p = os.path.normpath(p or "")
+        if not p or not os.path.exists(p):
+            continue
+        try:
+            cache = json.load(open(p, encoding="utf-8"))
+        except (OSError, ValueError):
+            return ct
+        for e in cache.values():
+            if not isinstance(e, dict) or e.get("novel"):
+                continue
+            ru = e.get("read_urls") or []
+            h = host(ru[0][0]) if ru and ru[0] and ru[0][0] else ""
+            if h.startswith("www."):
+                h = h[4:]
+            if h:
+                ct[h] += 1
+        break
+    return ct
+
+
+def ampel_targets(cache_path=None, cap=AMPEL_MAX):
+    """[(Name, Host, Pruef-URL, Serienzahl)] fuer die Ampel: Top-Hosts nach Serienzahl in DEINER
+    Liste zuerst (JB 08.07.2026), dann die Kern-Checks, die noch fehlen. Tote Hosts nie."""
+    from . import config
+    ct = _cache_host_counts(cache_path)
+    fixed = {h: (n, u) for n, h, u in READERS}
+    out, seen = [], set()
+    for h, n_series in ct.most_common():
+        if len(out) >= cap:
+            break
+        if not h or config.is_dead_reader(h):
+            continue
+        name, url = fixed.get(h, (h, f"https://{h}/"))
+        out.append((name, h, url, n_series))
+        seen.add(h)
+    for n, h, u in READERS:                     # Kern hinten anfuegen, falls Platz
+        if h not in seen and len(out) < cap:
+            out.append((n, h, u, ct.get(h, 0)))
+            seen.add(h)
+    return out
 
 
 # Bekannt Cloudflare-/Bot-geschuetzte Hosts: der automatische Host-Root-Check ist hier
@@ -279,17 +337,19 @@ def link_sweep(cache_path, data_dir, n=25, check=None, status_out=STATUS_OUT):
     return checked, len(fails), burst
 
 
-def refresh_status(out=STATUS_OUT, workers=8):
-    """Alle Haupt-Hosts parallel pruefen, data/reader_status.json schreiben, dict zurueckgeben."""
+def refresh_status(out=STATUS_OUT, workers=8, cache_path=None):
+    """Die Ampel-Seiten parallel pruefen, data/reader_status.json schreiben, dict zurueckgeben.
+    Seit 08.07.2026 dynamisch: gezeigt/geprueft werden die Seiten mit den meisten Serien in der
+    Liste (ampel_targets); 'n' = Serienzahl wandert mit in die Anzeige."""
     from concurrent.futures import ThreadPoolExecutor
 
     def one(r):
-        name, hostn, url = r
+        name, hostn, url, n = r
         status, note = _classify_status(url, hostn)
-        return hostn, {"name": name, "status": status, "note": note}
+        return hostn, {"name": name, "status": status, "note": note, "n": n}
 
     with ThreadPoolExecutor(max_workers=workers) as ex:
-        readers = dict(ex.map(one, READERS))
+        readers = dict(ex.map(one, ampel_targets(cache_path)))
     # AUTO-PAUSE (JB Runde 38, Feature 1) mit HYSTERESE (Runde 42): pausiert wird erst nach
     # ZWEI aufeinanderfolgenden down/maintenance-Messungen (ein einzelner Flacker beim
     # 10-Minuten-Check togglet sonst die Links hin und her); aufgehoben wird SOFORT bei 'ok'

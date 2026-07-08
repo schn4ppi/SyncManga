@@ -304,7 +304,10 @@ def _load_sitemaps():
             # SERIEN-Seiten-Maps, 3541 Serien — die flogen hier komplett raus). Kapitel dazu
             # liefert die Ernte (harvest_chapter_link) direkt von der Serien-Seite.
             for k, tpl in raw.items():
-                if isinstance(tpl, str) and tpl.startswith("https://"):
+                # Totes mangafire-/read/-Schema (JB 07.07.2026): die 53k-Map ist zu 100% das alte
+                # /read/-Schema, das seit dem Umbau auf die Serienseite umleitet -> NICHT mehr laden,
+                # sonst baut die Anreicherung fuer jede mangafire-Serie einen toten/falschen Link.
+                if isinstance(tpl, str) and tpl.startswith("https://") and not is_dead_read_scheme(tpl):
                     m.setdefault(norm(k), tpl)
         except Exception:
             continue

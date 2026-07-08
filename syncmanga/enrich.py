@@ -399,12 +399,16 @@ def fill_one_reserves(v):
     return new
 
 
-def reserve_topup(cache_path, cap=30, needle="mangafire"):
+def reserve_topup(cache_path, cap=30, needle=None):
     """Rotierender Reserve-Auffueller im REGULAEREN Lauf (JB Runde 40: 'enttaeuscht, dass
     Alternativen nicht mehr durchforstet werden'): je Sync bekommen bis zu `cap` Serien,
     deren Links alle an EINEM Host haengen (oder die gar keine haben), unabhaengige
     Zweitquellen. `res_ts`-Stempel rotiert die Auswahl -> der ganze Bestand ist nach
-    wenigen Tagen durch und bleibt es. Best-effort, atomares Speichern, nie eine Exception."""
+    wenigen Tagen durch und bleibt es. Best-effort, atomares Speichern, nie eine Exception.
+
+    `needle=None` (Default seit 08.07.2026, mangahub-Vorfall: 50 Serien hingen NUR an einem
+    Host, der 522-down ging -> alle fielen auf 'Alternative'): JEDE Ein-Host-Monokultur zaehlt
+    als Ziel, nicht nur ein bestimmter Host. Mit `needle` weiter gezielt einsetzbar."""
     try:
         cache = json.load(open(cache_path, encoding="utf-8"))
     except Exception:
@@ -414,7 +418,10 @@ def reserve_topup(cache_path, cap=30, needle="mangafire"):
         if not isinstance(v, dict) or v.get("novel"):
             continue
         urls = [u for u, _ in (v.get("read_urls") or []) if u]
-        single = (urls and all(needle in (host(u) or "") for u in urls))
+        if needle:
+            single = (urls and all(needle in (host(u) or "") for u in urls))
+        else:
+            single = (urls and len({host(u) or "" for u in urls}) == 1)
         empty = (not urls and v.get("read_chap"))
         if single or empty:
             targets.append((v.get("res_ts") or 0, k))
@@ -780,6 +787,68 @@ def bake_overrides(cache, items):
     return fixed
 
 
+def promote_history_chapters(cache, items):
+    """JB 07.07.2026 ('kann man das Kapitel aus dem Verlauf fischen?'): Steht als Primaerlink nur
+    eine SERIEN-SEITE (kein Kapitel-Token) oder gar nichts, der Nutzer war aber nachweislich auf
+    EXAKT dem Ziel-Kapitel im Verlauf -> genau diese URL als Primaer nach vorne holen.
+
+    Das ist die Ganz-Cache-Verallgemeinerung von `_bookmark_link` Fall (a): waehrend jener nur die
+    ~cap frisch angereicherten Serien pro Lauf trifft (und der Cache-Kurzschluss read_chap==next_chap
+    ihn sonst ueberspringt), laeuft dieser Pass JEDEN Build ueber ALLE Serien und heilt so alte
+    Serien-Seiten-Links (JBs 'fuehrt zur Mangaseite, nicht zum Kapitel') selbst.
+
+    Streng + sicher + ohne Netz (der Nutzer war beweisbar dort):
+      - nur wenn der aktuelle Primaer KEIN Kapitel ist (Serien-Seite/leer),
+      - nur eine Verlaufs-URL mit ECHTEM Kapitel-Token, lebende + nicht-dynamische Domain,
+      - nur bei EXAKTER Uebereinstimmung chapter_of(url) == read_chap (kein Raten),
+      - NIE ueber einen manuellen Pin/Override (c['ov']) und NIE einen Kapitel-Link verdraengen.
+    Nicht-destruktiv: Reserven bleiben erhalten, der Kapitel-Link wird nur vorangestellt.
+    """
+    if not items:
+        return 0
+    from .parse import chapter_of
+    promoted = 0
+    for k, c in cache.items():
+        if not isinstance(c, dict) or c.get("novel") or c.get("ov"):
+            continue
+        cur = c.get("read_url") or ""
+        if cur and readerlink.has_chapter_token(cur):
+            continue                     # schon ein Kapitel-Link -> nie anfassen (Ratchet-Richtung)
+        it = items.get(k)
+        if not it:
+            continue
+        want = c.get("read_chap") or it.get("chap")
+        try:
+            want = float(want) if want else None
+        except (TypeError, ValueError):
+            want = None
+        if want is None:
+            continue                     # '?'-Lesestand will bewusst die Serien-Seite
+        best = None                      # (visits, url, host) der meistbesuchten exakten Kapitel-URL
+        for r in sorted(it.get("readers") or [], key=lambda r: -(r.get("visits") or 0)):
+            u = r.get("url") or ""
+            hh = r.get("host") or host(u)
+            if not u or not hh or is_dead_reader(hh) or is_dynamic(hh):
+                continue
+            if not readerlink.has_chapter_token(u) or readerlink.series_page_of(u) == u:
+                continue                 # nur echte Kapitel-URLs, keine getarnte Serien-Seite
+            if chapter_of(u, "") != want:
+                continue                 # nur EXAKT das Ziel-Kapitel (kein Raten)
+            vis = r.get("visits") or 0
+            if not best or vis > best[0]:
+                best = (vis, u, hh)
+        if not best:
+            continue
+        _, u, hh = best
+        links = [list(x) for x in (c.get("read_urls") or []) if x and x[0]]
+        c["read_urls"] = [[u, hh]] + [ln for ln in links if ln[0] != u]
+        c["read_url"], c["read_site"] = u, hh
+        if not c.get("read_chap"):
+            c["read_chap"] = int(want)
+        promoted += 1
+    return promoted
+
+
 def _save_cache(cache, cache_path):
     """Cache ATOMAR schreiben (tmp + os.replace, wie ueberall sonst im Projekt). Ein Kill mitten im
     Checkpoint (JB-Vorfall: parallele Laeufe gestoppt) darf die 1-MB-Datei nie halb geschrieben
@@ -806,6 +875,12 @@ def enrich(items, cache_path, health_dir, cap, name_fix=None, cache_ver=CACHE_VE
             print(f"  {_baked} Serien: kuratierten Direktlink eingebacken (Override-Backfill).", flush=True)
     except Exception as ex:
         print(f"  [Override-Backfill] uebersprungen: {type(ex).__name__}: {ex}", flush=True)
+    try:                            # JBs 'Kapitel aus dem Verlauf fischen': Serien-Seiten-Links, zu
+        _hp = promote_history_chapters(cache, items)   # denen der Nutzer das exakte Kapitel besucht
+        if _hp:                                        # hat, aufs echte Kapitel heben (kein Netz)
+            print(f"  {_hp} Serien: Kapitel-Link aus dem eigenen Verlauf gefischt.", flush=True)
+    except Exception as ex:
+        print(f"  [Verlauf-Kapitel] uebersprungen: {type(ex).__name__}: {ex}", flush=True)
     if relink:
         # Relink: gecachte Metadaten behalten, NUR den 'weiterlesen'-Link neu aufloesen (Override-Vorrang).
         # Kein MangaBaka -> schnell. Alle bereits gecachten (aktuellen) Serien kommen dran.
@@ -1216,20 +1291,30 @@ def assemble_rows(items, cache, name_fix):
                 e["md_title"] = c["title"]
 
     def _merge_action(o, e):
-        """Aktions-Felder (read_url/read_urls/ov) beim Zwillings-Merge vereinen.
+        """Aktions-Felder (read_url/read_urls/ov) beim Zwillings-Merge VEREINEN — kein Link geht verloren.
 
-        Der Zwilling mit dem AKTUELLSTEN Ziel (hoechstes read_chap) und echtem Link stellt
-        die Aktion (JB Runde 35: der 'Vol.'-Zwilling von Million Lives stand bei Kapitel 6
-        und kam zuerst -> der 112er-Link des Zwillings ging verloren, die Zeile fiel auf die
-        Google-Suche zurueck). Dahinter die alte Regel: Override-Zwilling stellt die Aktion
-        (Blogspot-Fund) — aber nie mehr mit einem VERALTETEREN Ziel."""
+        JB 07.07.2026 ('unter einen Deckelhut'): frueher wurden die read_urls des einen Zwillings
+        durch die des anderen ERSETZT -> stand der linklose Zwilling 'frischer' da, verschwand der
+        Link des anderen und die Zeile fiel auf 'Alternative'. Jetzt: read_urls ALLER Zwillinge werden
+        vereint (Dubletten raus); den PRIMAERLINK (vorne) stellt weiterhin der Zwilling mit dem
+        aktuellsten Ziel (hoechstes read_chap) bzw. ein Override (JB Runde 35, Million Lives)."""
+        merged = [list(ln) for ln in (o.get("read_urls") or []) if ln and ln[0]]
+        seen = {ln[0] for ln in merged}
+        for ln in (e.get("read_urls") or []):
+            if ln and ln[0] and ln[0] not in seen:
+                merged.append(list(ln)); seen.add(ln[0])
         fresher = e.get("read_url") and ((e.get("read_chap") or 0) > (o.get("read_chap") or 0)
                                          or not o.get("read_url"))
         ov_win = (e.get("ov") and not o.get("ov")
                   and (e.get("read_chap") or 0) >= (o.get("read_chap") or 0))
         if fresher or ov_win:
-            for f in ("ov", "read_url", "read_site", "read_urls", "read_chap"):
+            for f in ("ov", "read_url", "read_site", "read_chap"):
                 o[f] = e.get(f)
+            if e.get("read_url"):               # neuen Primaerlink nach vorne, Rest als Reserve
+                merged = [[e["read_url"], e.get("read_site") or ""]] + [ln for ln in merged if ln[0] != e["read_url"]]
+        o["read_urls"] = merged
+        if not o.get("read_url") and merged:    # o selbst hatte keinen -> ersten vereinten nehmen
+            o["read_url"], o["read_site"] = merged[0][0], (merged[0][1] if len(merged[0]) > 1 else "")
 
     # Dedup: kanonische ID (JP/EN -> ein Eintrag), dann ueber den finalen englischen Namen
     by_id, keep = {}, {}

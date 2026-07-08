@@ -258,12 +258,17 @@ def reader_panel(s):
         return ""
     hint = s.get("src_open_hint", "im neuen Tab öffnen")
     chips = []
-    for hostn in sorted(readers, key=lambda h: readers[h].get("name", h).lower()):
+    # Reihenfolge = Serienzahl in DEINER Liste (JB 08.07.2026: 'immer die Seiten mit den meisten
+    # Serien'), erst dann alphabetisch. 'n' kommt aus readers.refresh_status/ampel_targets.
+    for hostn in sorted(readers, key=lambda h: (-(readers[h].get("n") or 0),
+                                                readers[h].get("name", h).lower())):
         r = readers[hostn]
         col = _READER_COLOR.get(r.get("status"), "#888")
         name = r.get("name", hostn)
-        # Tooltip: bei anderer Ampelfarbe als gruen die Ursache (note), bei gruen ein Oeffnen-Hinweis.
-        tip = r.get("note", "") if r.get("status") != "ok" else f"{name} — {hint}"
+        cnt = f' · {r["n"]} {s.get("ampel_series", "Serien")}' if r.get("n") else ""
+        # Tooltip: bei anderer Ampelfarbe als gruen die Ursache (note), bei gruen ein Oeffnen-Hinweis;
+        # dahinter immer die Serienzahl dieser Seite in der Liste.
+        tip = (r.get("note", "") if r.get("status") != "ok" else f"{name} — {hint}") + cnt
         url = f"https://{hostn}" if hostn else None
         # Pausiert (JB Runde 37, MangaFire-Umbau): ⏸ in der Ampelfarbe statt Punkt.
         paused = is_paused_reader(hostn)
@@ -733,7 +738,7 @@ def render(rows, out_dir, out_html, namelen=NAMELEN, lang="de", readers_snap=Non
                     mig[al] = key
         plabel = s[uprog]
         trs.append(
-            f'<tr data-s="{html.escape(plabel)}"{help_attr} data-c="{html.escape(e.get("country") or "")}" data-medium="{med}" data-gen="{html.escape(" ".join(e.get("genres") or []))}" data-adult="{html.escape(e.get("adult_kind") or "")}" data-h="{html.escape(key)}"{f' data-lh="{html.escape(e["lh_status"])}"' if e.get("lh_status") else ""} data-au="{html.escape(author.lower())}" data-n="{html.escape(full.lower())}" data-mal="{e.get("mal_id") or ""}" data-mst="{MAL_STATUS.get(uprog, "Reading")}" data-rc="{int(_read or 0)}"{f' data-cov="{html.escape(_cov)}"' if (_cov := cover_url(e.get("cover"))) else ""}>'
+            f'<tr data-s="{html.escape(plabel)}"{help_attr} data-c="{html.escape(e.get("country") or "")}" data-medium="{med}" data-gen="{html.escape(" ".join(e.get("genres") or []))}" data-adult="{html.escape(e.get("adult_kind") or "")}" data-h="{html.escape(key)}"{f' data-lh="{html.escape(e["lh_status"])}"' if e.get("lh_status") else ""} data-au="{html.escape(author.lower())}" data-n="{html.escape(full.lower())}" data-mal="{e.get("mal_id") or ""}" data-mst="{MAL_STATUS.get(uprog, "Reading")}" data-rc="{int(_read or 0)}"{f' data-cov="{html.escape(_cov)}"' if (_cov := cover_url(e.get("cover"))) else ""}{f' data-q2="{html.escape(_q2.lower())}"' if (_q2 := (e.get("title_romaji") or "")).strip() and norm(_q2) != norm(full) else ""}>'
             # HTML-Diaet (JB): die STATISCHEN Tooltip-Texte stehen NICHT mehr je Zeile im HTML
             # (6 Attribute x ~800 Zeilen = mehrere 100 KB), sondern einmal in I.tt — das JS-Boot
             # setzt sie beim Laden (applyTips). Dynamische Titles (voller Name, dsite) bleiben inline.
@@ -789,6 +794,7 @@ def render(rows, out_dir, out_html, namelen=NAMELEN, lang="de", readers_snap=Non
               f'"xd":"{s["export_done"]}","xs":"{s["export_skipped"]}","cq":"{s["chapfix_prompt"]}",'
               f'"imu":"{s["import_done"]}","imn":"{s["import_new"]}","sy":"{s["syncbar"]}","syp":"{s["sync_paused"]}","tp":"{s["to_top"]}","rts":{now_ts},'
               f'"op":"{s["open"]}","brkSent":"{s["brk_sent"]}","rgo":"{s["recs_read_tip"]}",'
+              f'"dudArch":"{s["dud_arch"]}","dudBack":"{s["dud_back"]}","dudAll":"{s["dud_all"]}",'
               f'"paused":{json.dumps(sorted(_config.all_paused()), ensure_ascii=False)},'
               f'"tt":{tt}}};'
               f'var SEED={seed};var MIG={mig_json};</script>')

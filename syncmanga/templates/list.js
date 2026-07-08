@@ -12,7 +12,7 @@
 
 // --- Zustands-Sicherung (JB): fehlt der Browser-Zustand (neuer Browser / Website-Daten geloescht),
 // aus dem vom Renderer eingebetteten SEED (data/list_state.json = 💾-Export) wiederherstellen. ---
-var STATE_KEYS=['mangaArchived','mangaFav','titleCfm','brk','hcols','nsfw','chapFix','dense','theme','tiles','pausedReaders'];
+var STATE_KEYS=['mangaArchived','mangaFav','titleCfm','brk','hcols','nsfw','chapFix','dense','theme','tiles','pausedReaders','dudUrls','sortState','scrollPos'];
 (function(){try{var S=(typeof SEED!=='undefined')?SEED:null;if(!S)return;STATE_KEYS.forEach(function(k){if(localStorage.getItem(k)===null&&S[k]!=null)localStorage.setItem(k,S[k])})}catch(e){}})();
 // --- Schluessel-Migration (JB Runde 35, "Mein Archiv hat sich resetted"): data-h ist jetzt ein
 // STABILER Schluessel (DB-ID bzw. n:+Roh-Verlaufsname) statt norm(Anzeigetitel) — Titelkorrekturen
@@ -37,7 +37,9 @@ function ap(r){if(favHidden&&FAV.has(r.dataset.h)){r.style.display='none';return
 var t=q.value.toLowerCase(),b=r.cells[0].textContent.toLowerCase().includes(t),isA=ARCH.has(r.dataset.h);
 // Archiv-Ansicht: ALLE archivierten zeigen (nur die Textsuche greift) - Genre/Typ/Status/NSFW duerfen
 // hier NICHT filtern (sonst "7 im Archiv, nur 1 sichtbar"). Sonst: alle Filter, nur NICHT-archivierte.
-if(document.body.classList.contains('archview')){r.style.display=(isA&&b)?'':'none';return}
+// Zeilen mit kaputtem Link (.dudrow) erscheinen HIER mit (rot, oben) — Zurueckholen in der Zeile
+// per ⚠✓ oder Klick auf den roten Link (JB 08.07.2026: 'wie Favoriten und nicht-Favoriten').
+if(document.body.classList.contains('archview')){r.style.display=((isA||r.classList.contains('dudrow'))&&b)?'':'none';return}
 var cc=r.querySelector('.c'),c=cf.value,a=!flt||(r.dataset.s||'').includes(flt),d=!c||(c==='Webtoon'?r.dataset.dyn==='1':(r.dataset.medium||'')===c),hp=!helpOnly||r.dataset.help==='1',nw=!newOnly||(cc&&(cc.dataset.un-0)>0),gg=gmatch(r),ns=!nf.value||(nf.value==='both'?!r.dataset.adult:r.dataset.adult!==nf.value);r.style.display=(a&&b&&d&&hp&&nw&&gg&&ns&&!isA)?'':'none'}
 
 // --- Genre-Mehrfachfilter (3 Zustaende, JB): 1x Klick = NUR dieses Genre (gruen), 2x = Genre
@@ -71,8 +73,16 @@ function setNsfw(sel){try{localStorage.setItem('nsfw',sel.value)}catch(e){}ff()}
 // --- Archiv: einzelne Serie togglen; Modus/Ansicht umschalten; Zaehler = vorhandene archivierte ---
 function arch(k){if(ARCH.has(k))ARCH.delete(k);else ARCH.add(k);saveArch();ff();updateAb()}
 function toggleArchmode(){var on=document.body.classList.toggle('archmode');ab.classList.toggle('on',on);if(on){document.body.classList.remove('archview');vb.classList.remove('on')}ff()}
-function toggleArchview(){var on=document.body.classList.toggle('archview');vb.classList.toggle('on',on);if(on){document.body.classList.remove('archmode');ab.classList.remove('on')}ff()}
-function updateAb(){var n=0;document.querySelectorAll('#t tbody tr').forEach(function(r){if(ARCH.has(r.dataset.h))n++});vb.textContent=((typeof I!=='undefined'&&I.arch)||'🗃 Archiv')+': '+n}
+function toggleArchview(){var on=document.body.classList.toggle('archview');vb.classList.toggle('on',on);if(on){document.body.classList.remove('archmode');ab.classList.remove('on');pinDudsTop()}else{unpinDuds()}ff()}
+// Kaputte-Link-Zeilen OBEN, Archivierte darunter (JB 08.07.2026, wie Favoriten-Pinning) —
+// nur fuer die Dauer der Archiv-Ansicht; beim Verlassen kommt die alte Reihenfolge zurueck.
+var _preArch=null;
+function pinDudsTop(){var tb=document.querySelector('#t tbody');if(!tb)return;_preArch=[].slice.call(tb.rows);
+ [].slice.call(tb.rows).filter(function(r){return r.classList.contains('dudrow')})
+ .reverse().forEach(function(r){tb.insertBefore(r,tb.firstChild)})}
+function unpinDuds(){if(!_preArch)return;var tb=document.querySelector('#t tbody');
+ _preArch.forEach(function(r){if(r.isConnected)tb.appendChild(r)});_preArch=null}
+function updateAb(){var n=0;document.querySelectorAll('#t tbody tr').forEach(function(r){if(ARCH.has(r.dataset.h))n++});var m=Object.keys(dudGet()).length;vb.textContent=((typeof I!=='undefined'&&I.arch)||'🗃 Archiv')+': '+n+(m?' · 🔗 '+m:'');buildDudArch()}
 
 // --- Spalten ein/ausblenden (Menue "Spalten" neben den Panels): body.hc<n> versteckt Spalte n (2..7) ---
 function toggleCol(n,cb){document.body.classList.toggle('hc'+n,!cb.checked);var h=[];for(var i=2;i<=7;i++){if(document.body.classList.contains('hc'+i))h.push(i)}try{localStorage.setItem('hcols',JSON.stringify(h))}catch(e){}refreezeHead()}
@@ -98,8 +108,16 @@ function reSortDefault(){usort=false;var tb=document.querySelector('#t tbody'),r
 // --- Sortierung: s(i) nach Spalte i (Zahlenspalten numerisch), sortAuthor nach data-au; Klick toggelt Richtung ---
 // Sortierung nach Spalte i. Der Spalten-TYP wird an der Zellen-KLASSE erkannt (.c Kapitel/ungelesen,
 // .d Zuletzt/Zeitstempel, .rt Bewertung) -> robust gegen Spalten-Verschiebungen (z.B. neue ⭐-Spalte).
-var dir=1;function s(i){usort=true;var tb=document.querySelector('#t tbody'),rs=[...tb.rows];dir*=-1;rs.sort((a,b)=>{var x=a.cells[i],y=b.cells[i];if(i==0)return((a.dataset.n||'').localeCompare(b.dataset.n||''))*dir;if(x.classList.contains('c'))return((x.dataset.un-0)-(y.dataset.un-0))*dir;if(x.classList.contains('d'))return(x.dataset.ts-y.dataset.ts)*dir;if(x.classList.contains('rt'))return(x.dataset.rt-y.dataset.rt)*dir;return x.textContent.localeCompare(y.textContent)*dir});rs.forEach(r=>tb.appendChild(r));pinFavs()}
-function sortAuthor(){usort=true;var tb=document.querySelector('#t tbody'),rs=[...tb.rows];dir*=-1;rs.sort((a,b)=>(a.dataset.au||'').localeCompare(b.dataset.au||'')*dir);rs.forEach(r=>tb.appendChild(r));pinFavs()}
+var dir=1;function s(i){usort=true;var tb=document.querySelector('#t tbody'),rs=[...tb.rows];dir*=-1;rs.sort((a,b)=>{var x=a.cells[i],y=b.cells[i];if(i==0)return((a.dataset.n||'').localeCompare(b.dataset.n||''))*dir;if(x.classList.contains('c'))return((x.dataset.un-0)-(y.dataset.un-0))*dir;if(x.classList.contains('d'))return(x.dataset.ts-y.dataset.ts)*dir;if(x.classList.contains('rt'))return(x.dataset.rt-y.dataset.rt)*dir;return x.textContent.localeCompare(y.textContent)*dir});rs.forEach(r=>tb.appendChild(r));pinFavs();saveSort('col',i)}
+function sortAuthor(){usort=true;var tb=document.querySelector('#t tbody'),rs=[...tb.rows];dir*=-1;rs.sort((a,b)=>(a.dataset.au||'').localeCompare(b.dataset.au||'')*dir);rs.forEach(r=>tb.appendChild(r));pinFavs();saveSort('author')}
+// --- Sortierung + Scroll-Position ueber Reload merken (JB 07.07.2026: 'Position behalten') ---
+function saveSort(k,i){try{localStorage.setItem('sortState',JSON.stringify({k:k,i:(i==null?-1:i),dir:dir}))}catch(e){}}
+function restoreSort(){var st;try{st=JSON.parse(localStorage.getItem('sortState')||'null')}catch(e){}
+ if(!st)return;dir=-(st.dir||1);                 // Gegenrichtung -> der Toggle in s()/sortAuthor landet auf st.dir
+ if(st.k==='col'&&st.i>=0)s(st.i);else if(st.k==='author')sortAuthor();}
+var _spt;function saveScroll(){clearTimeout(_spt);_spt=setTimeout(function(){try{localStorage.setItem('scrollPos',String(Math.round(window.scrollY||window.pageYOffset||0)))}catch(e){}},250)}
+function restoreScroll(){var sp=parseInt(localStorage.getItem('scrollPos')||'0',10);if(sp>0)setTimeout(function(){window.scrollTo(0,sp)},80)}
+addEventListener('scroll',saveScroll,{passive:true});
 
 // --- Lesestand manuell setzen (JB): Klick auf die Kapitel-Zelle -> Zahl eingeben. NUR Zahlen wirken;
 // Abbrechen/Unsinn aendert nichts; leere Eingabe setzt auf den Scan-Stand zurueck. Gespeichert in
@@ -145,14 +163,28 @@ function togglePause(cb){var ov=pausedGet(),srv=((typeof I!=='undefined'&&I.paus
 // der andere hielt die Pause und der Haken sprang sofort zurueck).
 cb.dataset.ph.split(',').forEach(function(p){if(!p)return;var subs=srv.filter(function(x){return p.indexOf(x)>=0});if(!subs.length)subs=[p];subs.forEach(function(sub){ov[sub]=cb.checked?1:0})});
 try{localStorage.setItem('pausedReaders',JSON.stringify(ov))}catch(e){}applyPause()}
-function applyPause(){var P=pausedEff();
+function applyPause(){var P=pausedEff(),D=dudGet();
 document.querySelectorAll('#t tbody tr').forEach(function(r){var act=r.querySelector('td.act');if(!act)return;var prim=act.querySelector('a.pill.go');if(!prim)return;
 if(!prim.dataset.op){prim.dataset.op=prim.getAttribute('href');prim.dataset.ol=prim.textContent}
+// synthetische Tot-Eintraege vom letzten Durchlauf entfernen (werden unten frisch gesetzt)
+[].forEach.call(act.querySelectorAll('.altrow.dudsyn'),function(x){x.remove()});
 var alts=[].slice.call(act.querySelectorAll('details.alt a.pill.go')).filter(function(a){return !a.classList.contains('galt')});
+alts.forEach(function(a){a.classList.toggle('dud',!!D[a.getAttribute('href')])});  // tote Reserven durchstreichen
+// Zeile als 'hat kaputten Link' markieren -> erscheint ROT OBEN in der Archiv-Ansicht (JB 08.07.)
+r.classList.toggle('dudrow',!!D[prim.dataset.op]||alts.some(function(a){return !!D[a.getAttribute('href')]}));
+// toter EX-PRIMAER (JB 08.07.2026): er war nie eine Reserve, soll aber unter +Alt SICHTBAR bleiben —
+// rot durchgestrichen (Minus), Klick = zurueckholen. Als synthetischer Eintrag vor dem ✔-eigene-Quelle.
+var det=act.querySelector('details.alt');
+if(det&&prim.dataset.op&&D[prim.dataset.op]&&!alts.some(function(a){return a.getAttribute('href')===prim.dataset.op})){
+ var hn='';try{hn=new URL(prim.dataset.op,location.href).hostname.replace(/^www\./,'')}catch(e){}
+ var sp=document.createElement('span');sp.className='altrow dudsyn';
+ sp.innerHTML='<a class="pill go dud" href="'+escH(prim.dataset.op)+'" target=_blank>'+escH(hn||'Link')+'</a>';
+ det.insertBefore(sp,det.querySelector('.srcown')||null);}
 var cands=[];alts.forEach(function(a){if(a.dataset.pp)cands.push([a.getAttribute('href'),(typeof I!=='undefined'&&I.op)||'▶ öffnen'])});
 cands.push([prim.dataset.op,prim.dataset.ol]);
 alts.forEach(function(a){if(!a.dataset.pp)cands.push([a.getAttribute('href'),(typeof I!=='undefined'&&I.op)||'▶ öffnen'])});
-var pick=null;for(var i=0;i<cands.length;i++){if(cands[i][0]&&!hostPaused(cands[i][0],P)){pick=cands[i];break}}
+// tote URLs (dud) UND pausierte Hosts ueberspringen -> weiterlesen nimmt die naechste lebende Reserve
+var pick=null;for(var i=0;i<cands.length;i++){if(cands[i][0]&&!hostPaused(cands[i][0],P)&&!D[cands[i][0]]){pick=cands[i];break}}
 // Sind ALLE Lese-Quellen pausiert, ist die letzte Instanz die Kombi-SUCHE (a.gsr) — NICHT
 // die pausierte Original-Quelle (JB-Bug: A pausiert -> B, B pausiert -> sprang zurueck zu A).
 // Alternative/Suche ganz unten: erst wenn wirklich alles pausiert ist.
@@ -269,7 +301,63 @@ function brkGet(){try{return JSON.parse(localStorage.getItem('brk')||'[]')}catch
 function brkSave(a){localStorage.setItem('brk',JSON.stringify(a));var b=document.getElementById('rb');if(b){b.textContent='🛠 '+a.length;b.style.display=a.length?'':'none'}}
 // (JB Runde 40: das automatische Aufklappen von +Alt nach einer Meldung ist raus — melden
 // soll melden, nicht das Menue oeffnen.)
-function rep(btn){var tr=btn.closest('tr'),name=tr.dataset.n||'',a=brkGet(),i=a.findIndex(function(x){return x.name===name});if(i>=0){a.splice(i,1);brkSave(a);btn.classList.remove('on');btn.textContent='⚠'}else{var link=tr.querySelector('.pill.go'),url=link?link.href:'';a.push({name:name,url:url,ts:Date.now()});brkSave(a);btn.classList.add('on');btn.textContent='⚠✓'}}
+// --- 2-Klick-Failsafe (JB 07.07.2026): "Link geht nicht" LOESCHT nichts. Der aktuelle Link wandert
+// in 'dudUrls' -> applyPause ueberspringt ihn (weiterlesen springt SOFORT auf die naechste Reserve)
+// und streicht ihn im +Alt-Menue durch. Zugleich in 'brk' -> der naechste Sync prueft ihn neu.
+// Klick auf einen durchgestrichenen Alt-Link stellt ihn wieder her (Undo). ---
+function dudGet(){try{return JSON.parse(localStorage.getItem('dudUrls')||'{}')}catch(e){return{}}}
+function dudSave(o){localStorage.setItem('dudUrls',JSON.stringify(o))}
+// Such-Fallbacks (Google & Co.) sind KEINE Leselinks — sie duerfen nie als 'kaputt' markiert
+// werden (JB 08.07.2026: 'Google sollte man nicht als kaputten Link deuten koennen').
+function isSearch(u){return /^https?:\/\/(www\.)?google\.[a-z.]+\/search/i.test(u||'')}
+// Wert = Melde-Zeitstempel (ms) — noetig fuer die Selbstheilung (System-Verdikt juenger als die
+// Meldung -> Strich weg). Alt-Eintraege mit Wert 1 zaehlen als 'uralt' und heilen sofort.
+function markDud(url,on){if(!url||isSearch(url))return;var o=dudGet();if(on)o[url]=Date.now();else delete o[url];dudSave(o)}
+// Alt-Bestand bereinigen: frueher versehentlich markierte Such-URLs entfernen (einmalig je Laden)
+(function(){try{var o=dudGet(),ch=false;Object.keys(o).forEach(function(u){if(isSearch(u)){delete o[u];ch=true}});if(ch)dudSave(o)}catch(e){}})();
+function rep(btn){var tr=btn.closest('tr'),name=tr.dataset.n||'',link=tr.querySelector('.pill.go'),
+  url=link?link.getAttribute('href'):'';
+ // 2. Klick auf ⚠✓ = RUECKGAENGIG fuer die ganze Zeile (JB 08.07.2026: mehrfach geklickt toetete
+ // die Reserve-Kette bis zum Google-Fallback). Alle Striche dieser Serie weg + Meldung zurueckziehen.
+ if(btn.classList.contains('on')){var o=dudGet(),act=tr.querySelector('td.act');
+  if(act){var p=act.querySelector('a.pill.go');if(p&&p.dataset.op)delete o[p.dataset.op];
+   [].forEach.call(act.querySelectorAll('details.alt a.pill.go'),function(a){var u=a.getAttribute('href');if(u)delete o[u]})}
+  dudSave(o);brkSave(brkGet().filter(function(x){return x.name!==name}));
+  btn.classList.remove('on');btn.textContent='⚠';
+  if(typeof applyPause==='function')applyPause();updateAb();ff();return}
+ markDud(url,true);                              // aktuellen Link als tot markieren (nicht loeschen)
+ var a=brkGet();if(!a.some(function(x){return x.name===name})){a.push({name:name,url:url,ts:Date.now()})}
+ brkSave(a);btn.classList.add('on');btn.textContent='⚠✓';
+ if(typeof applyPause==='function')applyPause();  // weiterlesen -> naechste lebende Reserve
+ updateAb();                                      // 🔗-Zaehler am Archiv-Knopf nachziehen
+}
+// Undo: Klick auf einen durchgestrichenen (.dud) Alt-Link holt ihn zurueck, statt ihn zu oeffnen.
+document.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('a.pill.go.dud');
+ if(a){e.preventDefault();markDud(a.getAttribute('href'),false);a.classList.remove('dud');
+  if(typeof applyPause==='function')applyPause();updateAb();ff();}},true);
+// --- 🔗 Link-kaputt-Kopfzeile in der Archiv-Ansicht (JB 08.07.2026, Runde 2): die betroffenen
+// Serien stehen als ROTE ZEILEN direkt in der Tabelle (oben, wie Favoriten) — zurueckgeholt wird
+// IN der Zeile (⚠✓ = ganze Serie, Klick auf roten Link = einzeln). Hier nur Zaehler + Sammel-↺. ---
+function buildDudArch(){var d=document.getElementById('dudarch');
+ if(!d){var w=document.querySelector('.wrap');if(!w)return;d=document.createElement('div');d.id='dudarch';w.parentNode.insertBefore(d,w)}
+ var n=Object.keys(dudGet()).length;if(!n){d.innerHTML='';return}
+ d.innerHTML='<h3>🔗 '+((typeof I!=='undefined'&&I.dudArch)||'Link kaputt')+' ('+n+')'
+   +' <button type=button id=dudall>↺ '+((typeof I!=='undefined'&&I.dudAll)||'alle zurückholen')+'</button></h3>'}
+// ↺ ALLE zurueckholen (Recherche-Klicks mit EINEM Klick aufraeumen) — auch die ⚠✓-Knoepfe +
+// Meldeliste zuruecksetzen, der Zustand ist danach wie vor dem Ausprobieren.
+document.addEventListener('click',function(e){
+ if(e.target.closest&&e.target.closest('#dudall')){dudSave({});brkSave([]);
+  document.querySelectorAll('button.rep.on').forEach(function(x){x.classList.remove('on');x.textContent='⚠'});
+  applyPause();updateAb();ff()}});
+// --- Selbstheilung (JB 08.07.2026, 'das System darf tote Links wiederholen'): der Sweep schreibt
+// verifiziert-GESUNDE URLs nach data/link_health.js (LHOK={url:ts_sek}). Ist das System-Verdikt
+// JUENGER als deine Meldung, faellt der rote Strich automatisch weg. <script src> umgeht die
+// file://-Sperre (gleiches Muster wie der Fortschrittsbalken). ---
+function dudRecover(){try{var L=(typeof LHOK!=='undefined')?LHOK:null;if(!L)return;var D=dudGet(),ch=false;
+ Object.keys(D).forEach(function(u){var rep=(D[u]===1)?0:(+D[u]||0);if(L[u]&&L[u]*1000>rep){delete D[u];ch=true}});
+ if(ch){dudSave(D);applyPause();updateAb()}}catch(e){}}
+(function(){var s=document.createElement('script');s.src='data/link_health.js?_='+Date.now();
+ s.onload=function(){try{s.remove()}catch(e){}dudRecover()};s.onerror=function(){try{s.remove()}catch(e){}};document.head.appendChild(s)})();
 // 🛠 Wartung (JB Runde 38, Feature 2): Meldungen ZUERST direkt an den Tray-Server uebergeben
 // (127.0.0.1:8765/broken -> Manga/data/broken_links.json, der naechste Sync repariert von
 // selbst). Laeuft das Tray nicht (exe-Nutzer/anderer PC), Fallback = Datei-Download wie bisher.
@@ -283,6 +371,14 @@ fetch('http://127.0.0.1:8765/broken',{method:'POST',headers:{'Content-Type':'app
 .catch(function(){dl()})}
 // beim Laden bereits gemeldete Zeilen (aus localStorage) wieder markieren
 (function(){var a=brkGet();brkSave(a);var n={};a.forEach(function(x){n[x.name]=1});document.querySelectorAll('#t tbody tr').forEach(function(tr){if(n[tr.dataset.n]){var b=tr.querySelector('.rep');if(b){b.classList.add('on');b.textContent='⚠ ✓'}}})})();
+// Meldungen automatisch nachreichen (JB 08.07.2026 'Ja'): liegen ⚠-Meldungen an und das Tray
+// laeuft, gehen sie STILL an die Reparatur — kein 🛠-Klick noetig. Tray aus -> naechstes Mal.
+(function(){var a=brkGet();if(!a.length||typeof fetch==='undefined')return;
+ var ctl=(typeof AbortController!=='undefined')?new AbortController():null;if(ctl)setTimeout(function(){ctl.abort()},2500);
+ fetch('http://127.0.0.1:8765/broken',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(a),signal:ctl?ctl.signal:undefined})
+ .then(function(r){if(!r.ok)throw 0;return r.json()})
+ .then(function(){brkSave([]);document.querySelectorAll('button.rep.on').forEach(function(b){b.classList.remove('on');b.textContent='⚠'})})
+ .catch(function(){})})();
 
 // --- ✔ Quelle bestaetigen (JB 07.07.2026): einen Direktlink als richtige Quelle merken (localStorage
 // 'srcCfm') -> Export source_confirms.json ({key:{url,name,site}}); apply_source_confirms pinnt ihn
@@ -316,7 +412,10 @@ document.querySelectorAll('#t tbody tr').forEach(function(r){r.classList.toggle(
 // x-fach je Zeile im HTML; die Google-URLs baut das Boot aus data-n/data-rc + der sq-Domain-Liste)
 function applyTips(){try{var T=(typeof I!=='undefined'&&I.tt)||null;if(!T)return;var G='https://www.google.com/search?q=';document.querySelectorAll('#t tbody tr').forEach(function(tr){var q=function(sel){return tr.querySelector(sel)};var m={'.arch':T.arch,'.unarch':T.unarch,'.favi':T.fav,'td.c':T.c,'.rep':T.rep,'.cfm':T.cfm,'.gsr':T.galt};for(var sel in m){var el=q(sel);if(el&&m[sel])el.title=m[sel]}var st=q('td.st');if(st){var cls=(st.className.match(/st ?(\w+)?/)||[])[1]||'';st.title=T.st[cls]||T.st['']||''}var n=tr.dataset.n||'',rc=tr.dataset.rc||'';
 // JB-Swap: 'suchen' (Aktion) = KOMBI-Suche ueber die Lese-Seiten (site:-Filter); +Alt = normale Google-Suche.
-var s1=q('a.gsr');if(s1)s1.href=G+encodeURIComponent(n+' chapter '+rc+' ('+(T.sq||'')+')');var s2=q('a.galt');if(s2)s2.href=G+encodeURIComponent(n+' manga online chapter '+rc)})}catch(e){}}
+// Beide Titel-Varianten anbieten (JB 08.07.2026: 'den Titel nehmen, der Treffer erzielt'):
+// "EN" OR "Romaji" -> Google waehlt selbst die Schreibweise, unter der die Reader die Serie fuehren.
+var q2=tr.dataset.q2,base=q2?('"'+n+'" OR "'+q2+'"'):n;
+var s1=q('a.gsr');if(s1)s1.href=G+encodeURIComponent(base+' chapter '+rc+' ('+(T.sq||'')+')');var s2=q('a.galt');if(s2)s2.href=G+encodeURIComponent(base+' manga online chapter '+rc)})}catch(e){}}
 // --- ⬆ nach-oben (JB): kleiner Pfeil unten rechts, sichtbar ab 600px Scrolltiefe ---
 (function(){var b=document.createElement('button');b.id='top';b.textContent='⬆';b.title=(typeof I!=='undefined'&&I.tp)||'Nach oben';b.onclick=function(){window.scrollTo({top:0,behavior:'smooth'})};document.body.appendChild(b);addEventListener('scroll',function(){b.style.display=scrollY>600?'block':'none'},{passive:true})})();
 // Einmalige Bereinigung (JB 05.07.2026): alte, dotlose Pause-Schluessel (z.B. bare 'mangafire'
@@ -334,4 +433,4 @@ function panelAccordion(){var ps=document.querySelectorAll('.panels>details, det
 document.addEventListener('click',function(ev){
   [].forEach.call(ps,function(d){if(d.open&&!d.contains(ev.target))d.open=false;});});}
 panelAccordion();
-applyTheme();applyTips();applyChapFix();applyDense();pinFavs(true);updateAb();updateFav();regray();ff();applyTiles();applyPause();pollSync();
+applyTheme();applyTips();applyChapFix();applyDense();pinFavs(true);updateAb();updateFav();regray();ff();applyTiles();applyPause();pollSync();restoreSort();restoreScroll();

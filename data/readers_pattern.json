@@ -8,6 +8,18 @@
       "chapter": "https://www.mgeko.cc/reader/en/{slug}-chapter-{n}-eng-li/"
     },
     {
+      "name": "VortexScans",
+      "host": "vortexscans.org",
+      "type": "any",
+      "chapter": "https://vortexscans.org/series/{slug}/chapter-{n}"
+    },
+    {
+      "name": "ManhwaBuddy",
+      "host": "manhwabuddy.com",
+      "type": "manhwa",
+      "chapter": "https://manhwabuddy.com/manhwa/{slug}/chapter-{n}/"
+    },
+    {
       "name": "MangaBolt",
       "host": "mangabolt.com",
       "type": "manga",
@@ -32,12 +44,6 @@
       "chapter": "https://mangak.io/read/{slug}/chapter-{n}/"
     },
     {
-      "name": "Manganato",
-      "host": "manganato.gg",
-      "type": "manga",
-      "chapter": "https://manganato.gg/manga/{slug}/chapter-{n}/"
-    },
-    {
       "name": "Mangadna",
       "host": "mangadna.com",
       "type": "manga",
@@ -48,18 +54,6 @@
       "host": "comicasura.net",
       "type": "manga",
       "chapter": "https://comicasura.net/manga/{slug}/chapter-{n}/"
-    },
-    {
-      "name": "Kewnscans",
-      "host": "kewnscans.org",
-      "type": "manga",
-      "chapter": "https://kewnscans.org/read/{slug}/chapter-{n}/"
-    },
-    {
-      "name": "Mangabats",
-      "host": "mangabats.com",
-      "type": "manga",
-      "chapter": "https://mangabats.com/manga/{slug}/chapter-{n}/"
     },
     {
       "name": "Mangadass",
@@ -92,12 +86,6 @@
       "chapter": "https://manhwaz.com/webtoon/{slug}/chapter-{n}/"
     },
     {
-      "name": "Mistscans",
-      "host": "mistscans.com",
-      "type": "manga",
-      "chapter": "https://mistscans.com/webtoon/{slug}/chapter-{n}/"
-    },
-    {
       "name": "Ravenscans",
       "host": "ravenscans.org",
       "type": "manga",
@@ -126,12 +114,6 @@
       "host": "zazamanga.com",
       "type": "manga",
       "chapter": "https://zazamanga.com/manga/{slug}/chapter-{n}/"
-    },
-    {
-      "name": "Vortexscans",
-      "host": "vortexscans.org",
-      "type": "manhwa",
-      "chapter": "https://vortexscans.org/series/{slug}/chapter-{n}/"
     },
     {
       "name": "Scythescans",
@@ -176,46 +158,10 @@
       "chapter": "https://en-thunderscans.com/chapter/{slug}-chapter-{n}/"
     },
     {
-      "name": "Mgeko",
-      "host": "mgeko.cc",
-      "type": "manhwa",
-      "chapter": "https://www.mgeko.cc/reader/en/{slug}-chapter-{n}-eng-li/"
-    },
-    {
       "name": "Mangabuddy1",
       "host": "mangabuddy1.co.uk",
       "type": "manga",
       "chapter": "https://mangabuddy1.co.uk/series/{slug}/chapter-{n}/"
-    },
-    {
-      "name": "Manga18",
-      "host": "manga18.me",
-      "type": "adult",
-      "chapter": "https://manga18.me/manga/{slug}/chapter-{n}/"
-    },
-    {
-      "name": "Manga18fx",
-      "host": "manga18fx.com",
-      "type": "adult",
-      "chapter": "https://manga18fx.com/manga/{slug}/chapter-{n}/"
-    },
-    {
-      "name": "18porncomic",
-      "host": "18porncomic.com",
-      "type": "adult",
-      "chapter": "https://18porncomic.com/comic/{slug}/chapter-{n}/"
-    },
-    {
-      "name": "Manhwa18",
-      "host": "manhwa18.cc",
-      "type": "adult",
-      "chapter": "https://manhwa18.cc/webtoon/{slug}/chapter-{n}/"
-    },
-    {
-      "name": "MangaHub",
-      "host": "mangahub.io",
-      "type": "any",
-      "chapter": "https://mangahub.io/chapter/{slug}/chapter-{n}"
     }
   ]
 }

@@ -79,13 +79,17 @@ STRINGS = {
         "help_badge_title": "Braucht Hilfe: kein Treffer/Autor – Titel prüfen",
         "mismatch_badge_title": "Lesestand über der bekannten Kapitelzahl – wahrscheinlich falscher Match, bitte prüfen",
         "finished_badge_title": "Abgeschlossen – komplett gelesen",
-        "report_broken_title": "Link kaputt? Melden + Alternativen zeigen",
+        "report_broken_title": "Link kaputt? Melden — weiterlesen springt auf die Reserve. Nochmal klicken = alles rückgängig",
         "report_export_title": ("🛠 Wartung: gemeldete kaputte Links zur Reparatur übergeben — "
                                 "läuft das Tray, direkt per Klick (der nächste Sync prüft die "
                                 "Serien komplett neu); sonst als broken_links.json exportieren "
                                 "und nach Manga/data legen"),
         "brk_sent": ("🛠 An die Reparatur übergeben — der nächste Sync prüft die gemeldeten "
                      "Serien komplett neu."),
+        "dud_arch": "Link kaputt",
+        "dud_back": "zurückholen",
+        "dud_all": "alle zurückholen",
+        "ampel_series": "Serien in deiner Liste",
         "confirm_title": "Match bestätigen: dieser Titel ist korrekt (✔ exportieren → wird fest gepinnt)",
         "confirm_export_title": "Bestätigte Titel exportieren (title_confirms.json) — Datei nach Manga/data legen, der Wochen-Lauf pinnt sie",
         "state_export_title": "Zustand sichern (Favoriten, Archiv, Einstellungen) → list_state.json. Nach Manga/data legen = automatische Wiederherstellung in jedem Browser",
@@ -263,13 +267,17 @@ STRINGS = {
         "help_badge_title": "Needs help: no match/author – check the title",
         "mismatch_badge_title": "Read chapter above known total – likely a wrong match, please check",
         "finished_badge_title": "Finished – fully read",
-        "report_broken_title": "Broken link? Report + show alternatives",
+        "report_broken_title": "Broken link? Report — continue-reading jumps to the reserve. Click again = undo all",
         "report_export_title": ("🛠 Maintenance: hand reported broken links to the repair — "
                                 "with the tray running it's one click (next sync fully "
                                 "re-resolves those series); otherwise export broken_links.json "
                                 "and put it into Manga/data"),
         "brk_sent": ("🛠 Handed to repair — the next sync fully re-resolves the reported "
                      "series."),
+        "dud_arch": "Broken link",
+        "dud_back": "restore",
+        "dud_all": "restore all",
+        "ampel_series": "series in your list",
         "confirm_title": "Confirm match: this title is correct (export ✔ → gets pinned)",
         "confirm_export_title": "Export confirmed titles (title_confirms.json) — put the file into Manga/data, the weekly run pins them",
         "state_export_title": "Back up state (favorites, archive, settings) → list_state.json. Put it into Manga/data = automatic restore in any browser",

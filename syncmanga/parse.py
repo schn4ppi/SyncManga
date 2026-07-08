@@ -130,6 +130,10 @@ def clean_title(t):
     s = re.sub(r'\s*\((?:Manga|Manhwa|Manhua|Novel|Webtoon|Comic|Official)\)\s*$', '', s, flags=re.I)
     s = re.sub(r'[\s\-–—|:,]+$', '', s)                                    # nachlaufende Satzzeichen/Dashes
     s = re.sub(r'\s+(?:Manga|Manhwa|Manhua)$', '', s, flags=re.I)          # "WSR Manga" -> "WSR"
+    # mgeko-Seitentitel enden auf '… Chapter' (JB 08.07.2026: 'Dokgo Chapter', 'Red Storm Chapter',
+    # 'Shirokuma Tensei Chapter' — "ich sehe sehr haeufig chapter dahinter") -> Wort abschneiden.
+    # Nur als SUFFIX nach anderem Text; ein alleinstehendes 'Chapter' faengt URL_JUNK ab.
+    s = re.sub(r'\s+Chapters?$', '', s, flags=re.I)
     result = re.sub(r'\s{2,}', ' ', s).strip(' -–—|:,.•\'"')
     # Guard (JB 07.07.2026, 'Class 1-9' -> 'Class'): ein abschliessender Zahlen-RANGE (1-9, 1-99)
     # ist meist Teil des Titels, kein Kapitel. Hat die Reinigung genau diesen Range abgeschnitten
@@ -154,15 +158,22 @@ def chapter_of(url, title):
     return None
 
 
+# Ein Kandidat, der wie eine nackte DOMAIN aussieht ('mangatoday.fun'), ist der Seitentitel einer
+# STARTSEITE — keine Serie (JB 08.07.2026: 'denkst du das ist ein manga oder eine mangaseite?').
+_DOMAINISH = re.compile(r'^[a-z0-9-]+\.[a-z]{2,6}$', re.I)
+
+
 def series_from(url, title):
     slug = slug_from_url(url)
     ttl = clean_title(title)
     name = None
     for cand in (slug, ttl):
-        if cand and len(cand) >= 4 and not GARB.search(cand) and not is_junk(cand):
+        if cand and len(cand) >= 4 and not GARB.search(cand) and not is_junk(cand) \
+                and not _DOMAINISH.match(cand.strip()):
             name = cand
             break
-    if (not name) and ttl and len(ttl) >= 3 and not is_junk(ttl) and not GARB.search(ttl):
+    if (not name) and ttl and len(ttl) >= 3 and not is_junk(ttl) and not GARB.search(ttl) \
+            and not _DOMAINISH.match(ttl.strip()):
         name = ttl                            # Fallback MUSS GARB ebenfalls beachten (sonst Junk-Titel)
     return name, chapter_of(url, title)
 

@@ -350,7 +350,8 @@ body.light #top{background:#fbf6ea;border-color:#cbb27a;color:#96691c;box-shadow
 
 /* ✔ Quelle bestaetigen (JB 07.07.2026): Pin je Kandidaten-Quelle im +Alt-Menue + Floating-Speicher-Badge */
 .altrow{display:flex;align-items:center;gap:4px}
-.altrow .go{flex:1 1 auto}
+/* natuerliche Breite statt Vollbreite-Balken (JB 08.07.2026: 'warum ist der Balken so breit?') */
+.altrow .go{flex:0 1 auto;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pin{cursor:pointer;border:1px solid #4a4a52;background:#2a2a30;color:#8fca9a;border-radius:6px;
      font-size:.82em;line-height:1.3;padding:1px 7px}
 .pin:hover{border-color:#2e6}
@@ -366,3 +367,31 @@ body.light #top{background:#fbf6ea;border-color:#cbb27a;color:#96691c;box-shadow
    sichtbar, wo sich ein ✔-Bestaetigen einer frischen Quelle lohnt. */
 tr[data-lh="series_page"] .rep, tr[data-lh="gone"] .rep{color:#e0a44a;border-color:#7a5a1a}
 tr[data-lh="series_page"] .rep:hover, tr[data-lh="gone"] .rep:hover{border-color:#e0a44a}
+
+/* 2-Klick-Failsafe (JB 07.07./08.07.2026): tote Links ROT (Minus + roter Grund) + durchgestrichen —
+   auf einen Blick als 'war kaputt' erkennbar; Klick stellt wieder her (↺). */
+.altrow .go.dud, details.alt a.pill.go.dud{text-decoration:line-through;opacity:.75;
+     background:#3a1113;border-color:#a33;color:#e99}
+details.alt a.pill.go.dud::before{content:"− ";color:#f55;font-weight:700;text-decoration:none}
+details.alt a.pill.go.dud::after{content:" ↺";opacity:.75;text-decoration:none;font-size:.85em}
+body.light .altrow .go.dud, body.light details.alt a.pill.go.dud{background:#fbe4e4;border-color:#d88;color:#a33}
+
+/* 🔗 Link-kaputt in der Archiv-Ansicht (JB 08.07.2026, Runde 2): die betroffenen Serien stehen
+   als ROTE ZEILEN oben in der Tabelle (wie Favoriten-Pinning), archivierte darunter — zurueckholen
+   direkt in der Zeile (⚠✓ / roter Link). #dudarch ist nur noch die Kopfzeile mit Sammel-↺. */
+#dudarch{display:none;margin:10px 0;padding:6px 12px;border:1px solid #a33;border-radius:10px;background:#20090b}
+body.archview #dudarch{display:block}
+#dudarch:empty{display:none!important}
+#dudarch h3{margin:0;font-size:1em;color:#f88}
+#dudarch h3 button{cursor:pointer;border:1px solid #2e6;background:transparent;color:#8fe;
+     border-radius:8px;padding:1px 9px;font-size:.72em;font-weight:400;margin-left:8px;vertical-align:middle}
+#dudarch h3 button:hover{background:#123}
+body.light #dudarch{background:#fdf0f0;border-color:#d99}
+body.light #dudarch h3{color:#b33}
+body.light #dudarch h3 button{color:#087;border-color:#0a8}
+body.light #dudarch h3 button:hover{background:#e8f6f2}
+/* Rote Zeilen-Toenung NUR in der Archiv-Ansicht -> kaputt vs. archiviert auf einen Blick */
+body.archview tr.dudrow td{background:#2a0f11}
+body.archview tr.dudrow td:first-child{box-shadow:inset 3px 0 0 #a33}
+body.light.archview tr.dudrow td{background:#fdeaea}
+body.light.archview tr.dudrow td:first-child{box-shadow:inset 3px 0 0 #d88}

@@ -17,7 +17,8 @@ NAMELEN = 40           # ab hier Anzeige-Titel mit … kuerzen
 # (load_sources/apply_sources) — spaeter ueber das Dashboard auswaehlbar.
 # MangaDex ist absichtlich NICHT dabei: dafuer gibt es bereits den direkten "MD"-Link je Zeile.
 ALT_MANGA = [("MangaFire", "mangafire.to"), ("WeebCentral", "weebcentral.com"), ("Bato", "bato.to"),
-             ("Comick", "comick.io"), ("MangaKatana", "mangakatana.com")]
+             ("Comick", "comick.io"), ("MangaKatana", "mangakatana.com"),
+             ("Comix", "comix.to"), ("MangaGo", "mangago.me"), ("Mgeko", "mgeko.cc")]
 ALT_MANHWA = [("Bato", "bato.to"), ("Comick", "comick.io"), ("WeebCentral", "weebcentral.com"),
               ("Toonily", "toonily.com"), ("Webtoons", "webtoons.com")]
 
@@ -45,13 +46,19 @@ def is_paywall_site(site):
 # Link, sondern direkt auf die Suche nach einer lebenden Quelle. Von JB beim Durchklicken ermittelt;
 # editierbar/erweiterbar in data/sources.json ("dead"). Teilstring-Match gegen den Host.
 DEAD_READERS = (
-    # 'asuracomic'/'asurascans' ENTSPERRT (JB Runde 35: 'prio 1, hervorragende Scanlation-
-    # Seite') — die alte Sperre galt den kaputt gezaehlten Alt-Domains; asurascans.com lebt
-    # mit sauberen /chapter/{n}-URLs. Auch aus data/sources.json 'dead' entfernt (Vereinigung!).
+    # Nur 'asurascans' ENTSPERRT (JB Runde 35: 'prio 1, hervorragende Scanlation-Seite') — lebt mit
+    # sauberen /chapter/{n}-URLs, auch aus data/sources.json 'dead' entfernt (Vereinigung!).
+    # ABER: 'asuracomic' bleibt gesperrt (JB 07.07.: Domain leitet auf die Home statt Kapitel um) —
+    # steht unten in der 07.07-Zeile. asurascans.com != asuracomic.net, deshalb kein "asura"-Match.
     "automanga", "bato.si", "comick.dev", "ineptbastards", "kunmanga",
     "fascans", "mangarock", "manhwaclan", "mangasushi", "zeroscan", "ninjascans", "readheroacademia",
     "valhalla", "trashscanlation", "lhtranslation", "1stkissmanga", "arangscans", "kissmanga",
     "merakiscans", "immanitys", "wuxiaworld",
+    # JB-Funde 07.07.2026: schaedliche/redirectende Reader (asurascans.com BLEIBT — nur asuracomic
+    # leitet auf die Home statt Kapitel um). spinzywheel = Weiterleitungs-/Werbe-Falle, auf die
+    # mangakakalot/thermae landen. mangatoday.fun + utoon.net = Cloudflare-Wand. mangaplus zeigt
+    # das Kapitel nicht + ist ab einem Punkt Paywall. kewnscans landet auf der Startseite.
+    "asuracomic", "mangakakalot", "spinzywheel", "mangatoday", "utoon", "mangaplus", "kewnscans",
     # "mgeko" entfernt (JB-Fund 2026-07: mgeko.cc lebt, Kapitel-Links bestehen den Identitaets-Check)
     "inkr",        # comics.inkr.com = KAUF-Seite, kein Reader (JB-Fund: fuehrte auf Aposimz-Shop)
     # Interstitial-Netzwerk (JB-Fund: vinlandsagamanga.net -> "click to read" -> jjk0.com mit
