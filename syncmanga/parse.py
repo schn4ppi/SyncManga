@@ -67,12 +67,17 @@ def slug_from_url(u):
     #   comix stellt eine ID ohne Ziffern-Garantie voran (mnwgy-inspectre).
     _mf = 'mangafire.to/' in (u or '')
     _cx = 'comix.to/title/' in (u or '')
+    # mangafires NEUES /title/{id}-{slug}-Schema stellt IMMER eine kurze ID voran
+    # (dkw-one-piece, rlnjp-sekai-de-…, JB 08.07.2026: Zeile hiess 'Dkw One Piece') -> ID weg.
+    _mft = 'mangafire.to/title/' in (u or '')
     best = None
     for s in cands:
         s = s.lower()
         s = re.sub(r'\.[a-z0-9]{3,8}$', '', s)
         if _cx:
             s = re.sub(r'^[a-z0-9]{4,6}-(?=[a-z0-9])', '', s, count=1)
+        if _mft:
+            s = re.sub(r'^[a-z0-9]{1,7}-(?=[a-z0-9])', '', s, count=1)
         if _mf and len(s) >= 5 and s[-1] == s[-2]:
             s = s[:-1]
         s = re.sub(r'[-_/]?(chapter|chap|episode|ep|ch)[-_]?\d.*$', '', s)
@@ -96,6 +101,11 @@ def clean_title(t):
     t = re.sub(r'^\s*(?:ylgn|oneshot)\s*[-–—:]?\s+', '', t, flags=re.I)   # weitere Ordner-/Scan-Praefixe
     t = re.sub(r'\s+vol(?:ume)?\.?\s*\d+\s*$', '', t, flags=re.I)   # "... Vol 22"-Suffix weg
     t = re.sub(r'^\s*(Manga:|Read)\s*', '', t, flags=re.I)
+    # Seitentitel-Doppelung 'X EN: X …' (JB 08.07.2026, mangaclouds: 'Child of the Sheath EN:
+    # Child of the Sheath EN') -> nur den ersten Teil behalten. Greift NUR bei echter Wiederholung.
+    m_dup = re.match(r'^(.{6,}?)\s+EN:\s*\1', t, re.I)
+    if m_dup:
+        t = m_dup.group(1)
     t = re.sub(r'\s+(?:read\s+)?manga\s+online\s+free\b.*$', '', t, flags=re.I)   # "... Manga Online Free - Manganelo"
     t = re.sub(r'^\s*Boredom Society\s*[-–—:]\s*', '', t, flags=re.I)             # Scanlation-Gruppen-Praefix
     t = re.sub(r'^\s*\[#?\d+\]\s*', '', t)
@@ -161,6 +171,9 @@ def chapter_of(url, title):
 # Ein Kandidat, der wie eine nackte DOMAIN aussieht ('mangatoday.fun'), ist der Seitentitel einer
 # STARTSEITE — keine Serie (JB 08.07.2026: 'denkst du das ist ein manga oder eine mangaseite?').
 _DOMAINISH = re.compile(r'^[a-z0-9-]+\.[a-z]{2,6}$', re.I)
+# Opake Kurz-IDs aus Reader-Pfaden (atsu.moe /read/nnSJ4/… -> Zeile 'Nnsj4', JB 08.07.2026):
+# 2-6 Zeichen MIT Buchstabe UND Ziffer sind nie ein Serienname.
+_OPAQUE_ID = re.compile(r'^(?=.*\d)(?=.*[a-z])[a-z0-9]{2,6}$', re.I)
 
 
 def series_from(url, title):
@@ -169,11 +182,11 @@ def series_from(url, title):
     name = None
     for cand in (slug, ttl):
         if cand and len(cand) >= 4 and not GARB.search(cand) and not is_junk(cand) \
-                and not _DOMAINISH.match(cand.strip()):
+                and not _DOMAINISH.match(cand.strip()) and not _OPAQUE_ID.match(cand.strip()):
             name = cand
             break
     if (not name) and ttl and len(ttl) >= 3 and not is_junk(ttl) and not GARB.search(ttl) \
-            and not _DOMAINISH.match(ttl.strip()):
+            and not _DOMAINISH.match(ttl.strip()) and not _OPAQUE_ID.match(ttl.strip()):
         name = ttl                            # Fallback MUSS GARB ebenfalls beachten (sonst Junk-Titel)
     return name, chapter_of(url, title)
 

@@ -858,6 +858,42 @@ def promote_history_chapters(cache, items):
     return promoted
 
 
+def demote_series_pages(cache, items=None):
+    """Kapitel-Link schlaegt Serien-Seite (JB 08.07.2026: 'ohne Ende mangafire als erste Wahl,
+    fuehren zur Homepage'): Steht eine blanke SERIEN-Seite vorn, waehrend weiter hinten ein echter
+    Kapitel-Link wartet (Token oder opake /chapter/-ID), rueckt der Kapitel-Link nach vorn.
+
+    Nicht-destruktiv (reine Umordnung, kein Link geht verloren). Respektiert Pins (`ov`) und
+    '?'-Lesestand (der WILL die Serien-Seite). mangafire-Links mit NUMERISCHER Kapitelnummer
+    zaehlen nicht als Kapitel (totes Rate-Schema, leitet selbst zur Serienseite)."""
+    from .parse import chapter_of as _chof
+    moved = 0
+    for k, c in cache.items():
+        if not isinstance(c, dict) or c.get("novel") or c.get("ov"):
+            continue
+        it = (items or {}).get(k) or {}
+        if not (it.get("chap") or c.get("read_chap")):
+            continue                                     # unbekannter Lesestand -> Seite gewollt
+        links = [list(l) for l in (c.get("read_urls") or []) if l and l[0]]
+        if len(links) < 2 or readerlink.has_chapter_token(links[0][0]):
+            continue
+        def _is_chapter(u):
+            if not readerlink.has_chapter_token(u):
+                return False
+            if "mangafire" in (host(u) or "") and _chof(u, "") is not None:
+                return False                             # numerisches mangafire = Rate-Schema
+            return True
+        best = next((i for i, l in enumerate(links) if _is_chapter(l[0])), None)
+        if best is None:
+            continue
+        links.insert(0, links.pop(best))
+        c["read_urls"] = links
+        c["read_url"] = links[0][0]
+        c["read_site"] = links[0][1] if len(links[0]) > 1 else host(links[0][0])
+        moved += 1
+    return moved
+
+
 def _save_cache(cache, cache_path):
     """Cache ATOMAR schreiben (tmp + os.replace, wie ueberall sonst im Projekt). Ein Kill mitten im
     Checkpoint (JB-Vorfall: parallele Laeufe gestoppt) darf die 1-MB-Datei nie halb geschrieben
@@ -890,6 +926,12 @@ def enrich(items, cache_path, health_dir, cap, name_fix=None, cache_ver=CACHE_VE
             print(f"  {_hp} Serien: Kapitel-Link aus dem eigenen Verlauf gefischt.", flush=True)
     except Exception as ex:
         print(f"  [Verlauf-Kapitel] uebersprungen: {type(ex).__name__}: {ex}", flush=True)
+    try:                            # Kapitel-Link schlaegt Serien-Seite (JB 08.07.2026, kein Netz)
+        _dm = demote_series_pages(cache, items)
+        if _dm:
+            print(f"  {_dm} Serien: Kapitel-Reserve vor die Serien-Seite gerueckt.", flush=True)
+    except Exception as ex:
+        print(f"  [Seiten-Demotion] uebersprungen: {type(ex).__name__}: {ex}", flush=True)
     if relink:
         # Relink: gecachte Metadaten behalten, NUR den 'weiterlesen'-Link neu aufloesen (Override-Vorrang).
         # Kein MangaBaka -> schnell. Alle bereits gecachten (aktuellen) Serien kommen dran.
