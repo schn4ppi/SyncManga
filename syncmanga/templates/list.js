@@ -161,6 +161,10 @@ function thApply(l){document.body.classList.toggle('light',l);var b=document.get
 function toggleTheme(){var l=!document.body.classList.contains('light');thApply(l);try{localStorage.setItem('theme',l?'light':'dark')}catch(e){}}
 function applyTheme(){var t=null;try{t=localStorage.getItem('theme')}catch(e){}var l=t?t==='light':!!(window.matchMedia&&matchMedia('(prefers-color-scheme:light)').matches);thApply(l)}
 
+// --- ⚙ Zahnrad (JB 09.07.2026): mobil selten genutzte Werkzeuge ein-/ausblenden (transient,
+// startet immer ZU). CSS (body.gearon) zeigt Tag/Nacht, Kacheln, Kompakt, Speichern, Im-/Export. ---
+function toggleGear(){var on=document.body.classList.toggle('gearon');var b=document.getElementById('gear');if(b)b.classList.toggle('on',on)}
+
 // --- Kompakt-Modus (JB): schmalere Zeilen; Zustand persistent (localStorage 'dense' + 💾-Sicherung) ---
 function toggleDense(){var on=document.body.classList.toggle('dense');try{localStorage.setItem('dense',on?'1':'')}catch(e){}var b=document.getElementById('dns');if(b)b.classList.toggle('on',on);refreezeHead()}
 function applyDense(){if(localStorage.getItem('dense')){document.body.classList.add('dense');var b=document.getElementById('dns');if(b)b.classList.add('on')}}

@@ -130,6 +130,7 @@ body.archmode tr:hover{background:#23201c}
 .sh{cursor:pointer;color:#cf9b6f;font-weight:400}
 .sh:hover{color:#e6b58a}
 .ctrl{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+#gear{display:none}   /* Zahnrad NUR mobil (Media-Query blendet es ein); Desktop zeigt alle Werkzeuge */
 .wrap{overflow-x:auto}
 
 /* --- Archiv-Knoepfe schweben oben rechts, AUSKLAPPBAR (JB 09.07.2026) ------ */
@@ -447,8 +448,18 @@ h1{font-size:17px;margin:2px 0 4px}
 h1,.sub{padding-right:0}
 .sub{font-size:11px;margin-bottom:6px}
 .statusbar{display:none}
-details.xport,#dns{display:none}   /* details.xport: Spezifitaet der Basis-Regel schlagen */
 .med{display:none}
+/* ⚙ Zahnrad (JB 09.07.2026): selten genutzte Werkzeuge mobil hinter EIN Zahnrad, damit die
+   Leiste nicht ueberladen ist. Ausgeblendet bis ⚙ getippt (body.gearon); Desktop zeigt das
+   Zahnrad NICHT und laesst die Knoepfe stehen. Sammelt: Tag/Nacht, Kacheln, Kompakt,
+   Speichern, Im-/Export (JBs Wunschliste). */
+#gear{display:inline-block}
+#gear.on{background:#e0b56a;color:#1a1310;border-color:#e0b56a}
+#til,#dns,#thm,details.xport,#sb{display:none}
+body.gearon #til,body.gearon #dns,body.gearon #thm,body.gearon #sb{display:inline-block}
+body.gearon details.xport{display:inline-block}
+/* Im-/Export-Panel mobil im Fluss statt schwebend rechts (sonst laeuft es aus dem Screen) */
+.xpanel{position:static;width:auto;max-width:100%;box-shadow:none;white-space:normal}
 table{font-size:12.5px}
 th,td{padding:4px 4px}
 input{flex:1;min-width:110px}
@@ -501,6 +512,13 @@ details.genres{order:4}
 .panels{gap:3px;flex-wrap:nowrap}
 .panels>details>summary{font-size:11px;white-space:nowrap}
 .panels .colbxs,.gchips{max-width:calc(100vw - 24px)}
+/* Genre-/Spalten-Dropdown mobil NICHT absolut ueberlagern (JB 09.07.2026: 'Chips verschwinden
+   nach rechts aus dem Bildschirm'). Der schwebende Dropdown haengt am weit rechts sitzenden
+   Knopf und laeuft dort aus dem Screen. Mobil deshalb NORMAL IM FLUSS darunter (position:static)
+   -> die Chips brechen ueber die volle Breite um, nie ueber den Rand. Desktop bleibt schwebend. */
+details.genres[open]>.gchips,.panels>details[open]>.colbxs{position:static;width:auto;
+ max-width:100%;box-shadow:none;margin:4px 0}
+details.genres[open]>.gchips{display:flex;flex-wrap:wrap;flex-basis:100%}
 body.tiles #tiles{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px 6px}
 .tchap{font-size:11px}.tname{font-size:10px}
 }
