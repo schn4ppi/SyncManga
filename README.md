@@ -69,6 +69,9 @@ Die Liste ist **eine einzelne, mobil-optimierte HTML-Datei**. Zwei Wege aufs Han
   gib den Code ein — fertig. Deine Liste aktualisiert sich dort nach jedem Sync von selbst.
   **Datensparsam:** keine E-Mail, kein Tracking; hochgeladen werden nur Titel + Lesestand, nie
   Browser-Daten. Jederzeit im Tray abschaltbar.
+  **Code vergessen?** Tray-Menü → „Zugangscode & Link zeigen". **Code ändern?** → „Neuen
+  Zugangscode erzeugen" (der alte gilt sofort nicht mehr). Ungenutzte Konten laufen nach
+  180 Tagen von selbst ab.
 
 ### Sprache
 SyncManga nutzt automatisch die Sprache deines Systems (Deutsch → Deutsch, sonst Englisch).
@@ -140,6 +143,9 @@ The list is **a single, mobile-optimized HTML file**. Two ways onto your phone:
   enter the code — done. Your list refreshes there after every sync.
   **Privacy-friendly:** no email, no tracking; only titles + progress are uploaded, never browser
   data. Turn it off anytime from the tray.
+  **Forgot your code?** Tray menu → "Show access code & link". **Change it?** → "Generate a
+  new access code" (the old one stops working). Unused accounts expire on their own after
+  180 days.
 
 ### Language
 SyncManga uses your system language automatically (German → German, otherwise English).
