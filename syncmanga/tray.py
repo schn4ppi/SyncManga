@@ -42,6 +42,7 @@ def menu_labels(lang):
     s = i18n.strings(lang)
     return {"update": s["tray_update"], "force": s["tray_force"], "open": s["tray_open"],
             "selfupdate": s["tray_selfupdate"], "autoupdate": s["tray_autoupdate"],
+            "cloud": s["tray_cloud"], "cloud_show": s["tray_cloud_show"],
             "language": s["tray_language"], "help": s["tray_help"], "quit": s["tray_quit"]}
 
 
@@ -194,6 +195,12 @@ class TrayApp:
             pystray.MenuItem(lab["selfupdate"], self.on_selfupdate),
             pystray.MenuItem(lab["autoupdate"], self.on_autoupdate,
                              checked=lambda it: bool(self.settings.get("auto_update"))),
+            # 🌐 Online-Zugriff (JB Phase 3): an = Konto anlegen + Liste nach jedem Sync hochladen;
+            # der Haken zeigt den Zustand. Zweiter Menuepunkt oeffnet die Code-/Link-Seite erneut.
+            pystray.MenuItem(lab["cloud"], self.on_cloud,
+                             checked=lambda it: bool(self.settings.get("cloud_enabled"))),
+            pystray.MenuItem(lab["cloud_show"], self.on_cloud_show,
+                             visible=lambda it: bool(self.settings.get("cloud_enabled"))),
             pystray.MenuItem(lab["language"], language),
             pystray.MenuItem(lab["help"], self.on_help),
             pystray.Menu.SEPARATOR,
@@ -237,6 +244,52 @@ class TrayApp:
 
     def on_selfupdate(self, icon=None, item=None):
         threading.Thread(target=self._self_update, kwargs={"manual": True}, daemon=True).start()
+
+    def on_cloud(self, icon=None, item=None):
+        """🌐 Online-Zugriff an/aus (JB Phase 3). Anschalten: anonymes Konto anlegen (einmalig),
+        Liste sofort hochladen, Code-/Link-Seite oeffnen. Ausschalten: nur lokal deaktivieren
+        (Konto/Slot bleiben bestehen -> spaeter derselbe Code)."""
+        from . import cloud
+        s = i18n.strings(self.lang)
+        if self.settings.get("cloud_enabled"):
+            self.settings["cloud_enabled"] = False
+            config.save_settings(self.paths["settings"], self.settings)
+            self._notify(s["cloud_off"])
+            self._rebuild_menu()
+            return
+
+        def _go():
+            ok, acc = cloud.register(self.data_dir)
+            if not ok:
+                self._notify(s["cloud_fail"].format(e=acc))
+                return
+            self.settings["cloud_enabled"] = True
+            config.save_settings(self.paths["settings"], self.settings)
+            cloud.upload(self.data_dir, self.paths["out_html"])   # sofort erste Fassung hochladen
+            self._open_cloud_info(acc)
+            self._notify(s["cloud_on"].format(code=acc.get("code", "")))
+            self._rebuild_menu()
+
+        threading.Thread(target=_go, daemon=True).start()
+
+    def on_cloud_show(self, icon=None, item=None):
+        """Code-/Link-Seite erneut oeffnen (Menuepunkt nur sichtbar, wenn aktiv)."""
+        from . import cloud
+        acc = cloud.load_account(self.data_dir)
+        if acc:
+            self._open_cloud_info(acc)
+
+    def _open_cloud_info(self, acc):
+        """Info-Seite (Zugangscode gross + Link) in data/ schreiben und im Browser oeffnen."""
+        from . import cloud
+        try:
+            p = os.path.join(self.data_dir, "data", "cloud_info.html")
+            os.makedirs(os.path.dirname(p), exist_ok=True)
+            with open(p, "w", encoding="utf-8") as f:
+                f.write(cloud.info_html(acc, self.lang))
+            webbrowser.open("file:///" + p.replace("\\", "/"))
+        except Exception:
+            pass
 
     def on_autoupdate(self, icon=None, item=None):
         """Auto-Update umschalten — der Haken im Menue folgt dem Setting (config.json)."""
@@ -296,6 +349,12 @@ class TrayApp:
         finally:
             self.busy.release()
             self._refresh_icon()
+        if self.settings.get("cloud_enabled"):   # 🌐 Liste zur Sync-Cloud hochladen (JB Phase 3)
+            try:
+                from . import cloud
+                cloud.upload(self.data_dir, self.paths["out_html"])
+            except Exception:
+                pass                             # nie den Sync-Abschluss stoeren
         self._self_update()                      # stiller Update-Check nach jedem Sync (Task #34)
         if open_after:
             self.on_open()

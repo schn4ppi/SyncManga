@@ -198,6 +198,11 @@ STRINGS = {
         # Selbst-Update der exe (Task #34)
         "tray_selfupdate": "Nach Update suchen…",
         "tray_autoupdate": "Automatisch aktualisieren",
+        "tray_cloud": "🌐 Online-Zugriff (Handy)",
+        "tray_cloud_show": "   Zugangscode & Link zeigen",
+        "cloud_on": "Online-Zugriff aktiv. Zugangscode: {code} — am Handy manga.j-bk.org öffnen.",
+        "cloud_off": "Online-Zugriff aus. Deine Liste bleibt weiterhin lokal auf diesem PC.",
+        "cloud_fail": "Online-Zugriff konnte nicht eingerichtet werden: {e}",
         "upd_none": "SyncManga ist aktuell (v{v}).",
         "upd_available": "Update auf v{v} verfügbar — installieren: Menü → „Nach Update suchen…“.",
         "upd_installing": "Update auf v{v} wird installiert — SyncManga startet gleich neu.",
@@ -388,6 +393,11 @@ STRINGS = {
         # exe self-update (task #34)
         "tray_selfupdate": "Check for updates…",
         "tray_autoupdate": "Update automatically",
+        "tray_cloud": "🌐 Online access (phone)",
+        "tray_cloud_show": "   Show access code & link",
+        "cloud_on": "Online access enabled. Access code: {code} — open manga.j-bk.org on your phone.",
+        "cloud_off": "Online access off. Your list stays local on this PC.",
+        "cloud_fail": "Could not set up online access: {e}",
         "upd_none": "SyncManga is up to date (v{v}).",
         "upd_available": "Update v{v} available — install: menu → “Check for updates…”.",
         "upd_installing": "Installing update v{v} — SyncManga will restart in a moment.",
