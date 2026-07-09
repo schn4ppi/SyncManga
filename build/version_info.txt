@@ -3,8 +3,8 @@
 # Metadaten statt "Unbekannt"). Version im Gleichschritt mit Core/VERSION pflegen.
 VSVersionInfo(
   ffi=FixedFileInfo(
-    filevers=(0, 3, 5, 0),
-    prodvers=(0, 3, 5, 0),
+    filevers=(0, 3, 6, 0),
+    prodvers=(0, 3, 6, 0),
     mask=0x3f,
     flags=0x0,
     OS=0x40004,
@@ -17,11 +17,11 @@ VSVersionInfo(
       StringTable('040904B0', [
         StringStruct('CompanyName', 'JBK / Claude Sync'),
         StringStruct('FileDescription', 'SyncManga â€” Manga-Leseliste (automatisch aus dem Browser-Verlauf)'),
-        StringStruct('FileVersion', '0.3.5'),
+        StringStruct('FileVersion', '0.3.6'),
         StringStruct('InternalName', 'SyncManga'),
         StringStruct('OriginalFilename', 'SyncManga.exe'),
         StringStruct('ProductName', 'SyncManga'),
-        StringStruct('ProductVersion', '0.3.5')])
+        StringStruct('ProductVersion', '0.3.6')])
     ]),
     VarFileInfo([VarStruct('Translation', [1033, 1200])])
   ]

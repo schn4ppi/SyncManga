@@ -110,6 +110,28 @@ def upload(data_dir, html_path, http=_http):
     return False, data.get("err") or f"HTTP {status}"
 
 
+def change_code(data_dir, wish=None, http=_http):
+    """Zugangscode aendern (JB 09.07.2026). `wish`=None -> Server wuerfelt einen neuen; sonst
+    Wunschcode (Server prueft Laenge/Eindeutigkeit). Der alte Code wird ungueltig. Gibt
+    (ok, code_or_fehlertext) zurueck und speichert den neuen Code lokal. Ohne Konto -> Skip."""
+    acc = load_account(data_dir)
+    if not acc or not acc.get("upload_key") or not acc.get("slot"):
+        return False, "nicht eingerichtet"
+    payload = json.dumps({"code": wish} if wish else {}).encode()
+    try:
+        status, raw = http("POST", "/api/setcode",
+                           {"Authorization": "Bearer " + acc["upload_key"],
+                            "X-Slot": acc["slot"], "Content-Type": "application/json"}, payload)
+        data = json.loads(raw or b"{}")
+    except Exception as ex:
+        return False, f"gerade nicht moeglich ({type(ex).__name__})"
+    if status == 200 and data.get("ok") and data.get("code"):
+        acc["code"] = data["code"]
+        save_account(data_dir, acc)
+        return True, data["code"]
+    return False, data.get("err") or f"HTTP {status}"
+
+
 def is_enabled(settings):
     """Nutzer hat den Online-Zugriff im Tray aktiviert?"""
     return bool((settings or {}).get("cloud_enabled"))

@@ -43,6 +43,7 @@ def menu_labels(lang):
     return {"update": s["tray_update"], "force": s["tray_force"], "open": s["tray_open"],
             "selfupdate": s["tray_selfupdate"], "autoupdate": s["tray_autoupdate"],
             "cloud": s["tray_cloud"], "cloud_show": s["tray_cloud_show"],
+            "cloud_newcode": s["tray_cloud_newcode"],
             "language": s["tray_language"], "help": s["tray_help"], "quit": s["tray_quit"]}
 
 
@@ -201,6 +202,8 @@ class TrayApp:
                              checked=lambda it: bool(self.settings.get("cloud_enabled"))),
             pystray.MenuItem(lab["cloud_show"], self.on_cloud_show,
                              visible=lambda it: bool(self.settings.get("cloud_enabled"))),
+            pystray.MenuItem(lab["cloud_newcode"], self.on_cloud_newcode,
+                             visible=lambda it: bool(self.settings.get("cloud_enabled"))),
             pystray.MenuItem(lab["language"], language),
             pystray.MenuItem(lab["help"], self.on_help),
             pystray.Menu.SEPARATOR,
@@ -278,6 +281,22 @@ class TrayApp:
         acc = cloud.load_account(self.data_dir)
         if acc:
             self._open_cloud_info(acc)
+
+    def on_cloud_newcode(self, icon=None, item=None):
+        """Neuen Zugangscode erzeugen (JB: 'Code aendern'). Der alte wird sofort ungueltig;
+        die Info-Seite mit dem neuen Code oeffnet sich."""
+        from . import cloud
+        s = i18n.strings(self.lang)
+
+        def _go():
+            ok, res = cloud.change_code(self.data_dir)     # None = Server wuerfelt neuen Code
+            if ok:
+                self._open_cloud_info(cloud.load_account(self.data_dir))
+                self._notify(s["cloud_newcode_ok"].format(code=res))
+            else:
+                self._notify(s["cloud_fail"].format(e=res))
+
+        threading.Thread(target=_go, daemon=True).start()
 
     def _open_cloud_info(self, acc):
         """Info-Seite (Zugangscode gross + Link) in data/ schreiben und im Browser oeffnen."""
