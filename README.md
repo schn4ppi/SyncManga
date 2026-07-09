@@ -61,6 +61,15 @@ Standardmäßig wird nur benachrichtigt (Tray-Menü → **„Nach Updates suchen
 installieren sich neue Versionen automatisch. Jeder Download wird vor der Nutzung geprüft:
 nur HTTPS, fest an dieses Repository gebunden, exakte Größe + SHA-256-Prüfsumme.
 
+### 📱 Unterwegs & Online-Zugriff
+Die Liste ist **eine einzelne, mobil-optimierte HTML-Datei**. Zwei Wege aufs Handy:
+- **Ordner-Weg (offline):** leg sie in deinen OneDrive-/Google-Drive-Ordner und öffne sie unterwegs.
+- **Online-Zugriff (ein Klick):** Tray-Menü → **🌐 Online-Zugriff (Handy)**. Die App legt ein
+  **anonymes** Konto an und zeigt dir einen kurzen Zugangscode. Öffne **manga.j-bk.org** am Handy,
+  gib den Code ein — fertig. Deine Liste aktualisiert sich dort nach jedem Sync von selbst.
+  **Datensparsam:** keine E-Mail, kein Tracking; hochgeladen werden nur Titel + Lesestand, nie
+  Browser-Daten. Jederzeit im Tray abschaltbar.
+
 ### Sprache
 SyncManga nutzt automatisch die Sprache deines Systems (Deutsch → Deutsch, sonst Englisch).
 Im Tray-Menü unter **Sprache** überschreibbar.
@@ -122,6 +131,15 @@ SyncManga keeps itself up to date: after each sync it checks this repo's Release
 it only notifies you (tray menu → **"Check for updates…"**); optionally new versions install
 themselves. Every download is verified before use: HTTPS only, pinned to this repository,
 exact size and SHA-256 checksum.
+
+### 📱 On the go & online access
+The list is **a single, mobile-optimized HTML file**. Two ways onto your phone:
+- **Folder route (offline):** drop it into your OneDrive/Google Drive folder and open it anywhere.
+- **Online access (one click):** tray menu → **🌐 Online access (phone)**. The app creates an
+  **anonymous** account and shows you a short access code. Open **manga.j-bk.org** on your phone,
+  enter the code — done. Your list refreshes there after every sync.
+  **Privacy-friendly:** no email, no tracking; only titles + progress are uploaded, never browser
+  data. Turn it off anytime from the tray.
 
 ### Language
 SyncManga uses your system language automatically (German → German, otherwise English).
