@@ -461,6 +461,7 @@ h1,.sub{padding-right:0}
 /* Werkzeuge mobil AN EINEM ORT: das Zahnrad oeffnet die ganze Gruppe als eigenen Block direkt
    unter der Leiste (JB 09.07.2026: 'alles beim Zahnrad, an einem Ort'). Zu = versteckt. */
 .tools{display:none}
+#dns{display:none}   /* Kompakt-Modus mobil raus (JB 09.07.2026: 'brauchen wir auf mobile nicht') */
 body.gearon .tools{display:flex;flex-wrap:wrap;gap:4px;flex-basis:100%;margin-top:2px;
  padding:6px;border:1px solid #2a2522;border-radius:9px;background:#1b1713}
 body.light.gearon .tools{border-color:#ddd0b6;background:#fbf6ea}
