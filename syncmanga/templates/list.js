@@ -289,6 +289,24 @@ var covT;
 document.addEventListener('mouseover',function(ev){var td=ev.target.closest&&ev.target.closest('#t tbody td:first-child');if(!td)return;var tr=td.closest('tr'),u=tr&&tr.dataset.cov;if(!u)return;clearTimeout(covT);covT=setTimeout(function(){var f=document.getElementById('covfly');if(!f){f=document.createElement('div');f.id='covfly';f.innerHTML='<img alt="">';document.body.appendChild(f)}var img=f.querySelector('img');if(img.dataset.u!==u){img.src=u;img.dataset.u=u}var r=td.getBoundingClientRect();f.style.top=Math.max(8,Math.min(window.innerHeight-230,r.top-60))+'px';f.style.left=Math.min(window.innerWidth-170,r.left+Math.max(180,r.width-60))+'px';f.style.display='block'},160)});
 document.addEventListener('mouseout',function(ev){if(ev.target.closest&&ev.target.closest('#t tbody td:first-child')){clearTimeout(covT);var f=document.getElementById('covfly');if(f)f.style.display='none'}});
 
+// --- Cover per TIPP (JB 09.07.2026): auf MOBILE (kein Hover) zeigt ein Tipp auf den Serientitel
+// in der LISTEN-Ansicht das Cover als zentrierte Lightbox; ein Tipp irgendwo anders schliesst es.
+// Nutzt dasselbe data-cov wie die Hover-Vorschau; Steuer-Elemente (Links/Icons) bleiben unberuehrt. ---
+document.addEventListener('click',function(ev){
+ if(!(window.matchMedia&&matchMedia('(max-width:760px)').matches))return;      // nur Mobile
+ var box=document.getElementById('covtap');
+ var td=ev.target.closest&&ev.target.closest('#t tbody td:first-child');
+ var ctrl=ev.target.closest&&ev.target.closest('a,input,label,summary,.arch,.unarch,.cfm,.rep,.pill');
+ if(td&&!ctrl&&!document.body.classList.contains('tiles')){
+   var tr=td.closest('tr'),u=tr&&tr.dataset.cov;
+   if(!u){if(box)box.style.display='none';return}                             // kein Cover -> nichts
+   if(!box){box=document.createElement('div');box.id='covtap';box.innerHTML='<img alt="">';document.body.appendChild(box)}
+   box.querySelector('img').src=u;box.style.display='flex';
+   return;                                                                     // offen lassen
+ }
+ if(box&&box.style.display!=='none')box.style.display='none';                  // woanders getippt -> zu
+});
+
 // --- Fortschrittsbalken (JB): laedt data/sync_progress.js als <script> nach — Script-Tags sind
 // von der file://-Sperre AUSGENOMMEN, der Balken funktioniert also auch bei doppelt geklickter
 // Datei ohne Server. War die Liste noch LEER (Erstaufbau) und der Sync wird fertig, laedt die

@@ -358,6 +358,10 @@ body.dense.tiles #tiles{grid-template-columns:repeat(auto-fill,minmax(100px,1fr)
 #covfly{position:fixed;z-index:70;pointer-events:none;display:none;background:#1e1a17;border:1px solid #3a332e;border-radius:8px;padding:4px;box-shadow:0 6px 20px rgba(0,0,0,.55)}
 #covfly img{display:block;width:140px;height:auto;min-height:60px;border-radius:5px;background:#2a2522}
 @media(max-width:760px){#covfly{display:none!important}}
+/* Cover-Lightbox per Tipp (JB 09.07.2026, Mobile): zentriertes Bild + abdunkelnder Hintergrund;
+   Tipp irgendwo schliesst (JS). display wird per JS auf flex gesetzt. */
+#covtap{position:fixed;inset:0;z-index:200;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.72);padding:24px}
+#covtap img{max-width:88vw;max-height:80vh;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.6);background:#2a2522}
 /* --- ⬆ nach-oben-Knopf (JB): unten rechts, erscheint erst ab etwas Scrolltiefe --- */
 #top{position:fixed;right:14px;bottom:14px;z-index:60;display:none;width:38px;height:38px;border-radius:50%;border:1px solid #3a332e;background:#221d19;color:#e0b56a;font-size:16px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4)}
 #top:hover{background:#2f2823}
