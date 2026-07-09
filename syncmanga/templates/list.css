@@ -23,11 +23,22 @@ input{padding:8px 12px;width:230px;border-radius:8px;border:1px solid #444;backg
 
 /* --- Tabelle + Spalten ---------------------------------------------------- */
 table{border-collapse:collapse;width:100%;font-size:14px;margin-top:12px}
-th,td{padding:7px 10px;border-bottom:1px solid #2a2522;text-align:left}
+/* Zell-Abstand FLIESSEND mit der Fensterbreite (JB 09.07.2026: 'fliessender Uebergang,
+   kein ploetzliches Zusammenraufen'): clamp statt fester 10px. */
+th,td{padding:7px clamp(3px,.8vw,10px);border-bottom:1px solid #2a2522;text-align:left}
 th{cursor:pointer;color:#d67756;position:sticky;top:0;background:#14110f}   /* Kopf bleibt beim Scrollen */
+/* Schmale Spalten ruecken an ihren Inhalt (width:1%), der Ueberschuss sammelt sich in der
+   Aktion-Spalte (td.act width:100%) — schliesst die grossen Luecken Titel<->Favorit und
+   Quelle<->Bewertung bei JEDER Fensterbreite (JB 09.07.2026). */
+#t th:nth-child(2),#t td:nth-child(2),#t th:nth-child(3),#t td:nth-child(3),
+#t th:nth-child(4),#t td:nth-child(4),#t th:nth-child(5),#t td:nth-child(5),
+#t th:nth-child(6),#t td:nth-child(6),#t th:nth-child(7),#t td:nth-child(7),
+#t th:nth-child(8),#t td:nth-child(8),#t th:nth-child(10),#t td:nth-child(10){width:1%}
+.hs{display:none}                    /* Mobile-Kurz-Header (gel./neu, ★) — nur im Mobile-Block an */
 td.c{text-align:center;font-weight:600;white-space:nowrap}   /* Kapitel gelesen/neu */
 td.d{color:#aaa;white-space:nowrap}                          /* Zuletzt */
-td.pub{color:#9ab;font-size:12px}                            /* Publikations-Status */
+td.src{white-space:nowrap}                                   /* Quelle haelt eine Zeile */
+td.pub{color:#9ab;font-size:12px;white-space:nowrap}         /* Publikations-Status */
 
 /* --- User-Fortschritt (Status-Spalte) + ⚠-Melde-Pille --------------------- */
 /* nowrap: beim Filtern passt die Tabelle die Spaltenbreiten dem sichtbaren Inhalt an — ohne
@@ -97,6 +108,8 @@ select.btn{padding:7px 8px;width:auto}
 
 /* --- Autor-Zeile + Typ-/18+-Badges ---------------------------------------- */
 .au{color:#8a7d74;font-size:11px;margin-top:1px}
+body.au-hide .au{display:none}   /* ＋Spalten > Autor abgewaehlt (Desktop; mobil ist aus Default) */
+body.au-hide .shau{display:none} /* Kopfzeile folgt: ohne Autor nur noch 'Serie ↕' */
 .unk{color:#7a6f66;font-style:italic}    /* unbekannt / braucht Hilfe */
 .med{display:inline-block;font-size:10px;padding:1px 6px;border-radius:999px;border:1px solid #3a332e;background:#221d19;color:#c2a88f;vertical-align:1px}   /* Typ-Badge (Manga/Manhwa/…) */
 .adult,.adult-v{display:inline-block;font-size:10px;font-weight:700;padding:1px 6px;border-radius:999px;vertical-align:1px}
@@ -119,21 +132,25 @@ body.archmode tr:hover{background:#23201c}
 .ctrl{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 .wrap{overflow-x:auto}
 
-/* --- Archiv-Knoepfe schweben oben rechts und folgen dem Scrollen ---------- */
-/* Oben rechts angepinntes 2x2-Raster: Archiv/Archivieren, darunter Favoriten/Favorit. grid=1fr 1fr ->
-   alle vier GLEICH breit (keine Asynchronitaet). Bewegt sich mit dem Scrollen (fixed); die Ampel links
-   bleibt im Fluss (siehe .statusrow padding-right) und scrollt normal weg. (JB-Wunsch) */
-.pinbox{position:fixed;top:12px;right:12px;z-index:50;display:grid;grid-template-columns:1fr 1fr;gap:6px}
+/* --- Archiv-Knoepfe schweben oben rechts, AUSKLAPPBAR (JB 09.07.2026) ------ */
+/* <details class=pinbox>: Summary = kleiner 🗃⭐-Griff, offen = 2x2-Raster (gleiche Breiten).
+   Desktop startet offen (open-Attribut), Mobile zu (Mini-Script im HTML). Fixed = folgt dem
+   Scrollen; die Ampel links bleibt im Fluss und scrollt normal weg. */
+.pinbox{position:fixed;top:12px;right:12px;z-index:50;text-align:right}
+.pinbox>summary{list-style:none;display:inline-block;cursor:pointer}
+.pinbox>summary::-webkit-details-marker{display:none}
+.pinbox .pbc{display:inline-block;transition:transform .15s}
+details.pinbox[open] .pbc{transform:rotate(180deg)}
+.pinbox .pbody{display:grid;grid-template-columns:repeat(2,minmax(112px,1fr));gap:6px;margin-top:6px}
 .pinbox .btn{width:100%;box-shadow:0 2px 8px rgba(0,0,0,.4)}
+.pinbox>summary.btn{width:auto;margin-right:0}
 /* Titel/Untertitel rechts freihalten, damit die angepinnte Box sie nicht verdeckt. Die Ampel (.statusrow)
    steht darunter (nicht auf Box-Hoehe) und bleibt so ohnehin frei + voll lesbar. */
 h1,.sub{padding-right:275px}
 
-/* --- Mobile: kompakter; nur Serie·Autor·Land / ⭐ / Kap. / Bewertung / Aktion zeigen.
-       Ausgeblendet: User(3) Status(4) Zuletzt(6) Quelle(7) ⚠(10). (JB-Wunsch) --- */
-@media(max-width:760px){body{margin:10px}h1{font-size:18px}table{font-size:13px}th,td{padding:5px 6px}input{flex:1;min-width:120px}#t th:nth-child(3),#t td:nth-child(3),#t th:nth-child(4),#t td:nth-child(4),#t th:nth-child(6),#t td:nth-child(6),#t th:nth-child(7),#t td:nth-child(7),#t th:nth-child(10),#t td:nth-child(10){display:none}
-/* Mobile: Pin-Box kompakter, weniger Freihaltung (schmaler Screen) */
-.pinbox{gap:4px}.pinbox .btn{font-size:11px;padding:4px 7px}h1,.sub{padding-right:150px}.statusbar{padding-right:150px}}
+/* Mobile-Regeln stehen GANZ UNTEN in dieser Datei (muessen die Basis-Regeln ueberstimmen —
+   gleiche Spezifitaet gewinnt nach Reihenfolge; Lehre vom 08.07.2026: der Block stand hier
+   VOR .statusbar & Co. und blieb dadurch teilweise wirkungslos). */
 
 /* --- Tag-Modus (JB): manueller ☀/🌙-Schalter (list.js applyTheme; ohne gespeicherte Wahl
        zaehlt die OS-Einstellung). KEIN grelles Weiss: warmes Creme (#f3ecdc), alle Flaechen/
@@ -321,6 +338,9 @@ body.tiles #t thead th:nth-child(9){color:transparent}
 /* Trennlinie zwischen Favoriten-Kacheln und dem Rest (JB): volle Grid-Breite */
 .tsep{grid-column:1/-1;border-top:2px solid rgba(214,119,86,.5);margin:4px 0}
 body.tiles #tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px 12px;margin-top:10px}
+/* Dichteres Grid (~50% mehr je Reihe) NUR in Kombination mit dem Kompakt-Modus (JB 09.07.2026:
+   'ohne Kompakt-Modus war die vorherige Darstellung besser') */
+body.dense.tiles #tiles{grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:12px 10px}
 .tile a{display:block}
 .tile img,.tile .noimg{width:100%;aspect-ratio:2/3;object-fit:cover;border-radius:9px;background:#221d19;border:1px solid #2a2522}
 .tile img{display:block}
@@ -395,3 +415,92 @@ body.archview tr.dudrow td{background:#2a0f11}
 body.archview tr.dudrow td:first-child{box-shadow:inset 3px 0 0 #a33}
 body.light.archview tr.dudrow td{background:#fdeaea}
 body.light.archview tr.dudrow td:first-child{box-shadow:inset 3px 0 0 #d88}
+
+/* --- Zwischenstufe (JB 09.07.2026 'fliessender Uebergang'): unter 1000px weicht zuerst
+       nur die Zuletzt-Spalte, der Rest rueckt dank clamp-Padding schon eng zusammen. --- */
+@media(max-width:1000px){
+#t th:nth-child(6),#t td:nth-child(6){display:none}
+}
+
+/* --- Mobile (JB 08.+09.07.2026, Handy-Feedback; erweitert 09.07.2026 Runde 2 -- Aktion-Spalte
+       zu breit/+Alt-Schrift/Steuerleiste-Reihenfolge): GANZ UNTEN, ueberstimmt alle Basis-Regeln.
+       (1) Ampeln (Datenquellen/Lese-Seiten) KOMPLETT unsichtbar;
+       (2) Im-/Export + Kompakt-Knopf weg, Typ-Badges (Manga/Manhwa) weg;
+       (3) Pinbox = ausklappbarer Griff (Script im HTML startet zu), statisch im Fluss;
+       (4) Aktion nur Symbole (.pl versteckt), Header-Kurzformen (gel./neu, ★);
+       (5) Schrift kleiner, KEIN horizontales Scrollen (Spalten passen in 375px);
+       (6) Aktion-Zelle bricht um statt EINER ungebrochenen Zeile (JB: "Flaeche weiterlesen/etc
+           zu breit, kein seitliches Scrollen noetig") -- white-space:nowrap zwang bisher alle
+           Pills (weiterlesen/suchen/+Alt) in eine ungebrochene Zeile, das war der eigentliche
+           Ueberbreite-Grund, nicht die einzelnen Symbole;
+       (7) Aufgeklapptes +Alt-Menue (Zusatzlinks/Reserve-Quellen) in kleinerer Schrift +
+           schmaleren, umbrechenden Pills, damit es nicht seitlich ausbricht;
+       (8) Steuerleiste oben sinnvoll geordnet (CSS 'order' im bestehenden Flex-Layout, keine
+           DOM-Aenderung noetig): Suche zuerst + allein auf ihrer Zeile (am wichtigsten), dann
+           die Filter (Fortschritt/Typ/Genre/18+/Hilfe/neu/Zufall) als Gruppe, zuletzt die
+           Ansichts-/Werkzeug-Knoepfe (Kacheln/Theme/Speichern/Export-Badges);
+       (9) Kacheln: 4 je Reihe. Zoom-Baseline: viewport minimum-scale=1 + overflow-x hidden. --- */
+@media(max-width:760px){
+html,body{overflow-x:hidden}
+body{margin:8px}
+h1{font-size:17px;margin:2px 0 4px}
+h1,.sub{padding-right:0}
+.sub{font-size:11px;margin-bottom:6px}
+.statusbar{display:none}
+details.xport,#dns{display:none}   /* details.xport: Spezifitaet der Basis-Regel schlagen */
+.med{display:none}
+table{font-size:12.5px}
+th,td{padding:4px 4px}
+input{flex:1;min-width:110px}
+#t th:nth-child(3),#t td:nth-child(3),#t th:nth-child(4),#t td:nth-child(4),#t th:nth-child(6),#t td:nth-child(6),#t th:nth-child(7),#t td:nth-child(7),#t th:nth-child(10),#t td:nth-child(10){display:none}
+.pill .pl{display:none}
+.pill.go{min-width:0}
+.pill.md{display:none}   /* Baka/AL-DB-Link: reiner Info-Link, mobil entbehrlich (Platz!) */
+.pill{padding:2px 8px;margin:1px 2px}
+/* Die 3 Symbol-Pills (▶ 🔍 ＋) bleiben in EINER Zeile (JB 09.07.: 'kein Zeilenumbruch') —
+   Platz kommt vom ausgeblendeten Autor (unten). Nur ein AUFGEKLAPPTES +Alt wird zum Block
+   und waechst frei nach UNTEN (statt die Tabelle seitlich zu sprengen). */
+td.act{line-height:1.8;white-space:nowrap}
+details.alt[open]{display:block;white-space:normal;font-size:11px;margin-top:2px}
+details.alt[open] .pill{font-size:11px;padding:2px 6px;margin:1px}
+.altrow{flex-wrap:wrap;row-gap:2px}
+.altrow .go{max-width:150px}
+/* Autor-Zeile mobil aus (JB 09.07.: 'autor kann weg') — Wiederkehr ueber ＋Spalten > Autor;
+   die Kopfzeile folgt: nur 'Serie ↕' statt 'Serie ↕ · Autor ↕' (JB 09.07. Runde 5). */
+.au{display:none}
+body.au-show .au{display:block}
+.shau{display:none}
+body.au-show .shau{display:inline}
+.hl{display:none}.hs{display:inline}
+/* Pinbox bleibt auch mobil OBEN RECHTS fixiert wie im Browser (JB 09.07.), nur kompakter;
+   der Titel bekommt rechts Luft fuer den eingeklappten Griff. */
+.pinbox{top:8px;right:8px}
+.pinbox .pbody{grid-template-columns:repeat(2,minmax(104px,1fr));gap:4px}
+.pinbox .btn{font-size:11px;padding:4px 5px;margin-right:0}
+h1{padding-right:88px}
+.btn{font-size:11px;padding:5px 8px;margin-right:0}
+.ctrl{gap:4px}
+/* Steuerleiste neu geordnet (reines CSS 'order', .ctrl ist bereits ein Flex-Container):
+   Suche zuerst + allein auf ihrer Zeile (flex-basis 100%), dann Filter, zuletzt Werkzeuge. */
+#q{order:1;flex:1 1 100%}
+#pf{order:2}
+#cf{order:3}
+details.genres{order:4}
+#nf{order:5}
+#hb{order:6}
+#nb{order:7}
+#rand{order:8}
+.ctrl>span{display:none}   /* Spacer (schiebt Desktop-Icons nach rechts) -- mobil ueberfluessig */
+#til{order:9}
+#thm{order:10}
+#sb{order:11}
+#cfb{order:12}
+#rb{order:13}
+/* Statistik/Empfehlungen/Spalten/Pausen in EINER Zeile (JB 09.07.2026): kleinere Schrift,
+   kein Umbruch — die vier Knoepfe teilen sich die Breite. */
+.panels{gap:3px;flex-wrap:nowrap}
+.panels>details>summary{font-size:11px;white-space:nowrap}
+.panels .colbxs,.gchips{max-width:calc(100vw - 24px)}
+body.tiles #tiles{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px 6px}
+.tchap{font-size:11px}.tname{font-size:10px}
+}

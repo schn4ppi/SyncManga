@@ -1,14 +1,17 @@
 @echo off
-REM SyncManga - Build der eigenstaendigen Windows-.exe.
-REM Nutzt Python von PATH (oder ein lokales .venv). PyInstaller wird bei Bedarf installiert.
 chcp 65001 >nul
-cd /d "%~dp0.."
-python -m pip install --quiet --upgrade pyinstaller || goto :err
-python -m PyInstaller --noconfirm --clean --distpath "." --workpath "%TEMP%\syncmanga_pyi" build\SyncManga.spec || goto :err
+REM Baut die eigenständige SyncManga.exe (nur der syncmanga-Kern, kein Mail-Code).
+REM Nutzt JBs venv (Core\venv); PyInstaller wird bei Bedarf hineininstalliert (dev-only, additiv).
+REM Liegt unter Manga\build\ -> zwei Ebenen hoch zum Repo-Root.
+cd /d "%~dp0..\.."
+Core\venv\Scripts\python.exe -m pip install --quiet --upgrade pyinstaller
+Core\venv\Scripts\python.exe -m PyInstaller --noconfirm --clean --distpath "." --workpath "%TEMP%\syncmanga_pyi" Manga\build\SyncManga.spec
+if errorlevel 1 (
+  echo.
+  echo [FEHLER] Build fehlgeschlagen - siehe Meldung oben.
+  pause
+  exit /b 1
+)
 echo.
-echo Fertig - SyncManga.exe liegt im Repo-Root.
-goto :eof
-:err
-echo.
-echo Build fehlgeschlagen.
-exit /b 1
+echo Fertig: SyncManga.exe (im Hauptordner)
+pause

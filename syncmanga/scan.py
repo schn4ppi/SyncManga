@@ -118,6 +118,14 @@ def chromium_time(val):
     return val / 1e6 - CHROMIUM_EPOCH_OFFSET if val else 0
 
 
+SAFARI_EPOCH_OFFSET = 978307200   # Sekunden zwischen 1970-01-01 und 2001-01-01 (Core-Data-Epoche)
+
+
+def safari_time(val):
+    """Safari-Verlaufszeit (s seit 2001, Core Data) -> Unix-Sekunden (0 bei leer)."""
+    return val + SAFARI_EPOCH_OFFSET if val else 0
+
+
 def _history_map(rows, time_fn):
     """Verlauf-Zeilen (url, title, last_visit_raw, visit_count) -> hist dict keyed by norm(name).
 
@@ -356,6 +364,28 @@ def scan_chromium_bookmarks(bookmarks_path):
     return _marks_map(_kids())
 
 
+# ---------------- Safari (macOS): History.db (SQLite) ----------------
+# JB 09.07.2026 ('safari mit integrieren'): Titel haengen an den BESUCHEN (history_visits),
+# URLs an den Items. Jeder Besuch wird einzeln eingespeist — _history_map aggregiert selbst
+# (hoechstes Kapitel gewinnt, Besuche summieren sich). Lesezeichen (Bookmarks.plist) bewusst
+# noch nicht — der Verlauf traegt den Lesestand. Hinweis: macOS verlangt fuer ~/Library/Safari
+# Vollzugriff (TCC) — ohne ihn ueberspringt scan_all die Quelle still wie jede andere.
+
+def scan_safari_history(history_path, tmp_name="safari_history_copy.sqlite"):
+    """Safari `History.db` read-only kopieren und den Verlauf scannen -> hist dict
+    (gleiche Struktur wie Firefox/Chromium, keyed by norm(name))."""
+    tmp = copy_locked(history_path, tmp_name)
+    con = open_immutable(tmp)
+    try:
+        rows = con.cursor().execute(
+            "select i.url, v.title, v.visit_time, 1 "
+            "from history_items i join history_visits v on v.history_item = i.id "
+            "where v.title is not null")
+        return _history_map(rows, safari_time)
+    finally:
+        con.close()
+
+
 # ---------------- Browser-Discovery (generisch, beim Start pruefbar) ----------------
 # Datengetriebene Registry: ein neuer Browser = eine neue Zeile. Bewusst NICHT auf einen
 # Browser fixiert — die Standalone-App muss bei beliebigen Nutzern/Browsern laufen.
@@ -391,6 +421,7 @@ def _browser_roots(env):
             ("Brave",    "chromium", os.path.join(app, "BraveSoftware", "Brave-Browser")),
             ("Vivaldi",  "chromium", os.path.join(app, "Vivaldi")),
             ("Chromium", "chromium", os.path.join(app, "Chromium")),
+            ("Safari",   "safari",   os.path.join(home, "Library", "Safari")),
         ]
     # Linux / andere Unixe
     cfg = os.path.join(home, ".config")
@@ -445,6 +476,11 @@ def discover_browsers(environ=None):
                     sources.append({"browser": name,
                                     "profile": os.path.basename(os.path.dirname(places)),
                                     "kind": "firefox", "places": places})
+        elif kind == "safari":
+            hist = os.path.join(root, "History.db")
+            if os.path.isfile(hist):
+                sources.append({"browser": name, "profile": "Safari",
+                                "kind": "safari", "history": hist})
         else:
             if not os.path.isdir(root):
                 continue
@@ -510,6 +546,8 @@ def scan_source(src):
     """Eine Discovery-Quelle (siehe discover_browsers) read-only scannen -> items dict."""
     if src["kind"] == "firefox":
         return scan_firefox(src["places"], tmp_name=f"ff_{_tmp_tag(src)}_places.sqlite")
+    if src["kind"] == "safari":
+        return scan_safari_history(src["history"], tmp_name=f"sf_{_tmp_tag(src)}_History.sqlite")
     hist = (scan_chromium_history(src["history"], tmp_name=f"cr_{_tmp_tag(src)}_History.sqlite")
             if src.get("history") else {})
     marks = scan_chromium_bookmarks(src["bookmarks"]) if src.get("bookmarks") else {}

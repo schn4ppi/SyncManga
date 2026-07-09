@@ -424,10 +424,12 @@ def reserve_topup(cache_path, cap=30, needle=None):
             single = (urls and len({host(u) or "" for u in urls}) == 1)
         empty = (not urls and v.get("read_chap"))
         if single or empty:
-            targets.append((v.get("res_ts") or 0, k))
-    targets.sort()                                   # aelteste Stempel zuerst -> Rotation
+            # GANZ ohne Link zuerst (JB 09.07.2026 'definitiv machen': die 5 Reserve-losen
+            # aus dem Ausfall-Test sollen nicht in der Rotation warten), dann Rotation.
+            targets.append((0 if empty else 1, v.get("res_ts") or 0, k))
+    targets.sort()                                   # (Prioritaet, aeltester Stempel) zuerst
     done = added = 0
-    for _ts, k in targets[:max(0, cap)]:
+    for _prio, _ts, k in targets[:max(0, cap)]:
         v = cache[k]
         try:
             new = fill_one_reserves(v)

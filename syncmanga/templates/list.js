@@ -12,7 +12,7 @@
 
 // --- Zustands-Sicherung (JB): fehlt der Browser-Zustand (neuer Browser / Website-Daten geloescht),
 // aus dem vom Renderer eingebetteten SEED (data/list_state.json = 💾-Export) wiederherstellen. ---
-var STATE_KEYS=['mangaArchived','mangaFav','titleCfm','brk','hcols','nsfw','chapFix','dense','theme','tiles','pausedReaders','dudUrls','sortState','scrollPos'];
+var STATE_KEYS=['mangaArchived','mangaFav','titleCfm','brk','hcols','nsfw','chapFix','dense','theme','tiles','pausedReaders','dudUrls','sortState','scrollPos','auPref'];
 (function(){try{var S=(typeof SEED!=='undefined')?SEED:null;if(!S)return;STATE_KEYS.forEach(function(k){if(localStorage.getItem(k)===null&&S[k]!=null)localStorage.setItem(k,S[k])})}catch(e){}})();
 // --- Schluessel-Migration (JB Runde 35, "Mein Archiv hat sich resetted"): data-h ist jetzt ein
 // STABILER Schluessel (DB-ID bzw. n:+Roh-Verlaufsname) statt norm(Anzeigetitel) — Titelkorrekturen
@@ -125,16 +125,30 @@ addEventListener('scroll',saveScroll,{passive:true});
 function cfGet(){try{return JSON.parse(localStorage.getItem('chapFix')||'{}')}catch(e){return{}}}
 function cfSave(o){localStorage.setItem('chapFix',JSON.stringify(o))}
 // Kapitel-Nummer in einer Reader-URL austauschen (chapter-16, /chapter/16, episode_no=7 ...) ->
-// die AKTION-Spalte folgt dem manuell gesetzten Lesestand (JB-Wunsch).
-function cfRelink(tr,n){var a=tr.querySelector('a.pill.go');if(!a)return;if(a.dataset.orighref==null)a.dataset.orighref=a.href;var u=a.dataset.orighref;
-// OPAKE Kapitel-IDs (mangafire/comix: /chapter/7518136) NIE umschreiben (JB 08.07.2026, One-Piece-
-// Fund: Lesestand 987 zerstoerte den Pin) — >5000 ist nie eine Kapitelnummer (MAX_CHAPTER-Regel).
-var v=u.replace(/((?:chapter|episode|chap|ch)[-_\/]?)(\d+(?:[.-]\d+)?)/i,function(m,p,num){return parseFloat(num)>5000?m:p+n}).replace(/([?&]episode_no=)\d+/i,function(m,p){return p+n});if(v!==u)a.href=v}
-function cfUnlink(tr){var a=tr.querySelector('a.pill.go');if(a&&a.dataset.orighref!=null)a.href=a.dataset.orighref}
+// ALLE Links der Zeile folgen dem manuell gesetzten Lesestand: Primaerlink UND +Alt-Reserven
+// (JB 09.07.2026: 'im moment wird nur der weiterlesen link angepasst'). Nur die Google-Kombi-
+// Suche (galt) bleibt aussen vor. Die PRUEFUNG der neuen Links macht der naechste Sync
+// (chapfix.py) — der Browser darf fremde Seiten nicht abfragen (CORS).
+function cfRelink(tr,n){[].forEach.call(tr.querySelectorAll('td.act a.pill.go'),function(a){if(a.classList.contains('galt'))return;if(a.dataset.orighref==null)a.dataset.orighref=a.href;var u=a.dataset.orighref;
+// OPAKE Kapitel-IDs (mangafire/comix: /chapter/7518136) NIE auf die neue Nummer umschreiben
+// (JB 08.07.2026, One-Piece: Lesestand 987 zerstoerte den Pin; >5000 ist nie eine Kapitelnummer).
+// Stattdessen zeigt der Link nach manueller Aenderung auf die SERIEN-Seite (JB 09.07.2026:
+// 'Mangafire sollte dann zur mangaseite verweisen') — dort navigiert man zum echten Kapitel.
+var opaque=false;
+var v=u.replace(/((?:chapter|episode|chap|ch)[-_\/]?)(\d+(?:[.-]\d+)?)/i,function(m,p,num){if(parseFloat(num)>5000){opaque=true;return m}return p+n}).replace(/([?&]episode_no=)\d+/i,function(m,p){return p+n});
+if(opaque){var r=u.replace(/\/(?:chapter|episode|chap|ch)[-_\/]?\d.*$/i,'');if(r&&r!==u)v=r}
+if(v!==u)a.href=v})}
+function cfUnlink(tr){[].forEach.call(tr.querySelectorAll('td.act a.pill.go'),function(a){if(a.dataset.orighref!=null)a.href=a.dataset.orighref})}
+// Aenderung an den Tray-Server melden -> naechster Sync prueft die umgeschriebenen Links
+// serverseitig (existiert das Kapitel dort wirklich?) und uebernimmt nur Verifiziertes.
+function cfPush(o){try{fetch('http://127.0.0.1:8765/chapfix',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(o)}).catch(function(){})}catch(e){}}
 function cfSet(td,n){var tr=td.closest('tr');if(td.dataset.orig==null){td.dataset.orig=td.innerHTML;td.dataset.origun=td.dataset.un;td.dataset.origrc=tr.dataset.rc}var lat=parseFloat(td.dataset.lat)||0;if(lat>0&&n>lat)n=lat;var badge=td.querySelector('span.unk'),bh=badge?badge.outerHTML:'',fmt=function(x){return x%1?x:Math.round(x)};td.innerHTML=fmt(n)+' / '+(lat>n?fmt(lat):(fmt(n)||'?'))+bh;td.dataset.un=Math.max(0,Math.round((lat||n)-n));tr.dataset.rc=Math.floor(n);cfRelink(tr,fmt(n));return n}
 function cfReset(td){var tr=td.closest('tr');if(td.dataset.orig!=null){td.innerHTML=td.dataset.orig;td.dataset.un=td.dataset.origun;tr.dataset.rc=td.dataset.origrc;cfUnlink(tr)}}
-function chapEdit(td){var tr=td.closest('tr'),k=tr.dataset.h,o=cfGet(),cur=(o[k]!=null?o[k]:tr.dataset.rc||'');var v=prompt((typeof I!=='undefined'&&I.cq)||'Gelesen bis Kapitel?',cur);if(v===null)return;v=String(v).trim().replace(',','.');if(v===''){if(o[k]!=null){delete o[k];cfSave(o);cfReset(td);ff()}return}var n=parseFloat(v);if(!isFinite(n)||n<0)return;n=cfSet(td,n);o[k]=n;cfSave(o);ff()}
-function applyChapFix(){var o=cfGet();document.querySelectorAll('#t tbody tr').forEach(function(tr){var n=o[tr.dataset.h];if(n!=null){var td=tr.querySelector('td.c');if(td)cfSet(td,parseFloat(n))}})}
+function chapEdit(td){var tr=td.closest('tr'),k=tr.dataset.h,o=cfGet(),cur=(o[k]!=null?o[k]:tr.dataset.rc||'');var v=prompt((typeof I!=='undefined'&&I.cq)||'Gelesen bis Kapitel?',cur);if(v===null)return;v=String(v).trim().replace(',','.');if(v===''){if(o[k]!=null){delete o[k];cfSave(o);cfReset(td);ff()}return}var n=parseFloat(v);if(!isFinite(n)||n<0)return;n=cfSet(td,n);o[k]=n;cfSave(o);var p={};p[k]=n;cfPush(p);ff()}
+function applyChapFix(){var o=cfGet();document.querySelectorAll('#t tbody tr').forEach(function(tr){var n=o[tr.dataset.h];if(n!=null){var td=tr.querySelector('td.c');if(td)cfSet(td,parseFloat(n))}});
+// kompletten Stand einmal je Seitenaufruf mitmelden -> auch AELTERE manuelle Aenderungen
+// (vor diesem Update) landen in der Server-Pruefung (Tray vereint idempotent)
+if(Object.keys(o).length)cfPush(o)}
 document.addEventListener('click',function(ev){var td=ev.target.closest('td.c');if(td)chapEdit(td)});
 
 // --- 🎲 Ueberrasch mich (JB): zufaellige UNGELESENE Serie (Backlog), Bewertung gewichtet ---
@@ -150,6 +164,15 @@ function applyTheme(){var t=null;try{t=localStorage.getItem('theme')}catch(e){}v
 // --- Kompakt-Modus (JB): schmalere Zeilen; Zustand persistent (localStorage 'dense' + 💾-Sicherung) ---
 function toggleDense(){var on=document.body.classList.toggle('dense');try{localStorage.setItem('dense',on?'1':'')}catch(e){}var b=document.getElementById('dns');if(b)b.classList.toggle('on',on);refreezeHead()}
 function applyDense(){if(localStorage.getItem('dense')){document.body.classList.add('dense');var b=document.getElementById('dns');if(b)b.classList.add('on')}}
+
+// --- Autor-Zeile ein/aus (JB 09.07.2026): mobil aus Default, ueber ＋Spalten > Autor
+// zuschaltbar; am Desktop abwaehlbar. auPref '1'=an '0'=aus, ohne Wahl gilt der Default
+// (Desktop sichtbar, mobil versteckt — reines CSS). Persistent + in der 💾-Sicherung. ---
+function auApply(){var p=null;try{p=localStorage.getItem('auPref')}catch(e){}
+document.body.classList.toggle('au-show',p==='1');document.body.classList.toggle('au-hide',p==='0');
+var cb=document.getElementById('colau');
+if(cb){cb.checked=(p!==null)?p==='1':!(window.matchMedia&&matchMedia('(max-width:760px)').matches)}}
+function toggleAu(cb){try{localStorage.setItem('auPref',cb.checked?'1':'0')}catch(e){}auApply()}
 
 // --- Reader-Pausen (JB Runde 37, MangaFire-Umbau): nicht pruefbare Seiten manuell pausieren.
 // Server-Default aus sources.json (I.paused); der Nutzer kann im ⏸-Menue je Seite umschalten
@@ -168,7 +191,9 @@ cb.dataset.ph.split(',').forEach(function(p){if(!p)return;var subs=srv.filter(fu
 try{localStorage.setItem('pausedReaders',JSON.stringify(ov))}catch(e){}applyPause()}
 function applyPause(){var P=pausedEff(),D=dudGet();
 document.querySelectorAll('#t tbody tr').forEach(function(r){var act=r.querySelector('td.act');if(!act)return;var prim=act.querySelector('a.pill.go');if(!prim)return;
-if(!prim.dataset.op){prim.dataset.op=prim.getAttribute('href');prim.dataset.ol=prim.textContent}
+// ol = innerHTML statt textContent: das Label traegt seit 09.07.2026 einen <span class=pl>
+// (Mobile zeigt nur das Symbol) — textContent wuerde den Span beim Restore wegbuegeln.
+if(!prim.dataset.op){prim.dataset.op=prim.getAttribute('href');prim.dataset.ol=prim.innerHTML}
 // synthetische Tot-Eintraege vom letzten Durchlauf entfernen (werden unten frisch gesetzt)
 [].forEach.call(act.querySelectorAll('.altrow.dudsyn'),function(x){x.remove()});
 var alts=[].slice.call(act.querySelectorAll('details.alt a.pill.go')).filter(function(a){return !a.classList.contains('galt')});
@@ -195,7 +220,7 @@ if(!pick){var gs=r.querySelector('a.gsr');
   pick=(gs&&gs.getAttribute('href'))?[gs.getAttribute('href'),prim.dataset.ol]:[prim.dataset.op,prim.dataset.ol];}
 // Label bleibt IMMER das Zustands-Label (JB Runde 42: anfangen/weiterlesen/beendet haengt
 // an der Serie, nicht an der Quelle) — beim Quellen-Tausch aendert sich nur das Ziel.
-prim.setAttribute('href',pick[0]);prim.textContent=prim.dataset.ol;
+prim.setAttribute('href',pick[0]);prim.innerHTML=prim.dataset.ol;
 // Quelle-Spalte folgt dem TATSAECHLICHEN Ziel (JB Runde 38: 'Anzeige sollte zeigen wohin
 // der Knopf hinfuehrt'): beim Tausch den Host des gezeigten Links anzeigen, sonst Original.
 var sc=r.querySelector('td.src');
@@ -436,4 +461,4 @@ function panelAccordion(){var ps=document.querySelectorAll('.panels>details, det
 document.addEventListener('click',function(ev){
   [].forEach.call(ps,function(d){if(d.open&&!d.contains(ev.target))d.open=false;});});}
 panelAccordion();
-applyTheme();applyTips();applyChapFix();applyDense();pinFavs(true);updateAb();updateFav();regray();ff();applyTiles();applyPause();pollSync();restoreSort();restoreScroll();
+applyTheme();applyTips();applyChapFix();applyDense();auApply();pinFavs(true);updateAb();updateFav();regray();ff();applyTiles();applyPause();pollSync();restoreSort();restoreScroll();

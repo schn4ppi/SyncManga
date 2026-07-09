@@ -75,6 +75,16 @@ def _chip(url, color, label, tip, symbol="●", extra=""):
     return f'<span class=srcchip{extra}{t}>{inner}</span>'
 
 
+def _pl(label):
+    """Pill-Label 'ICON Text' -> Icon + <span class=pl>Text</span>: auf Mobile blendet CSS den
+    Text aus, nur das Symbol bleibt (JB 09.07.2026: 'Aktion sollte … als Symbol anzeigen').
+    Labels ohne Icon-Praefix bleiben unveraendert (dann gibt es mobil nichts abzukuerzen)."""
+    icon, sep, rest = (label or "").partition(" ")
+    if not sep or not rest or icon.isalnum():
+        return html.escape(label or "")
+    return f'{html.escape(icon)}<span class=pl> {html.escape(rest)}</span>'
+
+
 def _short(s):
     """Lange Quellen-Domain auf SRC_MAXLEN kuerzen (… am Ende)."""
     s = s or ""
@@ -217,7 +227,9 @@ def status_panel(s):
                            s.get("paused_tip", tip) if paused else tip,
                            "⏸" if paused else "●", f' data-rh="{html.escape(dom)}"'))
     label = s.get("source_status_label", "Quellen")
-    return f'<div class=statusrow>{label}: {"".join(chips)}</div>'
+    # Leerzeichen zwischen den Chips = Umbruch-Gelegenheit (Chips selbst sind nowrap) —
+    # ohne sie war die Zeile UNBRECHBAR und zwang Mobile in >1000px Breite (JB 08.07.2026).
+    return f'<div class=statusrow>{label}: {" ".join(chips)}</div>'
 
 
 _READER_COLOR = {"ok": "#3a7d3a", "cloudflare": "#c9952b", "no-images": "#c9952b",
@@ -275,7 +287,7 @@ def reader_panel(s):
         chips.append(_chip(url, col, name, s.get("paused_tip", tip) if paused else tip,
                            "⏸" if paused else "●", f' data-rh="{html.escape(hostn)}"'))
     label = s.get("reader_status_label", "Lese-Seiten")
-    return f'<div class=statusrow>{label}: {"".join(chips)}</div>'
+    return f'<div class=statusrow>{label}: {" ".join(chips)}</div>'  # Leerzeichen = Umbruch (s.o.)
 
 
 def _reader_legend(s):
@@ -332,6 +344,16 @@ def stats_panel(rows, pcnt, s):
         tiles.append((f'🔞 {adult}', s["stats_tip_adult"]))
     if top and top.get("rating"):
         tiles.append((f'🏆 {html.escape(top["name"][:34])} ({top["rating"]})', s["stats_tip_top"]))
+    # 🛟 Absicherung (JB 09.07.2026, 'nicht aufdringlich'): wie viele Serien haetten beim
+    # Ausfall ihrer Primaer-Seite eine Reserve auf einem ANDEREN Host? Kein Netz, nur Cache.
+    linked = [e for e in rows if e.get("read_url") or e.get("read_urls")]
+    if linked:
+        def _hosts(e):
+            return {host(u) or "" for u in
+                    [e.get("read_url") or ""] + [u for u, _nm in (e.get("read_urls") or [])] if u}
+        mono = sum(1 for e in linked if len(_hosts(e)) < 2)
+        pct = round(100 * (len(linked) - mono) / len(linked))
+        tiles.append((f'🛟 {pct}% · {mono} {s["stats_mono"]}', s["stats_tip_cover"]))
     body = "".join(f'<span class=stile title="{html.escape(tip)}">{t}</span>' for t, tip in tiles)
     return (f'<details class=stats><summary class="pill alt" title="{html.escape(s["stats_toggle"])}">📊 {s["stats_title"]}</summary>'
             f'<div class=pdrop><div class=statgrid>{body}</div></div></details>')
@@ -428,7 +450,7 @@ def _primary_action(e, s, now_ts, unsafe, g, uprog=None):
         link = html.escape(direct["url"])
         # Quelle einheitlich (JB: kursiv/grau war verwirrend); Herkunft steht im Tooltip.
         tip = dsite if (direct.get('chap') or 0) >= (e['chap'] or 0) else f"{dsite} — {s['source_stale_hint']}"
-        return (f'<a class="pill go" href="{link}" target=_blank>{_label(direct["url"])}</a>',
+        return (f'<a class="pill go" href="{link}" target=_blank>{_pl(_label(direct["url"]))}</a>',
                 f'<span title="{html.escape(tip)}">{html.escape(_short(dsite))}</span>')
     # Der verifizierte Link zaehlt auch, wenn JBs EIGENE Lese-Seite unsicher ist (mangahasu):
     # genau dann ist der sichere Kapitel-Link die beste Umleitung — nicht die Google-Suche
@@ -439,11 +461,11 @@ def _primary_action(e, s, now_ts, unsafe, g, uprog=None):
         # "zuletzt von <Gruppe>" (JB Runde 39, Idee 4): die Scan-Gruppe aus der Comick-API
         # wandert in den Quelle-Tooltip — zeigt, wo neue Kapitel zuerst erscheinen.
         _grp = f' · {s["last_group_tip"].format(g=e["last_group"])}' if e.get('last_group') else ''
-        return (f'<a class="pill go" href="{html.escape(rl)}" target=_blank>{_label(rl)}</a>',
+        return (f'<a class="pill go" href="{html.escape(rl)}" target=_blank>{_pl(_label(rl))}</a>',
                 f'<span title="{html.escape(rsite)} — {html.escape(s["source_auto_hint"] + _grp)}">{html.escape(_short(rsite))}</span>')
     # nirgends ein Kapitel-Link -> Suche (Label bleibt zustandsbasiert; Quelle-Spalte
     # zeigt "Quelle unsicher", der Klick fuehrt zur eingegrenzten Suche)
-    return (f'<a class="pill go" href="{g}" target=_blank>{_label()}</a>',
+    return (f'<a class="pill go" href="{g}" target=_blank>{_pl(_label())}</a>',
             f'<span style="color:#c66">{s["source_unsafe"]}</span>' if unsafe
             else f'<span class="unk" title="{html.escape(s["source_stale_hint"])}">{s["source_alt"]}</span>')
 
@@ -484,7 +506,7 @@ def _alt_cell(e, s, sites_q, nxt, full):
     # 🕰 Wayback ENTFERNT (JB-Entscheidung Runde 25): das Archiv spielte auf toten Seiten deren
     # Weiterleitungs-Skripte ab und landete auf fremden Mangas — mehr Verwirrung als Rettung.
     # Manuelle Funde (z.B. Blogspot-Archive) laufen stattdessen als series_overrides-Eintrag.
-    return (f'<details class=alt><summary class="pill alt">{s["alt_menu"]}</summary>'
+    return (f'<details class=alt><summary class="pill alt">{_pl(s["alt_menu"])}</summary>'
             f'{gcombined}{res_inner}{own}</details>')
 
 
@@ -496,6 +518,11 @@ def _cols_menu(s):
     # KEIN Leerzeichen zwischen Kaestchen und Wort (Abstand macht allein das CSS-gap: 2px, JB-Wunsch).
     boxes = "".join(f'<label class=colbox><input type=checkbox id=col{n} checked '
                     f'onchange="toggleCol({n},this)">{html.escape(nm)}</label>' for n, nm in cols)
+    # Autor-Zeile (kein Tabellen-Spalten-Index, eigener Schalter): mobil aus Default, hier
+    # wieder zuschaltbar — und am Desktop abwaehlbar (JB 09.07.2026: 'soll hinzugefuegt
+    # werden koennen, falls gewuenscht'). Haken-Zustand setzt auApply() beim Laden.
+    boxes += (f'<label class=colbox><input type=checkbox id=colau '
+              f'onchange="toggleAu(this)">{html.escape(s["col_author"])}</label>')
     return (f'<details class=cols><summary class="pill alt" title="{html.escape(s["cols_menu_title"])}">'
             f'{s["cols_menu"]}</summary><div class=colbxs>{boxes}</div></details>')
 
@@ -750,7 +777,7 @@ def render(rows, out_dir, out_html, namelen=NAMELEN, lang="de", readers_snap=Non
             f'<td class="d" data-ts="{int(e["lv"])}">{d}</td>'
             f'<td class="src">{srccell}</td>'
             f'{rt_cell}'
-            f'<td class=act>{prim}<a class="pill gsr" href="#" target=_blank>{s["search"]}</a>{mdlink}{altcell}</td>'
+            f'<td class=act>{prim}<a class="pill gsr" href="#" target=_blank>{_pl(s["search"])}</a>{mdlink}{altcell}</td>'
             f'<td class=repcell><button class="pill rep" onclick="rep(this)">⚠</button></td></tr>')
     upd = datetime.now().strftime('%d.%m.%Y %H:%M')
     PROG_ORDER = ("prog_reading", "prog_caught", "prog_finished", "prog_paused", "prog_backlog")
@@ -804,7 +831,7 @@ def render(rows, out_dir, out_html, namelen=NAMELEN, lang="de", readers_snap=Non
     # Struktur der ausgelieferten HTML (mit <!-- Ankern --> zum Zurechtfinden, obwohl minifiziert):
     #   Kopf+Ampel · Statistik/Empfehlungen · Steuerleiste · Tabelle (eine <tr> je Serie) · Skripte.
     # CSS/JS kommen minifiziert aus den lesbaren Templates (list.css/list.js), Zeilen aus `trs`.
-    P = f"""<!doctype html><html lang={lang}><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta name=color-scheme content="dark light"><link rel=manifest href=manifest.json><meta name=theme-color content="#d67756"><link rel=apple-touch-icon href=apple-touch-icon.png><title>{s['title']}</title><style>
+    P = f"""<!doctype html><html lang={lang}><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1,minimum-scale=1"><meta name=color-scheme content="dark light"><link rel=manifest href=manifest.json><meta name=theme-color content="#d67756"><link rel=apple-touch-icon href=apple-touch-icon.png><title>{s['title']}</title><style>
 {CSS}
 </style></head><body>
 <!-- Kopf: Titel · Untertitel (Zusammenfassung) · Quellen-/Reader-Ampel --><h1>📚 {s['title']} <a class=hguide href="{s['guide_file']}" target=_blank title="{html.escape(s['guide_title'])}">📖</a></h1>
@@ -817,11 +844,13 @@ def render(rows, out_dir, out_html, namelen=NAMELEN, lang="de", readers_snap=Non
 <input id=q placeholder="{html.escape(s['search_placeholder'])}" oninput=qf()><select id=cf class=btn onchange=ff()><option value="">{s['type_all']}</option>{type_opts}</select><details class=genres><summary class=btn id=gfs title="{html.escape(s['genre_toggle'])}">{s['genre_all']} ▾</summary><div id=gf class=gchips>{genre_chips}</div></details><select id=nf class=btn onchange="setNsfw(this)" title="{html.escape(s['nsfw_title'])}"><option value="">{s['nsfw_all']}</option><option value="both">{s['nsfw_hide_both']}</option><option value="sexual">{s['nsfw_hide_sexual']}</option><option value="gore">{s['nsfw_hide_gore']}</option></select><button id=rand class=btn onclick="luckyPick()" title="{html.escape(s['lucky_title'])}">🎲</button><span style="flex:1"></span><button id=til class=btn onclick="toggleTiles()" title="{html.escape(s['tiles_title'])}">▦</button><button id=dns class=btn onclick="toggleDense()" title="{html.escape(s['dense_title'])}">⬍</button><button id=thm class=btn onclick="toggleTheme()" title="{html.escape(s['theme_title'])}">☀</button><details class=xport><summary class=btn title="{html.escape(s['export_menu_title'])}">⤴ {s['export_menu']}</summary><div class=xpanel><label><input type=checkbox id=xarch> {s['export_with_arch']}</label><label><input type=checkbox id=xfav> {s['export_fav_only']}</label><button class=btn onclick="exportMal()" title="{html.escape(s['export_mal_title'])}">{s['export_mal']}</button><button class=btn onclick="exportJson()">{s['export_json']}</button><label class=btn title="{html.escape(s['import_mal_title'])}">{s['import_mal']}<input type=file accept=".xml,text/xml" style="display:none" onchange="importMal(this)"></label><details class=xguide><summary>{s['xg_title']}</summary><div class=xhelp>{s['xg_up']}<br>{s['xg_down']}<br>{s['xg_al']}<br>{s['xg_more']}<br>{s['xg_bug']}</div></details></div></details><button id=sb class=btn onclick="saveState()" title="{html.escape(s['state_export_title'])}">💾</button><button id=cfb class=btn onclick="showCfm()" title="{html.escape(s['confirm_export_title'])}" style="display:none">✔ 0</button><button id=rb class=btn onclick="showBrk()" title="{html.escape(s['report_export_title'])}" style="display:none">🛠 0</button></div>
 <!-- Fortschrittsbalken (JB): zeigt laufende Anreicherung; JS pollt data/sync_progress.json (nur ueber http) -->
 <div id=syncbar><span id=synctxt></span><div class=track><div class=fill></div></div></div>
-<!-- Angepinnt oben rechts: 2x2-Raster (gleiche Breiten) — Archiv/Archivieren, darunter Favoriten/Favorit -->
-<div class=pinbox><button id=vb class=btn onclick="toggleArchview()" title="{html.escape(s['archview_title'])}">🗃 {s['archive_count']}: 0</button><button id=ab class=btn onclick="toggleArchmode()" title="{html.escape(s['archmode_title'])}">{s['archive']}</button><button id=vfb class=btn onclick="toggleFavview(this)" title="{html.escape(s['fav_button_title'])}">⭐ {s['fav_button']}: 0</button><button id=fm class=btn onclick="toggleFavmode()" title="{html.escape(s['fav_mode_title'])}">⭐ {s['fav_mode']}</button></div>
+<!-- Angepinnt oben rechts, AUSKLAPPBAR (JB 09.07.2026: 'nimmt auf Mobile sehr viel Platz'):
+     Sommary-Griff + 2x2-Raster; Desktop startet offen, Mobile zu (Mini-Script darunter). -->
+<details class=pinbox id=pb open><summary class=btn title="{html.escape(s['pinbox_tip'])}">🗃 ⭐ <span class=pbc>▾</span></summary><div class=pbody><button id=vb class=btn onclick="toggleArchview()" title="{html.escape(s['archview_title'])}">🗃 {s['archive_count']}: 0</button><button id=ab class=btn onclick="toggleArchmode()" title="{html.escape(s['archmode_title'])}">{s['archive']}</button><button id=vfb class=btn onclick="toggleFavview(this)" title="{html.escape(s['fav_button_title'])}">⭐ {s['fav_button']}: 0</button><button id=fm class=btn onclick="toggleFavmode()" title="{html.escape(s['fav_mode_title'])}">⭐ {s['fav_mode']}</button></div></details>
+<script>if(innerWidth<761){{var _pb=document.getElementById('pb');if(_pb)_pb.removeAttribute('open');}}</script>
 <!-- Tabelle: eine <tr> je Serie; Filter/Sortierung/Archiv lesen die data-* Attribute der Zeile -->
 {'' if trs else f'<div class=welcome>{s["welcome_empty"]}</div>'}
-<div class=wrap><table id=t><thead><tr><th><span class=sh onclick="s(0)">{s['col_series']}&nbsp;↕</span> · <span class=sh onclick="sortAuthor()">{s['col_author']}&nbsp;↕</span></th><th class=favh title="{html.escape(s['fav_title'])}">⭐</th><th onclick=s(2) title="{html.escape(s['col_user_title'])}">{s['col_user']}</th><th onclick=s(3)>{s['col_status']}</th><th onclick=s(4) title="{html.escape(s['col_chapters_title'])}">{s['col_chapters']}</th><th onclick=s(5)>{s['col_last']}</th><th onclick=s(6)>{s['col_source']}</th><th onclick=s(7)>{s['col_rating']}</th><th>{s['col_action']}</th><th title="{html.escape(s['report_broken_title'])}"></th></tr></thead><tbody>{''.join(trs)}</tbody></table></div>
+<div class=wrap><table id=t><thead><tr><th><span class=sh onclick="s(0)">{s['col_series']}&nbsp;↕</span><span class=shau> · <span class=sh onclick="sortAuthor()">{s['col_author']}&nbsp;↕</span></span></th><th class=favh title="{html.escape(s['fav_title'])}">⭐</th><th onclick=s(2) title="{html.escape(s['col_user_title'])}">{s['col_user']}</th><th onclick=s(3)>{s['col_status']}</th><th onclick=s(4) title="{html.escape(s['col_chapters'] + ' — ' + s['col_chapters_title'])}">{s['col_chapters_s']}</th><th onclick=s(5)>{s['col_last']}</th><th onclick=s(6)>{s['col_source']}</th><th onclick=s(7)><span class=hl>{s['col_rating']}</span><span class=hs>{s['col_rating_s']}</span></th><th>{s['col_action']}</th><th title="{html.escape(s['report_broken_title'])}"></th></tr></thead><tbody>{''.join(trs)}</tbody></table></div>
 <!-- Skripte: Interaktivität (list.js, minifiziert) + Service-Worker (nur über http) -->
 {jsvars}<script>{JS}</script><script>if('serviceWorker'in navigator&&location.protocol.indexOf('http')===0){{navigator.serviceWorker.register('sw.js').catch(function(){{}})}}</script></body></html>"""
     os.makedirs(out_dir, exist_ok=True)
