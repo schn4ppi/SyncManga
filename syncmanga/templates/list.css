@@ -130,6 +130,8 @@ body.archmode tr:hover{background:#23201c}
 .sh{cursor:pointer;color:#cf9b6f;font-weight:400}
 .sh:hover{color:#e6b58a}
 .ctrl{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.spacer{flex:1}       /* schiebt die Werkzeuge (Desktop) nach rechts */
+.tools{display:contents}   /* Desktop: Werkzeug-Knoepfe fliessen normal in die Leiste (unsichtbarer Wrapper) */
 #gear{display:none}   /* Zahnrad NUR mobil (Media-Query blendet es ein); Desktop zeigt alle Werkzeuge */
 .wrap{overflow-x:auto}
 
@@ -455,9 +457,13 @@ h1,.sub{padding-right:0}
    Speichern, Im-/Export (JBs Wunschliste). */
 #gear{display:inline-block}
 #gear.on{background:#e0b56a;color:#1a1310;border-color:#e0b56a}
-#til,#dns,#thm,details.xport,#sb{display:none}
-body.gearon #til,body.gearon #dns,body.gearon #thm,body.gearon #sb{display:inline-block}
-body.gearon details.xport{display:inline-block}
+.spacer{display:none}   /* mobil KEINE Luecke -> Zahnrad sitzt direkt neben dem Wuerfel (JB 09.07.2026) */
+/* Werkzeuge mobil AN EINEM ORT: das Zahnrad oeffnet die ganze Gruppe als eigenen Block direkt
+   unter der Leiste (JB 09.07.2026: 'alles beim Zahnrad, an einem Ort'). Zu = versteckt. */
+.tools{display:none}
+body.gearon .tools{display:flex;flex-wrap:wrap;gap:4px;flex-basis:100%;margin-top:2px;
+ padding:6px;border:1px solid #2a2522;border-radius:9px;background:#1b1713}
+body.light.gearon .tools{border-color:#ddd0b6;background:#fbf6ea}
 /* Im-/Export-Panel mobil im Fluss statt schwebend rechts (sonst laeuft es aus dem Screen) */
 .xpanel{position:static;width:auto;max-width:100%;box-shadow:none;white-space:normal}
 table{font-size:12.5px}
@@ -501,12 +507,12 @@ details.genres{order:4}
 #hb{order:6}
 #nb{order:7}
 #rand{order:8}
-.ctrl>span{display:none}   /* Spacer (schiebt Desktop-Icons nach rechts) -- mobil ueberfluessig */
-#til{order:9}
-#thm{order:10}
-#sb{order:11}
-#cfb{order:12}
-#rb{order:13}
+#gear{order:9}          /* Zahnrad direkt hinter dem Wuerfel (JB 09.07.2026) */
+.tools{order:10}        /* aufgeklappte Werkzeug-Gruppe als eigener Block darunter */
+#cfb{order:11}
+#rb{order:12}
+/* die Spacer-Luecke ist mobil ausgeblendet (.spacer{display:none} oben) -> Zahnrad rueckt an
+   den Wuerfel; #til/#thm/#sb brauchen keinen eigenen order mehr (stecken in .tools). */
 /* Statistik/Empfehlungen/Spalten/Pausen in EINER Zeile (JB 09.07.2026): kleinere Schrift,
    kein Umbruch — die vier Knoepfe teilen sich die Breite. */
 .panels{gap:3px;flex-wrap:nowrap}
@@ -521,4 +527,18 @@ details.genres[open]>.gchips,.panels>details[open]>.colbxs{position:static;width
 details.genres[open]>.gchips{display:flex;flex-wrap:wrap;flex-basis:100%}
 body.tiles #tiles{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px 6px}
 .tchap{font-size:11px}.tname{font-size:10px}
+}
+
+/* --- Handy im QUERFORMAT (kurze Hoehe, JB 09.07.2026: 'horizontal ... oben mehr anzeigen'):
+       weniger vertikale Kopfzeile -> die Liste beginnt frueher, mehr Zeilen sofort sichtbar.
+       Greift ueber die HOEHE (max-height 520px) -> trifft Handys quer, nie normale Laptops. --- */
+@media (orientation:landscape) and (max-height:520px){
+ body{margin:6px}
+ h1{font-size:15px;margin:0 0 1px}
+ .sub{font-size:10px;margin-bottom:4px}
+ .statusbar{display:none}          /* Ampeln quer weg -> Platz fuer die Liste */
+ .ctrl{gap:3px}
+ .panels{gap:2px 4px}
+ th,td{padding:3px 6px}
+ h1,.sub{padding-right:0}
 }
