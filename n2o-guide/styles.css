@@ -1,0 +1,202 @@
+/* ============ N2O Gewerbe-Guide ============ */
+:root {
+  --bg: #f4f6f8;
+  --card: #ffffff;
+  --text: #1c2733;
+  --muted: #5b6b7b;
+  --border: #dde4ea;
+  --accent: #0b6e4f;
+  --accent-soft: #e3f2ec;
+  --green: #1a7f37;
+  --green-bg: #e6f4ea;
+  --amber: #9a6700;
+  --amber-bg: #fff6e0;
+  --red: #b42318;
+  --red-bg: #fdecea;
+  --info-bg: #eef4fb;
+  --info: #1b4f8a;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #12181f;
+    --card: #1a222c;
+    --text: #e4ebf2;
+    --muted: #97a6b4;
+    --border: #2c3947;
+    --accent: #3fbf94;
+    --accent-soft: #16302a;
+    --green: #4ade80;
+    --green-bg: #12301f;
+    --amber: #fbbf24;
+    --amber-bg: #33290e;
+    --red: #f87171;
+    --red-bg: #3a1715;
+    --info-bg: #16232f;
+    --info: #7db4e8;
+  }
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 4rem; }
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.55;
+}
+.wrap { max-width: 60rem; margin: 0 auto; padding: 0 1rem; }
+
+a { color: var(--accent); }
+h1 { margin: 0; font-size: 1.6rem; }
+h2 { font-size: 1.25rem; margin-top: 0; }
+h3 { font-size: 1.05rem; margin: 1.5rem 0 0.5rem; }
+
+.site-header { background: var(--card); border-bottom: 1px solid var(--border); padding: 1.25rem 0 1rem; }
+.tagline { margin: 0.35rem 0 0; color: var(--muted); font-size: 0.95rem; }
+
+.site-nav {
+  position: sticky; top: 0; z-index: 10;
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto; white-space: nowrap;
+}
+.site-nav .wrap { display: flex; gap: 0.25rem; padding: 0.4rem 1rem; }
+.site-nav a {
+  text-decoration: none; color: var(--text);
+  padding: 0.35rem 0.65rem; border-radius: 0.4rem; font-size: 0.9rem;
+}
+.site-nav a:hover { background: var(--accent-soft); color: var(--accent); }
+
+main.wrap { padding: 1.25rem 1rem 3rem; }
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  padding: 1.25rem 1.4rem;
+  margin-bottom: 1.5rem;
+}
+
+/* ---- checkboxes ---- */
+.check-item {
+  display: flex; gap: 0.6rem; align-items: flex-start;
+  padding: 0.5rem 0.6rem; margin: 0.15rem 0;
+  border-radius: 0.5rem; cursor: pointer;
+}
+.check-item:hover { background: var(--accent-soft); }
+.check-item input { margin-top: 0.3rem; width: 1.05rem; height: 1.05rem; accent-color: var(--accent); flex-shrink: 0; }
+.check-item:has(input:checked) { background: var(--green-bg); }
+.check-item:has(input:checked) span { color: var(--green); }
+
+details { margin: -0.1rem 0 0.5rem 2.3rem; font-size: 0.9rem; color: var(--muted); }
+details summary { cursor: pointer; color: var(--accent); font-size: 0.85rem; }
+details p { margin: 0.35rem 0 0; }
+
+/* ---- status boxes ---- */
+.status-box, .note-box, .warn-box {
+  border-radius: 0.6rem; padding: 0.85rem 1rem; margin: 1rem 0;
+  border: 1px solid var(--border);
+}
+.status-box p { margin: 0; }
+.status-box.neutral { background: var(--info-bg); color: var(--info); }
+.status-box.green { background: var(--green-bg); color: var(--green); border-color: var(--green); }
+.status-box.amber { background: var(--amber-bg); color: var(--amber); border-color: var(--amber); }
+.status-box.red { background: var(--red-bg); color: var(--red); border-color: var(--red); }
+.note-box { background: var(--info-bg); color: var(--info); }
+.warn-box { background: var(--red-bg); color: var(--red); border-color: var(--red); }
+.note-box a, .warn-box a { color: inherit; }
+
+/* ---- tables ---- */
+.table-scroll { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 0.92rem; }
+th, td { text-align: left; padding: 0.55rem 0.65rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+th { color: var(--muted); font-weight: 600; font-size: 0.85rem; }
+.verdict { font-weight: 700; white-space: nowrap; }
+.verdict.yes { color: var(--green); }
+.verdict.no { color: var(--red); }
+.verdict.partial { color: var(--amber); white-space: normal; }
+
+/* ---- temperature ladder ---- */
+.temp-ladder { display: flex; flex-direction: column; gap: 0.45rem; margin: 0.75rem 0; }
+.temp-row { display: grid; grid-template-columns: minmax(10rem, 22rem) 1fr; gap: 0.6rem; align-items: center; }
+.temp-label { font-size: 0.85rem; color: var(--muted); }
+.temp-bar {
+  background: var(--red); color: #fff;
+  border-radius: 0.35rem; padding: 0.2rem 0.6rem;
+  font-size: 0.85rem; font-weight: 600; min-width: 6rem;
+}
+.temp-bar.mid { background: var(--amber); }
+.temp-bar.low { background: var(--accent); }
+@media (max-width: 540px) { .temp-row { grid-template-columns: 1fr; gap: 0.15rem; } }
+
+/* ---- checklist progress ---- */
+.progress-total { display: flex; align-items: center; gap: 0.75rem; margin: 1rem 0; }
+.progress-track { flex: 1; height: 0.6rem; background: var(--border); border-radius: 1rem; overflow: hidden; }
+.progress-fill { height: 100%; background: var(--accent); border-radius: 1rem; transition: width 0.25s; }
+#progress-all-label { font-size: 0.85rem; color: var(--muted); white-space: nowrap; }
+.check-group { border-top: 1px solid var(--border); padding-top: 0.25rem; margin-top: 1rem; }
+.group-count { font-size: 0.8rem; color: var(--muted); font-weight: 400; }
+.group-count.done { color: var(--green); font-weight: 700; }
+
+/* ---- buttons ---- */
+.btn {
+  font: inherit; font-size: 0.85rem;
+  background: var(--accent); color: #fff;
+  border: none; border-radius: 0.45rem;
+  padding: 0.35rem 0.8rem; cursor: pointer;
+  vertical-align: middle;
+}
+.btn:hover { opacity: 0.9; }
+.btn.subtle { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+
+/* ---- steps ---- */
+.steps { counter-reset: step; list-style: none; padding-left: 0; }
+.steps li {
+  counter-increment: step;
+  position: relative; padding: 0.35rem 0 0.35rem 2.4rem; margin: 0.2rem 0;
+}
+.steps li::before {
+  content: counter(step);
+  position: absolute; left: 0; top: 0.3rem;
+  width: 1.6rem; height: 1.6rem; border-radius: 50%;
+  background: var(--accent-soft); color: var(--accent);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 0.85rem;
+}
+
+/* ---- mail template ---- */
+pre {
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 0.6rem; padding: 1rem;
+  font-size: 0.82rem; overflow-x: auto; white-space: pre-wrap;
+}
+
+/* ---- calculator ---- */
+.calc-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: 0.75rem; margin: 1rem 0;
+}
+.calc-grid label { display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.85rem; color: var(--muted); }
+.calc-grid input {
+  font: inherit; padding: 0.45rem 0.6rem;
+  border: 1px solid var(--border); border-radius: 0.45rem;
+  background: var(--card); color: var(--text);
+}
+.calc-result table { max-width: 26rem; }
+.calc-result .total td { font-weight: 700; border-top: 2px solid var(--border); }
+.calc-result td:last-child { text-align: right; font-variant-numeric: tabular-nums; }
+
+.fineprint { font-size: 0.8rem; color: var(--muted); }
+.site-footer { border-top: 1px solid var(--border); padding: 1.25rem 0 2rem; font-size: 0.85rem; color: var(--muted); }
+.site-footer a { color: var(--muted); }
+
+/* ---- print ---- */
+@media print {
+  .site-nav, .btn { display: none; }
+  body { background: #fff; color: #000; }
+  .card { border: none; padding: 0; margin-bottom: 1.5rem; break-inside: avoid-page; }
+  details { display: block; }
+  details summary { display: none; }
+  details[open] p, details p { display: block; }
+  a { color: inherit; text-decoration: none; }
+}

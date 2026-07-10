@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>N₂O Gewerbe-Guide – Compliance &amp; Beschaffung</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap">
+    <h1>N₂O Gewerbe-Guide</h1>
+    <p class="tagline">Distickstoffmonoxid (Lachgas) legal und sicher im Betrieb beziehen – Rechtslage, Checklisten, Anbieter, Kosten. Stand: Juli 2026.</p>
+  </div>
+</header>
+
+<nav class="site-nav" aria-label="Hauptnavigation">
+  <div class="wrap">
+    <a href="#check">Realitäts-Check</a>
+    <a href="#wissen">Grundlagen</a>
+    <a href="#qualitaet">Qualitäten</a>
+    <a href="#recht">Rechtslage</a>
+    <a href="#checkliste">Checkliste</a>
+    <a href="#anbieter">Anbieter &amp; Bestellung</a>
+    <a href="#kosten">Kosten</a>
+  </div>
+</nav>
+
+<main class="wrap">
+
+<!-- ================================================================ -->
+<section id="check" class="card">
+  <h2>1 · Realitäts-Check: Ist gewerblicher Bezug überhaupt der richtige Weg?</h2>
+  <p>Dieser Guide hilft <strong>echten Betrieben</strong>, N₂O regelkonform zu beziehen.
+  Er ist bewusst <strong>keine</strong> Anleitung, wie man eine Lieferantenprüfung „besteht“:
+  Die Haken unten bilden reale Voraussetzungen ab – ein gesetzter Haken erzeugt keine Tatsache,
+  und Lieferanten prüfen die Angaben tatsächlich nach.</p>
+
+  <div class="wizard">
+    <label class="check-item">
+      <input type="checkbox" id="w-gewerbe" data-persist>
+      <span><strong>Gewerbe angemeldet.</strong> Ein Gewerbeschein liegt vor (oder die Anmeldung beim Gewerbeamt ist konkret in Arbeit).</span>
+    </label>
+    <label class="check-item">
+      <input type="checkbox" id="w-taetigkeit" data-persist>
+      <span><strong>Reale Tätigkeit mit N₂O-Bedarf.</strong> Der Betrieb übt tatsächlich eine Tätigkeit aus, die Lachgas benötigt – z.&nbsp;B. Einbau/Befüllung von Motorsport-Einspritzsystemen, Gastronomie, Laboranalytik.</span>
+    </label>
+    <label class="check-item">
+      <input type="checkbox" id="w-lager" data-persist>
+      <span><strong>Betriebsräume vorhanden.</strong> Es gibt Räumlichkeiten, in denen Druckgasflaschen vorschriftsmäßig gelagert werden können (belüftet, nicht im Keller, nicht in der Privatwohnung).</span>
+    </label>
+    <label class="check-item">
+      <input type="checkbox" id="w-doku" data-persist>
+      <span><strong>Verwendungszweck dokumentierbar.</strong> Der Einsatzzweck kann dem Lieferanten schriftlich und <em>wahrheitsgemäß</em> dargelegt werden.</span>
+    </label>
+  </div>
+
+  <div id="wizard-result" class="status-box neutral" role="status">
+    <p>Noch nichts angekreuzt. Hake an, was real zutrifft – das Ergebnis erscheint hier.</p>
+  </div>
+
+  <div class="note-box">
+    <strong>Kein Betrieb vorhanden?</strong> Dann ist der gewerbliche Weg keine Option.
+    Was für Privatpersonen legal bleibt, steht im Abschnitt
+    <a href="#privat">Rechtslage → Privatpersonen</a>. Ein Gewerbe <em>nur</em> anzumelden,
+    um an größere Gebinde zu kommen, ist eine Umgehung des NpSG und strafbar – Details ebenfalls dort.
+  </div>
+</section>
+
+<!-- ================================================================ -->
+<section id="wissen" class="card">
+  <h2>2 · Grundlagen: Was N₂O ist – und was nicht</h2>
+
+  <p>Distickstoffmonoxid (N₂O, „Lachgas“) ist ein farbloses, süßlich riechendes Gas.
+  Es <strong>brennt selbst nicht</strong>, wirkt aber <strong>brandfördernd (oxidierend)</strong>:
+  Ab ca. 570&nbsp;°C zerfällt es exotherm in Stickstoff und Sauerstoff. Da N₂O zu
+  <strong>rund 36&nbsp;Gewichtsprozent aus Sauerstoff</strong> besteht (Luft: ~23&nbsp;%),
+  liefert es Verbrennungen deutlich mehr Sauerstoff – genau das nutzt die Motorsport-Einspritzung.
+  In der Flasche ist es verflüssigt (Dampfdruck ca. 50&nbsp;bar bei 20&nbsp;°C), verkauft wird nach Gewicht.</p>
+
+  <h3>Mythen-Check</h3>
+  <div class="table-scroll">
+  <table>
+    <thead><tr><th>Behauptung</th><th>Stimmt?</th><th>Fakten</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>„Mit N₂O erreicht man beim Schweißen höhere Temperaturen“</td>
+        <td class="verdict partial">Teils – aber keine Schweiß-Anwendung</td>
+        <td>Eine N₂O-Acetylen-Flamme (~2.700–2.800&nbsp;°C) ist heißer als eine Luft-Acetylen-Flamme
+        (~1.900–2.300&nbsp;°C), aber <strong>kälter</strong> als die Sauerstoff-Acetylen-Flamme
+        (~3.100&nbsp;°C), mit der real geschweißt wird. Deshalb schweißt niemand mit Lachgas –
+        reiner Sauerstoff ist heißer <em>und</em> billiger. Die echte Nische hinter dieser
+        Halbwahrheit: <strong>Brenner in der Atomabsorptionsspektrometrie (AAS)</strong>,
+        einer Labor-Analysemethode, nutzen genau diese N₂O-Acetylen-Flamme, um schwer
+        atomisierbare Elemente (Aluminium, Silizium, Titan) zu messen.</td>
+      </tr>
+      <tr>
+        <td>„N₂O wird beim Autolackieren/Färben eingesetzt“</td>
+        <td class="verdict no">Nein</td>
+        <td>Lackieranlagen arbeiten mit Druckluft oder Stickstoff. Lachgas spielt beim
+        Lackieren keine Rolle.</td>
+      </tr>
+      <tr>
+        <td>„50&nbsp;% N₂O + 50&nbsp;% O₂ ist eine technische Mischung“</td>
+        <td class="verdict no">Nein</td>
+        <td>Dieses Gemisch ist ein <strong>verschreibungspflichtiges Arzneimittel</strong>
+        (Inhalations-Analgesie, Handelsnamen z.&nbsp;B. Entonox/Livopan) und wird nur an
+        medizinische Einrichtungen abgegeben. Einen technischen oder Automotive-Einsatz
+        gibt es dafür nicht.</td>
+      </tr>
+      <tr>
+        <td>„Tuning nutzt N₂O“</td>
+        <td class="verdict yes">Ja</td>
+        <td>Lachgas-Einspritzung nutzt <strong>reines technisches N₂O</strong>. Wichtig:
+        In Deutschland nur für Motorsport auf abgesperrten Strecken – im öffentlichen
+        Straßenverkehr erlischt die Betriebserlaubnis.</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>Temperaturleiter: warum niemand mit Lachgas schweißt</h3>
+  <div class="temp-ladder">
+    <div class="temp-row"><span class="temp-label">Sauerstoff + Acetylen (Schweißen/Schneiden)</span><div class="temp-bar" style="width:100%">~3.100&nbsp;°C</div></div>
+    <div class="temp-row"><span class="temp-label">N₂O + Acetylen (AAS-Laboranalytik)</span><div class="temp-bar mid" style="width:89%">~2.750&nbsp;°C</div></div>
+    <div class="temp-row"><span class="temp-label">Luft + Acetylen (Löten)</span><div class="temp-bar low" style="width:70%">~2.100&nbsp;°C</div></div>
+  </div>
+
+  <h3>Echte Einsatzgebiete in der (Auto-)Industrie</h3>
+  <ul>
+    <li><strong>Motorsport-Tuning:</strong> Lachgas-Einspritzsysteme (reines technisches N₂O) – der klassische Werkstatt-Anwendungsfall.</li>
+    <li><strong>Airbag-Technik:</strong> Hybrid-Gasgeneratoren nutzen N₂O als Oxidator mit Festbrennstoffen (Zulieferindustrie, patentierte Verfahren).</li>
+    <li><strong>Halbleiter-/Sensorfertigung:</strong> Oxidation von Siliziumsubstraten in CVD-Prozessen – betrifft auch Automotive-Zulieferer.</li>
+    <li><strong>Abgas-Messtechnik:</strong> Kalibriergase für Emissionsmessungen enthalten definierte N₂O-Anteile.</li>
+    <li><strong>Außerhalb Automotive:</strong> Lebensmittel (Treibgas E942, Sahne), Medizin/Zahnmedizin (Sedierung), AAS-Laboranalytik, Raketen-/Hybridtriebwerke.</li>
+  </ul>
+</section>
+
+<!-- ================================================================ -->
+<section id="qualitaet" class="card">
+  <h2>3 · Qualitäten: Lebensmittel vs. Industrie</h2>
+
+  <p>Chemisch ist es immer dasselbe Molekül. Die Qualitätsstufen unterscheiden sich in
+  Reinheit, zulässigen Verunreinigungen und Zertifizierung – und damit im Preis:</p>
+
+  <div class="table-scroll">
+  <table>
+    <thead><tr><th>Qualität</th><th>Reinheit</th><th>Für wen / Besonderheit</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><strong>Technisch</strong> (z.&nbsp;B. „N₂O 2.5“)</td>
+        <td>≥ 99,5&nbsp;%</td>
+        <td>Standard für Tuning, Analytik, Industrie. Restfeuchte und Spuren von CO₂/N₂/NOₓ
+        zulässig. <strong>Für den Werkstatt-Einsatz die richtige Wahl.</strong></td>
+      </tr>
+      <tr>
+        <td><strong>Lebensmittel (E942)</strong></td>
+        <td>≥ 99,0&nbsp;% gesetzlich (VO (EU) 231/2012), handelsüblich ~99,7&nbsp;%</td>
+        <td>Lebensmittelrechtlich zertifiziert, strenge Grenzwerte für NO/NO₂ und CO,
+        Chargen-Rückverfolgbarkeit. Nur nötig bei Lebensmittelkontakt (Gastronomie).</td>
+      </tr>
+      <tr>
+        <td><strong>Medizinisch</strong> (Ph.&nbsp;Eur.)</td>
+        <td>≥ 98,0&nbsp;% (Arzneibuch-Spezifikation)</td>
+        <td>Arzneimittel. Abgabe nur an medizinische Einrichtungen mit entsprechender
+        Berechtigung – für Werkstätten nicht erhältlich und nicht relevant.</td>
+      </tr>
+      <tr>
+        <td><strong>Automotive denaturiert</strong> (v.&nbsp;a. US-Markt)</td>
+        <td>~99&nbsp;%</td>
+        <td>Absichtlich mit ~100&nbsp;ppm Schwefeldioxid versetzt, um Missbrauch durch
+        Inhalation zu verhindern. Für die Einspritzung technisch gleichwertig.</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>Qualität prüfen: das Analysenzertifikat (CoA)</h3>
+  <p>Die Reinheit prüfst du nicht selbst im Betrieb – das leistet keine Werkstattausrüstung.
+  Stattdessen läuft die Prüfung über Papiere und Sichtkontrolle:</p>
+  <ul>
+    <li><strong>CoA (Certificate of Analysis)</strong> je Charge beim Lieferanten anfordern:
+    ausgewiesene Reinheit, Feuchte, NOₓ-/CO-Werte, Chargennummer.</li>
+    <li><strong>Flaschenprüffrist</strong> auf der Flaschenschulter kontrollieren
+    (eingeschlagenes Prüfdatum – abgelaufene Flaschen nicht annehmen).</li>
+    <li><strong>Zustand:</strong> unbeschädigtes Ventil, Verschlusskappe, korrektes
+    Gefahrgut-Etikett (UN&nbsp;1070, oxidierend).</li>
+    <li><strong>Plausibilität:</strong> Füllgewicht nachwiegen (Tara-Gewicht steht auf der Flasche).</li>
+  </ul>
+
+  <div class="warn-box">
+    <strong>Gase selbst mischen oder umfüllen? Nein.</strong> Das Abfüllen und Mischen von
+    Druckgasen ist zertifizierten Abfüllbetrieben vorbehalten (Druckgeräterecht, ADR) und
+    mit Oxidatoren akut gefährlich: Reiner Sauerstoff entzündet Öl- und Fettspuren schlagartig
+    (adiabatische Kompression). Gasgemische – falls je nötig – immer fertig vom Lieferanten beziehen.
+  </div>
+</section>
+
+<!-- ================================================================ -->
+<section id="recht" class="card">
+  <h2>4 · Rechtslage (Stand Juli 2026)</h2>
+
+  <h3>NpSG-Änderung – in Kraft seit 12. April 2026</h3>
+  <p>Der Bundestag hat am 14.11.2025 die Änderung des Neue-psychoaktive-Stoffe-Gesetzes
+  beschlossen; sie gilt seit dem 12.04.2026 und stellt Lachgas unter deutlich strengere Regeln:</p>
+  <ul>
+    <li><strong>Minderjährige:</strong> Abgabe an, Erwerb und Besitz durch Minderjährige sind verboten.</li>
+    <li><strong>Vertriebswege:</strong> Verkauf über Versandhandel und Automaten ist verboten.</li>
+    <li><strong>Mengengrenze für Verbraucher:</strong> max. 10 Kartuschen à 8,4&nbsp;g pro Verkaufsvorgang.</li>
+    <li><strong>Ausnahme:</strong> gewerbliche, industrielle und wissenschaftliche Zwecke bleiben erlaubt –
+    mit dokumentiertem, wahrheitsgemäßem Verwendungszweck.</li>
+    <li><strong>Strafen:</strong> Handel/Inverkehrbringen außerhalb der Ausnahmen bis zu 3 Jahre;
+    <strong>gewerbsmäßig 1–10 Jahre</strong> Freiheitsstrafe. Abgabe durch Über-21-Jährige an
+    Minderjährige: 1–10 Jahre.</li>
+  </ul>
+
+  <div class="warn-box">
+    <strong>Umgehung ist strafbar – auch für Helfer.</strong> Ein Gewerbe ohne echte Tätigkeit
+    anzumelden, um an größere Gebinde zu kommen, fällt nicht unter die gewerbliche Ausnahme.
+    Wer eine solche Konstruktion aufsetzt oder dabei hilft, riskiert eine Strafbarkeit wegen
+    Beihilfe. Lieferanten prüfen Geschäftszweck und Plausibilität – und lehnen bei Verdacht ab.
+  </div>
+
+  <h3>Gefahrstoff- und Transportrecht (gilt zusätzlich, unabhängig vom NpSG)</h3>
+  <ul>
+    <li><strong>Einstufung:</strong> oxidierendes Gas unter Druck (GHS03/GHS04), UN&nbsp;1070 (verdichtet) bzw. UN&nbsp;2201 (tiefgekühlt flüssig), ADR-Klasse 2.</li>
+    <li><strong>Lagerung:</strong> TRGS&nbsp;510 (Lagerung in ortsbeweglichen Behältern) – Details in der <a href="#checkliste">Checkliste</a>.</li>
+    <li><strong>Betrieb:</strong> Gefährdungsbeurteilung (GefStoffV), Betriebsanweisung, jährliche Unterweisung, Betriebssicherheitsverordnung, DGUV-Regeln.</li>
+    <li><strong>Transport:</strong> ADR mit Kleinmengenregelung („1000-Punkte-Regel“) für eigene Fahrten.</li>
+  </ul>
+
+  <h3 id="privat">Und ohne Gewerbe? Der Rahmen für Privatpersonen</h3>
+  <p>Der Vollständigkeit halber – das ist der legale Rahmen für Erwachsene ohne Betrieb:</p>
+  <ul>
+    <li>Erwerb und Besitz kleiner Kartuschen (bis 8,4&nbsp;g) bleiben für Volljährige legal –
+    max. 10 Stück pro Kauf, nur im stationären Handel (kein Versand, keine Automaten).</li>
+    <li>Größere Gebinde (Flaschen) sind für Privatpersonen faktisch nicht mehr legal erhältlich;
+    ein Firmen-Konstrukt zur Umgehung ist strafbar (siehe oben).</li>
+    <li><strong>Gesundheit, nüchtern betrachtet:</strong> Inhalation inaktiviert Vitamin B12 –
+    bei regelmäßigem Konsum drohen irreversible Nerven- und Rückenmarksschäden. Dazu kommen
+    Erfrierungen (−88&nbsp;°C Austrittstemperatur), Ohnmacht und Sauerstoffmangel. Das ist der
+    Grund für die Gesetzesverschärfung.</li>
+  </ul>
+
+  <p class="fineprint">Dieser Guide ist keine Rechtsberatung. Bei konkreten Fragen:
+  Anwalt für Verwaltungs-/Strafrecht oder die zuständige IHK.</p>
+</section>
+
+<!-- ================================================================ -->
+<section id="checkliste" class="card">
+  <h2>5 · Compliance-Checkliste für den Betrieb</h2>
+  <p>Alles abhaken, was <em>erledigt und belegbar</em> ist. Der Stand wird lokal im Browser
+  gespeichert. Erst wenn hier alles grün ist, lohnt die Lieferantenanfrage.
+  <button type="button" id="btn-print" class="btn">Als PDF drucken</button>
+  <button type="button" id="btn-reset" class="btn subtle">Zurücksetzen</button></p>
+
+  <div class="progress-total">
+    <div class="progress-track"><div id="progress-all" class="progress-fill" style="width:0%"></div></div>
+    <span id="progress-all-label">0 / 0</span>
+  </div>
+
+  <div class="check-group" data-group="A">
+    <h3>A · Gewerbe &amp; Unterlagen <span class="group-count" data-count="A"></span></h3>
+    <label class="check-item"><input type="checkbox" id="a1" data-persist data-cl="A">
+      <span>Gewerbeanmeldung beim Gewerbeamt erledigt, Gewerbeschein als Kopie griffbereit.</span></label>
+    <details><summary>Warum?</summary><p>Der Gewerbeschein ist das erste Dokument, das jeder Gaslieferant sehen will. Anmeldung kostet je nach Kommune ca. 20–60&nbsp;€, geht oft online.</p></details>
+    <label class="check-item"><input type="checkbox" id="a2" data-persist data-cl="A">
+      <span>Die angemeldete Tätigkeit deckt den N₂O-Einsatz ab (z.&nbsp;B. „Kfz-Werkstatt, Einbau und Wartung von Motorsport-Einspritzsystemen“).</span></label>
+    <details><summary>Warum?</summary><p>Lieferanten gleichen den Geschäftszweck mit der Bestellung ab. „Einzelhandel“ ohne Bezug zum Gas führt zu Rückfragen oder Ablehnung.</p></details>
+    <label class="check-item"><input type="checkbox" id="a3" data-persist data-cl="A">
+      <span>Schriftliche Verwendungszweck-Dokumentation erstellt (1 Seite: Tätigkeit, wofür N₂O, geschätzter Jahresbedarf).</span></label>
+    <details><summary>Warum?</summary><p>Dient doppelt: als Anlage zur Lieferantenanfrage und als NpSG-Nachweis, dass der Bezug unter die gewerbliche Ausnahme fällt.</p></details>
+    <label class="check-item"><input type="checkbox" id="a4" data-persist data-cl="A">
+      <span>Betriebshaftpflicht informiert bzw. Deckung für Druckgas-Lagerung geprüft.</span></label>
+    <details><summary>Warum?</summary><p>Manche Policen schließen Gefahrstofflagerung aus – vorher klären, sonst zahlt im Schadensfall niemand.</p></details>
+  </div>
+
+  <div class="check-group" data-group="B">
+    <h3>B · Lagerung &amp; Arbeitsschutz (TRGS 510) <span class="group-count" data-count="B"></span></h3>
+    <label class="check-item"><input type="checkbox" id="b1" data-persist data-cl="B">
+      <span>Lagerort ist gut belüftet und liegt nicht unter Erdgleiche (kein Keller).</span></label>
+    <details><summary>Warum?</summary><p>N₂O ist schwerer als Luft und sammelt sich in Senken – Erstickungs- und Brandförderungsgefahr in unbelüfteten Kellerräumen.</p></details>
+    <label class="check-item"><input type="checkbox" id="b2" data-persist data-cl="B">
+      <span>Flaschen stehen aufrecht und sind gegen Umfallen gesichert (Kette/Bügel/Palette).</span></label>
+    <details><summary>Warum?</summary><p>Eine umstürzende Flasche mit abgerissenem Ventil wird zum Geschoss – Standardforderung jeder Prüfung.</p></details>
+    <label class="check-item"><input type="checkbox" id="b3" data-persist data-cl="B">
+      <span>Mindestens 2&nbsp;m Abstand (oder Trennwand) zu brennbaren Stoffen – Öl, Reifen, Lacke, Kraftstoffe.</span></label>
+    <details><summary>Warum?</summary><p>N₂O ist brandfördernd: Im Brandfall verstärkt austretendes Gas das Feuer massiv. Gerade in Kfz-Werkstätten (Öl!) kritisch.</p></details>
+    <label class="check-item"><input type="checkbox" id="b4" data-persist data-cl="B">
+      <span>Lager gekennzeichnet (Warnzeichen „Gasflaschen“, Rauchverbot, Zutrittsregeln).</span></label>
+    <details><summary>Warum?</summary><p>Kennzeichnungspflicht nach TRGS 510/ASR – kostet ein paar Euro Schilder und ist der erste Blickfang jeder Kontrolle.</p></details>
+    <label class="check-item"><input type="checkbox" id="b5" data-persist data-cl="B">
+      <span>Gefährdungsbeurteilung nach GefStoffV erstellt und dokumentiert.</span></label>
+    <details><summary>Warum?</summary><p>Pflicht für jeden Betrieb mit Gefahrstoffen, auch Ein-Personen-Betriebe. Vorlagen gibt es bei der BG (DGUV) und der IHK kostenlos.</p></details>
+    <label class="check-item"><input type="checkbox" id="b6" data-persist data-cl="B">
+      <span>Betriebsanweisung hängt aus, Mitarbeiter sind unterwiesen (jährlich, dokumentiert).</span></label>
+    <details><summary>Warum?</summary><p>Folgt aus der Gefährdungsbeurteilung. Muster-Betriebsanweisungen für Druckgasflaschen liefert die BG.</p></details>
+    <label class="check-item"><input type="checkbox" id="b7" data-persist data-cl="B">
+      <span>Sicherheitsdatenblatt (SDB) des Lieferanten liegt vor und ist zugänglich abgelegt.</span></label>
+    <details><summary>Warum?</summary><p>Der Lieferant muss es liefern (REACH), der Betrieb muss es vorhalten – Grundlage für Betriebsanweisung und Notfallinfos.</p></details>
+  </div>
+
+  <div class="check-group" data-group="C">
+    <h3>C · Transport (ADR) <span class="group-count" data-count="C"></span></h3>
+    <label class="check-item"><input type="checkbox" id="c1" data-persist data-cl="C">
+      <span>Einstufung bekannt: UN&nbsp;1070, ADR-Klasse 2, oxidierend – steht auf dem Flaschen-Etikett.</span></label>
+    <details><summary>Warum?</summary><p>Ohne die UN-Nummer kannst du weder die Kleinmengenregelung rechnen noch im Notfall korrekt Auskunft geben.</p></details>
+    <label class="check-item"><input type="checkbox" id="c2" data-persist data-cl="C">
+      <span>Kleinmengenregelung („1000-Punkte-Regel“) für eigene Transporte geprüft.</span></label>
+    <details><summary>Warum?</summary><p>Unterhalb der Freigrenzen entfallen ADR-Pflichten wie Gefahrgutschein und orange Tafeln. Für typische Werkstattmengen meist einhaltbar – aber rechnen, nicht raten.</p></details>
+    <label class="check-item"><input type="checkbox" id="c3" data-persist data-cl="C">
+      <span>Beim Transport: Ventilschutzkappen aufgeschraubt, Ladung gesichert (Zurrgurte).</span></label>
+    <details><summary>Warum?</summary><p>Häufigster Beanstandungsgrund bei Kontrollen – und die reale Hauptunfallquelle beim Flaschentransport.</p></details>
+    <label class="check-item"><input type="checkbox" id="c4" data-persist data-cl="C">
+      <span>Fahrzeug wird belüftet; keine Flaschen dauerhaft im geschlossenen Pkw-Innenraum.</span></label>
+    <details><summary>Warum?</summary><p>Ein Leck im geschlossenen Fahrzeug bedeutet Bewusstlosigkeit am Steuer. Fenster auf, Fahrzeit kurz, Flaschen raus nach Ankunft.</p></details>
+  </div>
+
+  <div class="check-group" data-group="D">
+    <h3>D · Einkauf &amp; Wareneingang <span class="group-count" data-count="D"></span></h3>
+    <label class="check-item"><input type="checkbox" id="d1" data-persist data-cl="D">
+      <span>Anbieter ausgewählt, Gewerbe-Kundenkonto eröffnet (Gewerbeschein + Verwendungszweck eingereicht).</span></label>
+    <details><summary>Warum?</summary><p>Die Kontoeröffnung ist die eigentliche „Prüfung“ – danach läuft Bestellen unkompliziert. Anbieterliste im <a href="#anbieter">nächsten Abschnitt</a>.</p></details>
+    <label class="check-item"><input type="checkbox" id="d2" data-persist data-cl="D">
+      <span>Schriftliches Angebot eingeholt: kg-Preis, Flaschenmiete/Pfand, Lieferkosten, Mindestmengen.</span></label>
+    <details><summary>Warum?</summary><p>N₂O-Preise stehen fast nie öffentlich – ohne Vergleichsangebote (2–3 Anbieter) zahlst du den Erstkunden-Aufschlag.</p></details>
+    <label class="check-item"><input type="checkbox" id="d3" data-persist data-cl="D">
+      <span>Passende Qualität bestellt: technisch (≥&nbsp;99,5&nbsp;%) für Tuning – nicht Lebensmittel, nicht medizinisch.</span></label>
+    <details><summary>Warum?</summary><p>Höhere Qualitätsstufen kosten mehr und werfen beim Lieferanten Fragen auf, wenn sie nicht zum Geschäftszweck passen.</p></details>
+    <label class="check-item"><input type="checkbox" id="d4" data-persist data-cl="D">
+      <span>Analysenzertifikat (CoA) je Charge angefordert und abgelegt.</span></label>
+    <details><summary>Warum?</summary><p>Beleg der Produktqualität – siehe <a href="#qualitaet">Abschnitt Qualitäten</a>.</p></details>
+    <label class="check-item"><input type="checkbox" id="d5" data-persist data-cl="D">
+      <span>Bei Annahme geprüft: Flaschenprüffrist, Ventilzustand, Etikett, Füllgewicht.</span></label>
+    <details><summary>Warum?</summary><p>Reklamationen nach Annahme sind zäh – 2 Minuten Sichtprüfung sparen Wochen Ärger.</p></details>
+    <label class="check-item"><input type="checkbox" id="d6" data-persist data-cl="D">
+      <span>Wareneingang dokumentiert: Datum, Menge, Chargennummer, Lieferant.</span></label>
+    <details><summary>Warum?</summary><p>Zusammen mit der Verbrauchsdoku (Gruppe E) dein Nachweis, dass alles im gewerblichen Rahmen bleibt.</p></details>
+  </div>
+
+  <div class="check-group" data-group="E">
+    <h3>E · Laufende Pflichten <span class="group-count" data-count="E"></span></h3>
+    <label class="check-item"><input type="checkbox" id="e1" data-persist data-cl="E">
+      <span>Verbrauch wird dokumentiert (Datum, Menge, Zweck/Auftrag).</span></label>
+    <details><summary>Warum?</summary><p>Einfache Tabelle reicht. Sie belegt bei jeder Nachfrage – vom Lieferanten bis zur Behörde – den gewerblichen Verbleib.</p></details>
+    <label class="check-item"><input type="checkbox" id="e2" data-persist data-cl="E">
+      <span>Keine Abgabe außerhalb der NpSG-Regeln: nicht an Minderjährige, kein Verkauf an Verbraucher jenseits der Kartuschen-Grenze, kein Versand.</span></label>
+    <details><summary>Warum?</summary><p>Der Punkt, an dem aus einem legalen Betrieb eine Straftat wird (1–10 Jahre bei Gewerbsmäßigkeit). Befüllt wird das System im Kundenfahrzeug – Flaschen werden nicht „mitgegeben“.</p></details>
+    <label class="check-item"><input type="checkbox" id="e3" data-persist data-cl="E">
+      <span>Jährliche Unterweisung wiederholt und dokumentiert.</span></label>
+    <details><summary>Warum?</summary><p>Pflicht nach GefStoffV/DGUV – Datum + Unterschriften genügen als Nachweis.</p></details>
+    <label class="check-item"><input type="checkbox" id="e4" data-persist data-cl="E">
+      <span>Rechtsstand jährlich geprüft (NpSG, TRGS – die Lage ist in Bewegung).</span></label>
+    <details><summary>Warum?</summary><p>Allein 2025/2026 hat sich die Rechtslage zweimal geändert. Ein Kalendereintrag pro Jahr reicht.</p></details>
+  </div>
+</section>
+
+<!-- ================================================================ -->
+<section id="anbieter" class="card">
+  <h2>6 · Anbieter, Mindestmengen &amp; Bestellprozess</h2>
+
+  <div class="table-scroll">
+  <table>
+    <thead><tr><th>Anbieter</th><th>Hinweise</th></tr></thead>
+    <tbody>
+      <tr><td>Westfalen AG</td><td>Technische Gase, dichtes Händler-/Depotnetz – gute erste Anlaufstelle für kleinere Betriebe.</td></tr>
+      <tr><td>Messer Industriegase</td><td>Technisches N₂O; verlangt Gewerbenachweis und plausiblen Verwendungszweck.</td></tr>
+      <tr><td>Air Liquide Deutschland</td><td>Breites Industriegas-Programm, eher auf mittlere bis größere Abnahmemengen ausgerichtet.</td></tr>
+      <tr><td>Nippon Gases Deutschland</td><td>Industrie- und Lebensmittelgase.</td></tr>
+      <tr><td>Linde</td><td>Medizinisches N₂O nur an medizinische Einrichtungen; technische Gase laufen über Vertriebspartner.</td></tr>
+      <tr><td>Regionale Gasehändler</td><td>Oft die flexibelste Option für kleine Gewerbe (Suche z.&nbsp;B. über wlw.de, „technische Gase“ + Region).</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>Gebinde &amp; Mindestmengen</h3>
+  <ul>
+    <li><strong>Kartuschen 8,4&nbsp;g:</strong> Verbraucherbereich, NpSG-Mengengrenze (max. 10/Kauf) – für den Betrieb unwirtschaftlich.</li>
+    <li><strong>Flaschen ca. 7,5&nbsp;kg und ca. 37,5&nbsp;kg:</strong> Standard-Gebinde für technisches N₂O; Miete oder Kauf der Flasche, je nach Anbieter.</li>
+    <li><strong>Mindestmengen:</strong> formal meist keine – praktisch lohnt Lieferung oft erst ab 1–2 großen Flaschen; Abholung am Depot ist die Alternative.</li>
+    <li><strong>Preise:</strong> fast nur auf Anfrage; als grobe Hausnummer 10–30&nbsp;€/kg zzgl. Flaschenmiete – real entscheidet das Angebot (siehe <a href="#kosten">Kostenrechner</a>).</li>
+  </ul>
+
+  <h3>Bestellprozess in 6 Schritten</h3>
+  <ol class="steps">
+    <li>Verwendungszweck-Dokumentation fertigstellen (Checkliste&nbsp;A3).</li>
+    <li>2–3 Anbieter anschreiben (Vorlage unten), Angebote vergleichen.</li>
+    <li>Kundenkonto beim Favoriten eröffnen: Gewerbeschein + Verwendungszweck einreichen.</li>
+    <li>Erste Bestellung: Gebinde, Miete/Kauf, Lieferung oder Depot-Abholung festlegen.</li>
+    <li>Wareneingang nach Checkliste&nbsp;D prüfen und dokumentieren.</li>
+    <li>Laufend: Verbrauch dokumentieren (E), rechtzeitig nachbestellen.</li>
+  </ol>
+
+  <h3>Anfrage-Vorlage <button type="button" id="btn-copy" class="btn">Kopieren</button></h3>
+  <pre id="mail-template">Betreff: Anfrage technisches Lachgas (N₂O) für gewerbliche Nutzung
+
+Sehr geehrte Damen und Herren,
+
+wir betreiben in [Ort] eine [konkrete Tätigkeit, z. B. "Kfz-Werkstatt mit
+Schwerpunkt Motorsport-Umbauten; wir installieren und befüllen Lachgas-
+Einspritzsysteme für den Rennstreckeneinsatz"].
+
+Dafür benötigen wir technisches Distickstoffmonoxid (N₂O):
+
+  - Qualität:     technisch, Reinheit >= 99,5 %
+  - Gebinde:      [z. B. 1-2 Flaschen à 37,5 kg, Miete oder Kauf]
+  - Jahresbedarf: ca. [XX] kg
+  - Lieferung an: [Betriebsadresse] (alternativ Depot-Abholung)
+
+Gewerbeanmeldung und eine schriftliche Dokumentation des Verwendungszwecks
+liegen vor und senden wir Ihnen gerne zu.
+
+Bitte nennen Sie uns ein Angebot inkl. Flaschenmiete/Pfand, Lieferkosten
+und etwaiger Mindestabnahmemengen.
+
+Mit freundlichen Grüßen
+[Name, Firma, Telefon]</pre>
+</section>
+
+<!-- ================================================================ -->
+<section id="kosten" class="card">
+  <h2>7 · Kostenrechner</h2>
+  <p>Grobe Jahreskalkulation – die Vorgabewerte sind Richtwerte, echte Zahlen liefert nur das Angebot.</p>
+
+  <div class="calc-grid">
+    <label>Jahresbedarf (kg)
+      <input type="number" id="k-bedarf" value="50" min="0" step="1" data-persist-val></label>
+    <label>Gaspreis (€/kg)
+      <input type="number" id="k-preis" value="18" min="0" step="0.5" data-persist-val></label>
+    <label>Anzahl Mietflaschen
+      <input type="number" id="k-flaschen" value="2" min="0" step="1" data-persist-val></label>
+    <label>Flaschenmiete (€/Monat je Flasche)
+      <input type="number" id="k-miete" value="8" min="0" step="0.5" data-persist-val></label>
+    <label>Lieferpauschale (€/Lieferung)
+      <input type="number" id="k-liefer" value="25" min="0" step="1" data-persist-val></label>
+    <label>Lieferungen pro Jahr
+      <input type="number" id="k-anzahl" value="4" min="0" step="1" data-persist-val></label>
+  </div>
+
+  <div class="calc-result" id="calc-result" aria-live="polite">
+    <table>
+      <tbody>
+        <tr><td>Gaskosten</td><td id="r-gas">–</td></tr>
+        <tr><td>Flaschenmiete</td><td id="r-miete">–</td></tr>
+        <tr><td>Lieferkosten</td><td id="r-liefer">–</td></tr>
+        <tr class="total"><td>Jahreskosten gesamt</td><td id="r-summe">–</td></tr>
+        <tr><td>Effektiver Preis pro kg</td><td id="r-effektiv">–</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p class="fineprint">Nicht enthalten: einmalige Kosten (Gewerbeanmeldung ~20–60&nbsp;€,
+  Lagersicherung/Schilder ~100–300&nbsp;€, ggf. Flaschenkauf statt Miete) und Arbeitszeit
+  für Dokumentation.</p>
+</section>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <p><strong>Quellen (Auswahl):</strong>
+      <a href="https://www.bundesgesundheitsministerium.de/ministerium/meldungen/bundestag-verabschiedet-verbot-von-lachgas-und-ko-tropfen-pm-14-11-2025" rel="noopener">BMG – Bundestag verabschiedet Lachgas-Verbot (14.11.2025)</a> ·
+      <a href="https://www.bundesregierung.de/breg-de/aktuelles/neue-psychoaktive-stoffe-gesetz-2361568" rel="noopener">Bundesregierung – NpSG-Änderung</a> ·
+      <a href="https://www.aws.org/magazines-and-media/welding-digest/wd-oct-23-a-comparison-of-oxygen--vs-air-acetylene-torches/" rel="noopener">AWS – Flammentemperaturen im Vergleich</a>
+    </p>
+    <p class="fineprint">Keine Rechtsberatung. Angaben nach bestem Wissen, Stand Juli 2026 –
+    Rechtslage und Preise können sich ändern. Alle Eingaben bleiben lokal im Browser (localStorage);
+    es werden keine Daten übertragen.</p>
+  </div>
+</footer>
+
+</main>
+<script src="app.js"></script>
+</body>
+</html>
