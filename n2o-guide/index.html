@@ -6,31 +6,63 @@
 <title>N₂O Gewerbe-Guide – Compliance &amp; Beschaffung</title>
 <link rel="stylesheet" href="styles.css">
 </head>
-<body>
+<body class="mode-guided">
 
 <header class="site-header">
-  <div class="wrap">
-    <h1>N₂O Gewerbe-Guide</h1>
-    <p class="tagline">Distickstoffmonoxid (Lachgas) legal und sicher im Betrieb beziehen – Rechtslage, Checklisten, Anbieter, Kosten. Stand: Juli 2026.</p>
+  <div class="wrap header-flex">
+    <div>
+      <h1>N₂O Gewerbe-Guide</h1>
+      <p class="tagline">Distickstoffmonoxid (Lachgas) legal und sicher im Betrieb beziehen – Schritt für Schritt. Stand: Juli 2026.</p>
+    </div>
+    <div class="header-actions">
+      <div class="mode-switch" role="group" aria-label="Ansicht">
+        <button type="button" id="mode-guided-btn" class="mode-btn active">Geführt</button>
+        <button type="button" id="mode-handbook-btn" class="mode-btn">Handbuch</button>
+      </div>
+      <button type="button" id="theme-toggle" class="btn subtle" title="Hell/Dunkel umschalten">🌓</button>
+    </div>
   </div>
 </header>
 
 <nav class="site-nav" aria-label="Hauptnavigation">
   <div class="wrap">
-    <a href="#check">Realitäts-Check</a>
+    <a href="#check">Check</a>
     <a href="#wissen">Grundlagen</a>
     <a href="#qualitaet">Qualitäten</a>
     <a href="#recht">Rechtslage</a>
+    <a href="#betrieb">Betriebsdaten</a>
     <a href="#checkliste">Checkliste</a>
-    <a href="#anbieter">Anbieter &amp; Bestellung</a>
+    <a href="#anbieter">Anbieter</a>
     <a href="#kosten">Kosten</a>
+    <a href="#verwaltung">Verwaltung</a>
   </div>
 </nav>
 
+<div class="step-rail-wrap">
+  <div class="wrap rail-flex">
+    <svg id="score-ring" viewBox="0 0 64 64" width="64" height="64" aria-label="Gesamtfortschritt">
+      <circle cx="32" cy="32" r="26" class="ring-bg"/>
+      <circle cx="32" cy="32" r="26" class="ring-fill" id="ring-fill"/>
+      <text x="32" y="37" text-anchor="middle" id="ring-label">0%</text>
+    </svg>
+    <ol id="step-rail">
+      <li data-goto="1"><span class="chip">1</span><span class="chip-label">Check</span></li>
+      <li data-goto="2"><span class="chip">2</span><span class="chip-label">Wissen</span></li>
+      <li data-goto="3"><span class="chip">3</span><span class="chip-label">Qualität</span></li>
+      <li data-goto="4"><span class="chip">4</span><span class="chip-label">Recht</span></li>
+      <li data-goto="5"><span class="chip">5</span><span class="chip-label">Betrieb</span></li>
+      <li data-goto="6"><span class="chip">6</span><span class="chip-label">Compliance</span></li>
+      <li data-goto="7"><span class="chip">7</span><span class="chip-label">Anfrage</span></li>
+      <li data-goto="8"><span class="chip">8</span><span class="chip-label">Kosten</span></li>
+      <li data-goto="9"><span class="chip">9</span><span class="chip-label">Verwaltung</span></li>
+    </ol>
+  </div>
+</div>
+
 <main class="wrap">
 
-<!-- ================================================================ -->
-<section id="check" class="card">
+<!-- ============================ STEP 1 ============================ -->
+<section id="check" class="card" data-step="1">
   <h2>1 · Realitäts-Check: Ist gewerblicher Bezug überhaupt der richtige Weg?</h2>
   <p>Dieser Guide hilft <strong>echten Betrieben</strong>, N₂O regelkonform zu beziehen.
   Er ist bewusst <strong>keine</strong> Anleitung, wie man eine Lieferantenprüfung „besteht“:
@@ -68,8 +100,8 @@
   </div>
 </section>
 
-<!-- ================================================================ -->
-<section id="wissen" class="card">
+<!-- ============================ STEP 2 ============================ -->
+<section id="wissen" class="card" data-step="2">
   <h2>2 · Grundlagen: Was N₂O ist – und was nicht</h2>
 
   <p>Distickstoffmonoxid (N₂O, „Lachgas“) ist ein farbloses, süßlich riechendes Gas.
@@ -135,10 +167,65 @@
     <li><strong>Abgas-Messtechnik:</strong> Kalibriergase für Emissionsmessungen enthalten definierte N₂O-Anteile.</li>
     <li><strong>Außerhalb Automotive:</strong> Lebensmittel (Treibgas E942, Sahne), Medizin/Zahnmedizin (Sedierung), AAS-Laboranalytik, Raketen-/Hybridtriebwerke.</li>
   </ul>
+
+  <h3>Wissens-Check: 7 Fragen</h3>
+  <div id="quiz">
+    <fieldset class="quiz-q" data-correct="b">
+      <legend>1 · Brennt N₂O selbst?</legend>
+      <label><input type="radio" name="q1" value="a" data-persist-radio> Ja, es ist ein Brenngas</label>
+      <label><input type="radio" name="q1" value="b" data-persist-radio> Nein – es ist ein Oxidator und wirkt brandfördernd</label>
+      <label><input type="radio" name="q1" value="c" data-persist-radio> Nur unter Druck</label>
+      <p class="quiz-explain">N₂O brennt nicht selbst, liefert aber beim Zerfall Sauerstoff und verstärkt Brände massiv.</p>
+    </fieldset>
+    <fieldset class="quiz-q" data-correct="b">
+      <legend>2 · Womit wird in der Praxis geschweißt?</legend>
+      <label><input type="radio" name="q2" value="a" data-persist-radio> N₂O + Acetylen</label>
+      <label><input type="radio" name="q2" value="b" data-persist-radio> Sauerstoff + Acetylen</label>
+      <label><input type="radio" name="q2" value="c" data-persist-radio> Luft + Acetylen</label>
+      <p class="quiz-explain">Sauerstoff-Acetylen (~3.100&nbsp;°C) ist heißer und billiger als N₂O-Acetylen (~2.750&nbsp;°C). Die N₂O-Flamme lebt nur in der AAS-Laboranalytik.</p>
+    </fieldset>
+    <fieldset class="quiz-q" data-correct="c">
+      <legend>3 · Welche Qualität gehört in die Motorsport-Einspritzung?</legend>
+      <label><input type="radio" name="q3" value="a" data-persist-radio> Medizinisch</label>
+      <label><input type="radio" name="q3" value="b" data-persist-radio> Lebensmittel E942</label>
+      <label><input type="radio" name="q3" value="c" data-persist-radio> Technisch (≥ 99,5 %)</label>
+      <p class="quiz-explain">Technische Qualität reicht völlig – höhere Stufen kosten mehr und passen nicht zum Geschäftszweck.</p>
+    </fieldset>
+    <fieldset class="quiz-q" data-correct="b">
+      <legend>4 · Wie viele 8,4-g-Kartuschen dürfen pro Verkauf an Verbraucher abgegeben werden?</legend>
+      <label><input type="radio" name="q4" value="a" data-persist-radio> 5</label>
+      <label><input type="radio" name="q4" value="b" data-persist-radio> 10</label>
+      <label><input type="radio" name="q4" value="c" data-persist-radio> Unbegrenzt</label>
+      <p class="quiz-explain">Seit 12.04.2026: max. 10 Kartuschen à 8,4&nbsp;g pro Verkaufsvorgang, kein Versandhandel, keine Automaten.</p>
+    </fieldset>
+    <fieldset class="quiz-q" data-correct="b">
+      <legend>5 · Dürfen die Flaschen im Keller gelagert werden?</legend>
+      <label><input type="radio" name="q5" value="a" data-persist-radio> Ja, wenn abgeschlossen</label>
+      <label><input type="radio" name="q5" value="b" data-persist-radio> Nein – nicht unter Erdgleiche</label>
+      <label><input type="radio" name="q5" value="c" data-persist-radio> Nur im Winter</label>
+      <p class="quiz-explain">N₂O ist schwerer als Luft und sammelt sich in Senken – TRGS 510 verlangt belüftete Lagerung über Erdgleiche.</p>
+    </fieldset>
+    <fieldset class="quiz-q" data-correct="c">
+      <legend>6 · Was ist 50 % N₂O + 50 % O₂?</legend>
+      <label><input type="radio" name="q6" value="a" data-persist-radio> Eine Tuning-Mischung</label>
+      <label><input type="radio" name="q6" value="b" data-persist-radio> Ein Schweißgas</label>
+      <label><input type="radio" name="q6" value="c" data-persist-radio> Ein verschreibungspflichtiges Arzneimittel</label>
+      <p class="quiz-explain">Das ist die medizinische Inhalations-Analgesie (Entonox/Livopan) – nur für medizinische Einrichtungen, kein technischer Einsatz.</p>
+    </fieldset>
+    <fieldset class="quiz-q" data-correct="c">
+      <legend>7 · Ein Gewerbe nur anmelden, um Gas kaufen zu können, ist …</legend>
+      <label><input type="radio" name="q7" value="a" data-persist-radio> Clever</label>
+      <label><input type="radio" name="q7" value="b" data-persist-radio> Erlaubt, solange ein Schein existiert</label>
+      <label><input type="radio" name="q7" value="c" data-persist-radio> Eine strafbare Umgehung des NpSG</label>
+      <p class="quiz-explain">Ohne reale Tätigkeit greift die gewerbliche Ausnahme nicht – bei gewerbsmäßigem Inverkehrbringen drohen 1–10 Jahre, auch für Helfer.</p>
+    </fieldset>
+    <p><button type="button" id="btn-quiz" class="btn">Auswerten</button></p>
+    <div id="quiz-result" class="status-box neutral" hidden></div>
+  </div>
 </section>
 
-<!-- ================================================================ -->
-<section id="qualitaet" class="card">
+<!-- ============================ STEP 3 ============================ -->
+<section id="qualitaet" class="card" data-step="3">
   <h2>3 · Qualitäten: Lebensmittel vs. Industrie</h2>
 
   <p>Chemisch ist es immer dasselbe Molekül. Die Qualitätsstufen unterscheiden sich in
@@ -176,6 +263,19 @@
   </table>
   </div>
 
+  <h3>Deine Qualität wählen</h3>
+  <div class="wizard">
+    <label class="check-item">
+      <input type="radio" name="qual" value="technisch" data-persist-radio>
+      <span><strong>Technisch (≥ 99,5 %)</strong> – Motorsport-Tuning, Industrie, Analytik</span>
+    </label>
+    <label class="check-item">
+      <input type="radio" name="qual" value="e942" data-persist-radio>
+      <span><strong>Lebensmittel (E942)</strong> – nur bei Lebensmittelkontakt (Gastronomie)</span>
+    </label>
+  </div>
+  <p class="fineprint">Die Wahl fließt automatisch in die Anfrage-Mail (Schritt 7) und die Verwendungszweck-Doku (Schritt 5) ein.</p>
+
   <h3>Qualität prüfen: das Analysenzertifikat (CoA)</h3>
   <p>Die Reinheit prüfst du nicht selbst im Betrieb – das leistet keine Werkstattausrüstung.
   Stattdessen läuft die Prüfung über Papiere und Sichtkontrolle:</p>
@@ -197,8 +297,8 @@
   </div>
 </section>
 
-<!-- ================================================================ -->
-<section id="recht" class="card">
+<!-- ============================ STEP 4 ============================ -->
+<section id="recht" class="card" data-step="4">
   <h2>4 · Rechtslage (Stand Juli 2026)</h2>
 
   <h3>NpSG-Änderung – in Kraft seit 12. April 2026</h3>
@@ -224,10 +324,10 @@
 
   <h3>Gefahrstoff- und Transportrecht (gilt zusätzlich, unabhängig vom NpSG)</h3>
   <ul>
-    <li><strong>Einstufung:</strong> oxidierendes Gas unter Druck (GHS03/GHS04), UN&nbsp;1070 (verdichtet) bzw. UN&nbsp;2201 (tiefgekühlt flüssig), ADR-Klasse 2.</li>
+    <li><strong>Einstufung:</strong> oxidierendes Gas unter Druck (GHS03/GHS04), UN&nbsp;1070 (Flaschen) bzw. UN&nbsp;2201 (tiefgekühlt flüssig), ADR-Klasse 2.</li>
     <li><strong>Lagerung:</strong> TRGS&nbsp;510 (Lagerung in ortsbeweglichen Behältern) – Details in der <a href="#checkliste">Checkliste</a>.</li>
     <li><strong>Betrieb:</strong> Gefährdungsbeurteilung (GefStoffV), Betriebsanweisung, jährliche Unterweisung, Betriebssicherheitsverordnung, DGUV-Regeln.</li>
-    <li><strong>Transport:</strong> ADR mit Kleinmengenregelung („1000-Punkte-Regel“) für eigene Fahrten.</li>
+    <li><strong>Transport:</strong> ADR mit Kleinmengenregelung („1000-Punkte-Regel“) für eigene Fahrten – Rechner in der <a href="#checkliste">Checkliste</a>.</li>
   </ul>
 
   <h3 id="privat">Und ohne Gewerbe? Der Rahmen für Privatpersonen</h3>
@@ -243,13 +343,65 @@
     Grund für die Gesetzesverschärfung.</li>
   </ul>
 
+  <label class="check-item">
+    <input type="checkbox" id="recht-ok" data-persist>
+    <span><strong>Gelesen &amp; verstanden</strong> – insbesondere: Umgehungskonstruktionen sind strafbar, und die Abgaberegeln gelten auch für meinen Betrieb.</span>
+  </label>
+
   <p class="fineprint">Dieser Guide ist keine Rechtsberatung. Bei konkreten Fragen:
   Anwalt für Verwaltungs-/Strafrecht oder die zuständige IHK.</p>
 </section>
 
-<!-- ================================================================ -->
-<section id="checkliste" class="card">
-  <h2>5 · Compliance-Checkliste für den Betrieb</h2>
+<!-- ============================ STEP 5 ============================ -->
+<section id="betrieb" class="card" data-step="5">
+  <h2>5 · Betriebsdaten &amp; Dokumenten-Generator</h2>
+  <p class="doc-hide-on-print">Diese Angaben bleiben lokal im Browser und füllen die
+  <strong>Verwendungszweck-Doku</strong> (unten) und die <strong>Anfrage-Mail</strong> (Schritt 7)
+  automatisch aus. Nur wahrheitsgemäße Angaben verwenden – die Doku geht an den Lieferanten.</p>
+
+  <div class="form-grid doc-hide-on-print">
+    <label>Firmenname
+      <input type="text" id="f-firma" data-persist-val placeholder="z. B. Mustermann Motorsport"></label>
+    <label>Rechtsform
+      <select id="f-rechtsform" data-persist-val>
+        <option>Einzelunternehmen</option><option>GbR</option>
+        <option>UG (haftungsbeschränkt)</option><option>GmbH</option>
+      </select></label>
+    <label>Ort
+      <input type="text" id="f-ort" data-persist-val placeholder="z. B. Dortmund"></label>
+    <label>Tätigkeit
+      <select id="f-taetigkeit" data-persist-val>
+        <option value="">– bitte wählen –</option>
+        <option value="kfz">Kfz-/Motorsport-Werkstatt (N₂O-Einspritzsysteme)</option>
+        <option value="gastro">Gastronomie / Lebensmittel (Treibgas E942)</option>
+        <option value="labor">Labor / Analytik (AAS-Brenngas)</option>
+        <option value="industrie">Industrie / Fertigung (Prozessgas)</option>
+      </select></label>
+    <label>Tätigkeits-Details (optional)
+      <input type="text" id="f-detail" data-persist-val placeholder="z. B. Schwerpunkt Drag-Racing-Umbauten"></label>
+    <label>Jahresbedarf (kg)
+      <input type="number" id="f-bedarf" value="50" min="0" step="1" data-persist-val></label>
+    <label>Gebinde
+      <select id="f-gebinde" data-persist-val>
+        <option>1 × 7,5-kg-Flasche</option><option>2 × 7,5-kg-Flaschen</option>
+        <option>1 × 37,5-kg-Flasche</option><option>2 × 37,5-kg-Flaschen</option>
+      </select></label>
+    <label>Ansprechpartner
+      <input type="text" id="f-name" data-persist-val placeholder="Vor- und Nachname"></label>
+    <label>Telefon
+      <input type="text" id="f-tel" data-persist-val placeholder="für Rückfragen des Lieferanten"></label>
+  </div>
+
+  <div id="betrieb-status" class="status-box neutral doc-hide-on-print" role="status"></div>
+
+  <h3 class="doc-hide-on-print">Verwendungszweck-Dokumentation
+    <button type="button" id="btn-doc-print" class="btn">Nur diese Doku drucken</button></h3>
+  <div id="doc-verwendung" class="doc-sheet"></div>
+</section>
+
+<!-- ============================ STEP 6 ============================ -->
+<section id="checkliste" class="card" data-step="6">
+  <h2>6 · Compliance-Checkliste für den Betrieb</h2>
   <p>Alles abhaken, was <em>erledigt und belegbar</em> ist. Der Stand wird lokal im Browser
   gespeichert. Erst wenn hier alles grün ist, lohnt die Lieferantenanfrage.
   <button type="button" id="btn-print" class="btn">Als PDF drucken</button>
@@ -269,7 +421,7 @@
       <span>Die angemeldete Tätigkeit deckt den N₂O-Einsatz ab (z.&nbsp;B. „Kfz-Werkstatt, Einbau und Wartung von Motorsport-Einspritzsystemen“).</span></label>
     <details><summary>Warum?</summary><p>Lieferanten gleichen den Geschäftszweck mit der Bestellung ab. „Einzelhandel“ ohne Bezug zum Gas führt zu Rückfragen oder Ablehnung.</p></details>
     <label class="check-item"><input type="checkbox" id="a3" data-persist data-cl="A">
-      <span>Schriftliche Verwendungszweck-Dokumentation erstellt (1 Seite: Tätigkeit, wofür N₂O, geschätzter Jahresbedarf).</span></label>
+      <span>Schriftliche Verwendungszweck-Dokumentation erstellt (Generator in <a href="#betrieb">Schritt 5</a>).</span></label>
     <details><summary>Warum?</summary><p>Dient doppelt: als Anlage zur Lieferantenanfrage und als NpSG-Nachweis, dass der Bezug unter die gewerbliche Ausnahme fällt.</p></details>
     <label class="check-item"><input type="checkbox" id="a4" data-persist data-cl="A">
       <span>Betriebshaftpflicht informiert bzw. Deckung für Druckgas-Lagerung geprüft.</span></label>
@@ -307,7 +459,7 @@
       <span>Einstufung bekannt: UN&nbsp;1070, ADR-Klasse 2, oxidierend – steht auf dem Flaschen-Etikett.</span></label>
     <details><summary>Warum?</summary><p>Ohne die UN-Nummer kannst du weder die Kleinmengenregelung rechnen noch im Notfall korrekt Auskunft geben.</p></details>
     <label class="check-item"><input type="checkbox" id="c2" data-persist data-cl="C">
-      <span>Kleinmengenregelung („1000-Punkte-Regel“) für eigene Transporte geprüft.</span></label>
+      <span>Kleinmengenregelung („1000-Punkte-Regel“) für eigene Transporte geprüft (Rechner unten).</span></label>
     <details><summary>Warum?</summary><p>Unterhalb der Freigrenzen entfallen ADR-Pflichten wie Gefahrgutschein und orange Tafeln. Für typische Werkstattmengen meist einhaltbar – aber rechnen, nicht raten.</p></details>
     <label class="check-item"><input type="checkbox" id="c3" data-persist data-cl="C">
       <span>Beim Transport: Ventilschutzkappen aufgeschraubt, Ladung gesichert (Zurrgurte).</span></label>
@@ -315,34 +467,49 @@
     <label class="check-item"><input type="checkbox" id="c4" data-persist data-cl="C">
       <span>Fahrzeug wird belüftet; keine Flaschen dauerhaft im geschlossenen Pkw-Innenraum.</span></label>
     <details><summary>Warum?</summary><p>Ein Leck im geschlossenen Fahrzeug bedeutet Bewusstlosigkeit am Steuer. Fenster auf, Fahrzeit kurz, Flaschen raus nach Ankunft.</p></details>
+
+    <div class="tool-box">
+      <h4>ADR-Kleinmengen-Rechner (vereinfacht)</h4>
+      <div class="calc-grid">
+        <label>Anzahl Flaschen an Bord
+          <input type="number" id="adr-n" value="2" min="0" step="1" data-persist-val></label>
+        <label>Fassungsraum je Flasche (Liter)
+          <input type="number" id="adr-l" value="50" min="0" step="1" data-persist-val></label>
+      </div>
+      <div id="adr-result" class="status-box neutral" role="status"></div>
+      <p class="fineprint">Vereinfachte Rechnung, nur für reine N₂O-Ladung (UN&nbsp;1070,
+      Beförderungskategorie&nbsp;3, Faktor&nbsp;1: Punkte = Gesamtfassungsraum in Litern; Grenze 1.000).
+      Richtwerte: 37,5-kg-Flasche ≈ 50&nbsp;l, 7,5-kg-Flasche ≈ 10&nbsp;l Fassungsraum.
+      Ohne Gewähr – bei Mischladung mit anderen Gefahrgütern neu rechnen.</p>
+    </div>
   </div>
 
   <div class="check-group" data-group="D">
     <h3>D · Einkauf &amp; Wareneingang <span class="group-count" data-count="D"></span></h3>
     <label class="check-item"><input type="checkbox" id="d1" data-persist data-cl="D">
       <span>Anbieter ausgewählt, Gewerbe-Kundenkonto eröffnet (Gewerbeschein + Verwendungszweck eingereicht).</span></label>
-    <details><summary>Warum?</summary><p>Die Kontoeröffnung ist die eigentliche „Prüfung“ – danach läuft Bestellen unkompliziert. Anbieterliste im <a href="#anbieter">nächsten Abschnitt</a>.</p></details>
+    <details><summary>Warum?</summary><p>Die Kontoeröffnung ist die eigentliche „Prüfung“ – danach läuft Bestellen unkompliziert. Anbieterliste in <a href="#anbieter">Schritt 7</a>.</p></details>
     <label class="check-item"><input type="checkbox" id="d2" data-persist data-cl="D">
       <span>Schriftliches Angebot eingeholt: kg-Preis, Flaschenmiete/Pfand, Lieferkosten, Mindestmengen.</span></label>
-    <details><summary>Warum?</summary><p>N₂O-Preise stehen fast nie öffentlich – ohne Vergleichsangebote (2–3 Anbieter) zahlst du den Erstkunden-Aufschlag.</p></details>
+    <details><summary>Warum?</summary><p>N₂O-Preise stehen fast nie öffentlich – ohne Vergleichsangebote (2–3 Anbieter) zahlst du den Erstkunden-Aufschlag. Vergleich in <a href="#kosten">Schritt 8</a>.</p></details>
     <label class="check-item"><input type="checkbox" id="d3" data-persist data-cl="D">
       <span>Passende Qualität bestellt: technisch (≥&nbsp;99,5&nbsp;%) für Tuning – nicht Lebensmittel, nicht medizinisch.</span></label>
     <details><summary>Warum?</summary><p>Höhere Qualitätsstufen kosten mehr und werfen beim Lieferanten Fragen auf, wenn sie nicht zum Geschäftszweck passen.</p></details>
     <label class="check-item"><input type="checkbox" id="d4" data-persist data-cl="D">
       <span>Analysenzertifikat (CoA) je Charge angefordert und abgelegt.</span></label>
-    <details><summary>Warum?</summary><p>Beleg der Produktqualität – siehe <a href="#qualitaet">Abschnitt Qualitäten</a>.</p></details>
+    <details><summary>Warum?</summary><p>Beleg der Produktqualität – siehe <a href="#qualitaet">Schritt 3</a>.</p></details>
     <label class="check-item"><input type="checkbox" id="d5" data-persist data-cl="D">
       <span>Bei Annahme geprüft: Flaschenprüffrist, Ventilzustand, Etikett, Füllgewicht.</span></label>
     <details><summary>Warum?</summary><p>Reklamationen nach Annahme sind zäh – 2 Minuten Sichtprüfung sparen Wochen Ärger.</p></details>
     <label class="check-item"><input type="checkbox" id="d6" data-persist data-cl="D">
-      <span>Wareneingang dokumentiert: Datum, Menge, Chargennummer, Lieferant.</span></label>
-    <details><summary>Warum?</summary><p>Zusammen mit der Verbrauchsdoku (Gruppe E) dein Nachweis, dass alles im gewerblichen Rahmen bleibt.</p></details>
+      <span>Wareneingang dokumentiert: Datum, Menge, Chargennummer, Lieferant (Bestandsverwaltung in <a href="#verwaltung">Schritt 9</a>).</span></label>
+    <details><summary>Warum?</summary><p>Zusammen mit der Verbrauchsdoku dein Nachweis, dass alles im gewerblichen Rahmen bleibt.</p></details>
   </div>
 
   <div class="check-group" data-group="E">
     <h3>E · Laufende Pflichten <span class="group-count" data-count="E"></span></h3>
     <label class="check-item"><input type="checkbox" id="e1" data-persist data-cl="E">
-      <span>Verbrauch wird dokumentiert (Datum, Menge, Zweck/Auftrag).</span></label>
+      <span>Verbrauch wird dokumentiert (Datum, Menge, Zweck/Auftrag – Log in <a href="#verwaltung">Schritt 9</a>).</span></label>
     <details><summary>Warum?</summary><p>Einfache Tabelle reicht. Sie belegt bei jeder Nachfrage – vom Lieferanten bis zur Behörde – den gewerblichen Verbleib.</p></details>
     <label class="check-item"><input type="checkbox" id="e2" data-persist data-cl="E">
       <span>Keine Abgabe außerhalb der NpSG-Regeln: nicht an Minderjährige, kein Verkauf an Verbraucher jenseits der Kartuschen-Grenze, kein Versand.</span></label>
@@ -356,9 +523,9 @@
   </div>
 </section>
 
-<!-- ================================================================ -->
-<section id="anbieter" class="card">
-  <h2>6 · Anbieter, Mindestmengen &amp; Bestellprozess</h2>
+<!-- ============================ STEP 7 ============================ -->
+<section id="anbieter" class="card" data-step="7">
+  <h2>7 · Anbieter, Mindestmengen &amp; Anfrage</h2>
 
   <div class="table-scroll">
   <table>
@@ -379,48 +546,32 @@
     <li><strong>Kartuschen 8,4&nbsp;g:</strong> Verbraucherbereich, NpSG-Mengengrenze (max. 10/Kauf) – für den Betrieb unwirtschaftlich.</li>
     <li><strong>Flaschen ca. 7,5&nbsp;kg und ca. 37,5&nbsp;kg:</strong> Standard-Gebinde für technisches N₂O; Miete oder Kauf der Flasche, je nach Anbieter.</li>
     <li><strong>Mindestmengen:</strong> formal meist keine – praktisch lohnt Lieferung oft erst ab 1–2 großen Flaschen; Abholung am Depot ist die Alternative.</li>
-    <li><strong>Preise:</strong> fast nur auf Anfrage; als grobe Hausnummer 10–30&nbsp;€/kg zzgl. Flaschenmiete – real entscheidet das Angebot (siehe <a href="#kosten">Kostenrechner</a>).</li>
+    <li><strong>Preise:</strong> fast nur auf Anfrage; als grobe Hausnummer 10–30&nbsp;€/kg zzgl. Flaschenmiete – real entscheidet das Angebot (<a href="#kosten">Schritt 8</a>).</li>
   </ul>
 
   <h3>Bestellprozess in 6 Schritten</h3>
   <ol class="steps">
-    <li>Verwendungszweck-Dokumentation fertigstellen (Checkliste&nbsp;A3).</li>
-    <li>2–3 Anbieter anschreiben (Vorlage unten), Angebote vergleichen.</li>
+    <li>Verwendungszweck-Doku fertigstellen (<a href="#betrieb">Schritt 5</a>, Generator).</li>
+    <li>2–3 Anbieter anschreiben (Vorlage unten), Angebote vergleichen (<a href="#kosten">Schritt 8</a>).</li>
     <li>Kundenkonto beim Favoriten eröffnen: Gewerbeschein + Verwendungszweck einreichen.</li>
     <li>Erste Bestellung: Gebinde, Miete/Kauf, Lieferung oder Depot-Abholung festlegen.</li>
-    <li>Wareneingang nach Checkliste&nbsp;D prüfen und dokumentieren.</li>
-    <li>Laufend: Verbrauch dokumentieren (E), rechtzeitig nachbestellen.</li>
+    <li>Wareneingang nach Checkliste&nbsp;D prüfen und in der <a href="#verwaltung">Bestandsverwaltung</a> erfassen.</li>
+    <li>Laufend: Verbrauch dokumentieren, rechtzeitig nachbestellen.</li>
   </ol>
 
-  <h3>Anfrage-Vorlage <button type="button" id="btn-copy" class="btn">Kopieren</button></h3>
-  <pre id="mail-template">Betreff: Anfrage technisches Lachgas (N₂O) für gewerbliche Nutzung
+  <h3>Anfrage-Vorlage – füllt sich automatisch aus deinen Betriebsdaten
+    <button type="button" id="btn-copy" class="btn">Kopieren</button></h3>
+  <pre id="mail-template"></pre>
 
-Sehr geehrte Damen und Herren,
-
-wir betreiben in [Ort] eine [konkrete Tätigkeit, z. B. "Kfz-Werkstatt mit
-Schwerpunkt Motorsport-Umbauten; wir installieren und befüllen Lachgas-
-Einspritzsysteme für den Rennstreckeneinsatz"].
-
-Dafür benötigen wir technisches Distickstoffmonoxid (N₂O):
-
-  - Qualität:     technisch, Reinheit >= 99,5 %
-  - Gebinde:      [z. B. 1-2 Flaschen à 37,5 kg, Miete oder Kauf]
-  - Jahresbedarf: ca. [XX] kg
-  - Lieferung an: [Betriebsadresse] (alternativ Depot-Abholung)
-
-Gewerbeanmeldung und eine schriftliche Dokumentation des Verwendungszwecks
-liegen vor und senden wir Ihnen gerne zu.
-
-Bitte nennen Sie uns ein Angebot inkl. Flaschenmiete/Pfand, Lieferkosten
-und etwaiger Mindestabnahmemengen.
-
-Mit freundlichen Grüßen
-[Name, Firma, Telefon]</pre>
+  <label class="check-item">
+    <input type="checkbox" id="anfrage-sent" data-persist>
+    <span><strong>Anfragen verschickt</strong> – mindestens 2 Anbieter angeschrieben.</span>
+  </label>
 </section>
 
-<!-- ================================================================ -->
-<section id="kosten" class="card">
-  <h2>7 · Kostenrechner</h2>
+<!-- ============================ STEP 8 ============================ -->
+<section id="kosten" class="card" data-step="8">
+  <h2>8 · Kosten &amp; Angebotsvergleich</h2>
   <p>Grobe Jahreskalkulation – die Vorgabewerte sind Richtwerte, echte Zahlen liefert nur das Angebot.</p>
 
   <div class="calc-grid">
@@ -450,10 +601,101 @@ Mit freundlichen Grüßen
     </table>
   </div>
 
+  <h3>Angebote vergleichen</h3>
+  <p class="fineprint">Trage die realen Angebote ein – gerechnet wird mit dem Jahresbedarf aus dem Rechner oben. Das günstigste Angebot wird grün markiert.</p>
+  <div class="offers-grid">
+    <div class="offer-card" id="offer-1">
+      <h4>Angebot 1</h4>
+      <label>Anbieter <input type="text" id="o1-name" data-persist-val placeholder="Name"></label>
+      <label>Preis (€/kg) <input type="number" id="o1-preis" min="0" step="0.1" data-persist-val></label>
+      <label>Miete gesamt (€/Monat) <input type="number" id="o1-miete" min="0" step="0.5" data-persist-val></label>
+      <label>Lieferkosten (€/Jahr) <input type="number" id="o1-liefer" min="0" step="1" data-persist-val></label>
+      <div class="offer-total" id="o1-total">–</div>
+    </div>
+    <div class="offer-card" id="offer-2">
+      <h4>Angebot 2</h4>
+      <label>Anbieter <input type="text" id="o2-name" data-persist-val placeholder="Name"></label>
+      <label>Preis (€/kg) <input type="number" id="o2-preis" min="0" step="0.1" data-persist-val></label>
+      <label>Miete gesamt (€/Monat) <input type="number" id="o2-miete" min="0" step="0.5" data-persist-val></label>
+      <label>Lieferkosten (€/Jahr) <input type="number" id="o2-liefer" min="0" step="1" data-persist-val></label>
+      <div class="offer-total" id="o2-total">–</div>
+    </div>
+    <div class="offer-card" id="offer-3">
+      <h4>Angebot 3</h4>
+      <label>Anbieter <input type="text" id="o3-name" data-persist-val placeholder="Name"></label>
+      <label>Preis (€/kg) <input type="number" id="o3-preis" min="0" step="0.1" data-persist-val></label>
+      <label>Miete gesamt (€/Monat) <input type="number" id="o3-miete" min="0" step="0.5" data-persist-val></label>
+      <label>Lieferkosten (€/Jahr) <input type="number" id="o3-liefer" min="0" step="1" data-persist-val></label>
+      <div class="offer-total" id="o3-total">–</div>
+    </div>
+  </div>
+  <div id="offer-chart" class="temp-ladder"></div>
+
   <p class="fineprint">Nicht enthalten: einmalige Kosten (Gewerbeanmeldung ~20–60&nbsp;€,
   Lagersicherung/Schilder ~100–300&nbsp;€, ggf. Flaschenkauf statt Miete) und Arbeitszeit
   für Dokumentation.</p>
 </section>
+
+<!-- ============================ STEP 9 ============================ -->
+<section id="verwaltung" class="card" data-step="9">
+  <h2>9 · Bestand, Verbrauch &amp; Datensicherung</h2>
+  <p>Die laufende Dokumentation aus Checklisten-Gruppe&nbsp;D/E – direkt hier führbar.
+  Alles bleibt lokal im Browser; per CSV/JSON exportierbar.</p>
+
+  <h3>Flaschen-Bestand
+    <button type="button" id="inv-csv" class="btn subtle">CSV exportieren</button></h3>
+  <div class="table-scroll">
+  <table id="inv-table">
+    <thead><tr><th>Flaschen-Nr.</th><th>Größe (kg)</th><th>Prüffrist</th><th>Charge</th><th>CoA</th><th>Status</th><th></th></tr></thead>
+    <tbody id="inv-body"></tbody>
+  </table>
+  </div>
+  <div class="form-grid add-row">
+    <label>Flaschen-Nr. <input type="text" id="inv-nr" placeholder="z. B. WF-12345"></label>
+    <label>Größe (kg) <input type="number" id="inv-size" value="37.5" min="0" step="0.5"></label>
+    <label>Prüffrist <input type="month" id="inv-prf"></label>
+    <label>Charge <input type="text" id="inv-charge" placeholder="lt. CoA"></label>
+    <label class="inline-check"><input type="checkbox" id="inv-coa"> CoA liegt vor</label>
+    <label>Status <select id="inv-status"><option>voll</option><option>in Gebrauch</option><option>leer</option></select></label>
+    <button type="button" id="inv-add" class="btn">Flasche hinzufügen</button>
+  </div>
+  <p id="inv-summary" class="fineprint"></p>
+
+  <h3>Verbrauchs-Log
+    <button type="button" id="log-csv" class="btn subtle">CSV exportieren</button></h3>
+  <div class="table-scroll">
+  <table id="log-table">
+    <thead><tr><th>Datum</th><th>Menge (kg)</th><th>Zweck / Auftrag</th><th></th></tr></thead>
+    <tbody id="log-body"></tbody>
+  </table>
+  </div>
+  <div class="form-grid add-row">
+    <label>Datum <input type="date" id="log-datum"></label>
+    <label>Menge (kg) <input type="number" id="log-menge" min="0" step="0.1"></label>
+    <label>Zweck / Auftrag <input type="text" id="log-zweck" placeholder="z. B. Befüllung Auftrag #4711"></label>
+    <button type="button" id="log-add" class="btn">Eintrag hinzufügen</button>
+  </div>
+  <p id="log-summary" class="fineprint"></p>
+
+  <h3>Datensicherung &amp; Dossier</h3>
+  <p>
+    <button type="button" id="btn-export" class="btn">Backup (JSON) herunterladen</button>
+    <label class="btn subtle file-btn">Backup laden<input type="file" id="btn-import" accept=".json" hidden></label>
+    <button type="button" id="btn-dossier" class="btn">Komplettes Betriebsdossier drucken</button>
+  </p>
+  <p class="fineprint">Das Dossier druckt den gesamten Guide inklusive Checklisten-Stand,
+  Verwendungszweck-Doku, Bestand und Verbrauchs-Log – als Ablage für Lieferant, Versicherung oder Behörde.</p>
+</section>
+
+</main>
+
+<div class="step-nav">
+  <div class="wrap step-nav-flex">
+    <button type="button" id="nav-prev" class="btn subtle">← Zurück</button>
+    <span id="nav-status">Schritt 1 / 9</span>
+    <button type="button" id="nav-next" class="btn">Weiter →</button>
+  </div>
+</div>
 
 <footer class="site-footer">
   <div class="wrap">
@@ -468,7 +710,6 @@ Mit freundlichen Grüßen
   </div>
 </footer>
 
-</main>
 <script src="app.js"></script>
 </body>
 </html>

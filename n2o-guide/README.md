@@ -1,28 +1,39 @@
 # N₂O Gewerbe-Guide
 
-Interaktiver Guide für den **legalen, gewerblichen Bezug von Distickstoffmonoxid (N₂O / Lachgas)**
-in Deutschland – Rechtslage (Stand Juli 2026), Compliance-Checkliste, Anbieter, Bestellprozess
-und Kostenrechner.
+Interaktives Step-by-Step-Programm für den **legalen, gewerblichen Bezug von Distickstoffmonoxid
+(N₂O / Lachgas)** in Deutschland – Rechtslage (Stand Juli 2026), Compliance-Checkliste,
+Dokumenten-Generator, Anbieter, Bestandsverwaltung und Kostenrechner.
 
 ## Nutzung
 
-Kein Build, keine Abhängigkeiten: `index.html` im Browser öffnen. Alle Eingaben
-(Haken, Rechnerwerte) bleiben lokal im Browser (localStorage); es werden keine Daten übertragen.
-Die Checkliste lässt sich über den Button „Als PDF drucken" exportieren.
+Kein Build, keine Abhängigkeiten: `index.html` im Browser öffnen. Alle Eingaben bleiben lokal
+im Browser (localStorage); es werden keine Daten übertragen. Zwei Ansichten:
 
-## Was der Guide abdeckt
+- **Geführt** (Standard): 9 Schritte mit Fortschritts-Ring, Step-Leiste und Weiter/Zurück-Navigation
+- **Handbuch**: alles auf einer Seite zum Nachschlagen
 
-- **Realitäts-Check:** Sind die Voraussetzungen für gewerblichen Bezug überhaupt gegeben?
-- **Grundlagen:** Was N₂O ist, echte Einsatzgebiete (Motorsport-Tuning, Airbag-Technik,
-  Halbleiter, AAS-Analytik), Mythen-Check (Schweißen, Lackieren, Gasgemische)
-- **Qualitäten:** technisch vs. Lebensmittel (E942) vs. medizinisch, Prüfung per Analysenzertifikat (CoA)
-- **Rechtslage:** NpSG-Änderung (in Kraft seit 12.04.2026), Gefahrstoff- und Transportrecht,
-  Rahmen für Privatpersonen
-- **Compliance-Checkliste:** Gewerbe & Unterlagen, Lagerung (TRGS 510), Transport (ADR),
-  Einkauf & Wareneingang, laufende Pflichten – mit Fortschrittsanzeige und Erklärungen
-- **Anbieter & Bestellung:** Lieferantenübersicht, Gebinde/Mindestmengen, 6-Schritte-Bestellprozess,
-  Anfrage-E-Mail-Vorlage
-- **Kostenrechner:** Jahreskalkulation aus Gaspreis, Flaschenmiete und Lieferkosten
+## Die 9 Schritte
+
+1. **Realitäts-Check** – 4 Grundvoraussetzungen mit ehrlicher Grün/Gelb/Rot-Bewertung
+2. **Grundlagen** – Chemie, Mythen-Check (Schweißen/Lackieren/Gasgemische), Temperaturleiter,
+   echte Einsatzgebiete, **Wissens-Quiz mit 7 Fragen** und Sofort-Feedback
+3. **Qualität** – Vergleichstabelle (technisch/E942/medizinisch/denaturiert), Qualitäts-Auswahl,
+   Wareneingangsprüfung per Analysenzertifikat (CoA)
+4. **Rechtslage** – NpSG-Änderung (in Kraft seit 12.04.2026), Gefahrstoff-/Transportrecht,
+   Rahmen für Privatpersonen
+5. **Betriebsdaten & Dokumenten-Generator** – Formular füllt automatisch die
+   **Verwendungszweck-Dokumentation** (einzeln druckbar) und die Anfrage-Mail
+6. **Compliance-Checkliste** – 25 Punkte in 5 Gruppen mit „Warum?"-Erklärungen,
+   Fortschrittsbalken und integriertem **ADR-Kleinmengen-Rechner** (1000-Punkte-Regel)
+7. **Anbieter & Anfrage** – Lieferantenübersicht, Gebinde/Mindestmengen, Bestellprozess,
+   automatisch befüllte Anfrage-Mail mit Copy-Button
+8. **Kosten & Angebotsvergleich** – Jahreskalkulation plus Vergleich von bis zu 3 realen
+   Angeboten mit Balkendiagramm und Bester-Preis-Markierung
+9. **Verwaltung** – **Flaschen-Bestand** (mit Prüffrist-Warnung) und **Verbrauchs-Log**
+   (beides CSV-exportierbar), JSON-Backup/Restore, Betriebsdossier-Druck
+
+Dazu: Hell/Dunkel-Umschalter, Print-Stylesheets (ganzes Dossier oder nur die
+Verwendungszweck-Doku), Gesamtfortschritt als Score-Ring.
 
 ## Was der Guide bewusst NICHT ist
 
@@ -36,5 +47,7 @@ Die Checkliste lässt sich über den Button „Als PDF drucken" exportieren.
 
 ## Technik
 
-Statisches HTML + CSS + Vanilla-JavaScript, eine Seite, keine externen Abhängigkeiten,
-Light-/Dark-Mode nach Systemeinstellung, Print-Stylesheet für den PDF-Export.
+Statisches HTML + CSS + Vanilla-JavaScript, keine externen Abhängigkeiten.
+Eingebauter Selbsttest: `index.html?selftest=1` öffnen – das Ergebnis steht im Seitentitel
+(`SELFTEST PASS 13/13`), geprüft werden Wizard, Quiz, Checkliste, Generatoren, ADR-Rechner,
+Angebotsvergleich, Bestand und Log.
