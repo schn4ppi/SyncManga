@@ -27,6 +27,229 @@ MD_PACER = Pacer(0.2)    # MangaDex: < ~5 Anfragen/Sek
 MU_PACER = Pacer(0.3)    # MangaUpdates: konservative Bremse gegen Drosselung (10 Threads parallel)
 KITSU_PACER = Pacer(0.3)  # Kitsu: konservative Bremse gegen Drosselung
 JK_PACER = Pacer(1.1)    # Jikan/MyAnimeList: < 60 Anfragen/Min
+MF_PACER = Pacer(1.0)    # MangaFire: hoeflich (Bot-Schutz), interne JSON-API
+
+
+# ---------------- MangaFire (interne JSON-API, JB-Goal 14.07.2026) ----------------
+# GROSSER FUND aus der GitHub-Recherche (AIO-Webtoon-Downloader zzyil): MangaFire hat eine
+# undokumentierte JSON-API, erreichbar mit NORMALEM urllib (kein curl_cffi/Browser noetig —
+# das brauchen nur die BILD-Downloads). Damit loesen wir MangaFire-Serienseiten in EXAKTE
+# Kapitel-Links auf (JB: 'viele mangafire links fuehren zur mangaseite'):
+#   1. /api/titles?keyword=  -> hid (opake Serien-ID) + slug + Titel (fuer den Match-Waechter)
+#   2. /api/titles/{hid}/chapters?language=en -> je Kapitelnummer die opake Kapitel-ID
+#   3. Lese-Link  https://mangafire.to/title/{hid}-{slug}/read/en/{chapterId}  (direkt, kein Redirect)
+API_MF = "https://mangafire.to/api"
+_MF_HEAD = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+                          "(KHTML, like Gecko) Chrome/124.0 Safari/537.36",
+            "Accept": "application/json", "Referer": "https://mangafire.to/",
+            "X-Requested-With": "XMLHttpRequest"}
+
+
+def _mf_get(url):
+    """MangaFire-API GET -> JSON (dict) oder {}. Gepaced, nie eine Exception."""
+    MF_PACER.wait()
+    try:
+        req = urllib.request.Request(url, headers=_MF_HEAD)
+        with urllib.request.urlopen(req, timeout=12) as r:
+            import json as _json
+            return _json.load(r)
+    except Exception:
+        return {}
+
+
+def search_variants(titles, cap=8):
+    """Titel-Varianten fuer die API-Suche DIVERS + dedupliziert auswaehlen (JB-Goal 14.07.:
+    'mehrere englische UND mehrere asiatische Titel'). Problem sonst: die ersten N Varianten
+    sind oft alle englisch -> die asiatischen (die MangaFire/Dynasty indexieren) fallen unter
+    den Tisch. Loesung: latein- und CJK-Titel INTERLEAVEN, jeder normiert nur einmal.
+
+    Reihenfolge: erst der 1. lateinische, dann der 1. mit CJK-Zeichen, dann abwechselnd —
+    so ist unter `cap` immer beide Schriftsysteme vertreten. Der Fehlmatch-Schutz bleibt der
+    strenge Ergebnis-Waechter (norm-gleich/>=0.9) beim Aufrufer, NICHT die Suchbreite."""
+    lat, cjk, seen = [], [], set()
+    for t in titles:
+        if not t or not t.strip():
+            continue
+        key = norm(t) or t.strip().lower()
+        if key in seen:
+            continue
+        seen.add(key)
+        (cjk if re.search(r"[぀-ヿ㐀-鿿가-힯]", t) else lat).append(t)
+    out = []
+    li, ci = iter(lat), iter(cjk)
+    while len(out) < cap:
+        a = next(li, None)
+        b = next(ci, None)
+        if a is None and b is None:
+            break
+        if a is not None:
+            out.append(a)
+        if b is not None and len(out) < cap:
+            out.append(b)
+    return out
+
+
+def mf_search(name, limit=6):
+    """MangaFire-Suche -> [(hid, slug, title), ...] (beste Kandidaten zuerst)."""
+    q = urllib.parse.quote(str(name or ""))
+    d = _mf_get(f"{API_MF}/titles?keyword={q}&limit={int(limit)}")
+    out = []
+    for it in (d.get("items") or []):
+        if it.get("hid") and it.get("slug"):
+            out.append((it["hid"], it["slug"], it.get("title") or ""))
+    return out
+
+
+def _mf_chapter_id(hid, chapter, max_pages=14):
+    """Opake Kapitel-ID fuer eine Kapitelnummer -> str oder ''. Offizielle Uploads bevorzugt.
+
+    Die Kapitel-API ist paginiert (60/Seite, lange Serien haben 40+ Seiten). ABSTEIGEND
+    sortiert + frueher Abbruch: die neuesten Kapitel zuerst, Stopp sobald die kleinste Nummer
+    der Seite unter das Ziel faellt (das gesuchte Kapitel kann dann nicht weiter hinten liegen).
+    `max_pages` deckelt sehr alte Kapitel in Mammut-Serien (Hoeflichkeit; deckt >800 neueste ab)."""
+    try:
+        want = float(chapter)
+    except (TypeError, ValueError):
+        return ""
+    best = None
+    for page in range(1, max_pages + 1):
+        d = _mf_get(f"{API_MF}/titles/{hid}/chapters?language=en&sort=number&order=desc&page={page}")
+        items = d.get("items") or []
+        if not items:
+            break
+        page_min = None
+        for c in items:
+            try:
+                num = float(c.get("number"))
+            except (TypeError, ValueError):
+                continue
+            page_min = num if page_min is None else min(page_min, num)
+            if num == want and c.get("id"):
+                if best is None or (c.get("type") == "official" and best.get("type") != "official"):
+                    best = c
+        if best and best.get("type") == "official":
+            return str(best["id"])                  # bestes Ergebnis gefunden
+        if page_min is not None and page_min < want:
+            break                                   # Ziel-Kapitel liegt nicht weiter hinten
+        if not (d.get("meta") or {}).get("hasNext"):
+            break
+    return str(best["id"]) if best else ""
+
+
+def mf_chapter_link(titles, chapter, verify=None):
+    """MangaFire-API -> exakter Kapitel-Link (url, 'mangafire.to') | ('', '').
+
+    Alle Titel-Varianten der Serie werden gesucht; ein Treffer zaehlt nur, wenn sein
+    MangaFire-Titel norm-gleich/>=0.9 zu einem unserer Titel ist (Fehlmatch-Schutz). Danach
+    die opake Kapitel-ID holen und den Direkt-Lese-Link bauen. `verify` (Tests injizierbar):
+    bool(url) — der echte Default prueft per HTTP, dass der Link am Kapitel bleibt."""
+    titles = [t for t in (titles if isinstance(titles, (list, tuple)) else [titles]) if t]
+    if not titles:
+        return "", ""
+    # DIVERSE Titel-Auswahl: latein + CJK interleaved (JB 14.07.: mehrere EN + mehrere
+    # asiatische; MangaFire indexiert die asiatischen). Fehlmatch-Schutz = strenger
+    # Ergebnis-Waechter unten, nicht die Suchbreite.
+    seen = set()
+    for q in search_variants(titles, cap=8):
+        for hid, slug, mtitle in mf_search(q):
+            if hid in seen:
+                continue
+            seen.add(hid)
+            ns = norm(mtitle)
+            if not any(ns == norm(t) or difflib.SequenceMatcher(None, ns, norm(t)).ratio() >= 0.9
+                       for t in titles):
+                continue
+            cid = _mf_chapter_id(hid, chapter)
+            if not cid:
+                continue
+            url = f"https://mangafire.to/title/{hid}-{slug}/read/en/{cid}"
+            if (verify or _mf_verify)(url):
+                return url, "mangafire.to"
+    return "", ""
+
+
+def _mf_verify(url):
+    """Direkt-Lese-Link bestaetigen: 200 UND nicht auf die Serien-/Startseite umgeleitet."""
+    from urllib.parse import urlparse
+    MF_PACER.wait()
+    try:
+        req = urllib.request.Request(url, headers={**_MF_HEAD, "Accept": "text/html"})
+        with urllib.request.urlopen(req, timeout=12) as r:
+            final = r.geturl() or url
+            return getattr(r, "status", 200) == 200 and urlparse(final).path.rstrip("/") == urlparse(url).path.rstrip("/")
+    except Exception:
+        return False
+
+
+# ---------------- Dynasty Reader (Guya-API, JB-Goal 14.07.2026) ----------------
+# everythingmoe-HUB dynasty-scans.com hat eine OFFENE JSON-API (kein Cloudflare): HTML-Suche
+# /search?q=&classes[]=Series -> Serien-Permalink; /series/{permalink}.json -> taggings
+# (Kapitel mit Titel 'Chapter N: ...' + permalink); Lese-URL /chapters/{permalink}. Nische:
+# Doujinshi/Yuri (Werke, die MangaDex/MangaFire oft NICHT haben) -> echte Zusatz-Abdeckung.
+DY_PACER = Pacer(0.8)
+API_DY = "https://dynasty-scans.com"
+_DY_HEAD = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/124.0"}
+_DY_SERIES = re.compile(r'href="/series/([a-z0-9_]+)"[^>]*>([^<]+)<', re.I)
+_DY_CHNUM = re.compile(r'^\s*chapter\s+(\d+(?:\.\d+)?)', re.I)
+
+
+def _dy_get(url, as_json=False):
+    """Dynasty GET -> JSON-Dict oder HTML-Text. Gepaced, nie eine Exception."""
+    DY_PACER.wait()
+    try:
+        req = urllib.request.Request(url, headers={**_DY_HEAD,
+                                     "Accept": "application/json" if as_json else "text/html"})
+        with urllib.request.urlopen(req, timeout=15) as r:
+            import json as _json
+            return _json.load(r) if as_json else r.read(80000).decode("utf-8", "replace")
+    except Exception:
+        return {} if as_json else ""
+
+
+def dy_search(name):
+    """Dynasty-Serien-Suche -> [(permalink, name), ...]."""
+    q = urllib.parse.quote(str(name or ""))
+    html = _dy_get(f"{API_DY}/search?q={q}&classes%5B%5D=Series")
+    return _DY_SERIES.findall(html or "")
+
+
+def _dy_chapter_permalink(permalink, chapter):
+    """Kapitel-Permalink fuer eine Nummer aus der Serien-JSON (taggings) -> str oder ''."""
+    try:
+        want = float(chapter)
+    except (TypeError, ValueError):
+        return ""
+    d = _dy_get(f"{API_DY}/series/{permalink}.json", as_json=True)
+    for t in (d.get("taggings") or []):
+        m = _DY_CHNUM.match(t.get("title") or "")
+        if m and float(m.group(1)) == want and t.get("permalink"):
+            return t["permalink"]
+    return ""
+
+
+def dy_chapter_link(titles, chapter):
+    """Dynasty-Reader -> exakter Kapitel-Link (url, 'dynasty-scans.com') | ('', '').
+
+    Alle Titel-Varianten suchen; Treffer nur bei norm-gleichem/>=0.9 Serien-Namen (Fehllink-
+    Schutz), dann den Kapitel-Permalink aus der Serien-JSON ziehen. Ideal fuer Doujin/Yuri,
+    die die grossen DBs nicht fuehren."""
+    titles = [t for t in (titles if isinstance(titles, (list, tuple)) else [titles]) if t]
+    if not titles:
+        return "", ""
+    seen = set()
+    for q in search_variants(titles, cap=6):
+        for perma, sname in dy_search(q):
+            if perma in seen:
+                continue
+            seen.add(perma)
+            ns = norm(sname)
+            if not any(ns == norm(t) or difflib.SequenceMatcher(None, ns, norm(t)).ratio() >= 0.9
+                       for t in titles):
+                continue
+            cp = _dy_chapter_permalink(perma, chapter)
+            if cp:
+                return f"{API_DY}/chapters/{cp}", "dynasty-scans.com"
+    return "", ""
 
 
 # ---------------- MangaDex ----------------

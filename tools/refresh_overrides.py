@@ -22,8 +22,11 @@ import time
 # import_keiyoushi zuletzt (JB 14.07.): zieht den offiziellen Extension-Index (~2000 Quellen)
 # automatisch und verifiziert neue EN-Reader streng — so kommen "mega gute neue Seiten"
 # der Szene ohne Zutun in den Muster-Reader-Vorrat.
+# reader_atlas: fingerprintet die ~2000 Reader-Seiten (Engine/DB/Bot-Lesbarkeit) -> Forschungs-
+# Landkarte data/reader_atlas.json (JB-Goal 14.07.). Rein diagnostisch, aendert keine Overrides.
 TOOLS = ["tools.apply_source_confirms", "tools.fix_broken", "tools.regen_read_scheme",
-         "tools.discover_dedicated", "tools.discover_sitemap", "tools.import_keiyoushi"]
+         "tools.discover_dedicated", "tools.discover_sitemap", "tools.import_keiyoushi",
+         "tools.reader_atlas"]
 
 
 def main():

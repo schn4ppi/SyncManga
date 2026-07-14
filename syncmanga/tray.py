@@ -37,6 +37,14 @@ def icon_color(busy=False, dead=0):
     return (214, 119, 86)           # terracotta: alles ok
 
 
+def draw_update_badge(d):
+    """Kleines rotes Ausrufezeichen oben rechts aufs 64x64-Icon (JB-Regel 14.07.: Update-Badge
+    fuer ALLE Tray-Programme). Eigene Ecke -> ueberdeckt das Kern-Symbol nicht. `d` = ImageDraw."""
+    d.ellipse([40, 2, 62, 24], fill=(220, 45, 45), outline=(255, 255, 255), width=2)
+    d.rectangle([49, 7, 53, 16], fill=(255, 255, 255))     # Ausrufezeichen-Strich
+    d.rectangle([49, 18, 53, 21], fill=(255, 255, 255))    # Ausrufezeichen-Punkt
+
+
 def menu_labels(lang):
     """Menü-Beschriftungen in der gewählten Sprache (rein, testbar)."""
     s = i18n.strings(lang)
@@ -136,6 +144,7 @@ class TrayApp:
         single_instance(self.lockfile)
         update.cleanup_old_exe()             # Rest eines frueheren Selbst-Updates wegputzen
         self._upd_seen = ""                  # zuletzt gemeldete neue Version (1 Hinweis je Version)
+        self._update_pending = ""            # Version, fuer die das Ausrufezeichen-Badge leuchtet
         self.icon = pystray.Icon("syncmanga", self._image(), self._tooltip(), menu=self._menu())
 
     # ----- icon -----
@@ -147,6 +156,8 @@ class TrayApp:
         d.arc([18, 18, 46, 46], 35, 300, fill=(255, 255, 255), width=5)
         d.polygon([(46, 24), (39, 15), (53, 18)], fill=(255, 255, 255))
         d.polygon([(18, 40), (25, 49), (11, 46)], fill=(255, 255, 255))
+        if self._update_pending:
+            draw_update_badge(d)
         return img
 
     def _refresh_icon(self):
@@ -340,6 +351,9 @@ class TrayApp:
             if manual or v != self._upd_seen:
                 self._upd_seen = v
                 self._notify(s["upd_available"].format(v=v))
+            if v != self._update_pending:            # Ausrufezeichen-Badge aufs Icon (JB 14.07.)
+                self._update_pending = v
+                self._refresh_icon()
             return
         self._notify(s["upd_installing"].format(v=v))
         try:

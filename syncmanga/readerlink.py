@@ -551,6 +551,10 @@ def has_chapter_token(url):
 # zaehlbares Token -> has_chapter_token verfehlt mangadex-Kapitel (und trifft sie zufaellig,
 # wenn die UUID mit Ziffern beginnt). Fuer die Kapitel-vor-Seite-Regel braucht es beide Formen.
 _MD_URL = re.compile(r"https?://(?:www\.)?mangadex\.org/(title|chapter)/([0-9a-fA-F-]{36})", re.I)
+# MangaFire-API-Lese-URL: /title/{hid}-{slug}/read/{lang}/{chapterId} — opake Kapitel-ID, KEIN
+# 'chapter'-Token. Ohne diese Erkennung galt ein MangaFire-API-Kapitel als Serien-Seite (Bug
+# 14.07.: der Heal zaehlte 0, die Kapitel-vor-Seite-Regel haette den API-Link demotet).
+_MF_READ_URL = re.compile(r"https?://(?:www\.)?mangafire\.to/title/[^/]+/read/[a-z-]+/\d+", re.I)
 
 
 def md_title_uuid(url):
@@ -561,10 +565,13 @@ def md_title_uuid(url):
 
 def is_chapter_url(url):
     """True, wenn die URL ein KAPITEL ist (JB-Regel 14.07. 'Kapitel vor Seite'): erkennbares
-    Kapitel-Token ODER mangadex /chapter/<uuid> (opake ID). mangadex /title/ zaehlt NIE."""
+    Kapitel-Token, mangadex /chapter/<uuid> ODER MangaFire-API-Lese-URL (/read/{lang}/{id}).
+    mangadex /title/ und MangaFire-/title/-Serienseiten (ohne /read/) zaehlen NIE."""
     m = _MD_URL.match(url or "")
     if m:
         return m.group(1).lower() == "chapter"
+    if _MF_READ_URL.match(url or ""):
+        return True
     return has_chapter_token(url)
 
 

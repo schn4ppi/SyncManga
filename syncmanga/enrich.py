@@ -29,7 +29,7 @@ from . import catalog, readerlink
 from . import health as srcstatus      # Quellen-Status (frueher srcstatus.py, jetzt in health)
 from .config import CACHE_VER, is_dead_reader
 from .parse import norm, host, slug_from_url, is_novel_url, is_dynamic, romaji_score
-from .sources import md_latest, md_titles_from_url, md_chapter_link
+from .sources import md_latest, md_titles_from_url, md_chapter_link, mf_chapter_link, dy_chapter_link
 from .sources import link_ok, al_lookup, al_english_by_id
 
 RATING_PRIOR_C = 6.8     # globaler Mittel-Score (0-10) zur Bayes-Glaettung (fuer bayes_adjust-Reuse)
@@ -946,8 +946,10 @@ def demote_series_pages(cache, items=None):
         def _is_chapter(u):
             if not readerlink.is_chapter_url(u):
                 return False
+            if readerlink._MF_READ_URL.match(u or ""):
+                return True                              # MangaFire-API-Lese-URL = echtes Kapitel
             if "mangafire" in (host(u) or "") and _chof(u, "") is not None:
-                return False                             # numerisches mangafire = Rate-Schema
+                return False                             # numerisches mangafire = totes Rate-Schema
             return True
         best = next((i for i, l in enumerate(links) if _is_chapter(l[0])), None)
         if best is None:
@@ -1071,6 +1073,18 @@ def enrich(items, cache_path, health_dir, cap, name_fix=None, cache_ver=CACHE_VE
                             neu = [[u_md, s_md]]
                     if neu:
                         links = neu
+                # MangaFire-API-Upgrade (JB-Goal 14.07.): kein echter Kapitel-Link vorn +
+                # bekannter Lesestand -> exaktes Kapitel aus MangaFires JSON-API (Serien-Seite raus).
+                if (_chap_known and not (links and readerlink.is_chapter_url(links[0][0]))):
+                    _mf_ts = [t for t in ([c.get("title"), c.get("title_en"), c.get("title_romaji"),
+                                           c.get("title_native"), e.get("name")]
+                                          + (c.get("alt_titles") or [])) if t]
+                    try:
+                        u_mf, s_mf = mf_chapter_link(_mf_ts, next_chap)
+                        if u_mf:
+                            links = [[u_mf, s_mf]] + [l for l in (links or []) if l[0] != u_mf]
+                    except Exception:
+                        pass
                 # Override-Vorrang dreistufig (siehe Vollpfad; JB-Wurzelfund Runde 32:
                 # auto-{n}-Overrides erzwangen bei '?' wieder chapter-1). Kapitel-Override =
                 # {n}-Vorlage ODER Kapitel-URL (Runde 35: arenascan-Muster traegt kein Token).
@@ -1087,6 +1101,15 @@ def enrich(items, cache_path, health_dir, cap, name_fix=None, cache_ver=CACHE_VE
                     links = [[ov_url, ov_site]] + [l for l in links if l[0] != ov_url]
                 elif ov_url and all(l[0] != ov_url for l in links):
                     links = links + [[ov_url, ov_site]]  # kuratierter Link bleibt Reserve (+Alt)
+                # RATCHET (Bug-Fix 14.07.: ein Voll-Relink degradierte 65 mangafire-Kapitel-Links
+                # zurueck auf Serienseiten, als die API unter Throttling nichts lieferte). Wie im
+                # Voll-Pfad: hatte der Cache einen KAPITEL-Link und die neue Aufloesung endet auf
+                # einer Serien-Seite, den gecachten Kapitel-Link zurueckholen — nur besser, nie
+                # schlechter. AUSSER ein kuratierter Override steht bewusst vorn (ov_used).
+                if _chap_known and not ov_used and not (links and readerlink.is_chapter_url(links[0][0])):
+                    alt = _live_links(c.get("read_urls"))
+                    if alt and readerlink.is_chapter_url(alt[0][0]):
+                        links = alt + [l for l in links if l[0] != alt[0][0]]
                 links = keep_last_good(links, c)         # FAILSAFE (s. Voll-Pfad)
                 nc["read_urls"] = links
                 nc["read_url"], nc["read_site"] = (tuple(links[0]) if links else ("", ""))
@@ -1327,6 +1350,28 @@ def enrich(items, cache_path, health_dir, cap, name_fix=None, cache_ver=CACHE_VE
                 links = [[ov_url, ov_site]] + [l for l in links if l[0] != ov_url]
             elif ov_url and all(l[0] != ov_url for l in links):
                 links = links + [[ov_url, ov_site]]      # kuratierter Link bleibt Reserve (+Alt)
+            # MangaFire-API (JB-Goal 14.07., GitHub-Fund): steht noch KEIN echter Kapitel-Link
+            # vorn (leer oder nur Serien-Seite), loest MangaFires interne JSON-API das exakte
+            # Kapitel auf — genau JBs Klage 'viele mangafire-Links fuehren zur Mangaseite'.
+            # Nur bei bekanntem Lesestand; der Treffer wird als Kapitel-Link vorangestellt.
+            if (not no_prog and not ov_used
+                    and not (links and readerlink.is_chapter_url(links[0][0]))):
+                try:
+                    u_mf, s_mf = mf_chapter_link([t for t in titles if t], next_chap)
+                    if u_mf:
+                        links = [[u_mf, s_mf]] + [l for l in links if l[0] != u_mf]
+                except Exception:
+                    pass
+            # Dynasty Reader (Guya-API, JB-Goal 14.07.): Doujin/Yuri, die die grossen DBs oft
+            # nicht fuehren -> echte Zusatz-Abdeckung. Nur wenn immer noch kein Kapitel-Link da.
+            if (not no_prog and not ov_used
+                    and not (links and readerlink.is_chapter_url(links[0][0]))):
+                try:
+                    u_dy, s_dy = dy_chapter_link([t for t in titles if t], next_chap)
+                    if u_dy:
+                        links = [[u_dy, s_dy]] + [l for l in links if l[0] != u_dy]
+                except Exception:
+                    pass
             if not links and nc.get("mdx"):
                 # LETZTE Ruecklage (Runde 29, Penisman/helvetica): MangaDex selbst — die API ist
                 # Ground-Truth und nie bot-blockiert; exaktes Kapitel (UUID) oder Serien-Seite.
