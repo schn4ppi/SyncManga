@@ -27,7 +27,7 @@ from datetime import datetime
 
 from . import catalog, readerlink
 from . import health as srcstatus      # Quellen-Status (frueher srcstatus.py, jetzt in health)
-from .config import CACHE_VER, is_dead_reader
+from .config import CACHE_VER, is_dead_reader, is_no_read
 from .parse import norm, host, slug_from_url, is_novel_url, is_dynamic, romaji_score
 from .sources import md_latest, md_titles_from_url, md_chapter_link, mf_chapter_link, dy_chapter_link
 from .sources import link_ok, al_lookup, al_english_by_id
@@ -358,14 +358,8 @@ def fill_one_reserves(v):
             if any(ht and (norm(ht) == norm(q) or _title_sim(ht, q) >= 0.93) for ht in hits):
                 v["mdx"] = hit["md_id"]
                 break
-    if v.get("mdx") and "mangadex.org" not in have:
-        try:
-            u_md, s_md = md_chapter_link(v["mdx"], nxt, chapter_only=True)
-            if u_md:
-                new.append([u_md, s_md])
-                have.add(host(u_md))
-        except Exception:
-            pass
+    # (MangaDex als Reserve-LESE-Link entfernt, JB 14.07.: 'mangadex ist tot' zum Lesen —
+    #  bleibt Datenquelle via md_lookup/md_latest/Cover/Titel-Matching.)
     if v.get("title") and not v.get("last_group"):
         try:
             _u, _s, grp = ck_chapter_link(v["title"], nxt)
@@ -553,7 +547,7 @@ def _bookmark_link(e, next_chap, titles):
     for r in sorted(e.get("readers") or [], key=lambda r: -(r.get("visits") or 0)):
         u = r.get("url") or ""
         hh = r.get("host") or host(u)
-        if not u or not hh or is_dead_reader(hh) or is_dynamic(hh) \
+        if not u or not hh or is_dead_reader(hh) or is_dynamic(hh) or is_no_read(hh) \
                 or not readerlink.has_chapter_token(u):
             continue
         if chapter_of(u, "") == want:
@@ -590,7 +584,7 @@ def _harvest_pages(e, ov_url="", ov_site="", cap=4, no_prog=False):
     for r in sorted(e.get("readers") or [], key=lambda r: -(r.get("visits") or 0)):
         u = r.get("url") or ""
         hh = r.get("host") or host(u)
-        if not u or not hh or hh in seen or is_dead_reader(hh) or is_dynamic(hh):
+        if not u or not hh or hh in seen or is_dead_reader(hh) or is_dynamic(hh) or is_no_read(hh):
             continue
         sp = readerlink.series_page_of(u)
         if sp:
@@ -738,18 +732,45 @@ def _snapshot_items(items):
     return out
 
 
+def strip_no_read_links(cache):
+    """NO_READ_HOSTS (mangadex, JB 14.07.: 'ist tot zum Lesen') aus allen read_urls entfernen.
+
+    Laeuft als eigener Pass NACH bake_overrides/promote/demote (die MangaDex-Pins/Verlaufs-
+    Links zurueckschreiben koennen) und VOR enrich. Nicht-destruktiv fuer DATEN: nur die
+    read_urls/read_url werden gefiltert; Cover, Bewertung, md_id, latest bleiben unangetastet.
+    Der Primaerlink rueckt auf die erste verbleibende Reserve; sonst leer (-> ehrliche Suche).
+    Gibt die Zahl geaenderter Serien zurueck."""
+    changed = 0
+    for e in cache.values():
+        if not isinstance(e, dict):
+            continue
+        urls = e.get("read_urls") or []
+        kept = [list(u) for u in urls if u and u[0] and not is_no_read(host(u[0]))]
+        if len(kept) != len(urls):
+            changed += 1
+            e["read_urls"] = kept
+            if is_no_read(host(e.get("read_url") or "")) or not e.get("read_url"):
+                if kept:
+                    e["read_url"] = kept[0][0]
+                    e["read_site"] = kept[0][1] if len(kept[0]) > 1 else host(kept[0][0])
+                else:
+                    e["read_url"], e["read_site"] = "", ""
+    return changed
+
+
 def _live_links(links):
-    """read_urls gegen die DEAD_READERS-Sperrliste filtern. WICHTIG auch fuer Cache-ALTBESTAND:
-    der Reuse-Zweig kopierte gespeicherte Links wortwoertlich weiter — ein Link, der VOR einer
-    Domain-Sperre gebaut wurde, ueberlebte die Sperre sonst fuer immer (JB-Fund: vinlandsagamanga
-    blieb 'weiterlesen', obwohl die Domain laengst gesperrt war)."""
+    """read_urls gegen die DEAD_READERS-Sperrliste + NO_READ_HOSTS filtern. WICHTIG auch fuer
+    Cache-ALTBESTAND: der Reuse-Zweig kopierte gespeicherte Links wortwoertlich weiter — ein Link,
+    der VOR einer Domain-Sperre gebaut wurde, ueberlebte die Sperre sonst fuer immer (JB-Fund:
+    vinlandsagamanga blieb 'weiterlesen', obwohl die Domain laengst gesperrt war).
+    NO_READ_HOSTS raus (JB 14.07.: mangadex ist als Lese-Link tot, bleibt aber Datenquelle)."""
     out = []
     for ln in (links or []):
         try:
             u = ln[0]
         except (TypeError, IndexError, KeyError):
             continue
-        if u and not is_dead_reader(host(u)):
+        if u and not is_dead_reader(host(u)) and not is_no_read(host(u)):
             out.append(list(ln))
     return out
 
@@ -885,8 +906,8 @@ def promote_history_chapters(cache, items):
         for r in sorted(it.get("readers") or [], key=lambda r: -(r.get("visits") or 0)):
             u = r.get("url") or ""
             hh = r.get("host") or host(u)
-            if not u or not hh or is_dead_reader(hh) or is_dynamic(hh):
-                continue
+            if not u or not hh or is_dead_reader(hh) or is_dynamic(hh) or is_no_read(hh):
+                continue                 # is_no_read: mangadex nie aus dem Verlauf fischen (JB 14.07.)
             if not readerlink.is_chapter_url(u):
                 continue                 # nur echte Kapitel-URLs
             if readerlink.has_chapter_token(u) and readerlink.series_page_of(u) == u:
@@ -1007,6 +1028,12 @@ def enrich(items, cache_path, health_dir, cap, name_fix=None, cache_ver=CACHE_VE
             print(f"  {_dm} Serien: Kapitel-Reserve vor die Serien-Seite gerueckt.", flush=True)
     except Exception as ex:
         print(f"  [Seiten-Demotion] uebersprungen: {type(ex).__name__}: {ex}", flush=True)
+    try:                            # NO-READ-Hosts als LESE-Link entfernen (JB 14.07.: mangadex
+        _nr = strip_no_read_links(cache)   # ist tot zum Lesen). Nach allen Passes, VOR enrich.
+        if _nr:                            # Cover/Daten bleiben; nur die read_urls werden gefiltert.
+            print(f"  {_nr} Serien: mangadex als Lese-Link entfernt (bleibt Datenquelle).", flush=True)
+    except Exception as ex:
+        print(f"  [No-Read-Filter] uebersprungen: {type(ex).__name__}: {ex}", flush=True)
     if relink:
         # Relink: gecachte Metadaten behalten, NUR den 'weiterlesen'-Link neu aufloesen (Override-Vorrang).
         # Kein MangaBaka -> schnell. Alle bereits gecachten (aktuellen) Serien kommen dran.
@@ -1067,10 +1094,7 @@ def enrich(items, cache_path, health_dir, cap, name_fix=None, cache_ver=CACHE_VE
                                                           prefer_page=not _chap_known,
                                                           extra_pages=_pages,
                                                           adult=(c.get("adult_kind") == "sexual")))
-                    if not neu and c.get("mdx") and _chap_known:
-                        u_md, s_md = md_chapter_link(c["mdx"], next_chap)
-                        if u_md:
-                            neu = [[u_md, s_md]]
+                    # (MangaDex-Lese-Fallback entfernt, JB 14.07.: 'mangadex ist tot' zum Lesen.)
                     if neu:
                         links = neu
                 # MangaFire-API-Upgrade (JB-Goal 14.07.): kein echter Kapitel-Link vorn +
@@ -1111,6 +1135,7 @@ def enrich(items, cache_path, health_dir, cap, name_fix=None, cache_ver=CACHE_VE
                     if alt and readerlink.is_chapter_url(alt[0][0]):
                         links = alt + [l for l in links if l[0] != alt[0][0]]
                 links = keep_last_good(links, c)         # FAILSAFE (s. Voll-Pfad)
+                links = [l for l in links if not is_no_read(host(l[0]))]  # mangadex nie als Lese-Link
                 nc["read_urls"] = links
                 nc["read_url"], nc["read_site"] = (tuple(links[0]) if links else ("", ""))
                 nc["read_chap"] = next_chap
@@ -1372,12 +1397,9 @@ def enrich(items, cache_path, health_dir, cap, name_fix=None, cache_ver=CACHE_VE
                         links = [[u_dy, s_dy]] + [l for l in links if l[0] != u_dy]
                 except Exception:
                     pass
-            if not links and nc.get("mdx"):
-                # LETZTE Ruecklage (Runde 29, Penisman/helvetica): MangaDex selbst — die API ist
-                # Ground-Truth und nie bot-blockiert; exaktes Kapitel (UUID) oder Serien-Seite.
-                u_md, s_md = md_chapter_link(nc["mdx"], next_chap)
-                if u_md:
-                    links = [[u_md, s_md]]
+            # (MangaDex-LESE-Ruecklage entfernt, JB 14.07.2026: 'mangadex ist tot' zum Lesen —
+            #  Kapitel laden ewig/gar nicht. Bleibt Datenquelle. Ohne anderen Link -> ehrliche
+            #  Suche statt eines mangadex-Links, der ins Leere laedt.)
             # RATCHET (JB Runde 35, 'wieder und wieder'): ein frueher gefundener KAPITEL-Link
             # darf NIE durch eine blosse Serien-Seite ersetzt werden, nur weil eine Netz-
             # Stufe unter Parallel-Last scheiterte — Links werden nur besser, nie schlechter.
@@ -1390,6 +1412,7 @@ def enrich(items, cache_path, health_dir, cap, name_fix=None, cache_ver=CACHE_VE
                         and not (links and readerlink.is_chapter_url(links[0][0]))):
                     links = alt_links
             links = keep_last_good(links, c)     # FAILSAFE: nie durch einen Fehl-Lauf verlieren
+            links = [l for l in links if not is_no_read(host(l[0]))]  # mangadex nie als Lese-Link
             nc["read_urls"] = links
             nc["read_url"], nc["read_site"] = (links[0] if links else ("", ""))
             nc["read_chap"] = next_chap

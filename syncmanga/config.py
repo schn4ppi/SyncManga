@@ -100,6 +100,18 @@ def is_dead_reader(site):
     return any(d in s for d in DEAD_READERS)
 
 
+# Hosts, die als DATENQUELLE gut sind, aber NICHT zum Lesen taugen (JB 14.07.2026:
+# 'mangadex ist tot' — Kapitel laden ewig/gar nicht). Sie bleiben fuer Metadaten (Bewertung,
+# Cover, neuestes Kapitel, Titel-Matching) in Gebrauch, liefern aber KEINEN 'weiterlesen'-Link.
+NO_READ_HOSTS = ("mangadex.org", "mangadex.to")
+
+
+def is_no_read(site):
+    """True, wenn der Host NICHT als Lese-Link dienen soll (Datenquelle ja, Lesen nein)."""
+    s = (site or "").lower()
+    return any(h in s for h in NO_READ_HOSTS)
+
+
 def is_paused_reader(site):
     """True, wenn der Host pausiert ist — manuell (PAUSED_READERS) oder automatisch
     (PAUSED_AUTO, Reader-Check meldet down/maintenance)."""

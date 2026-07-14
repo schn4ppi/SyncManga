@@ -22,7 +22,7 @@ from collections import Counter
 
 from .parse import norm, is_dynamic, host
 from . import config as _config           # Modul-Zugriff: PAUSED_READERS wird zur Laufzeit gesetzt
-from .config import NAMELEN, UNSAFE_SITES, is_dead_reader, is_paused_reader
+from .config import NAMELEN, UNSAFE_SITES, is_dead_reader, is_paused_reader, is_no_read
 from .readerlink import is_chapter_url
 from .catalog import cover_url
 from . import i18n
@@ -426,7 +426,8 @@ def _primary_action(e, s, now_ts, unsafe, g, uprog=None):
     if recent and not unsafe:
         alive = [r for r in readers if r.get('url')
                  and not is_dead_reader(r.get('host') or host(r.get('url')))
-                 and not is_paused_reader(r.get('host') or host(r.get('url')))]
+                 and not is_paused_reader(r.get('host') or host(r.get('url')))
+                 and not is_no_read(r.get('host') or host(r.get('url')))]   # mangadex nie lesen (JB 14.07.)
         if alive:
             direct = max(alive, key=lambda r: (r.get('chap') or 0, r.get('visits', 0), r.get('lv') or 0))
     if e.get('ov'):                          # kuratierter Override hat Vorrang vor dem Bookmark
@@ -438,7 +439,8 @@ def _primary_action(e, s, now_ts, unsafe, g, uprog=None):
     # unangetastet, nach Aufheben der Pause gilt sofort wieder der urspruengliche Link.
     cand = ([(e.get('read_url') or '', e.get('read_site') or '')]
             + [tuple(x) for x in (e.get('read_urls') or [])])
-    rl, rsite0 = next(((u, nm) for u, nm in cand if u and not is_paused_reader(host(u))),
+    rl, rsite0 = next(((u, nm) for u, nm in cand
+                       if u and not is_paused_reader(host(u)) and not is_no_read(host(u))),
                       ('', ''))
     # Kapitel schlaegt Serien-Seite (JB Runde 35, Farmer/Murim: der frische eigene Klick auf die
     # SERIEN-Root verdraengte den verifizierten Kapitel-Link). Nur bei bekanntem Lesestand —
