@@ -367,9 +367,21 @@ def fill_one_reserves(v):
                 v["last_group"] = grp
         except Exception:
             pass
-    titles = [t for t in ([v.get("title"), v.get("title_romaji")]
-                          + (v.get("alt_titles") or [])[:4]) if t]
+    titles = [t for t in ([v.get("title"), v.get("title_en"), v.get("title_romaji"),
+                           v.get("title_native")] + (v.get("alt_titles") or [])) if t]
+    # API-Quellen ZUERST (JB 14.07.: alte/Nischen-Titel wie Junjo Romantica hatten keine
+    # Quelle, MangaFire/Dynasty finden sie ueber die API). Diverse Titel (latein+CJK).
     if titles:
+        from .sources import mf_chapter_link, dy_chapter_link
+        for _api in (mf_chapter_link, dy_chapter_link):
+            try:
+                u, s2 = _api(titles, nxt)
+            except Exception:
+                u, s2 = "", ""
+            if u and host(u) not in have:
+                new.append([u, s2])
+                have.add(host(u))
+    if titles and not new:
         try:
             # adult=True NUR fuer 18+-Serien (pink) -> Adult-Spezialreader duerfen liefern
             found = readerlink.find_chapters(titles, nxt, mtype=v.get("type"), limit=3,

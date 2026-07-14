@@ -97,7 +97,20 @@ details.alt[open]>summary{opacity:.6}
 .pill.site{color:#b6e3b0;border-color:#2f5a34}
 
 /* --- Aktion-/Bewertung-Spalte + Select ------------------------------------ */
-td.act{line-height:2.2;width:100%}   /* nimmt den freien Platz -> Serie/Autor schrumpft auf Inhalt */
+/* FLEX statt line-height:2.2 (JB 14.07.2026: 'im schmalen Fenster wird jeder Manga dick').
+   Ursache war line-height 2.2: sobald die Aktions-Pills umbrachen, war jede Umbruch-Zeile
+   ~2.2em hoch -> 107px-Zeilen. Flexbox mit kleinem gap laesst sie kompakt umbrechen; ab
+   <=1200px werden die Pills Icon-only (wie MangaDex/AniList auf schmal) -> ~50px-Zeilen. */
+td.act{display:flex;flex-wrap:wrap;justify-content:flex-start;align-items:center;
+       gap:4px;width:100%}      /* nimmt den freien Platz -> Serie/Autor schrumpft auf Inhalt */
+td.act .pill{margin:0}          /* Abstaende kommen aus gap, nicht aus pill-margin */
+.pill.alt{white-space:nowrap}   /* '＋ Alt' nie intern umbrechen (JB: 'kaputte +alt-Sortierung') */
+/* Schmales Fenster (Zwischenbereich Desktop->Handy): Aktionen NUR Symbole, damit sie in EINE
+   Zeile passen; die Labels kommen ab >1200px zurueck. Baka (DB-Link) bleibt sichtbar. */
+@media(max-width:1200px){
+  td.act .pill .pl{display:none}
+  td.act .pill.go{min-width:0}
+}
 td.rt{text-align:center;font-weight:700;color:#e6c34a;white-space:nowrap}
 select.btn{padding:7px 8px;width:auto}
 
