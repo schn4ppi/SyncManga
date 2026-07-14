@@ -25,7 +25,7 @@ if PKG not in sys.path:
 from syncmanga import readerlink                            # noqa: E402
 from syncmanga.parse import norm                            # noqa: E402
 
-CACHE = os.path.normpath(os.path.join(PKG, "..", "SyncEngine", "md_cache.json"))
+CACHE = os.path.normpath(os.path.join(PKG, "..", "..", "SyncDashTray", "System", "md_cache.json"))
 OV = os.path.join(PKG, "data", "series_overrides.json")
 PROBE_CHAPTER = 1                                            # ein existierendes Kapitel zum Pruefen
 

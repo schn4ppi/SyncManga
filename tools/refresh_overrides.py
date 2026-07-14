@@ -16,7 +16,14 @@ import time
 
 # apply_source_confirms zuerst: von JB bestaetigte Direktlinks haben Vorrang, danach fuellt die
 # Discovery nur noch Serien OHNE Override -> bestaetigte Quellen bleiben unangetastet.
-TOOLS = ["tools.apply_source_confirms", "tools.fix_broken", "tools.discover_dedicated", "tools.discover_sitemap"]
+# regen_read_scheme = Schema-Wachposten (JB 14.07.): faellt ein Reader-URL-Schema um (mangafire
+# /read/), werden die Eintraege automatisch auf die Serien-Seite regeneriert statt monatelang
+# brachzuliegen. Idempotent — ohne tote Eintraege ein No-op.
+# import_keiyoushi zuletzt (JB 14.07.): zieht den offiziellen Extension-Index (~2000 Quellen)
+# automatisch und verifiziert neue EN-Reader streng — so kommen "mega gute neue Seiten"
+# der Szene ohne Zutun in den Muster-Reader-Vorrat.
+TOOLS = ["tools.apply_source_confirms", "tools.fix_broken", "tools.regen_read_scheme",
+         "tools.discover_dedicated", "tools.discover_sitemap", "tools.import_keiyoushi"]
 
 
 def main():

@@ -23,7 +23,7 @@ from collections import Counter
 from .parse import norm, is_dynamic, host
 from . import config as _config           # Modul-Zugriff: PAUSED_READERS wird zur Laufzeit gesetzt
 from .config import NAMELEN, UNSAFE_SITES, is_dead_reader, is_paused_reader
-from .readerlink import has_chapter_token
+from .readerlink import is_chapter_url
 from .catalog import cover_url
 from . import i18n
 from . import enrich as _enrich                  # recs_load (Empfehlungen, frueher recs.py)
@@ -375,17 +375,28 @@ def recommendations_panel(rows, s):
                 f'title="{html.escape(", ".join(r.get("genres") or []))}">'
                 f'{html.escape(str(r["title"])[:38])} <b>⭐{r.get("score") or "?"}</b></a>{rd}</span>')
     chips = "".join(_rchip(r) for r in items[:12])
+    def _slim(r):
+        return {"t": str(r["title"])[:38], "u": r["url"], "s": r.get("score") or "?",
+                "g": ", ".join(r.get("genres") or []), "r": r.get("read") or ""}
     # Pool (bis 30) einbetten -> der ↻-Knopf mischt clientseitig neue 12 heraus (JB-Wunsch), kein Netz.
-    pool = json.dumps([{"t": str(r["title"])[:38], "u": r["url"], "s": r.get("score") or "?",
-                        "g": ", ".join(r.get("genres") or []), "r": r.get("read") or ""}
-                       for r in items[:30]], ensure_ascii=False)
+    pool = json.dumps([_slim(r) for r in items[:30]], ensure_ascii=False)
+    # v2 (JB 10.07.2026): je-Genre-Pools + Genre-Chips (an/★Prio) — der Client kombiniert live.
+    by_genre = meta.get("by_genre") or {}
+    bg = json.dumps({g: [_slim(r) for r in rs] for g, rs in by_genre.items()}, ensure_ascii=False)
+    top = json.dumps(meta.get("genres") or [], ensure_ascii=False)
+    order = [g for g in (meta.get("order") or sorted(by_genre)) if g in by_genre]
+    gchips = "".join(f'<button type=button class=rchip data-rg="{html.escape(g)}" '
+                     f'onclick="recsCycle(this)" title="{html.escape(s["recs_genre_tip"])}">'
+                     f'{html.escape(g)}</button>' for g in order)
+    gbar = f'<div class=rchips>{gchips}</div>' if gchips else ''
     return (f'<details class=stats><summary class="pill alt" title="{html.escape(s["recs_toggle"])}">💡 {s["recs_title"]}</summary>'
             f'<div class=pdrop>'
             f'<div class="muted" style="margin:0 0 6px;font-size:12px">'
             f'{s["recs_hint"].format(g=", ".join(meta.get("genres") or []))} '
             f'<button class=btn onclick="shuffleRecs()" title="{html.escape(s["recs_shuffle_title"])}">{s["recs_shuffle"]}</button></div>'
+            f'{gbar}'
             f'<div id=recsgrid class=statgrid>{chips}</div></div>'
-            f'<script>var RECSPOOL={pool};</script></details>')
+            f'<script>var RECSPOOL={pool},RECSBG={bg},RECSTOP={top};</script></details>')
 
 
 def _db_pill(e):
@@ -433,7 +444,7 @@ def _primary_action(e, s, now_ts, unsafe, g, uprog=None):
     # SERIEN-Root verdraengte den verifizierten Kapitel-Link). Nur bei bekanntem Lesestand —
     # bei '?' ist die Serien-Seite ausdruecklich gewollt (Runde 31).
     if (direct and rl and e.get('chap')
-            and not has_chapter_token(direct.get('url') or '') and has_chapter_token(rl)):
+            and not is_chapter_url(direct.get('url') or '') and is_chapter_url(rl)):
         direct = None
     # Label-DREIKLANG (JB Runde 42): das Label beschreibt den ZUSTAND, nicht die URL —
     # '?' -> "anfangen", abgeschlossen+durch -> "beendet", sonst "weiterlesen" (beim
@@ -821,6 +832,7 @@ def render(rows, out_dir, out_html, namelen=NAMELEN, lang="de", readers_snap=Non
               f'"xd":"{s["export_done"]}","xs":"{s["export_skipped"]}","cq":"{s["chapfix_prompt"]}",'
               f'"imu":"{s["import_done"]}","imn":"{s["import_new"]}","sy":"{s["syncbar"]}","syp":"{s["sync_paused"]}","tp":"{s["to_top"]}","rts":{now_ts},'
               f'"op":"{s["open"]}","brkSent":"{s["brk_sent"]}","rgo":"{s["recs_read_tip"]}",'
+              f'"altm":"{s["alt_menu"]}",'
               f'"dudArch":"{s["dud_arch"]}","dudBack":"{s["dud_back"]}","dudAll":"{s["dud_all"]}",'
               f'"paused":{json.dumps(sorted(_config.all_paused()), ensure_ascii=False)},'
               f'"tt":{tt}}};'

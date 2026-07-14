@@ -177,7 +177,7 @@ def _cache_host_counts(cache_path=None):
     from collections import Counter
     here = os.path.dirname(os.path.abspath(__file__))
     cands = [cache_path] if cache_path else [
-        os.path.join(here, "..", "..", "Core", "md_cache.json"),
+        os.path.join(here, "..", "..", "..", "SyncDashTray", "System", "md_cache.json"),
         os.path.join(os.getcwd(), "cache", "md_cache.json"),
         os.path.join(os.getcwd(), "md_cache.json")]
     ct = Counter()

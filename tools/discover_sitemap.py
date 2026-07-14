@@ -27,7 +27,7 @@ if PKG not in sys.path:
 from syncmanga.readerlink import entry_slugs                   # noqa: E402
 from syncmanga.parse import norm                               # noqa: E402
 
-CACHE = os.path.normpath(os.path.join(PKG, "..", "SyncEngine", "md_cache.json"))
+CACHE = os.path.normpath(os.path.join(PKG, "..", "..", "SyncDashTray", "System", "md_cache.json"))
 OV = os.path.join(PKG, "data", "series_overrides.json")
 DATA = os.path.join(PKG, "data")
 _UA = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/124.0",
@@ -51,9 +51,16 @@ def _undouble(base):
 
 
 # -- pro Quelle: aus dem Sitemap-Text die (slug -> Reader-URL-Vorlage)-Paare ziehen --------------
-def _pairs_mangafire(text):                                    # chapter-direkt, slug.id (verdoppelt)
+def _pairs_mangafire(text):                                    # Serien-Seite (Kapitel = opake ID)
+    # WURZELFIX 14.07.2026: das alte /read/{sid}/en/chapter-{n}-Schema ist seit dem
+    # MangaFire-Umbau TOT (Redirect auf die Titelseite) — readerlink filtert solche Eintraege
+    # beim Laden komplett raus, d.h. die 53k-Map war wirkungslos UND wurde hier jede Woche
+    # wieder tot geschrieben. Jetzt: kanonische Serien-Seite /title/{id}-{slug} (live
+    # verifiziert: /manga/{slug}.{id} -> 301 -> /title/{id}-{slug}); das exakte Kapitel
+    # zieht die Ernte-Stufe (harvest_chapter_link) zur Laufzeit.
     for sid in re.findall(r"mangafire\.to/manga/([a-z0-9-]+\.[a-z0-9]+)", text):
-        yield _undouble(sid.split(".")[0]), f"https://mangafire.to/read/{sid}/en/chapter-{{n}}"
+        slug, fid = sid.rsplit(".", 1)
+        yield _undouble(slug), f"https://mangafire.to/title/{fid}-{slug}"
 
 
 def _pairs_mangaread(text):                                    # chapter-direkt
@@ -141,6 +148,10 @@ def main():
     except Exception:
         data = {"overrides": {}}
     ov = data.get("overrides") or {}
+    # Bestehende Keys NORMALISIERT vergleichen (Fix 14.07., 'dukependragon'-Dublette:
+    # Roh-Keys wie 'Duke Pendragon, Master of ...' matchten norm(t) nie -> stilles Duplikat,
+    # das sich beim Laden gegenseitig ueberschreibt).
+    known = {norm(k) for k in ov}
     total = 0
     for site in SITES:
         print(f"{site['name']}: Sitemap laden ...", flush=True)
@@ -148,11 +159,19 @@ def main():
         found = 0
         for e in c.values():
             t = e.get("title")
-            if not t or e.get("novel") or norm(t) in ov:
+            if not t or e.get("novel") or norm(t) in known:
                 continue
             url = next((m[s] for s in entry_slugs(e) if s in m), None)
             if url:
+                # Gespeicherte Alt-DBs koennen noch totes /read/-Schema tragen (Fallback bei
+                # nicht erreichbarer Sitemap) -> beim Schreiben heilen, NIE tot eintragen.
+                from syncmanga.readerlink import is_dead_read_scheme, heal_read_scheme
+                if is_dead_read_scheme(url):
+                    url = heal_read_scheme(url)
+                    if not url:
+                        continue
                 ov[norm(t)] = {"name": t, "chapter": url, "trust": True, "auto": site["name"]}
+                known.add(norm(t))
                 found += 1
         total += found
         print(f"  {len(m)} Serien in DB, {found} neue Overrides.", flush=True)

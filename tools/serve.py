@@ -20,7 +20,7 @@ import socket
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-ROOT = os.path.normpath(os.path.join(HERE, ".."))     # SyncManga/ (enthaelt HTML + manifest + sw + icons)
+ROOT = os.path.normpath(os.path.join(HERE, "..", "..", "Erstellt"))  # enthaelt Leseliste-HTML + manifest + sw + icons
 DEFAULT_PORT = 8765
 
 

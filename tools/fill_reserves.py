@@ -33,8 +33,8 @@ from syncmanga.parse import host, norm                              # noqa: E402
 from syncmanga.sources import md_chapter_link  # noqa: E402
 from syncmanga.config import load_sources, apply_sources  # noqa: E402
 
-CACHE = os.path.normpath(os.path.join(PKG, "..", "Core", "md_cache.json"))
-LOCK = os.path.normpath(os.path.join(PKG, "..", "Core", "manga_update.lock"))
+CACHE = os.path.normpath(os.path.join(PKG, "..", "..", "SyncDashTray", "System", "md_cache.json"))
+LOCK = os.path.normpath(os.path.join(PKG, "..", "..", "SyncDashTray", "System", "manga_update.lock"))
 
 
 def _sim(a, b):

@@ -353,6 +353,31 @@ body.dense.tiles #tiles{grid-template-columns:repeat(auto-fill,minmax(100px,1fr)
 .tchap .tl{color:#8a7d74}
 .tl.pOn{color:#6fcf7f}.tl.pDone{color:#3a9d8f}.tl.pHia{color:#e6c34a}.tl.pStop{color:#c56b4a}.tl.pSoon{color:#9aa}
 .tname{font-size:12px;color:#d7c7bd;line-height:1.3;margin-top:2px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+/* --- Empfehlungs-Genre-Chips (JB 10.07.2026): 3 Zustaende aus/an/★Prio, dezent unter dem Hinweis --- */
+.rchips{display:flex;flex-wrap:wrap;gap:4px;margin:0 0 8px}
+.rchip{font-size:11px;padding:2px 8px;border-radius:999px;border:1px solid #3a332e;background:transparent;color:#8a7d74;cursor:pointer;line-height:1.5}
+.rchip:hover{border-color:#d67756;color:#d7c7bd}
+.rchip.on{background:#2a2522;border-color:#d67756;color:#f0e6dd}
+.rchip.prio{background:#e0b56a;border-color:#e0b56a;color:#1a1310;font-weight:600}
+body.light .rchip{border-color:#ddd0b6;color:#8a7d74}
+body.light .rchip.on{background:#efe5cf;border-color:#d67756;color:#4a4033}
+body.light .rchip.prio{background:#e0b56a;border-color:#e0b56a;color:#1a1310}
+/* --- ＋Alt auf der Kachel (JB 09.07.2026): Ecken-Knopf im Cover, nur bei Hover sichtbar;
+   das Menue klappt als Overlay AUF dem Bild aus (max-Hoehe = Bildbereich, scrollt bei vielen) --- */
+.tile{position:relative}
+.tile .talt{position:absolute;top:6px;right:6px;z-index:4;opacity:0;pointer-events:none;transition:opacity .15s}
+.tile:hover .talt,.tile .talt.open{opacity:1;pointer-events:auto}
+@media (hover:none){.tile .talt{opacity:.85;pointer-events:auto}}
+.taltb{width:26px;height:26px;border:1px solid rgba(255,255,255,.25);border-radius:50%;background:rgba(18,15,13,.72);color:#fff;font-size:16px;line-height:1;cursor:pointer;padding:0}
+.taltb:hover,.talt.open .taltb{background:#d67756;border-color:#d67756}
+.talt .taltm{display:none;position:absolute;top:30px;right:0;min-width:120px;max-width:160px;max-height:140px;overflow-y:auto;flex-direction:column;gap:3px;padding:6px;border-radius:10px;background:rgba(18,15,13,.93);border:1px solid #3a332e;box-shadow:0 4px 14px rgba(0,0,0,.5)}
+.talt.open .taltm{display:flex}
+.taltm a{color:#f0e6dd;font-size:11px;text-decoration:none;padding:3px 7px;border-radius:6px;background:rgba(255,255,255,.08);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.taltm a:hover{background:#d67756;color:#1a1310}
+body.light .taltb{background:rgba(255,252,246,.85);color:#4a4033;border-color:#ddd0b6}
+body.light .talt .taltm{background:rgba(255,252,246,.95);border-color:#ddd0b6}
+body.light .taltm a{color:#4a4033;background:rgba(0,0,0,.06)}
+body.light .taltm a:hover{background:#d67756;color:#fff}
 #til.on{background:#e0b56a;color:#1a1310;border-color:#e0b56a}
 /* --- Cover-Vorschau beim Hover (JB): schwebendes Bild neben dem Serientitel, lazy geladen --- */
 #covfly{position:fixed;z-index:70;pointer-events:none;display:none;background:#1e1a17;border:1px solid #3a332e;border-radius:8px;padding:4px;box-shadow:0 6px 20px rgba(0,0,0,.55)}

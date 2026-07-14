@@ -30,7 +30,7 @@ if PKG not in sys.path:
 
 from syncmanga import catalog, readerlink                          # noqa: E402
 from syncmanga.common import post_json, use_utf8_stdio             # noqa: E402
-from syncmanga.readerlink import _CHAPTOK                          # noqa: E402
+from syncmanga.readerlink import is_chapter_url                    # noqa: E402
 from syncmanga.config import load_overrides                        # noqa: E402
 
 DATA = os.path.join(PKG, "data")
@@ -43,6 +43,9 @@ sort:POPULARITY_DESC,isAdult:false){title{english romaji}countryOfOrigin format}
 BUCKETS = [("1985-1995", 19850101, 19951231), ("1996-2005", 19960101, 20051231),
            ("2006-2015", 20060101, 20151231), ("2016-2026", 20160101, 20261231)]
 TIERS = [("top", 1), ("mittel", 6)]
+# --tief (JB 14.07., 'mach es dir schwer'): Langschwanz statt Top — Popularitaets-Rang
+# ~290-300 und ~700-720 je Jahrzehnt-Fenster (dort wohnen die vergessenen Archiv-Titel).
+TIERS_TIEF = [("tief", 25), ("langschwanz", 60)]
 CONF_OK = 0.62
 
 
@@ -71,8 +74,13 @@ def build_sample(total):
 
 def main():
     use_utf8_stdio()
-    total = int(sys.argv[1]) if len(sys.argv) > 1 else 64
-    link_n = int(sys.argv[2]) if len(sys.argv) > 2 else 32
+    global TIERS
+    args = [a for a in sys.argv[1:] if a != "--tief"]
+    if "--tief" in sys.argv:
+        TIERS = TIERS_TIEF
+        print("Langschwanz-Modus: Popularitaets-Raenge ~290+/~710+ je Jahrzehnt.")
+    total = int(args[0]) if len(args) > 0 else 64
+    link_n = int(args[1]) if len(args) > 1 else 32
     load_overrides(os.path.join(DATA, "series_overrides.json"))
     readerlink.load_readers(os.path.join(DATA, "readers_pattern.json"))
     print(f"Benchmark: {total} Titel (Testbibliothek von AniList), Link-Stichprobe {link_n} ...")
@@ -100,10 +108,28 @@ def main():
     for i, s in enumerate(probe):
         titles = [t for t in ([s["title"]] + s.get("rec_titles", [])) if t]
         hits = readerlink.find_chapters(titles, 1, mtype=s.get("mtype") or None, limit=1)
+        if not hits:
+            # MD-RUECKLAGE wie die echte Pipeline (14.07.: der Benchmark unterschaetzte sie —
+            # beide Langschwanz-Misses existierten auf MangaDex mit lesbarem EN). Gleicher
+            # Waechter wie fill_one_reserves: Treffer-Titel muss norm-gleich/>=0.93 sitzen.
+            try:
+                import difflib
+                from syncmanga.parse import norm as _norm
+                from syncmanga.sources import md_lookup, md_chapter_link
+                hit = md_lookup(s["title"]) or {}
+                cand = [hit.get("title") or ""] + (hit.get("all_titles") or [])
+                okt = any(h and (_norm(h) == _norm(s["title"]) or difflib.SequenceMatcher(
+                    None, _norm(h), _norm(s["title"])).ratio() >= 0.93) for h in cand)
+                if hit.get("md_id") and okt:
+                    u, nm = md_chapter_link(hit["md_id"], 1)
+                    if u:
+                        hits = [(u, nm)]
+            except Exception:
+                pass
         s["link"] = bool(hits)
         if hits:
             link_ok += 1
-            if _CHAPTOK.search(hits[0][0]):
+            if is_chapter_url(hits[0][0]):     # zaehlt auch mangadex-/chapter/-UUIDs (14.07.)
                 chap_ok += 1
         if (i + 1) % 8 == 0:
             print(f"  ... Links {i + 1}/{len(probe)}")

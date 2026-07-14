@@ -72,6 +72,9 @@ STRINGS = {
         "recs_hint": "Weil deine Liste viel {g} enthält — diese Serien (extern, noch nicht in deiner Liste) könnten dir gefallen:",
         "recs_shuffle": "↻ neue Vorschläge",
         "recs_shuffle_title": "12 andere Vorschläge aus dem aktuellen Empfehlungs-Pool ziehen",
+        "recs_genre_tip": ("Klick wechselt: aus → an → ★ Priorität → aus. Aktive Genres liefern "
+                           "die Vorschläge, ★ gewichtet sie nach oben. Standard: deine "
+                           "Top-Genres (aus Serien mit mindestens 20 gelesenen Kapiteln)."),
         "archive": "Archivieren",
         "archive_count": "Archiv",
         "help_button": "❓ Hilfe: {n}",
@@ -272,6 +275,9 @@ STRINGS = {
         "recs_hint": "Because your list is full of {g} — these series (external, not in your list yet) might be for you:",
         "recs_shuffle": "↻ shuffle",
         "recs_shuffle_title": "Draw 12 different suggestions from the current recommendation pool",
+        "recs_genre_tip": ("Click cycles: off → on → ★ priority → off. Active genres feed the "
+                           "suggestions, ★ boosts them to the top. Default: your top genres "
+                           "(from series with at least 20 chapters read)."),
         "archive": "Archive",
         "archive_count": "Archived",
         "help_button": "❓ Help: {n}",

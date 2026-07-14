@@ -33,7 +33,7 @@ DATA = os.path.join(PKG, "data")
 DEFAULT_XML = os.path.join(DATA, "import_mal.xml")
 STATE = os.path.join(DATA, "list_state.json")
 IMPORTED = os.path.join(DATA, "imported_series.json")
-DEFAULT_CACHE = os.path.normpath(os.path.join(PKG, "..", "Core", "md_cache.json"))
+DEFAULT_CACHE = os.path.normpath(os.path.join(PKG, "..", "..", "SyncDashTray", "System", "md_cache.json"))
 
 # MAL-Status -> unsere Scan-Status (FOLDER_STATUS-Vokabular; Plan to Read = Backlog via chap=None)
 MAL_TO_STATUS = {"Reading": "Am Lesen", "Completed": "Fertig", "On-Hold": "Gelesen",

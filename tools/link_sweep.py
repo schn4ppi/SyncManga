@@ -31,12 +31,12 @@ from syncmanga import linkhealth as lh, readerlink, config   # noqa: E402
 
 def find_cache():
     """Cache-Ort: Suite (Core/md_cache.json) oder Standalone (%LOCALAPPDATA%/SyncManga bzw. cwd)."""
-    for p in (os.path.join(PKG, "..", "Core", "md_cache.json"),
+    for p in (os.path.join(PKG, "..", "..", "SyncDashTray", "System", "md_cache.json"),
               os.path.join(os.getcwd(), "cache", "md_cache.json"),
               os.path.join(os.getcwd(), "md_cache.json")):
         if os.path.exists(os.path.normpath(p)):
             return os.path.normpath(p)
-    return os.path.normpath(os.path.join(PKG, "..", "Core", "md_cache.json"))
+    return os.path.normpath(os.path.join(PKG, "..", "..", "SyncDashTray", "System", "md_cache.json"))
 
 
 def _entry_titles(e):

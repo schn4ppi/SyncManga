@@ -10,7 +10,10 @@ Jeder englische Kandidat laeuft durch DIESELBE strenge Verifikation wie everythi
 filtert Soft-404-Seiten). Nur bestandene Reader landen in data/readers_pattern.json
 (merge, nie ersetzen). Fehlschlaege als manga werden als manhwa nachgeprobt.
 
-Aufruf:  python -m tools.import_keiyoushi <pfad/zu/index.min.json> [--limit N]
+Aufruf:  python -m tools.import_keiyoushi [pfad/zu/index.min.json] [--limit N]
+OHNE Pfad wird der offizielle Index automatisch gezogen (JB 14.07.: „wenn eine mega gute
+neue Seite erscheint, gucken wir dann bei einer Datenbank vorbei?" — ja, jetzt von selbst:
+im woechentlichen refresh_overrides). Neue Reader-Seiten der Szene erscheinen dort zuerst.
 """
 import io
 import json
@@ -29,13 +32,25 @@ from syncmanga.parse import host as host_of             # noqa: E402
 from syncmanga.config import is_dead_reader, is_paywall_site, UNSAFE_SITES  # noqa: E402
 
 OUT = os.path.join(PKG, "data", "readers_pattern.json")
+# Offizieller, maschinenlesbarer Quellen-Index (Nachfolger der Tachiyomi-Extensions).
+INDEX_URL = "https://raw.githubusercontent.com/keiyoushi/extensions/repo/index.min.json"
+
+
+def _load_index(path):
+    """Index laden: lokale Datei ODER (ohne Pfad) Auto-Pull vom offiziellen Repo."""
+    if path:
+        return json.load(open(path, encoding="utf-8"))
+    import urllib.request
+    req = urllib.request.Request(INDEX_URL, headers={"User-Agent": "SyncManga"})
+    with urllib.request.urlopen(req, timeout=30) as r:
+        return json.load(r)
 
 
 def main():
-    if len(sys.argv) < 2:
-        sys.exit("Nutzung: python -m tools.import_keiyoushi <index.min.json> [--limit N]")
-    limit = int(sys.argv[sys.argv.index("--limit") + 1]) if "--limit" in sys.argv else 0
-    index = json.load(open(sys.argv[1], encoding="utf-8"))
+    args = sys.argv[1:]
+    limit = int(args[args.index("--limit") + 1]) if "--limit" in args else 0
+    path = next((a for a in args if not a.startswith("--") and not a.isdigit()), "")
+    index = _load_index(path)
     existing = list(readerlink.load_readers(OUT))
     known = {r["host"] for r in existing}
     cands, seen = [], set()

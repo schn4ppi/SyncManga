@@ -12,7 +12,7 @@
 
 // --- Zustands-Sicherung (JB): fehlt der Browser-Zustand (neuer Browser / Website-Daten geloescht),
 // aus dem vom Renderer eingebetteten SEED (data/list_state.json = 💾-Export) wiederherstellen. ---
-var STATE_KEYS=['mangaArchived','mangaFav','titleCfm','brk','hcols','nsfw','chapFix','dense','theme','tiles','pausedReaders','dudUrls','sortState','scrollPos','auPref'];
+var STATE_KEYS=['mangaArchived','mangaFav','titleCfm','brk','hcols','nsfw','chapFix','dense','theme','tiles','pausedReaders','dudUrls','sortState','scrollPos','auPref','recsGenres'];
 (function(){try{var S=(typeof SEED!=='undefined')?SEED:null;if(!S)return;STATE_KEYS.forEach(function(k){if(localStorage.getItem(k)===null&&S[k]!=null)localStorage.setItem(k,S[k])})}catch(e){}})();
 // --- Schluessel-Migration (JB Runde 35, "Mein Archiv hat sich resetted"): data-h ist jetzt ein
 // STABILER Schluessel (DB-ID bzw. n:+Roh-Verlaufsname) statt norm(Anzeigetitel) — Titelkorrekturen
@@ -263,7 +263,14 @@ function tileName(td){var nm=td&&td.querySelector('.nmline');if(!nm)return'';var
 function buildTiles(){refreezeHead();var c=document.getElementById('tiles');if(!c){c=document.createElement('div');c.id='tiles';var w=document.querySelector('.wrap');w.parentNode.insertBefore(c,w.nextSibling)}var out=[];var anyFav=false,sepDone=false;document.querySelectorAll('#t tbody tr').forEach(function(tr){if(tr.style.display==='none')return;
 // Favoriten-Trenner (JB): Favoriten stehen gepinnt oben — vor der ersten NICHT-Favoriten-
 // Kachel kommt EINE Linie ueber die volle Breite (entfaellt, wenn Favoriten ausgeblendet sind).
-var isFav=FAV.has(tr.dataset.h);if(isFav)anyFav=true;else if(anyFav&&!sepDone){out.push('<div class=tsep></div>');sepDone=true}var td=tr.cells[0],a=tr.querySelector('a.pill.go'),cc=tr.querySelector('td.c'),st=tr.querySelector('td.st'),pub=tr.querySelector('td.pub');var stc=(st&&(st.className.match(/st ?(\w+)?/)||[])[1])||'';var pc=PUBC[(pub?pub.textContent.trim():'')]||'';var parts=(cc?cc.textContent:'').split('/');var read=(parts[0]||'').trim().replace(/[^\d.,?]/g,''),lat=(parts[1]||'').replace(/[^\d.,?]/g,'');var cov=tr.dataset.cov;var img=cov?'<img data-src="'+escH(cov)+'" alt="">':'<div class=noimg>📚</div>';var nm=tileName(td);out.push('<div class=tile><a href="'+escH(a?a.href:'#')+'" target=_blank rel=noopener title="'+escH(nm)+'">'+img+'</a><div class=tchap><b class="st '+stc+'">'+escH(read||'0')+'</b><b class="tl '+pc+'">/'+escH(lat||'?')+'</b></div><div class=tname title="'+escH(nm)+'">'+escH(nm)+'</div></div>')});c.innerHTML=out.join('');
+var isFav=FAV.has(tr.dataset.h);if(isFav)anyFav=true;else if(anyFav&&!sepDone){out.push('<div class=tsep></div>');sepDone=true}var td=tr.cells[0],a=tr.querySelector('a.pill.go'),cc=tr.querySelector('td.c'),st=tr.querySelector('td.st'),pub=tr.querySelector('td.pub');var stc=(st&&(st.className.match(/st ?(\w+)?/)||[])[1])||'';var pc=PUBC[(pub?pub.textContent.trim():'')]||'';var parts=(cc?cc.textContent:'').split('/');var read=(parts[0]||'').trim().replace(/[^\d.,?]/g,''),lat=(parts[1]||'').replace(/[^\d.,?]/g,'');var cov=tr.dataset.cov;var img=cov?'<img data-src="'+escH(cov)+'" alt="">':'<div class=noimg>📚</div>';var nm=tileName(td);
+// ＋Alt auf der Kachel (JB 09.07.2026): Alternativ-Quellen der Zeile als Ecken-Knopf im Cover —
+// nur bei Hover sichtbar, klappt als Overlay AUF dem Bild aus. Quelle ist die Tabellen-Zeile,
+// dadurch stimmen Pause-Umlenkung (applyPause) und Kapitel-Fix automatisch auch hier.
+var altHtml='';var altAs=[].slice.call(tr.querySelectorAll('details.alt a.pill.go'));
+if(altAs.length){var items=altAs.map(function(x){var g=x.classList.contains('galt');var lb=g?'🔍 Google':(x.textContent||'').trim();if(!lb||(!g&&(x.getAttribute('href')||'#')==='#'))return '';return '<a href="'+escH(x.href)+'" target=_blank rel=noopener>'+escH(lb)+'</a>'}).join('');
+if(items)altHtml='<div class=talt><button type=button class=taltb title="'+escH((typeof I!=='undefined'&&I.altm)||'＋ Alt')+'">＋</button><div class=taltm>'+items+'</div></div>'}
+out.push('<div class=tile><a href="'+escH(a?a.href:'#')+'" target=_blank rel=noopener title="'+escH(nm)+'">'+img+'</a>'+altHtml+'<div class=tchap><b class="st '+stc+'">'+escH(read||'0')+'</b><b class="tl '+pc+'">/'+escH(lat||'?')+'</b></div><div class=tname title="'+escH(nm)+'">'+escH(nm)+'</div></div>')});c.innerHTML=out.join('');
 // EIGENES Lazy-Loading (natives loading=lazy laedt in eingebetteten/hintergruendigen Ansichten
 // oft gar nicht): Bild-src erst setzen, wenn die Kachel in Sichtweite kommt (600px Vorlauf).
 var tio=window.__tio;if(tio===undefined){tio=window.__tio=('IntersectionObserver' in window)?new IntersectionObserver(function(es){es.forEach(function(en){if(en.isIntersecting){var im=en.target;if(im.dataset.src){im.src=im.dataset.src;im.removeAttribute('data-src')}window.__tio.unobserve(im)}})},{rootMargin:'600px'}):null}
@@ -280,6 +287,13 @@ function unfreezeHead(){var t=document.getElementById('t');if(!t)return;t.style.
 function refreezeHead(){if(!document.body.classList.contains('tiles'))return;document.body.classList.remove('tiles');unfreezeHead();freezeHead();document.body.classList.add('tiles')}
 window.addEventListener('resize',refreezeHead);
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(refreezeHead);
+// ＋Alt-Overlay der Kacheln: EIN delegierter Listener (nicht je Kachel — ~800 Stueck).
+// Klick auf ＋ toggelt das Menue (nur eins offen), Klick woanders schliesst alle offenen.
+document.addEventListener('click',function(ev){
+ var b=ev.target.closest&&ev.target.closest('.taltb');
+ if(b){ev.preventDefault();var t=b.closest('.talt');document.querySelectorAll('#tiles .talt.open').forEach(function(o){if(o!==t)o.classList.remove('open')});t.classList.toggle('open');return}
+ if(!(ev.target.closest&&ev.target.closest('.taltm')))document.querySelectorAll('#tiles .talt.open').forEach(function(o){o.classList.remove('open')});
+});
 function toggleTiles(){var on=document.body.classList.toggle('tiles');if(!on)unfreezeHead();try{localStorage.setItem('tiles',on?'1':'')}catch(e){}var b=document.getElementById('til');if(b)b.classList.toggle('on',on);if(on)buildTiles()}
 function applyTiles(){if(localStorage.getItem('tiles')){document.body.classList.add('tiles');var b=document.getElementById('til');if(b)b.classList.add('on');buildTiles()}}
 
@@ -334,9 +348,32 @@ if(startedEmpty&&d.total>0&&d.done>=d.total&&stamp*1000>performance.timeOrigin){
 loadRows()}
 function pollSync(){try{var s=document.createElement('script');s.src='data/sync_progress.js?_='+Date.now();s.onload=function(){try{s.remove()}catch(e){}updSync(window.SYNCP)};s.onerror=function(){try{s.remove()}catch(e){}};document.head.appendChild(s)}catch(e){}setTimeout(pollSync,5000)}
 
-// --- Empfehlungen neu mischen (JB): aus dem eingebetteten Pool (RECSPOOL, bis 30) 12 zufaellige ziehen ---
+// --- Empfehlungen (JB 10.07.2026: 'mehr steuern'): Genre-Chips mit 3 Zustaenden (aus -> an ->
+// ★Prio -> aus), gespeichert in localStorage 'recsGenres' ({Genre:1|2}; leer = Standard =
+// Top-Genres aus WIRKLICH gelesenen Serien, >=20 Kapitel — Basis rechnet der Sync). Kandidaten
+// kommen aus den eingebetteten je-Genre-Pools (RECSBG); ★-Genres boosten das Ranking, der
+// 🎲/↻-Knopf mischt mit Zufalls-Jitter. Alles clientseitig, kein Netz. ---
 function escH(x){return String(x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;')}
-function shuffleRecs(){try{var g=document.getElementById('recsgrid');if(!g||typeof RECSPOOL==='undefined')return;var p=RECSPOOL.slice();for(var i=p.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),t=p[i];p[i]=p[j];p[j]=t}g.innerHTML=p.slice(0,12).map(function(r){var rd=r.r?('<a class=rgo href="'+escH(r.r)+'" target=_blank rel=noopener title="'+((typeof I!=='undefined'&&I.rgo)||'Kapitel 1 lesen')+'">📖</a>'):'';return '<span class=rwrap><a class=stile href="'+escH(r.u)+'" target=_blank rel=noopener title="'+escH(r.g)+'">'+escH(r.t)+' <b>⭐'+escH(r.s)+'</b></a>'+rd+'</span>'}).join('')}catch(e){}}
+function recsGet(){try{return JSON.parse(localStorage.getItem('recsGenres')||'null')}catch(e){return null}}
+function recsSave(o){try{localStorage.setItem('recsGenres',JSON.stringify(o))}catch(e){}}
+// Effektive Wahl: gespeicherte, sonst Standard (Top-Genres an, keine Prio)
+function recsEff(){var o=recsGet();if(o&&Object.keys(o).length)return o;var d={};(typeof RECSTOP!=='undefined'?RECSTOP:[]).forEach(function(g){d[g]=1});return d}
+function recsCycle(btn){var g=btn.dataset.rg,o=recsEff(),st=o[g]||0;o[g]=(st+1)%3;if(!o[g])delete o[g];recsSave(o);buildRecs(false)}
+function recsChips(){var o=recsEff();document.querySelectorAll('.rchip[data-rg]').forEach(function(b){var st=o[b.dataset.rg]||0;b.classList.toggle('on',st>0);b.classList.toggle('prio',st===2);var g=b.dataset.rg;b.textContent=(st===2?'★ ':'')+g})}
+function buildRecs(shuffle){try{var grid=document.getElementById('recsgrid');if(!grid)return;
+var bg=(typeof RECSBG!=='undefined'&&RECSBG)||{};var o=recsEff();
+var act=Object.keys(o).filter(function(g){return o[g]>0&&bg[g]});
+var pool,seen={},out=[];
+if(!act.length){pool=(typeof RECSPOOL!=='undefined'?RECSPOOL:[]).slice()}      // nichts waehlbar/gewaehlt -> alter Misch-Pool
+else{pool=[];act.forEach(function(g){bg[g].forEach(function(r){var k=r.u||r.t;if(seen[k]){seen[k].hits++;seen[k].prio+=(o[g]===2?1:0);return}var c={r:r,hits:1,prio:(o[g]===2?1:0)};seen[k]=c;pool.push(c)})});
+pool.forEach(function(c){var s=parseFloat(c.r.s);c.score=(isNaN(s)?6:s)+1.5*c.prio+0.4*(c.hits-1)+(shuffle?Math.random()*2.2:0)});
+pool.sort(function(a,b){return b.score-a.score});pool=pool.map(function(c){return c.r})}
+if(!act.length&&shuffle){for(var i=pool.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),t=pool[i];pool[i]=pool[j];pool[j]=t}}
+grid.innerHTML=pool.slice(0,12).map(function(r){var rd=r.r?('<a class=rgo href="'+escH(r.r)+'" target=_blank rel=noopener title="'+((typeof I!=='undefined'&&I.rgo)||'Kapitel 1 lesen')+'">📖</a>'):'';return '<span class=rwrap><a class=stile href="'+escH(r.u)+'" target=_blank rel=noopener title="'+escH(r.g)+'">'+escH(r.t)+' <b>⭐'+escH(r.s)+'</b></a>'+rd+'</span>'}).join('');
+recsChips()}catch(e){}}
+function shuffleRecs(){buildRecs(true)}
+// Boot: gespeicherte/Standard-Genre-Wahl anwenden (weicht sie vom Server-Render ab, neu bauen)
+(function(){if(document.getElementById('recsgrid'))buildRecs(false)})();
 
 // --- Titel-Bestaetigung (JB): unsichere Matches per ✔ als korrekt markieren -> Export title_confirms.json
 // -> tools/apply_confirms.py pinnt sie fest (mb_id-Override). Gespeichert in localStorage 'titleCfm'.

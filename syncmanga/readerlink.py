@@ -196,6 +196,50 @@ _CF_MARKERS = ("just a moment", "checking your browser", "cf-chl", "attention re
                "enable javascript and cookies", "ddos-guard", "cf_chl_opt")
 
 
+_PAGE_IMG = re.compile(r'(?:data-src|data-lazy-src|src)=["\']([^"\']+\.(?:jpe?g|png|webp)[^"\']*)["\']', re.I)
+_IMG_NOISE = re.compile(r'logo|icon|avatar|banner|sprite|ads?|/flags?/|emoji|cover|thumb|profile', re.I)
+
+
+def _images_hard_blocked(body, page_url, fetch_img=None):
+    """True, wenn die Kapitel-Seite Seitenbilder LISTET, deren CDN sie aber hart sperrt
+    (JB-Fund 14.07., comicasura 'zeigt keine Bilder': HTML 200 + Titel ok, aber alle
+    Bild-Dateien des Kapitels 403 auf imgs-2.2xstorage.com — nur einzelne Kapitel betroffen).
+
+    Konservativ: OHNE gelistete Seitenbilder (JS-Reader laden per Script nach) KEIN Urteil
+    (False); nur ein bewiesenes 404/410 aufs ERSTE echte Seitenbild zaehlt. 403 zaehlt
+    BEWUSST NICHT: Bild-CDNs (2xstorage) kippen nach wenigen Probes in ein IP-Rate-Limit
+    mit pauschal 403 (live beobachtet: dieselbe Datei 200 -> Minuten spaeter 403) — ein
+    403-Urteil wuerde gute Links in Serie verwerfen (JB-No-Go, manga-link-audit-regel).
+    Netz injizierbar (Tests)."""
+    pages = [u for u in _PAGE_IMG.findall(body or "") if not _IMG_NOISE.search(u)]
+    if not pages:
+        return False
+    img = pages[0]
+    if img.startswith("//"):
+        img = "https:" + img
+    elif img.startswith("/"):
+        img = f"https://{host(page_url)}{img}"
+    elif not img.startswith("http"):
+        return False
+    if fetch_img is None:
+        def fetch_img(u):
+            # Browser-typische Bild-Header: moderne CDN-Hotlink-Schutze (2xstorage) geben
+            # ohne Sec-Fetch-* pauschal 403 — das waere ein falsches 'gesperrt'-Urteil.
+            req = urllib.request.Request(u, headers={**_UA, "Referer": page_url,
+                                                     "Accept": "image/avif,image/webp,image/*,*/*",
+                                                     "Sec-Fetch-Dest": "image",
+                                                     "Sec-Fetch-Mode": "no-cors",
+                                                     "Sec-Fetch-Site": "cross-site"})
+            try:
+                with urllib.request.urlopen(req, timeout=8) as r:
+                    return getattr(r, "status", 200)
+            except urllib.error.HTTPError as e:
+                return e.code
+            except Exception:
+                return 0            # Timeout/Netz -> KEIN Urteil (nie ueber-verwerfen)
+    return fetch_img(img) in (404, 410)
+
+
 def _alive_status(url, titles=None):
     """GET -> 'ok' | 'no' | 'blocked' | 'odd'.
 
@@ -230,6 +274,12 @@ def _alive_status(url, titles=None):
                 return "blocked"
             if titles and not _page_matches(body, titles):
                 return "odd"                      # 200, aber fremder Inhalt -> nicht einordenbar
+            # Bild-BEWEIS nur fuer Ok-Kandidaten: Seitenbilder stehen oft erst tief im HTML
+            # (comicasura ~59KB) -> gezielt nachlesen, statt jeden Check zu verteuern.
+            body += r.read(160000).decode("utf-8", "replace")
+            if _images_hard_blocked(body, url):
+                return "odd"                      # Seite ok, aber Seitenbilder hart gesperrt
+                                                  # (comicasura-Fall) -> als Rate-Link nie 'ok'
             return "ok"
     except urllib.error.HTTPError as e:
         return "blocked" if e.code in (403, 429, 503) else "no"   # 404 = gibt es dort nicht
@@ -304,11 +354,16 @@ def _load_sitemaps():
             # SERIEN-Seiten-Maps, 3541 Serien — die flogen hier komplett raus). Kapitel dazu
             # liefert die Ernte (harvest_chapter_link) direkt von der Serien-Seite.
             for k, tpl in raw.items():
-                # Totes mangafire-/read/-Schema (JB 07.07.2026): die 53k-Map ist zu 100% das alte
-                # /read/-Schema, das seit dem Umbau auf die Serienseite umleitet -> NICHT mehr laden,
-                # sonst baut die Anreicherung fuer jede mangafire-Serie einen toten/falschen Link.
-                if isinstance(tpl, str) and tpl.startswith("https://") and not is_dead_read_scheme(tpl):
-                    m.setdefault(norm(k), tpl)
+                if not (isinstance(tpl, str) and tpl.startswith("https://")):
+                    continue
+                # Totes mangafire-/read/-Schema (JB 07.07.2026) wird seit 14.07. GEHEILT statt
+                # gefiltert: lokal zur kanonischen /title/-Serien-Seite umgebaut (Ernte zieht
+                # das Kapitel) -> die 53k-Map lebt wieder, auch mit gebuendelter alter DB.
+                if is_dead_read_scheme(tpl):
+                    tpl = heal_read_scheme(tpl)
+                    if not tpl:
+                        continue
+                m.setdefault(norm(k), tpl)
         except Exception:
             continue
     _index_sitemaps(m)
@@ -490,6 +545,27 @@ def has_chapter_token(url):
     """True, wenn die URL ein Kapitel-Token traegt (chapter-12, ch1-57261, episode-3, /c016/)."""
     path = urlparse(url or "").path
     return bool(_CHAPTOK.search(path) or _CNUM.search(path))
+
+
+# mangadex-URLs: /title/<uuid> = Serien-Seite, /chapter/<uuid> = Kapitel. Die UUID traegt kein
+# zaehlbares Token -> has_chapter_token verfehlt mangadex-Kapitel (und trifft sie zufaellig,
+# wenn die UUID mit Ziffern beginnt). Fuer die Kapitel-vor-Seite-Regel braucht es beide Formen.
+_MD_URL = re.compile(r"https?://(?:www\.)?mangadex\.org/(title|chapter)/([0-9a-fA-F-]{36})", re.I)
+
+
+def md_title_uuid(url):
+    """UUID aus einer mangadex-SERIEN-URL (/title/<uuid>) -> uuid oder ''. Kapitel-URLs -> ''."""
+    m = _MD_URL.match(url or "")
+    return m.group(2) if m and m.group(1).lower() == "title" else ""
+
+
+def is_chapter_url(url):
+    """True, wenn die URL ein KAPITEL ist (JB-Regel 14.07. 'Kapitel vor Seite'): erkennbares
+    Kapitel-Token ODER mangadex /chapter/<uuid> (opake ID). mangadex /title/ zaehlt NIE."""
+    m = _MD_URL.match(url or "")
+    if m:
+        return m.group(1).lower() == "chapter"
+    return has_chapter_token(url)
 
 
 def swap_chapter(url, chapter):
@@ -682,16 +758,44 @@ def is_dead_read_scheme(url):
     return bool(_DEAD_MF_READ.match(url or ""))
 
 
+_MF_READ_SID = re.compile(r"https?://(?:www\.)?mangafire\.to/read/([a-z0-9-]+)\.([a-z0-9]+)/", re.I)
+
+
+def heal_read_scheme(url):
+    """Totes mangafire-/read/-Template LOKAL heilen -> kanonische Serien-Seite oder ''.
+
+    JB-Selbstheilungs-Regel (14.07.2026): statt die 53k-Sitemap-Eintraege im alten Schema
+    wegzufiltern (Map war dadurch wirkungslos, auch in der exe mit gebuendelter alter DB),
+    wird `/read/{slug}.{id}/...` deterministisch zu `/title/{id}-{slug}` umgebaut (live
+    verifiziert: exakt das Redirect-Ziel). Serien-Seite ohne {n} — das Kapitel zieht die
+    Ernte. Nicht-mangafire/-parsebares -> '' (Aufrufer entscheidet)."""
+    m = _MF_READ_SID.match(url or "")
+    if not m:
+        return ""
+    return f"https://mangafire.to/title/{m.group(2)}-{m.group(1)}"
+
+
 def load_overrides(path):
     """data/series_overrides.json laden -> SERIES_OVERRIDES (norm(name) -> Eintrag). Fehlt -> leer.
-    Eintraege im toten mangafire-`/read/`-Schema werden dabei uebersprungen (is_dead_read_scheme)."""
+    Eintraege im toten mangafire-`/read/`-Schema werden beim Laden GEHEILT (heal_read_scheme ->
+    kanonische Serien-Seite; JB-Selbstheilungs-Regel 14.07.) — so leben auch gebuendelte alte
+    Override-Staende (exe) sofort weiter; nur Unheilbares wird uebersprungen."""
     global SERIES_OVERRIDES
     try:
         with open(path, encoding="utf-8") as f:
             ov = (json.load(f).get("overrides") or {})
-        SERIES_OVERRIDES = {norm(k): v for k, v in ov.items()
-                            if isinstance(v, dict) and v.get("chapter")   # {n} optional (auch Serien-Seite)
-                            and not is_dead_read_scheme(v["chapter"])}     # totes /read/-Schema raus
+        out = {}
+        for k, v in ov.items():
+            if not (isinstance(v, dict) and v.get("chapter")):   # {n} optional (auch Serien-Seite)
+                continue
+            ch = v["chapter"]
+            if is_dead_read_scheme(ch):
+                ch = heal_read_scheme(ch)
+                if not ch:
+                    continue
+                v = dict(v, chapter=ch)      # geheilt = Serien-Seite; Ernte zieht das Kapitel
+            out[norm(k)] = v
+        SERIES_OVERRIDES = out
     except (OSError, ValueError, AttributeError):
         pass
     return SERIES_OVERRIDES

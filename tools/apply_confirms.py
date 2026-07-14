@@ -25,7 +25,7 @@ if PKG not in sys.path:
 CONFIRMS = os.path.join(PKG, "data", "title_confirms.json")
 DONE = os.path.join(PKG, "data", "title_confirms.done.json")
 OV = os.path.join(PKG, "data", "overrides.json")
-DEFAULT_CACHE = os.path.normpath(os.path.join(PKG, "..", "Core", "md_cache.json"))
+DEFAULT_CACHE = os.path.normpath(os.path.join(PKG, "..", "..", "SyncDashTray", "System", "md_cache.json"))
 
 
 def main():

@@ -177,8 +177,14 @@ def recs_top_genres(rows, n=3, min_chap=20):
     return [g for g, _ in cnt.most_common(n)]
 
 
-def recs_refresh(rows, cache_path=RECS_CACHE, ttl=RECS_TTL):
-    """Empfehlungs-Cache erneuern (im Update-Lauf, best-effort). Ueberspringt bei frischem Cache."""
+def recs_refresh(rows, cache_path=RECS_CACHE, ttl=RECS_TTL, fetch=None):
+    """Empfehlungs-Cache erneuern (im Update-Lauf, best-effort). Ueberspringt bei frischem Cache.
+
+    v2 (JB 10.07.2026, 'Empfehlungen mehr steuern'): zusaetzlich zum gemischten Top-3-Pool
+    bekommt JEDES unterstuetzte Genre einen eigenen kleinen Pool (`by_genre`) — der Client
+    kombiniert daraus live nach den im Panel gewaehlten Genres (an/★Prio), ganz ohne Netz.
+    ~19 gepacte AniList-Abfragen 1x pro WOCHE (AL_PACER drosselt) — bewusst kein Dauerfeuer.
+    `fetch(genres_list)` ist injizierbar -> ohne Netz testbar."""
     try:
         if os.path.exists(cache_path) and time.time() - os.path.getmtime(cache_path) < ttl:
             return
@@ -186,9 +192,10 @@ def recs_refresh(rows, cache_path=RECS_CACHE, ttl=RECS_TTL):
         if not gs:
             return
         from . import sources as S
+        get = fetch or S.al_top_by_genres
         known = _known_titles(rows)
         # Pool von bis zu 30 -> die Liste zeigt 12, der ↻-Knopf mischt clientseitig neu (JB-Wunsch).
-        recs = [r for r in S.al_top_by_genres(gs) if norm(r.get("title") or "") not in known][:30]
+        recs = [r for r in get(gs) if norm(r.get("title") or "") not in known][:30]
         # Kapitel-1-Direktlink fuer die sichtbaren Top-12 (JB Runde 38, Feature 4): jede
         # Empfehlung bekommt einen VERIFIZIERTEN Einstiegslink (📖) statt nur des DB-Verweises.
         # Best effort (ein Muster-Reader-/Sitemap-Treffer je Titel), Fehler bleiben still.
@@ -199,8 +206,21 @@ def recs_refresh(rows, cache_path=RECS_CACHE, ttl=RECS_TTL):
                     r["read"] = links[0][0]
             except Exception:
                 pass
+        # v2: je Genre ein eigener Pool (<=14) fuer die Client-Steuerung. Profil-Reihenfolge
+        # zuerst (meistgelesen vorn), Rest alphabetisch — so sortiert auch das Panel die Chips.
+        profile = recs_top_genres(rows, n=99)
+        order = profile + sorted(set(_AL_GENRES.values()) - set(profile))
+        by_genre = {}
+        for g in order:
+            try:
+                pool = [r for r in get([g]) if norm(r.get("title") or "") not in known][:14]
+            except Exception:
+                pool = []
+            if pool:
+                by_genre[g] = pool
         if recs:
-            json.dump({"ts": time.time(), "genres": gs, "recs": recs},
+            json.dump({"ts": time.time(), "genres": gs, "order": order,
+                       "recs": recs, "by_genre": by_genre},
                       open(cache_path, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     except Exception:
         pass
@@ -422,7 +442,10 @@ def reserve_topup(cache_path, cap=30, needle=None):
             single = (urls and all(needle in (host(u) or "") for u in urls))
         else:
             single = (urls and len({host(u) or "" for u in urls}) == 1)
-        empty = (not urls and v.get("read_chap"))
+        # Leer zaehlt AUCH ohne read_chap (JB 14.07., Kategorie Pflege: 112 Leer-Eintraege
+        # ohne Lesestand warteten sonst ewig auf den naechsten Voll-Lauf) — fill_one_reserves
+        # nutzt dann Kapitel 1 = ehrlicher Start, wie der Backlog-Pfad (Runde 41).
+        empty = not urls
         if single or empty:
             # GANZ ohne Link zuerst (JB 09.07.2026 'definitiv machen': die 5 Reserve-losen
             # aus dem Ausfall-Test sollen nicht in der Rotation warten), dann Rotation.
@@ -558,7 +581,7 @@ def _harvest_pages(e, ov_url="", ov_site="", cap=4, no_prog=False):
     pages, seen = [], set()
     if ov_url:
         pu = ov_url
-        if readerlink.has_chapter_token(ov_url):
+        if readerlink.is_chapter_url(ov_url):
             pu = (readerlink._series_page(ov_url) or readerlink.series_page_of(ov_url)) \
                 if no_prog else ""
         if pu:
@@ -742,6 +765,18 @@ def keep_last_good(links, cache_entry):
     return _live_links(cache_entry.get("read_urls")) or links
 
 
+def _resolve_md_page_override(ov_url, ov_site, ov_tpl, next_chap, no_prog, md_link=None):
+    """JB-Regel 14.07. ('Kapitel vor Seite'): ein mangadex-SEITEN-Override (/title/<uuid> —
+    opake Kapitel-UUIDs sind nicht ratbar, ein {n}-Template unmoeglich) wird bei bekanntem
+    Lesestand ueber die Aggregate-API aufs EXAKTE Kapitel aufgeloest -> (url, site).
+    Ohne EN-Kapitel (Lizenz-Titel) bleibt die Serien-Seite das ehrliche Ziel. Netz injizierbar."""
+    uuid = readerlink.md_title_uuid(ov_url) if (ov_url and not ov_tpl) else ""
+    if not uuid or no_prog:
+        return ov_url, ov_site
+    u, s = (md_link or md_chapter_link)(uuid, next_chap, chapter_only=True)
+    return (u, s) if u else (ov_url, ov_site)
+
+
 def bake_overrides(cache, items):
     """Kuratierte series_overrides deterministisch (OHNE Netz, ohne Verifikation) in den GESAMTEN
     Cache einbacken und die Zahl reparierter Serien zurueckgeben.
@@ -773,10 +808,12 @@ def bake_overrides(cache, items):
         if not ov_url:
             continue
         links = [list(x) for x in (c.get("read_urls") or []) if x and x[0]]
-        ov_chap = bool(ov_tpl or readerlink.has_chapter_token(ov_url))
-        ov_used = (_pin
+        ov_chap = bool(ov_tpl or readerlink.is_chapter_url(ov_url))
+        # Pin nur noch als KAPITEL-Override unantastbar (JB-Regel 14.07. 'Kapitel vor Seite'):
+        # eine gepinnte SEITE darf einen echten Kapitel-Link nicht mehr verdraengen.
+        ov_used = ((_pin and ov_chap)
                    or (ov_chap and chap_known)
-                   or (not ov_chap and (not links or not readerlink.has_chapter_token(links[0][0])))
+                   or (not ov_chap and (not links or not readerlink.is_chapter_url(links[0][0])))
                    or (ov_chap and not chap_known and not links))
         if not ov_used or (links and links[0][0] == ov_url):    # nichts zu tun / schon vorne
             continue
@@ -787,6 +824,19 @@ def bake_overrides(cache, items):
             c["read_chap"] = next_chap
         fixed += 1
     return fixed
+
+
+def _ov_is_chapter(c, k, it, chap):
+    """True, wenn fuer diese Serie ein KAPITEL-Override existiert ({n}-Vorlage oder Kapitel-URL).
+
+    Fuer die Heilpasses (promote/demote): nur ein Kapitel-Override bleibt unantastbar —
+    eine Override-SEITE macht Platz fuer echte Kapitel-Links (JB-Regel 14.07.). Ohne Netz:
+    fetch=True-Stub, es geht nur um die FORM des kuratierten Links, nicht seine Lebendigkeit."""
+    cands = [c.get("title_en"), c.get("title_romaji"), c.get("title"), k,
+             (it or {}).get("name")] + (c.get("alt_titles") or [])
+    o_url, _os, o_tpl, _op = readerlink.override_info(
+        [x for x in cands if x], chap, fetch=lambda u: True)
+    return bool(o_url) and (o_tpl or readerlink.is_chapter_url(o_url))
 
 
 def promote_history_chapters(cache, items):
@@ -801,9 +851,12 @@ def promote_history_chapters(cache, items):
 
     Streng + sicher + ohne Netz (der Nutzer war beweisbar dort):
       - nur wenn der aktuelle Primaer KEIN Kapitel ist (Serien-Seite/leer),
-      - nur eine Verlaufs-URL mit ECHTEM Kapitel-Token, lebende + nicht-dynamische Domain,
-      - nur bei EXAKTER Uebereinstimmung chapter_of(url) == read_chap (kein Raten),
-      - NIE ueber einen manuellen Pin/Override (c['ov']) und NIE einen Kapitel-Link verdraengen.
+      - nur eine Verlaufs-URL mit ECHTEM Kapitel (Token oder mangadex-/chapter/-UUID),
+        lebende + nicht-dynamische Domain,
+      - nur bei EXAKTER Uebereinstimmung Kapitel(url) == read_chap (kein Raten),
+      - NIE einen Kapitel-Link oder KAPITEL-Override verdraengen; eine Override-SEITE darf
+        vom nachweislich besuchten exakten Kapitel ueberholt werden (JB-Regel 14.07.
+        'Kapitel vor Seite' — der kuratierte Link bleibt als Reserve erhalten).
     Nicht-destruktiv: Reserven bleiben erhalten, der Kapitel-Link wird nur vorangestellt.
     """
     if not items:
@@ -811,10 +864,10 @@ def promote_history_chapters(cache, items):
     from .parse import chapter_of
     promoted = 0
     for k, c in cache.items():
-        if not isinstance(c, dict) or c.get("novel") or c.get("ov"):
+        if not isinstance(c, dict) or c.get("novel"):
             continue
         cur = c.get("read_url") or ""
-        if cur and readerlink.has_chapter_token(cur):
+        if cur and readerlink.is_chapter_url(cur):
             continue                     # schon ein Kapitel-Link -> nie anfassen (Ratchet-Richtung)
         it = items.get(k)
         if not it:
@@ -826,18 +879,23 @@ def promote_history_chapters(cache, items):
             want = None
         if want is None:
             continue                     # '?'-Lesestand will bewusst die Serien-Seite
+        if c.get("ov") and _ov_is_chapter(c, k, it, want):
+            continue                     # KAPITEL-Override (arenascan: kein Token!) bleibt vorn
         best = None                      # (visits, url, host) der meistbesuchten exakten Kapitel-URL
         for r in sorted(it.get("readers") or [], key=lambda r: -(r.get("visits") or 0)):
             u = r.get("url") or ""
             hh = r.get("host") or host(u)
             if not u or not hh or is_dead_reader(hh) or is_dynamic(hh):
                 continue
-            if not readerlink.has_chapter_token(u) or readerlink.series_page_of(u) == u:
-                continue                 # nur echte Kapitel-URLs, keine getarnte Serien-Seite
+            if not readerlink.is_chapter_url(u):
+                continue                 # nur echte Kapitel-URLs
+            if readerlink.has_chapter_token(u) and readerlink.series_page_of(u) == u:
+                continue                 # getarnte Serien-Seite (Token, aber nichts abtrennbar)
             # Kapitelnummer: aus der URL — oder, bei OPAKEN Kapitel-IDs (mangafire
-            # /chapter/7544676, JB 08.07.2026 Berserk/One Piece), aus dem SEITENTITEL,
-            # den der Scan bereits geparst hat (r['chap']). Beides bleibt EXAKT (kein Raten).
-            got = chapter_of(u, "")
+            # /chapter/7544676, JB 08.07.2026 Berserk/One Piece; mangadex /chapter/<uuid>),
+            # aus dem SEITENTITEL, den der Scan bereits geparst hat (r['chap']). Kein Raten;
+            # bei mangadex zaehlt NUR der Titel (Ziffern in der UUID waeren Zufallstreffer).
+            got = None if "mangadex" in hh else chapter_of(u, "")
             if got is None:
                 got = r.get("chap")
             elif "mangafire" in hh:
@@ -865,29 +923,42 @@ def demote_series_pages(cache, items=None):
     fuehren zur Homepage'): Steht eine blanke SERIEN-Seite vorn, waehrend weiter hinten ein echter
     Kapitel-Link wartet (Token oder opake /chapter/-ID), rueckt der Kapitel-Link nach vorn.
 
-    Nicht-destruktiv (reine Umordnung, kein Link geht verloren). Respektiert Pins (`ov`) und
-    '?'-Lesestand (der WILL die Serien-Seite). mangafire-Links mit NUMERISCHER Kapitelnummer
-    zaehlen nicht als Kapitel (totes Rate-Schema, leitet selbst zur Serienseite)."""
+    Nicht-destruktiv (reine Umordnung, kein Link geht verloren). Respektiert KAPITEL-Overrides
+    (arenascan: kein Token!) und '?'-Lesestand (der WILL die Serien-Seite); eine Override-SEITE
+    macht dagegen Platz (JB-Regel 14.07. 'Kapitel vor Seite', der Link bleibt Reserve).
+    mangafire-Links mit NUMERISCHER Kapitelnummer zaehlen nicht als Kapitel (totes Rate-Schema,
+    leitet selbst zur Serienseite). Stehen NUR Seiten zur Wahl, rueckt mangadex nach hinten
+    (JB 14.07.: 'dann wuerde ich mangafire nehmen')."""
     from .parse import chapter_of as _chof
     moved = 0
     for k, c in cache.items():
-        if not isinstance(c, dict) or c.get("novel") or c.get("ov"):
+        if not isinstance(c, dict) or c.get("novel"):
             continue
         it = (items or {}).get(k) or {}
-        if not (it.get("chap") or c.get("read_chap")):
+        chap = it.get("chap") or c.get("read_chap")
+        if not chap:
             continue                                     # unbekannter Lesestand -> Seite gewollt
         links = [list(l) for l in (c.get("read_urls") or []) if l and l[0]]
-        if len(links) < 2 or readerlink.has_chapter_token(links[0][0]):
+        if len(links) < 2 or readerlink.is_chapter_url(links[0][0]):
             continue
+        if c.get("ov") and _ov_is_chapter(c, k, it, chap):
+            continue                                     # Kapitel-Override bleibt vorn
         def _is_chapter(u):
-            if not readerlink.has_chapter_token(u):
+            if not readerlink.is_chapter_url(u):
                 return False
             if "mangafire" in (host(u) or "") and _chof(u, "") is not None:
                 return False                             # numerisches mangafire = Rate-Schema
             return True
         best = next((i for i, l in enumerate(links) if _is_chapter(l[0])), None)
         if best is None:
-            continue
+            # Nur Seiten zur Wahl: eine mangadex-Front macht Platz fuer die erste
+            # NICHT-mangadex-Seite (JB-Praeferenz MangaFire > MangaDex bei Seiten).
+            if "mangadex" not in (host(links[0][0]) or ""):
+                continue
+            best = next((i for i, l in enumerate(links)
+                         if "mangadex" not in (host(l[0]) or "")), None)
+            if best is None:
+                continue
         links.insert(0, links.pop(best))
         c["read_urls"] = links
         c["read_url"] = links[0][0]
@@ -969,7 +1040,10 @@ def enrich(items, cache_path, health_dir, cap, name_fix=None, cache_ver=CACHE_VE
                 # werden zu Ernte-Kandidaten (JB Runde 32: comix/In-Spectre).
                 ov_cand = [c.get("title_en"), c.get("title_romaji"), c.get("title"), e.get("name")] + (c.get("alt_titles") or [])
                 ov_url, ov_site, _ov_tpl, _ov_pin = readerlink.override_info([x for x in ov_cand if x], next_chap)
-                if not links or (links and readerlink.has_chapter_token(links[0][0]) != _chap_known):
+                # mangadex-SEITEN-Override -> exaktes Kapitel (JB-Regel 14.07. 'Kapitel vor Seite')
+                ov_url, ov_site = _resolve_md_page_override(ov_url, ov_site, _ov_tpl,
+                                                            next_chap, not _chap_known)
+                if not links or (links and readerlink.is_chapter_url(links[0][0]) != _chap_known):
                     # Reparatur-Pass (JB Runde 27/31/32), SYMMETRISCH: repariert Serien OHNE
                     # Link, Serien-SEITEN trotz bekanntem Lesestand (Jigokuraku-Klasse) UND
                     # Kapitel-Links trotz '?' (Bookworm/gilgamesh-Klasse -> Serien-Seite).
@@ -999,17 +1073,20 @@ def enrich(items, cache_path, health_dir, cap, name_fix=None, cache_ver=CACHE_VE
                         links = neu
                 # Override-Vorrang dreistufig (siehe Vollpfad; JB-Wurzelfund Runde 32:
                 # auto-{n}-Overrides erzwangen bei '?' wieder chapter-1). Kapitel-Override =
-                # {n}-Vorlage ODER Token (Runde 35: arenascan-Muster traegt kein Token).
-                # "pin": true schlaegt ALLE Stufen (JBs Klick-Wahrheit, Runde 36 Proto-Eye).
-                _ov_chap = bool(ov_url) and (_ov_tpl or readerlink.has_chapter_token(ov_url))
+                # {n}-Vorlage ODER Kapitel-URL (Runde 35: arenascan-Muster traegt kein Token).
+                # "pin": true schlaegt alle Stufen NUR noch als KAPITEL-Override (JB-Regel
+                # 14.07. 'Kapitel vor Seite'); eine gepinnte SEITE macht Kapitel-Links Platz.
+                _ov_chap = bool(ov_url) and (_ov_tpl or readerlink.is_chapter_url(ov_url))
                 ov_used = bool(ov_url) and (
-                    _ov_pin
+                    (_ov_pin and _ov_chap)
                     or (_ov_chap and _chap_known)
                     or (not _ov_chap and (not links
-                                          or not readerlink.has_chapter_token(links[0][0])))
+                                          or not readerlink.is_chapter_url(links[0][0])))
                     or (_ov_chap and not _chap_known and not links))
                 if ov_used:                             # JBs Override -> als Primaerlink
                     links = [[ov_url, ov_site]] + [l for l in links if l[0] != ov_url]
+                elif ov_url and all(l[0] != ov_url for l in links):
+                    links = links + [[ov_url, ov_site]]  # kuratierter Link bleibt Reserve (+Alt)
                 links = keep_last_good(links, c)         # FAILSAFE (s. Voll-Pfad)
                 nc["read_urls"] = links
                 nc["read_url"], nc["read_site"] = (tuple(links[0]) if links else ("", ""))
@@ -1196,6 +1273,9 @@ def enrich(items, cache_path, health_dir, cap, name_fix=None, cache_ver=CACHE_VE
             ov_cand = ([nc.get("title"), rec.get("title_en"), rec.get("title_romaji"), e.get("name")]
                        + (rec.get("alt_en") or []) + (rec.get("alt_titles") or []))
             ov_url, ov_site, _ov_tpl, _ov_pin = readerlink.override_info([x for x in ov_cand if x], next_chap)
+            # mangadex-SEITEN-Override -> exaktes Kapitel (JB-Regel 14.07. 'Kapitel vor Seite')
+            ov_url, ov_site = _resolve_md_page_override(ov_url, ov_site, _ov_tpl,
+                                                        next_chap, no_prog)
             extra_pages = _harvest_pages(e, ov_url, ov_site, no_prog=no_prog)
             links = []
             if not no_prog:
@@ -1233,16 +1313,20 @@ def enrich(items, cache_path, health_dir, cap, name_fix=None, cache_ver=CACHE_VE
             #       Seite; die ~600 auto-mangafire-{n}-Overrides erzwangen sonst 'chapter-1'
             #       direkt NACH der Reparatur — Runde-32-Wurzelfund) — nur wenn sonst NICHTS da.
             #   Seiten-Override                      -> verdraengt keinen Kapitel-Link.
-            # Kapitel-Override = {n}-Vorlage ODER Token (Runde 35: arenascan ohne Token).
-            # "pin": true schlaegt ALLE Stufen (JBs Klick-Wahrheit, Runde 36 Proto-Eye).
-            _ov_chap = bool(ov_url) and (_ov_tpl or readerlink.has_chapter_token(ov_url))
+            # Kapitel-Override = {n}-Vorlage ODER Kapitel-URL (Runde 35: arenascan ohne Token).
+            # "pin": true schlaegt alle Stufen NUR noch als KAPITEL-Override (JB-Regel 14.07.
+            # 'Kapitel vor Seite', Runde 36 Proto-Eye bleibt: dort IST der Pin ein Kapitel);
+            # eine gepinnte SEITE macht verifizierten Kapitel-Links Platz und bleibt Reserve.
+            _ov_chap = bool(ov_url) and (_ov_tpl or readerlink.is_chapter_url(ov_url))
             ov_used = bool(ov_url) and (
-                _ov_pin
+                (_ov_pin and _ov_chap)
                 or (_ov_chap and not no_prog)
-                or (not _ov_chap and (not links or not readerlink.has_chapter_token(links[0][0])))
+                or (not _ov_chap and (not links or not readerlink.is_chapter_url(links[0][0])))
                 or (_ov_chap and no_prog and not links))
             if ov_used:
                 links = [[ov_url, ov_site]] + [l for l in links if l[0] != ov_url]
+            elif ov_url and all(l[0] != ov_url for l in links):
+                links = links + [[ov_url, ov_site]]      # kuratierter Link bleibt Reserve (+Alt)
             if not links and nc.get("mdx"):
                 # LETZTE Ruecklage (Runde 29, Penisman/helvetica): MangaDex selbst — die API ist
                 # Ground-Truth und nie bot-blockiert; exaktes Kapitel (UUID) oder Serien-Seite.
@@ -1257,8 +1341,8 @@ def enrich(items, cache_path, health_dir, cap, name_fix=None, cache_ver=CACHE_VE
             # — sonst holte der Ratchet die alte Spam-Seite aus dem Cache zurueck).
             if c and e.get("chap") and c.get("read_chap") == next_chap and not ov_used:
                 alt_links = _live_links(c.get("read_urls"))
-                if (alt_links and readerlink.has_chapter_token(alt_links[0][0])
-                        and not (links and readerlink.has_chapter_token(links[0][0]))):
+                if (alt_links and readerlink.is_chapter_url(alt_links[0][0])
+                        and not (links and readerlink.is_chapter_url(links[0][0]))):
                     links = alt_links
             links = keep_last_good(links, c)     # FAILSAFE: nie durch einen Fehl-Lauf verlieren
             nc["read_urls"] = links

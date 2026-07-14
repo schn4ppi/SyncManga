@@ -169,13 +169,30 @@ def _agg_first_chapter_id(agg):
     return best_id
 
 
+def _md_chapter_readable(cid):
+    """True, wenn das MangaDex-Kapitel dort WIRKLICH lesbar ist (JB 14.07.: 'wir hatten da
+    schon haeufiger tote Links'). Das Aggregate listet auch EN-Kapitel, die auf MangaDex
+    selbst keine Seiten haben: extern gehostete (externalUrl, z.B. MangaPlus — dort oft
+    laender-gesperrt) und entfernte (isUnavailable). Live geprueft 14.07.2026: One Piece
+    EN traegt pages=0 + externalUrl. API-Fehler -> False (nur BEWIESEN Lesbares zaehlt)."""
+    try:
+        MD_PACER.wait()
+        a = ((get_json(f"{API_MD}/chapter/{cid}") or {}).get("data") or {}).get("attributes") or {}
+        return (not a.get("isUnavailable") and not a.get("externalUrl")
+                and (a.get("pages") or 0) > 0)
+    except Exception:
+        return False
+
+
 def md_chapter_link(md_id, chapter, chapter_only=False):
     """VERIFIZIERTER MangaDex-Link als letzte Link-Ruecklage -> (url, 'mangadex.org') | ('', '').
 
     JB Runde 29 (Penisman/helvetica/Dr. Savior): die MangaDex-API ist Ground-Truth und nie
     bot-blockiert. Exaktes Kapitel als UUID aus dem Aggregate — NUR ENGLISCH (JB Runde 38:
     'viele Mangas bieten dort keine Kapitel auf Englisch an' — der fruehere sprachlose
-    Fallback haette sonst tuerkische/polnische Kapitel verlinkt). Existiert kein EN-Kapitel:
+    Fallback haette sonst tuerkische/polnische Kapitel verlinkt) und NUR WIRKLICH LESBAR
+    (_md_chapter_readable; JB 14.07.: extern/gesperrt gelistete Kapitel waren tote Links).
+    Existiert kein lesbares EN-Kapitel:
     chapter_only=True  -> ('', '')  (Reserve-Auffueller: NUR eintragen, was wirklich lesbar ist)
     chapter_only=False -> SERIEN-Seite (letzte Ruecklage der Hauptpipeline, Label 'öffnen')."""
     if not md_id:
@@ -184,6 +201,8 @@ def md_chapter_link(md_id, chapter, chapter_only=False):
         MD_PACER.wait()
         agg = get_json(f"{API_MD}/manga/{md_id}/aggregate?translatedLanguage[]=en")
         cid = _agg_chapter_id(agg, chapter)
+        if cid and not _md_chapter_readable(cid):
+            cid = ""                    # gelistet, aber extern/gesperrt -> zaehlt wie 'kein EN'
         if not cid:
             try:
                 _backlog = float(chapter) <= 1
@@ -194,6 +213,8 @@ def md_chapter_link(md_id, chapter, chapter_only=False):
                 # beginnen bei Kapitel 2 -> das KLEINSTE existierende EN-Kapitel ist der
                 # ehrliche Einstieg. Mittendrin-Leser bekommen weiter NUR das exakte Kapitel.
                 cid = _agg_first_chapter_id(agg)
+                if cid and not _md_chapter_readable(cid):
+                    cid = ""
         if cid:
             return f"https://mangadex.org/chapter/{cid}", "mangadex.org"
         if chapter_only:
@@ -525,6 +546,49 @@ def mu_rating(name):
     except Exception:
         pass
     return out
+
+
+def mu_foreign_titles(name, fetch_search=None, fetch_series=None):
+    """MangaUpdates-DRITTMEINUNG fuer fremdsprachige Archiv-Titel (JB 14.07.2026, 'Die Braut
+    des Magiers' fand The Ancient Magus' Bride nur mit conf 0.46): MU fuehrt lizenzierte
+    LANDES-Titel (de/fr/pl/tr/vi/fi ...) als associated names — MangaBaka exponiert sie nicht.
+
+    Liefert bis zu 3 Zusatz-Queries (MU-Haupttitel + lateinische associated names) des besten
+    Such-Treffers, aber NUR wenn `name` EXAKT (norm-gleich) unter dessen associated names
+    steht — sonst []. Streng ohne Fuzzy: ein Fehlmatch waere schlimmer als ein Miss.
+    Netz injizierbar (Tests); ~2 Requests, nur im Rettungsfall (conf < 0.62) aufgerufen."""
+    nn = norm(name or "")
+    if not nn:
+        return []
+    try:
+        if fetch_search is None:
+            MU_PACER.wait()
+        d = (fetch_search or (lambda q: post_json(API_MU, {"search": q, "perpage": 3})))(name)
+        get_series = fetch_series or (lambda sid: get_json(
+            f"https://api.mangaupdates.com/v1/series/{sid}",
+            headers={**UA, "Accept": "application/json"}))
+        for x in ((d or {}).get("results") or [])[:2]:
+            rc = (x or {}).get("record") or {}
+            sid = rc.get("series_id")
+            if not sid:
+                continue
+            rec = get_series(sid) or {}
+            assoc = [(a.get("title") or "") for a in (rec.get("associated") or [])]
+            if not any(norm(a) == nn for a in assoc):
+                continue                       # Suchname NICHT belegt -> kein Urteil
+            import re as _re
+            cands = [rec.get("title") or _re.sub(r"<[^>]+>", "", rc.get("title") or "")]
+            cands += [a for a in assoc if a and a.isascii()]
+            out, seen = [], {nn}
+            for c in cands:
+                k = norm(c)
+                if c and k and k not in seen:
+                    seen.add(k)
+                    out.append(c)
+            return out[:3]
+        return []
+    except Exception:
+        return []
 
 
 def mu_authors(series_id):

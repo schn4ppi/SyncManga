@@ -465,6 +465,20 @@ def lookup(name, slugs=None, read_chap=None, prefer_novel=False):
                 if r2 and c2 >= max(conf + 0.1, 0.9):
                     best, conf = r2, min(c2, 0.75)
                     break
+        # MangaUpdates-DRITTMEINUNG (JB 14.07., fremdsprachige Archiv-Titel: 'Die Braut des
+        # Magiers'): MU kennt lizenzierte LANDES-Titel als associated names. Nur wenn der
+        # Suchname dort EXAKT steht, dienen MU-Haupt-/EN-Titel als Zusatz-Queries; der neue
+        # Treffer muss nahezu exakt sitzen (>=0.9) — zwei unabhaengige Bestaetigungen.
+        if conf < 0.62:
+            try:
+                from . import sources as S
+                for q2 in S.mu_foreign_titles(name):
+                    r2, c2 = mb_search(q2, read_chap=read_chap, prefer_novel=prefer_novel)
+                    if r2 and c2 >= 0.9:
+                        best, conf = r2, c2
+                        break
+            except Exception:
+                pass
         srcstatus.record("mangabaka", True, latency=time.time() - t0)
         if best:
             return _normalize(best), conf, "mangabaka"
