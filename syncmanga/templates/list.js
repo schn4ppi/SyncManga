@@ -520,4 +520,4 @@ function panelAccordion(){var ps=document.querySelectorAll('.panels>details, det
 document.addEventListener('click',function(ev){
   [].forEach.call(ps,function(d){if(d.open&&!d.contains(ev.target))d.open=false;});});}
 panelAccordion();
-applyTheme();applyTips();applyChapFix();applyDense();auApply();pinFavs(true);updateAb();updateFav();regray();ff();applyTiles();applyPause();pollSync();restoreSort();restoreScroll();
+applyTheme();applyTips();applyChapFix();applyDense();auApply();pinFavs(true);updateAb();updateFav();regray();ff();applyTiles();applyPause();pollSync();restoreSort();/* restoreScroll() entfernt (JB 15.07.: 'startet irgendwo, war nervig') -> Liste beginnt IMMER oben */

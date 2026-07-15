@@ -510,6 +510,9 @@ body.light.gearon .tools{border-color:#ddd0b6;background:#fbf6ea}
 /* Im-/Export-Panel mobil im Fluss statt schwebend rechts (sonst laeuft es aus dem Screen) */
 .xpanel{position:static;width:auto;max-width:100%;box-shadow:none;white-space:normal}
 table{font-size:12.5px}
+/* Serien-TITEL mobil kleiner (JB 15.07.: 'Text kleiner -> mehr Platz') -> die Zeile passt in
+   die Breite ohne horizontales Scrollen; zusammen mit ausgeblendetem Baka reicht der Platz. */
+#t td:first-child{font-size:11px;line-height:1.25}
 th,td{padding:4px 4px}
 input{flex:1;min-width:110px}
 #t th:nth-child(3),#t td:nth-child(3),#t th:nth-child(4),#t td:nth-child(4),#t th:nth-child(6),#t td:nth-child(6),#t th:nth-child(7),#t td:nth-child(7),#t th:nth-child(10),#t td:nth-child(10){display:none}
@@ -525,7 +528,10 @@ input{flex:1;min-width:110px}
    inline-block + white-space:nowrap bleiben sie in EINER Zeile, die Zeile wird so schlank
    wie im Querformat. */
 td.act{display:block;line-height:1.8;white-space:nowrap}
-td.act .pill{display:inline-block;margin:1px 2px}
+/* NUR den Abstand zuruecksetzen (Basis .pill ist schon inline-block) — KEIN display hier,
+   sonst schlaegt die hoehere Spezifitaet das '.pill.md{display:none}' und Baka taucht mobil
+   wieder auf (JB 15.07.: Baka machte die Zeile zu breit -> horizontales Scrollen). */
+td.act .pill{margin:1px 2px}
 details.alt[open]{display:block;white-space:normal;font-size:11px;margin-top:2px}
 details.alt[open] .pill{font-size:11px;padding:2px 6px;margin:1px}
 .altrow{flex-wrap:wrap;row-gap:2px}
@@ -592,7 +598,10 @@ body.tiles #tiles{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px 6px}
 }
 /* Kachelmodus im QUERFORMAT: 8 Bilder pro Reihe (JB 15.07.2026). Nur Touch-Geraete
    (hover:none = Phone/Tablet, nicht Desktop-Maus); feste 8 Spalten statt auto-fill, damit
-   die Reihe unabhaengig von der genauen Geraetebreite genau 8 fasst. */
+   die Reihe unabhaengig von der genauen Geraetebreite genau 8 fasst.
+   WICHTIG: die Manga-Kacheln haengen an #tiles (buildTiles), NICHT an .kacheln (Fehl-Selektor
+   der ersten Fassung) — deshalb griff die 8er-Regel zuvor nicht (JB: 'zeigt nur vier'). Deckt
+   den Normal- UND den Kompakt-Modus (body.dense) ab, sonst schlaegt dessen Regel zurueck. */
 @media (orientation:landscape) and (hover:none){
- .kacheln,.kacheln.kompakt{grid-template-columns:repeat(8,1fr);gap:7px}
+ body.tiles #tiles,body.dense.tiles #tiles{grid-template-columns:repeat(8,1fr)!important;gap:7px}
 }
