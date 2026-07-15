@@ -291,9 +291,19 @@ if(document.fonts&&document.fonts.ready)document.fonts.ready.then(refreezeHead);
 // Klick auf ＋ toggelt das Menue (nur eins offen), Klick woanders schliesst alle offenen.
 document.addEventListener('click',function(ev){
  var b=ev.target.closest&&ev.target.closest('.taltb');
- if(b){ev.preventDefault();var t=b.closest('.talt');document.querySelectorAll('#tiles .talt.open').forEach(function(o){if(o!==t)o.classList.remove('open')});t.classList.toggle('open');return}
- if(!(ev.target.closest&&ev.target.closest('.taltm')))document.querySelectorAll('#tiles .talt.open').forEach(function(o){o.classList.remove('open')});
+ if(b){ev.preventDefault();var t=b.closest('.talt');document.querySelectorAll('#tiles .talt.open').forEach(function(o){if(o!==t){o.classList.remove('open');var mo=o.querySelector('.taltm');if(mo)mo.style.transform=''}});var nowOpen=t.classList.toggle('open');clampTaltm(t,nowOpen);return}
+ if(!(ev.target.closest&&ev.target.closest('.taltm')))document.querySelectorAll('#tiles .talt.open').forEach(function(o){o.classList.remove('open');var mo=o.querySelector('.taltm');if(mo)mo.style.transform=''});
 });
+// Kachel-＋Alt-Menue IM FENSTER halten (JB 15.07.: 'bei Rand-Kacheln laeuft der Text raus').
+// Das Menue ist rechts an der Kachel verankert (right:0) und ~160px breit -> bei linken
+// Rand-Kacheln ragt es links raus. Nach dem Oeffnen messen + per translateX zurueckschieben,
+// bis es mit 6px Rand komplett sichtbar ist (links ODER rechts).
+function clampTaltm(t,open){var m=t&&t.querySelector('.taltm');if(!m)return;m.style.transform='';if(!open)return;
+ // SYNCHRON messen (das Menue ist durch .open bereits display:flex -> getBoundingClientRect
+ // erzwingt ein Reflow und liefert die echte Position; ein rAF feuerte hier unzuverlaessig).
+ var r=m.getBoundingClientRect(),pad=6,shift=0;
+ if(r.left<pad)shift=pad-r.left; else if(r.right>window.innerWidth-pad)shift=(window.innerWidth-pad)-r.right;
+ if(shift)m.style.transform='translateX('+Math.round(shift)+'px)';}
 function toggleTiles(){var on=document.body.classList.toggle('tiles');if(!on)unfreezeHead();try{localStorage.setItem('tiles',on?'1':'')}catch(e){}var b=document.getElementById('til');if(b)b.classList.toggle('on',on);if(on)buildTiles()}
 function applyTiles(){if(localStorage.getItem('tiles')){document.body.classList.add('tiles');var b=document.getElementById('til');if(b)b.classList.add('on');buildTiles()}}
 
