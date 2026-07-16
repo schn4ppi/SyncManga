@@ -592,6 +592,34 @@ def swap_chapter(url, chapter):
     return ""
 
 
+# Split-Kapitel (JB 15.07.2026: 'warum nicht zu 10a / 10.1 springen?'): viele Serien
+# veroeffentlichen ein Kapitel in Teilen (10a/10b, 10.1/10.2, 10-1/10-2). Die glatte
+# Nummer `chapter-10` existiert dann NICHT (Soft-404). Statt aufzugeben (No-Go: Umleitung
+# auf die Startseite) probieren wir die Teil-Formen und nehmen den ERSTEN existierenden.
+def chapter_forms(chapter):
+    """Kapitelnummer -> URL-Formen in Prioritaet: glatt, dann erste Teile (a/.1/-1), dann
+    weitere (b/.2/c/.3). Bereits gebrochene Nummern (10.5) werden NICHT gesplittet."""
+    s = _chapter_str(chapter)
+    if not s or "." in s or "-" in s:      # schon dezimal/Teil -> unveraendert lassen
+        return [s] if s else []
+    return [s, s + "a", s + ".1", s + "-1", s + "b", s + ".2", s + "c", s + ".3"]
+
+
+def first_working_chapter(tpl, chapter, check):
+    """Erste FUNKTIONIERENDE Kapitel-URL aus einer {n}-Vorlage — inkl. Split-Teilen
+    (chapter-10 fehlt -> chapter-10a / chapter-10.1 …). `check(url)` -> truthy = nehmen.
+
+    Ohne {n} in der Vorlage wird sie unveraendert geprueft. Rueckgabe: die URL oder ''.
+    Erste Treffer gewinnt -> normale (glatte) Kapitel kosten genau EINE Pruefung."""
+    if "{n}" not in tpl:
+        return tpl if check(tpl) else ""
+    for f in chapter_forms(chapter):
+        url = tpl.replace("{n}", f)
+        if url and check(url):
+            return url
+    return ""
+
+
 def series_page_of(url):
     """Verlaufs-/Override-URL -> Serien-Seiten-Kandidat fuer die Ernte.
 
@@ -698,8 +726,9 @@ def find_chapters(titles, chapter, mtype=None, limit=3, fetch=None, prefer_hosts
         if host(rd.get("chapter") or "") in _taken:
             continue
         for slug in slugs:
-            url = rd["chapter"].format(slug=slug, n=n)
-            if check(url):
+            # {slug} fuellen, dann glatt + Split-Teile (10a/10.1) probieren (JB 15.07.).
+            url = first_working_chapter(rd["chapter"].replace("{slug}", slug), chapter, check)
+            if url:
                 out.append((url, rd["name"]))
                 break
         if len(out) >= limit:
@@ -1015,13 +1044,19 @@ def override_info(names, chapter, fetch=None):
     check = fetch or _alive
     for name in (names if isinstance(names, (list, tuple)) else [names]):
         o = SERIES_OVERRIDES.get(norm(name or ""))
-        if o:
-            url = o["chapter"].format(n=n)
-            # "trust": true -> ohne Pruefung uebernehmen (Seiten, die Bots blocken, z.B. MangaFire;
-            # JB verbuergt sich fuer den Link). Sonst wie immer per echtem 404 verifizieren.
-            if o.get("trust") or check(url):
-                return (url, (host(url) or o.get("name") or ""),
-                        "{n}" in o["chapter"], bool(o.get("pin")))
+        if not o:
+            continue
+        tpl = o["chapter"]
+        # "trust": true -> ohne Pruefung uebernehmen (Seiten, die Bots blocken, z.B. MangaFire;
+        # JB verbuergt sich fuer den Link). Sonst per echtem 404 verifizieren — dabei auch die
+        # Split-Teile probieren (JB 15.07.: glatt chapter-N fehlt -> chapter-Na/N.1 statt aufgeben).
+        if o.get("trust"):
+            url = tpl.format(n=n)
+        else:
+            url = first_working_chapter(tpl, chapter, check)
+        if url:
+            return (url, (host(url) or o.get("name") or ""),
+                    "{n}" in tpl, bool(o.get("pin")))
     return "", "", False, False
 
 
