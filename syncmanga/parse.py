@@ -22,6 +22,11 @@ SITE_SUFFIX = (r'mangadex|mgeko|mangasupa|jaimini.?s? ?box|line ?webtoon|webtoon
     r'nani\W*scans|inept\W*bastards|kissxdeath|reset ?scans|read first at.*|free manga|novel|manhwa|manhua|manga')
 CH = re.compile(r'\b(?:Chapter|Episode|Chap\.?|Ch\.?|Ep\.?)\s*([0-9]+(?:\.[0-9]+)?)', re.I)
 URLCH = re.compile(r'(?:chapter|episode|chap)[-_/]?(\d+(?:\.\d+)?)', re.I)
+# Bindestrich-Dezimalkapitel (JB 15.07.2026): manche Seiten schreiben 953.5 als 'chapter-953-5'.
+# KONSERVATIV: nur 1-2-Ziffern-Tail, KEINE weitere Ziffer danach -> mgeko '-eng'-Sprachsuffixe
+# (Buchstaben) und Reader-IDs (>=3 Ziffern, z.B. roliascan chapter-1-57261) bleiben unberuehrt.
+# Datenbeleg: von 283 'chapter-N-M'-URLs im Cache sind 274 '-eng', 8 IDs, genau 1 echte Dezimale.
+URLCH_DASH = re.compile(r'(?:chapter|episode|chap|ch)[-_/]?(\d+)-(\d{1,2})(?![0-9])', re.I)
 # Webtoons traegt die GLOBALE Episodennummer im Query (episode_no=608) — Pfad ('s3-ep-145')
 # und Seitentitel ('(S3) Ep. 145') zaehlen je SEASON neu, und der Pfad hinkt teils sogar um
 # eins hinterher (JB-Beleg Runde 32: Orion 'chapter-21' im Pfad, episode_no=22). Der
@@ -159,6 +164,13 @@ MAX_CHAPTER = 5000   # kein Manga hat >5000 Kapitel -> groessere Zahl = Parse-Fe
 
 
 def chapter_of(url, title):
+    # Bindestrich-Dezimal im PFAD hat Vorrang (chapter-953-5 -> 953.5); die URL ist die
+    # Ground-Truth fuers Link-Ziel, konservativ (nur 1-2-Ziffern-Tail, s. URLCH_DASH).
+    md = URLCH_DASH.search(url or '')
+    if md:
+        n = float(f"{md.group(1)}.{md.group(2)}")
+        if 0 < n <= MAX_CHAPTER:
+            return n
     for pat, txt in ((EPQ, url), (CH, title), (URLCH, url)):
         m = pat.search(txt or '')
         if m:
