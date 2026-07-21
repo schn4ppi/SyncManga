@@ -41,7 +41,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 PKG = os.path.normpath(os.path.join(HERE, ".."))
 if PKG not in sys.path:
     sys.path.insert(0, PKG)
-from syncmanga.common import Pacer                              # noqa: E402
+from syncmanga.common import Pacer  # noqa: E402
 from syncmanga.readerlink import fetch_status, is_dead_read_scheme  # noqa: E402
 
 OV = os.path.join(PKG, "data", "series_overrides.json")

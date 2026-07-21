@@ -28,10 +28,10 @@ if PKG not in sys.path:
 
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
 
-from syncmanga import readerlink                                    # noqa: E402
-from syncmanga.parse import host, norm                              # noqa: E402
+from syncmanga import readerlink  # noqa: E402
+from syncmanga.config import apply_sources, load_sources  # noqa: E402
+from syncmanga.parse import host, norm  # noqa: E402
 from syncmanga.sources import md_chapter_link  # noqa: E402
-from syncmanga.config import load_sources, apply_sources  # noqa: E402
 
 CACHE = os.path.normpath(os.path.join(PKG, "..", "..", "SyncDashTray", "System", "md_cache.json"))
 LOCK = os.path.normpath(os.path.join(PKG, "..", "..", "SyncDashTray", "System", "manga_update.lock"))

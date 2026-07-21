@@ -35,14 +35,33 @@ STRINGS = {
         "st_tip_finished": "🩵 Fertig — abgeschlossene Serie komplett gelesen",
         "st_tip_backlog": "◻ Backlog — gemerkt, aber noch nicht begonnen",
         "col_status": "Status",
-        "col_chapters": "Kap. gelesen/neu",
-        "col_chapters_title": "neu = höchstes bekanntes Kapitel über alle Quellen; "
-                              "wird nie unter deinem gelesenen angezeigt. "
-                              "Quellen können hinterherhängen.",
+        # DREI getrennte, dicht stehende Spalten (JB 20.07.2026, 4. Runde: 'Spalte, Spalte, Spalte').
+        "col_read": "gelesen", "col_read_s": "gel.",
+        "col_read_title": "Dein Lesestand. Farbe = Fortschritt: grün = lese gerade, gelb = "
+                          "pausiert, weiß = Backlog, blaugrau = aufgeholt, türkis = fertig. "
+                          "Klick sortiert nach dem am weitesten gelesenen Titel.",
+        "col_trans": "ü.", "col_trans_s": "ü.",   # JB 22.07.: 'ü.' mit Punkt (Abkürzung wie gel./ges.)
+        "col_trans_title": "Zuletzt ONLINE übersetztes (scanlatiertes) Kapitel — was du jetzt lesen "
+                           "kannst (– wenn unbekannt). Oft weit unter der Gesamtzahl. Alter beim "
+                           "Draufzeigen. Klick sortiert nach den meisten noch ungelesenen "
+                           "übersetzten Kapiteln (wo du am meisten zu lesen hast).",
+        "col_total": "gesamt", "col_total_s": "ges.",
+        "col_total_title": "Abgeschlossen — die Gesamtzahl der Kapitel im ganzen Werk (? wenn "
+                           "unbekannt). Klick sortiert nach der höchsten Gesamt-Kapitelzahl.",
+        # Farb-Legende in der Steuerleiste (JB 22.07.): was die Farben der drei Kapitel-Spalten bedeuten.
+        "legend_title": "Farben",
+        "legend_read": "lese", "legend_paused": "Pause", "legend_caught": "aufgeholt",
+        "legend_finread": "fertig", "legend_backlog": "Backlog",
+        "legend_trans": "übersetzt", "legend_ongoing": "läuft", "legend_completed": "abgeschlossen",
+        "trans_none": "–",
+        "trans_none_tip": "Kein übersetzter Stand bekannt (keine MangaUpdates-Daten)",
+        "trans_age_today": "heute", "trans_age_d": "vor {n} T", "trans_age_w": "vor {n} Wo",
+        "trans_age_mo": "vor {n} Mon", "trans_age_y": "vor {n} J",
+        "trans_tip": "Kapitel {ch} übersetzt · zuletzt {age} ({date})",
         "col_last": "Zuletzt",
         "col_source": "Quelle",
         "col_rating": "Bewertung",
-        "col_chapters_s": "gel./neu", "col_rating_s": "★",   # Mobile-Kurzformen (JB 09.07.2026)
+        "col_rating_s": "★",   # Mobile-Kurzform (JB 09.07.2026)
         "pinbox_tip": "Archiv & Favoriten ein-/ausklappen",
         "col_action": "Aktion",
         # User-Fortschritt (Werte zugleich Filter)
@@ -53,6 +72,9 @@ STRINGS = {
         "prog_backlog": "Backlog",
         # Steuerung / Filter
         "filter_all": "Alle",
+        "filter_nibbled": "Alle ohne Angelesene",
+        "filter_nibbled_tip": "Serien ausblenden, bei denen nur das erste Kapitel gelesen ist "
+                              "(mal reingeschaut) — Backlog (0 gelesen) bleibt sichtbar",
         "search_placeholder": "Serie/Autor suchen…",
         "country_all": "Alle Länder",
         "type_all": "Alle Typen",
@@ -68,6 +90,7 @@ STRINGS = {
         "genre_toggle": "Nach Genre filtern — mehrere gleichzeitig kombinierbar",
         "nsfw_title": "18+-Inhalte ein-/ausblenden", "nsfw_all": "🔞 Alle",
         "nsfw_hide_sexual": "🔞 nur Sexuelles aus", "nsfw_hide_gore": "🩸 nur Gore aus", "nsfw_hide_both": "🔞 NSFW off",
+        "filter_menu": "Filter", "filter_title": "Typ, Genre und 18+ filtern",
         "recs_title": "Empfehlungen",
         "recs_hint": "Weil deine Liste viel {g} enthält — diese Serien (extern, noch nicht in deiner Liste) könnten dir gefallen:",
         "recs_shuffle": "↻ neue Vorschläge",
@@ -167,6 +190,8 @@ STRINGS = {
         "archmode_title": "An: 🗃-Symbol erscheint neben jedem Titel zum Archivieren",
         "cols_menu": "＋ Spalten",
         "cols_menu_title": "Spalten ein-/ausblenden",
+        "quellen_menu": "🚦 Quellen",
+        "quellen_menu_title": "Status der Datenquellen und Lese-Seiten (Ampel + Legende)",
         "pause_menu": "⏸ Pausen",
         "pause_menu_title": ("Nicht automatisch prüfbare Lese-Seiten manuell pausieren "
                              "(Wartung/Umbau): die Aktionen zeigen dann Reserve-Links, "
@@ -241,13 +266,33 @@ STRINGS = {
         "st_tip_finished": "🩵 Finished — completed series fully read",
         "st_tip_backlog": "◻ Backlog — saved but not started yet",
         "col_status": "Status",
-        "col_chapters": "Ch. read/new",
-        "col_chapters_title": "new = highest chapter known across all sources; "
-                              "never shown below the one you've read.",
+        # THREE separate, tight columns (JB 20.07.2026, round 4: 'column, column, column').
+        "col_read": "read", "col_read_s": "rd.",
+        "col_read_title": "Your progress. Colour = state: green = reading, yellow = paused, "
+                          "white = backlog, blue-grey = caught up, teal = finished. "
+                          "Click sorts by how far you've read.",
+        "col_trans": "t.", "col_trans_s": "t.",   # JB 22.07.: abbreviated with period (like rd./tot.)
+        "col_trans_title": "Last chapter available ONLINE in translation (scanlation) — what you "
+                           "can read now (– if unknown). Often far below the total; hover for age. "
+                           "Click sorts by the most unread translated chapters (where you have the "
+                           "most left to read).",
+        "col_total": "total", "col_total_s": "tot.",
+        "col_total_title": "Completed — the total number of chapters in the whole work (? if "
+                           "unknown). Click sorts by the highest total chapter count.",
+        # Colour legend in the toolbar (JB 22.07.).
+        "legend_title": "Colours",
+        "legend_read": "reading", "legend_paused": "paused", "legend_caught": "caught up",
+        "legend_finread": "done", "legend_backlog": "backlog",
+        "legend_trans": "translated", "legend_ongoing": "ongoing", "legend_completed": "completed",
+        "trans_none": "–",
+        "trans_none_tip": "No translated point known (no MangaUpdates data)",
+        "trans_age_today": "today", "trans_age_d": "{n}d ago", "trans_age_w": "{n}w ago",
+        "trans_age_mo": "{n}mo ago", "trans_age_y": "{n}y ago",
+        "trans_tip": "chapter {ch} translated · last {age} ({date})",
         "col_last": "Last",
         "col_source": "Source",
         "col_rating": "Rating",
-        "col_chapters_s": "rd./new", "col_rating_s": "★",   # mobile short forms
+        "col_rating_s": "★",   # mobile short form
         "pinbox_tip": "expand/collapse archive & favorites",
         "col_action": "Action",
         "prog_reading": "Reading",
@@ -256,6 +301,9 @@ STRINGS = {
         "prog_paused": "Paused",
         "prog_backlog": "Backlog",
         "filter_all": "All",
+        "filter_nibbled": "All except sampled",
+        "filter_nibbled_tip": "Hide series where only the first chapter was read "
+                              "(just sampled) — backlog (0 read) stays visible",
         "search_placeholder": "Search series/author…",
         "country_all": "All countries",
         "type_all": "All types",
@@ -271,6 +319,7 @@ STRINGS = {
         "genre_toggle": "Filter by genre — combine several at once",
         "nsfw_title": "Show/hide 18+ content", "nsfw_all": "🔞 All",
         "nsfw_hide_sexual": "🔞 hide sexual only", "nsfw_hide_gore": "🩸 hide gore only", "nsfw_hide_both": "🔞 NSFW off",
+        "filter_menu": "Filter", "filter_title": "Filter by type, genre and 18+",
         "recs_title": "Recommendations",
         "recs_hint": "Because your list is full of {g} — these series (external, not in your list yet) might be for you:",
         "recs_shuffle": "↻ shuffle",
@@ -369,6 +418,8 @@ STRINGS = {
         "archmode_title": "On: a 🗃 icon appears next to each title for archiving",
         "cols_menu": "＋ Columns",
         "cols_menu_title": "Show/hide columns",
+        "quellen_menu": "🚦 Sources",
+        "quellen_menu_title": "Status of data sources and reader sites (traffic light + legend)",
         "pause_menu": "⏸ Paused",
         "pause_menu_title": ("Manually pause reader sites that can't be checked automatically "
                              "(maintenance/rebuild): actions switch to backup links until "

@@ -33,6 +33,7 @@ _UA = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.
                      "(KHTML, like Gecko) Chrome/124.0 Safari/537.36"}
 
 import re
+
 _ANCHOR = re.compile(
     r'<a\s+href="/s/([^"]*)"\s+data-link="([^"]+)"[^>]*>(?:\s*<img[^>]*>)?\s*([^<]+?)\s*</a>'
     r'(.*?)(?=<a\s+href="/s/|\Z)', re.S)
@@ -274,6 +275,7 @@ def link_sweep(cache_path, data_dir, n=25, check=None, status_out=STATUS_OUT):
     und bereits pausierte/tote Hosts werden uebersprungen. Best-effort, nie eine Exception."""
     import random
     from collections import Counter as _Counter
+
     from . import config
     from .readerlink import _alive_status
     try:

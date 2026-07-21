@@ -19,7 +19,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 PKG = os.path.normpath(os.path.join(HERE, ".."))
 if PKG not in sys.path:
     sys.path.insert(0, PKG)
-from syncmanga import readerlink                                 # noqa: E402
+from syncmanga import readerlink  # noqa: E402
 
 DEFAULT_CACHE = os.path.normpath(os.path.join(PKG, "..", "..", "SyncDashTray", "System", "md_cache.json"))
 REPORT = os.path.join(PKG, "data", "link_audit.json")

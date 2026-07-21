@@ -27,7 +27,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 PKG = os.path.normpath(os.path.join(HERE, ".."))
 if PKG not in sys.path:
     sys.path.insert(0, PKG)
-from syncmanga.parse import norm                                 # noqa: E402
+from syncmanga.parse import norm  # noqa: E402
 
 DATA = os.path.join(PKG, "data")
 DEFAULT_XML = os.path.join(DATA, "import_mal.xml")
@@ -45,7 +45,7 @@ def parse_mal(xml_text):
     out = []
     root = ET.fromstring(xml_text)
     for m in root.iter("manga"):
-        def g(tag):
+        def g(tag, m=m):                      # m gebunden (B023-Haertung)
             el = m.find(tag)
             return (el.text or "").strip() if el is not None and el.text else ""
         try:

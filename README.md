@@ -7,8 +7,9 @@
 ## 🇩🇪 Deutsch
 
 **SyncManga** liest deine Browser (Verlauf **und** Lesezeichen) und baut daraus eine schöne,
-browser-unabhängige **Manga-Leseliste** als HTML-Seite — mit Titel, Flagge, Status, Autor,
-Bewertung und deinem Lese-Fortschritt. Es läuft als schlankes Tray-Symbol.
+browser-unabhängige **Manga-Leseliste** als HTML-Seite — mit Titel, Flagge, Autor, Bewertung,
+dem **Übersetzungs-Stand** (was online lesbar ist) und deinem farblich markierten Lese-Fortschritt.
+Es läuft als schlankes Tray-Symbol.
 
 Unterstützte Browser: **Firefox, Waterfox, Chrome, Edge, Brave, Vivaldi, Opera (GX)** — und
 **Safari** (macOS). Alle gefundenen Browser/Profile werden zusammengeführt; der größte
@@ -29,13 +30,23 @@ Manga-Datenbanken im Internet abgefragt (Titel/Bewertung/Status), niemals deine 
 - **Liste öffnen** (auch Linksklick aufs Symbol) · **Aktualisieren** · **Sprache** (Auto/Deutsch/
   English) · **Hilfe** · **Beenden**.
 
-### Dein Lese-Fortschritt (Spalte „User")
-Automatisch abgeleitet — du musst nichts pflegen:
-- **Lese gerade** – offene Kapitel, kürzlich gelesen.
-- **Aufgeholt** – beim neuesten bekannten Kapitel.
-- **Abgeschlossen** 🏁 – komplett gelesen UND der Manga ist abgeschlossen.
-- **Pausiert** – offene Kapitel, aber länger (>60 Tage) nicht gelesen.
-- **Backlog** – gemerkt, aber noch nicht gelesen.
+### Dein Lese-Fortschritt (Farbe der gelesenen Kapitelzahl)
+Automatisch abgeleitet — du musst nichts pflegen. Die **gelesene Zahl** in der Spalte
+`gelesen / gesamt` ist eingefärbt (eine eigene „User"-Spalte gibt es nicht mehr):
+- 🟢 **grün – Lese gerade** – offene Kapitel, kürzlich gelesen.
+- 🟡 **gelb – Pausiert** – offene Kapitel, aber länger (>60 Tage) nicht gelesen (dunkler ab ~3 Monaten).
+- ◻ **weiß – Backlog** – gemerkt, aber noch nicht gelesen.
+- 🔵 **blaugrau – Aufgeholt** – alles Übersetzte gelesen, wartet auf neue Kapitel.
+- 🩵 **türkis – Abgeschlossen** 🏁 – komplett gelesen UND der Manga ist abgeschlossen.
+
+Ein grünes **+N**-Abzeichen hinter der Kapitelzahl zeigt **neue übersetzte** Kapitel seit deinem Stand.
+
+### Übersetzungs-Stand (die mittlere Zahl)
+Die Kapitel-Zelle zeigt `gelesen / übersetzt / gesamt`: die **mittlere Zahl** ist das zuletzt
+**online übersetzte** (scanlatierte) Kapitel — beim Draufzeigen steht, wie lange das her ist.
+Das ist oft weit weniger als das Gesamtwerk — Beispiel *Junk the Black Shadow*: `30 / 36 / 343`
+(343 Kapitel gesamt, nur 36 übersetzt). So siehst du auf einen Blick, ob eine Serie noch aktiv
+übersetzt wird. Ohne bekannten Übersetzungs-Stand bleibt die Zelle zweiteilig (`gelesen / gesamt`).
 
 ### Lesen, Quellen & Ampel
 - **weiterlesen** springt direkt auf dein nächstes Kapitel auf einer funktionierenden Lese-Seite;
@@ -82,8 +93,9 @@ Im Tray-Menü unter **Sprache** überschreibbar.
 ## 🇬🇧 English
 
 **SyncManga** reads your browsers (history **and** bookmarks) and turns them into a tidy,
-browser-independent **manga reading list** as an HTML page — with title, flag, status, author,
-rating and your reading progress. It runs as a small tray icon.
+browser-independent **manga reading list** as an HTML page — with title, flag, author, rating,
+the **translation status** (what's readable online) and your colour-coded reading progress.
+It runs as a small tray icon.
 
 Supported browsers: **Firefox, Waterfox, Chrome, Edge, Brave, Vivaldi, Opera (GX)** — and
 **Safari** (macOS). All detected browsers/profiles are merged; the biggest progress wins.
@@ -103,13 +115,23 @@ The list is **fully mobile-optimized** (since v0.3.4).
 - **Open list** (also left-click the icon) · **Update now** · **Language** (Auto/Deutsch/English) ·
   **Help** · **Quit**.
 
-### Your reading progress (column "You")
-Derived automatically — nothing to maintain:
-- **Reading** – open chapters, read recently.
-- **Caught up** – at the latest known chapter.
-- **Finished** 🏁 – fully read AND the manga is completed.
-- **Paused** – open chapters, but not read for a while (>60 days).
-- **Backlog** – bookmarked but not read yet.
+### Your reading progress (colour of the read chapter number)
+Derived automatically — nothing to maintain. The **read number** in the `read / total` column is
+coloured (there is no separate "You" column any more):
+- 🟢 **green – Reading** – open chapters, read recently.
+- 🟡 **yellow – Paused** – open chapters, but not read for a while (>60 days; darker after ~3 months).
+- ◻ **white – Backlog** – bookmarked but not read yet.
+- 🔵 **blue-grey – Caught up** – read everything translated, waiting for new chapters.
+- 🩵 **teal – Finished** 🏁 – fully read AND the manga is completed.
+
+A green **+N** badge after the number shows **new translated** chapters since your progress.
+
+### Translation status (the middle number)
+The chapter cell reads `read / translated / total`: the **middle number** is the last chapter
+available online **in translation** (scanlation) — hover it to see how long ago that was.
+Often far below the total — e.g. *Junk the Black Shadow*: `30 / 36 / 343` (343 chapters total,
+only 36 translated). So you see at a glance whether a series is still being translated.
+Without a known translation point the cell stays two-part (`read / total`).
 
 ### Reading, sources & status lights
 - **Continue** jumps straight to your next chapter on a working reader site; **＋Alt** shows

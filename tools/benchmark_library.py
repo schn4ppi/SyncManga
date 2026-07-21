@@ -28,10 +28,10 @@ PKG = os.path.normpath(os.path.join(HERE, ".."))
 if PKG not in sys.path:
     sys.path.insert(0, PKG)
 
-from syncmanga import catalog, readerlink                          # noqa: E402
-from syncmanga.common import post_json, use_utf8_stdio             # noqa: E402
-from syncmanga.readerlink import is_chapter_url                    # noqa: E402
-from syncmanga.config import load_overrides                        # noqa: E402
+from syncmanga import catalog, readerlink  # noqa: E402
+from syncmanga.common import post_json, use_utf8_stdio  # noqa: E402
+from syncmanga.config import load_overrides  # noqa: E402
+from syncmanga.readerlink import is_chapter_url  # noqa: E402
 
 DATA = os.path.join(PKG, "data")
 REPORT = os.path.join(DATA, "benchmark_report.json")
@@ -103,7 +103,8 @@ def main():
             print(f"  ... Katalog {i + 1}/{len(sample)}")
 
     # Link-Stichprobe: gleichmaessig ueber die Zellen (nicht nur die Top-Titel testen)
-    probe = [s for pair in zip(sample[::2], sample[1::2]) for s in pair][:link_n] or sample[:link_n]
+    probe = [s for pair in zip(sample[::2], sample[1::2], strict=False)
+             for s in pair][:link_n] or sample[:link_n]
     link_ok = chap_ok = 0
     for i, s in enumerate(probe):
         titles = [t for t in ([s["title"]] + s.get("rec_titles", [])) if t]
@@ -114,8 +115,9 @@ def main():
             # Waechter wie fill_one_reserves: Treffer-Titel muss norm-gleich/>=0.93 sitzen.
             try:
                 import difflib
+
                 from syncmanga.parse import norm as _norm
-                from syncmanga.sources import md_lookup, md_chapter_link
+                from syncmanga.sources import md_chapter_link, md_lookup
                 hit = md_lookup(s["title"]) or {}
                 cand = [hit.get("title") or ""] + (hit.get("all_titles") or [])
                 okt = any(h and (_norm(h) == _norm(s["title"]) or difflib.SequenceMatcher(

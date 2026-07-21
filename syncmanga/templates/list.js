@@ -40,7 +40,9 @@ var t=q.value.toLowerCase(),b=r.cells[0].textContent.toLowerCase().includes(t),i
 // Zeilen mit kaputtem Link (.dudrow) erscheinen HIER mit (rot, oben) — Zurueckholen in der Zeile
 // per ⚠✓ oder Klick auf den roten Link (JB 08.07.2026: 'wie Favoriten und nicht-Favoriten').
 if(document.body.classList.contains('archview')){r.style.display=((isA||r.classList.contains('dudrow'))&&b)?'':'none';return}
-var cc=r.querySelector('.c'),c=cf.value,a=!flt||(r.dataset.s||'').includes(flt),d=!c||(c==='Webtoon'?r.dataset.dyn==='1':(r.dataset.medium||'')===c),hp=!helpOnly||r.dataset.help==='1',nw=!newOnly||(cc&&(cc.dataset.un-0)>0),gg=gmatch(r),ns=!nf.value||(nf.value==='both'?!r.dataset.adult:r.dataset.adult!==nf.value);r.style.display=(a&&b&&d&&hp&&nw&&gg&&ns&&!isA)?'':'none'}
+// '__ohne_angelesene__' (JB 20.07.): Serien mit nur ~Kapitel 1 gelesen ausblenden (0 = Backlog bleibt)
+var rc1=parseInt(r.dataset.rc||'0',10)||0;
+var c=cf.value,a=(flt==='__ohne_angelesene__')?!(rc1>0&&rc1<=1):(!flt||(r.dataset.s||'').includes(flt)),d=!c||(c==='Webtoon'?r.dataset.dyn==='1':(r.dataset.medium||'')===c),hp=!helpOnly||r.dataset.help==='1',nw=!newOnly||((r.dataset.un-0)>0),gg=gmatch(r),ns=!nf.value||(nf.value==='both'?!r.dataset.adult:r.dataset.adult!==nf.value);r.style.display=(a&&b&&d&&hp&&nw&&gg&&ns&&!isA)?'':'none'}
 
 // --- Genre-Mehrfachfilter (3 Zustaende, JB): 1x Klick = NUR dieses Genre (gruen), 2x = Genre
 // AUSBLENDEN (rot, durchgestrichen), 3x = neutral. gmatch = alle gewaehlten UND keins der Ausschluesse.
@@ -51,9 +53,11 @@ function toggleGenre(el){var g=el.dataset.g;if(GSEL.has(g)){GSEL.delete(g);GEXC.
 // --- regray(): Live-Counts je Genre/Filter neu zaehlen + Buttons mit 0 Treffern ausgrauen ---
 // (beruecksichtigt die bereits gewaehlten Genres, damit man sich nicht in "nichts angezeigt" filtert)
 function regray(){var rows=[].slice.call(document.querySelectorAll('#t tbody tr'));document.querySelectorAll('#gf .gchip').forEach(function(c){var g=c.dataset.g,n=0;for(var i=0;i<rows.length;i++){var r=rows[i];if(gmatch(r)&&(' '+(r.dataset.gen||'')+' ').indexOf(' '+g+' ')>=0)n++}var ic=c.querySelector('i');if(ic)ic.textContent=n;c.classList.toggle('off',!GSEL.has(g)&&!GEXC.has(g)&&n===0)});
-var pf=document.getElementById('pf');if(pf){[].forEach.call(pf.options,function(o){var base=o.dataset.l||(o.dataset.l=o.textContent.replace(/ \(\d+\)$/,''));var f=o.value;var n=0;for(var i=0;i<rows.length;i++){var r=rows[i];if(!gmatch(r))continue;if(!f||(r.dataset.s||'').indexOf(f)>=0)n++}o.textContent=base+' ('+n+')';o.disabled=(!!f&&n===0&&pf.value!==f)})}
+var pf=document.getElementById('pf');if(pf){[].forEach.call(pf.options,function(o){var base=o.dataset.l||(o.dataset.l=o.textContent.replace(/ \(\d+\)$/,''));var f=o.value;var n=0;for(var i=0;i<rows.length;i++){var r=rows[i];if(!gmatch(r))continue;
+if(f==='__ohne_angelesene__'){var rc2=parseInt(r.dataset.rc||'0',10)||0;if(!(rc2>0&&rc2<=1))n++}
+else if(!f||(r.dataset.s||'').indexOf(f)>=0)n++}o.textContent=base+' ('+n+')';o.disabled=(!!f&&n===0&&pf.value!==f)})}
 var hb=document.getElementById('hb');if(hb){var nh=0;for(var i=0;i<rows.length;i++){if(gmatch(rows[i])&&rows[i].dataset.help==='1')nh++}hb.classList.toggle('off',nh===0)}
-var nb=document.getElementById('nb');if(nb){var nn=0;for(var i=0;i<rows.length;i++){var c3=rows[i].querySelector('.c');if(gmatch(rows[i])&&c3&&(c3.dataset.un-0)>0)nn++}nb.classList.toggle('off',nn===0)}}
+var nb=document.getElementById('nb');if(nb){var nn=0;for(var i=0;i<rows.length;i++){if(gmatch(rows[i])&&(rows[i].dataset.un-0)>0)nn++}nb.classList.toggle('off',nn===0)}}
 
 // --- Filter anwenden/umschalten ---
 // ff = alle Zeilen neu bewerten · fs = Fortschritts-Filter setzen · fh = nur "braucht Hilfe"
@@ -82,10 +86,10 @@ function pinDudsTop(){var tb=document.querySelector('#t tbody');if(!tb)return;_p
  .reverse().forEach(function(r){tb.insertBefore(r,tb.firstChild)})}
 function unpinDuds(){if(!_preArch)return;var tb=document.querySelector('#t tbody');
  _preArch.forEach(function(r){if(r.isConnected)tb.appendChild(r)});_preArch=null}
-function updateAb(){var n=0;document.querySelectorAll('#t tbody tr').forEach(function(r){if(ARCH.has(r.dataset.h))n++});var m=Object.keys(dudGet()).length;vb.textContent=((typeof I!=='undefined'&&I.arch)||'🗃 Archiv')+': '+n+(m?' · 🔗 '+m:'');buildDudArch()}
+function updateAb(){var n=0;document.querySelectorAll('#t tbody tr').forEach(function(r){if(ARCH.has(r.dataset.h))n++});var m=Object.keys(dudGet()).length;vb.textContent=((typeof I!=='undefined'&&I.arch)||'🗃 Archiv')+': '+n+(m?' · 🔗 '+m:'');var pc=document.getElementById('pbca');if(pc)pc.textContent=n;buildDudArch()}
 
-// --- Spalten ein/ausblenden (Menue "Spalten" neben den Panels): body.hc<n> versteckt Spalte n (2..7) ---
-function toggleCol(n,cb){document.body.classList.toggle('hc'+n,!cb.checked);var h=[];for(var i=2;i<=7;i++){if(document.body.classList.contains('hc'+i))h.push(i)}try{localStorage.setItem('hcols',JSON.stringify(h))}catch(e){}refreezeHead()}
+// --- Spalten ein/ausblenden (Menue "Spalten" neben den Panels): body.hc<n> versteckt Spalte n (3..6) ---
+function toggleCol(n,cb){document.body.classList.toggle('hc'+n,!cb.checked);var h=[];for(var i=4;i<=8;i++){if(document.body.classList.contains('hc'+i))h.push(i)}try{localStorage.setItem('hcols',JSON.stringify(h))}catch(e){}refreezeHead()}
 // gespeicherte Spalten-Wahl wiederherstellen (versteckte Spalte -> Checkbox #col<n> leer)
 (function(){try{JSON.parse(localStorage.getItem('hcols')||'[]').forEach(function(n){document.body.classList.add('hc'+n);var cb=document.getElementById('col'+n);if(cb)cb.checked=false})}catch(e){}})();
 
@@ -94,12 +98,12 @@ function toggleCol(n,cb){document.body.classList.toggle('hc'+n,!cb.checked);var 
 var FAV=new Set(JSON.parse(localStorage.getItem('mangaFav')||'[]')),favHidden=false,usort=false;
 function saveFav(){try{localStorage.setItem('mangaFav',JSON.stringify([...FAV]))}catch(e){}}
 // Zaehler am "⭐ Favoriten: N"-Button aktualisieren
-function updateFav(){var b=document.getElementById('vfb');if(b)b.textContent='⭐ '+((typeof I!=='undefined'&&I.fav)||'Favoriten')+': '+FAV.size}
+function updateFav(){var b=document.getElementById('vfb');if(b)b.textContent='⭐ '+((typeof I!=='undefined'&&I.fav)||'Favoriten')+': '+FAV.size;var pf=document.getElementById('pbcf');if(pf)pf.textContent=FAV.size}
 // eine Serie als Favorit togglen (⭐-Klick im Favorit-Modus): merken, Zeilen markieren, anpinnen, Zaehler, Filter
 function fav(k){if(FAV.has(k))FAV.delete(k);else FAV.add(k);saveFav();document.querySelectorAll('#t tbody tr').forEach(function(r){r.classList.toggle('fav',FAV.has(r.dataset.h))});pinFavs(!usort);updateFav();ff()}
 // pinFavs(): Favoriten getrennt nach OBEN. sortDefault=true -> nach ungelesen(data-un) desc, dann Bewertung
 // (data-rt) desc; sonst AKTUELLE Reihenfolge behalten (folgt so der aktiven Spalten-Sortierung).
-function pinFavs(sortDefault){var tb=document.querySelector('#t tbody'),f=[...tb.rows].filter(function(r){return FAV.has(r.dataset.h)});if(sortDefault){f.sort(function(a,b){var ca=a.querySelector('.c'),cb=b.querySelector('.c'),ua=ca?ca.dataset.un-0:0,ub=cb?cb.dataset.un-0:0;if(ub!==ua)return ub-ua;var ra=a.querySelector('.rt'),rb=b.querySelector('.rt');return (rb?rb.dataset.rt-0:0)-(ra?ra.dataset.rt-0:0)})}f.reverse().forEach(function(r){tb.insertBefore(r,tb.firstChild)});if(document.body.classList.contains('tiles'))buildTiles()}
+function pinFavs(sortDefault){var tb=document.querySelector('#t tbody'),f=[...tb.rows].filter(function(r){return FAV.has(r.dataset.h)});if(sortDefault){f.sort(function(a,b){var ua=a.dataset.un-0,ub=b.dataset.un-0;if(ub!==ua)return ub-ua;var ra=a.querySelector('.rt'),rb=b.querySelector('.rt');return (rb?rb.dataset.rt-0:0)-(ra?ra.dataset.rt-0:0)})}f.reverse().forEach(function(r){tb.insertBefore(r,tb.firstChild)});if(document.body.classList.contains('tiles'))buildTiles()}
 // Favorit-MODUS (Sterne zum Anklicken zeigen) bzw. Favoriten EIN-/AUSBLENDEN
 function toggleFavmode(){var on=document.body.classList.toggle('favmode');document.getElementById('fm').classList.toggle('on',on)}
 function toggleFavview(btn){favHidden=!favHidden;btn.classList.toggle('dim',favHidden);ff()}
@@ -108,16 +112,20 @@ function reSortDefault(){usort=false;var tb=document.querySelector('#t tbody'),r
 // --- Sortierung: s(i) nach Spalte i (Zahlenspalten numerisch), sortAuthor nach data-au; Klick toggelt Richtung ---
 // Sortierung nach Spalte i. Der Spalten-TYP wird an der Zellen-KLASSE erkannt (.c Kapitel/ungelesen,
 // .d Zuletzt/Zeitstempel, .rt Bewertung) -> robust gegen Spalten-Verschiebungen (z.B. neue ⭐-Spalte).
-var dir=1;function s(i){usort=true;var tb=document.querySelector('#t tbody'),rs=[...tb.rows];dir*=-1;rs.sort((a,b)=>{var x=a.cells[i],y=b.cells[i];if(i==0)return((a.dataset.n||'').localeCompare(b.dataset.n||''))*dir;if(x.classList.contains('c'))return((x.dataset.un-0)-(y.dataset.un-0))*dir;if(x.classList.contains('d'))return(x.dataset.ts-y.dataset.ts)*dir;if(x.classList.contains('rt'))return(x.dataset.rt-y.dataset.rt)*dir;return x.textContent.localeCompare(y.textContent)*dir});rs.forEach(r=>tb.appendChild(r));pinFavs();saveSort('col',i)}
+var dir=1;function s(i){usort=true;var tb=document.querySelector('#t tbody'),rs=[...tb.rows];dir*=-1;rs.sort((a,b)=>{var x=a.cells[i],y=b.cells[i];if(i==0)return((a.dataset.n||'').localeCompare(b.dataset.n||''))*dir;if(x.classList.contains('rd'))return((x.dataset.rv-0)-(y.dataset.rv-0))*dir;if(x.classList.contains('tl'))return((x.dataset.tl-0)-(y.dataset.tl-0))*dir;if(x.classList.contains('tot'))return((x.dataset.tot-0)-(y.dataset.tot-0))*dir;if(x.classList.contains('d'))return(x.dataset.ts-y.dataset.ts)*dir;if(x.classList.contains('rt'))return(x.dataset.rt-y.dataset.rt)*dir;return x.textContent.localeCompare(y.textContent)*dir});rs.forEach(r=>tb.appendChild(r));pinFavs();saveSort('col',i)}
 function sortAuthor(){usort=true;var tb=document.querySelector('#t tbody'),rs=[...tb.rows];dir*=-1;rs.sort((a,b)=>(a.dataset.au||'').localeCompare(b.dataset.au||'')*dir);rs.forEach(r=>tb.appendChild(r));pinFavs();saveSort('author')}
 // --- Sortierung + Scroll-Position ueber Reload merken (JB 07.07.2026: 'Position behalten') ---
 function saveSort(k,i){try{localStorage.setItem('sortState',JSON.stringify({k:k,i:(i==null?-1:i),dir:dir}))}catch(e){}}
 function restoreSort(){var st;try{st=JSON.parse(localStorage.getItem('sortState')||'null')}catch(e){}
  if(!st)return;dir=-(st.dir||1);                 // Gegenrichtung -> der Toggle in s()/sortAuthor landet auf st.dir
  if(st.k==='col'&&st.i>=0)s(st.i);else if(st.k==='author')sortAuthor();}
-var _spt;function saveScroll(){clearTimeout(_spt);_spt=setTimeout(function(){try{localStorage.setItem('scrollPos',String(Math.round(window.scrollY||window.pageYOffset||0)))}catch(e){}},250)}
-function restoreScroll(){var sp=parseInt(localStorage.getItem('scrollPos')||'0',10);if(sp>0)setTimeout(function(){window.scrollTo(0,sp)},80)}
-addEventListener('scroll',saveScroll,{passive:true});
+// Anti-Scroll (JB 22.07.): gescrollt wird #scrollarea, nicht mehr das Fenster -> Scroll-Position
+// und der Nach-oben-Knopf lesen/setzen scrollTop dort (Fallback window, falls es #scrollarea nicht gibt).
+function scEl(){return document.getElementById('scrollarea')}
+function scTop(){var e=scEl();return e?e.scrollTop:(window.scrollY||window.pageYOffset||0)}
+var _spt;function saveScroll(){clearTimeout(_spt);_spt=setTimeout(function(){try{localStorage.setItem('scrollPos',String(Math.round(scTop())))}catch(e){}},250)}
+function restoreScroll(){var sp=parseInt(localStorage.getItem('scrollPos')||'0',10);if(sp>0)setTimeout(function(){var e=scEl();if(e)e.scrollTop=sp;else window.scrollTo(0,sp)},80)}
+(scEl()||window).addEventListener('scroll',saveScroll,{passive:true});
 
 // --- Lesestand manuell setzen (JB): Klick auf die Kapitel-Zelle -> Zahl eingeben. NUR Zahlen wirken;
 // Abbrechen/Unsinn aendert nichts; leere Eingabe setzt auf den Scan-Stand zurueck. Gespeichert in
@@ -142,14 +150,19 @@ function cfUnlink(tr){[].forEach.call(tr.querySelectorAll('td.act a.pill.go'),fu
 // Aenderung an den Tray-Server melden -> naechster Sync prueft die umgeschriebenen Links
 // serverseitig (existiert das Kapitel dort wirklich?) und uebernimmt nur Verifiziertes.
 function cfPush(o){try{fetch('http://127.0.0.1:8765/chapfix',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(o)}).catch(function(){})}catch(e){}}
-function cfSet(td,n){var tr=td.closest('tr');if(td.dataset.orig==null){td.dataset.orig=td.innerHTML;td.dataset.origun=td.dataset.un;td.dataset.origrc=tr.dataset.rc}var lat=parseFloat(td.dataset.lat)||0;if(lat>0&&n>lat)n=lat;var badge=td.querySelector('span.unk'),bh=badge?badge.outerHTML:'',fmt=function(x){return x%1?x:Math.round(x)};td.innerHTML=fmt(n)+' / '+(lat>n?fmt(lat):(fmt(n)||'?'))+bh;td.dataset.un=Math.max(0,Math.round((lat||n)-n));tr.dataset.rc=Math.floor(n);cfRelink(tr,fmt(n));return n}
-function cfReset(td){var tr=td.closest('tr');if(td.dataset.orig!=null){td.innerHTML=td.dataset.orig;td.dataset.un=td.dataset.origun;tr.dataset.rc=td.dataset.origrc;cfUnlink(tr)}}
+// td = die GELESEN-Zelle (td.rd). Setzt den Lesestand, deckelt aufs Gesamtwerk (td.tot) und zieht
+// "neu"/verbleibend (data-un + td.tl.data-tl) nach dem LESBAREN Stand (data-rdf = übersetzt/gesamt) nach.
+function cfSet(td,n){var tr=td.closest('tr');if(td.dataset.orig==null){td.dataset.orig=td.innerHTML;td.dataset.origun=tr.dataset.un;td.dataset.origrc=tr.dataset.rc}
+var totCell=tr.querySelector('td.tot'),tlCell=tr.querySelector('td.tl');var tot=parseFloat(totCell&&totCell.dataset.tot)||0;if(tot>0&&n>tot)n=tot;
+var rdf=parseFloat(tr.dataset.rdf)||tot;var badge=td.querySelector('span.unk'),bh=badge?badge.outerHTML:'',fmt=function(x){return x%1?x:Math.round(x)};var un=Math.max(0,Math.round((rdf||n)-n));
+td.innerHTML=fmt(n)+bh;td.dataset.rv=Math.floor(n);tr.dataset.un=un;tr.dataset.rc=Math.floor(n);if(tlCell)tlCell.dataset.tl=un;cfRelink(tr,fmt(n));return n}
+function cfReset(td){var tr=td.closest('tr');if(td.dataset.orig!=null){td.innerHTML=td.dataset.orig;tr.dataset.un=td.dataset.origun;tr.dataset.rc=td.dataset.origrc;td.dataset.rv=td.dataset.origrc;var tl=tr.querySelector('td.tl');if(tl)tl.dataset.tl=td.dataset.origun;cfUnlink(tr)}}
 function chapEdit(td){var tr=td.closest('tr'),k=tr.dataset.h,o=cfGet(),cur=(o[k]!=null?o[k]:tr.dataset.rc||'');var v=prompt((typeof I!=='undefined'&&I.cq)||'Gelesen bis Kapitel?',cur);if(v===null)return;v=String(v).trim().replace(',','.');if(v===''){if(o[k]!=null){delete o[k];cfSave(o);cfReset(td);ff()}return}var n=parseFloat(v);if(!isFinite(n)||n<0)return;n=cfSet(td,n);o[k]=n;cfSave(o);var p={};p[k]=n;cfPush(p);ff()}
-function applyChapFix(){var o=cfGet();document.querySelectorAll('#t tbody tr').forEach(function(tr){var n=o[tr.dataset.h];if(n!=null){var td=tr.querySelector('td.c');if(td)cfSet(td,parseFloat(n))}});
+function applyChapFix(){var o=cfGet();document.querySelectorAll('#t tbody tr').forEach(function(tr){var n=o[tr.dataset.h];if(n!=null){var td=tr.querySelector('td.rd');if(td)cfSet(td,parseFloat(n))}});
 // kompletten Stand einmal je Seitenaufruf mitmelden -> auch AELTERE manuelle Aenderungen
 // (vor diesem Update) landen in der Server-Pruefung (Tray vereint idempotent)
 if(Object.keys(o).length)cfPush(o)}
-document.addEventListener('click',function(ev){var td=ev.target.closest('td.c');if(td)chapEdit(td)});
+document.addEventListener('click',function(ev){var td=ev.target.closest('td.rd');if(td)chapEdit(td)});
 
 // --- 🎲 Ueberrasch mich (JB): zufaellige UNGELESENE Serie (Backlog), Bewertung gewichtet ---
 function luckyPick(){var rows=[...document.querySelectorAll('#t tbody tr')].filter(function(r){return r.style.display!=='none'&&(parseInt(r.dataset.rc||'0',10)||0)===0&&!ARCH.has(r.dataset.h)});if(!rows.length)return;var tot=0,w=rows.map(function(r){var rt=r.querySelector('.rt'),v=rt?(parseFloat(rt.dataset.rt)||5):5;tot+=v;return v});var x=Math.random()*tot,i=0;while(x>w[i]&&i<w.length-1){x-=w[i];i++}var r=rows[i];r.scrollIntoView({behavior:'smooth',block:'center'});r.classList.add('lucky');setTimeout(function(){r.classList.remove('lucky')},2400);var a=r.querySelector('a.pill.go');if(a)window.open(a.href,'_blank')}
@@ -160,6 +173,8 @@ function luckyPick(){var rows=[...document.querySelectorAll('#t tbody tr')].filt
 function thApply(l){document.body.classList.toggle('light',l);var b=document.getElementById('thm');if(b)b.textContent=l?'☾':'☀'}
 function toggleTheme(){var l=!document.body.classList.contains('light');thApply(l);try{localStorage.setItem('theme',l?'light':'dark')}catch(e){}}
 function applyTheme(){var t=null;try{t=localStorage.getItem('theme')}catch(e){}var l=t?t==='light':!!(window.matchMedia&&matchMedia('(prefers-color-scheme:light)').matches);thApply(l)}
+// Vom Dashboard eingebettet (JB 22.07.): dessen Tag/Nacht per postMessage uebernehmen (nicht persistent).
+window.addEventListener('message',function(e){if(e&&e.data&&e.data.dashTheme)thApply(e.data.dashTheme==='light')});
 
 // --- ⚙ Zahnrad (JB 09.07.2026): mobil selten genutzte Werkzeuge ein-/ausblenden (transient,
 // startet immer ZU). CSS (body.gearon) zeigt Tag/Nacht, Kacheln, Kompakt, Speichern, Im-/Export. ---
@@ -251,7 +266,7 @@ function exportJson(){var out=xRows().map(function(tr){return {name:tr.dataset.n
 // (nach Manga/data legen, der naechste Lauf reichert sie an). ---
 // jsNorm MUSS syncmanga/parse.norm() spiegeln (gleiche Keys, sonst Duplikat-Zeilen beim Merge).
 function jsNorm(s){s=String(s||'').toLowerCase().replace(/['’]/g,'');s=s.replace(/\b(?:chapter|chap|episode|ep|ch|vol|volume|season)\.?\s*\d+(?:\.\d+)?/g,' ');s=s.replace(/\b(20\d\d|the|a|an|s\d|official|manga|manhwa|manhua|webtoon)\b/g,'');return s.replace(/[^a-z0-9]/g,'')}
-function importMal(inp){var f=inp.files&&inp.files[0];inp.value='';if(!f)return;var rd=new FileReader();rd.onload=function(){try{var doc=new DOMParser().parseFromString(rd.result,'text/xml');var byMal={};document.querySelectorAll('#t tbody tr').forEach(function(tr){if(tr.dataset.mal)byMal[tr.dataset.mal]=tr});var o=cfGet(),up=0,unknown=[];[].forEach.call(doc.querySelectorAll('manga'),function(m){var g=function(t){var el=m.querySelector(t);return el?(el.textContent||'').trim():''};var id=g('series_mangadb_id')||g('manga_mangadb_id');var ch=parseFloat(g('my_read_chapters'))||0;var tr=byMal[id];if(tr){var k=tr.dataset.h,cur=parseFloat(o[k]!=null?o[k]:tr.dataset.rc)||0;if(ch>cur){var td=tr.querySelector('td.c');o[k]=td?cfSet(td,ch):ch;up++}}else if(g('series_title')){unknown.push({t:g('series_title'),c:ch||null,s:g('my_status')||'Reading',m:parseInt(id,10)||null})}});cfSave(o);ff();var msg=up+' '+((typeof I!=='undefined'&&I.imu)||'Lesestände übernommen');if(unknown.length){var obj={};unknown.forEach(function(u){var k=jsNorm(u.t);if(k&&!obj[k])obj[k]={name:u.t,chap:u.c,status:u.s==='Completed'?'Fertig':(u.s==='Reading'?'Am Lesen':'Gelesen'),mal_id:u.m}});xDown(JSON.stringify(obj,null,1),'application/json','imported_series.json');msg+='\n'+unknown.length+' '+((typeof I!=='undefined'&&I.imn)||'unbekannte Serien → imported_series.json (nach Manga/data legen)')}alert(msg)}catch(e){alert('Import: '+e)}};rd.readAsText(f)}
+function importMal(inp){var f=inp.files&&inp.files[0];inp.value='';if(!f)return;var rd=new FileReader();rd.onload=function(){try{var doc=new DOMParser().parseFromString(rd.result,'text/xml');var byMal={};document.querySelectorAll('#t tbody tr').forEach(function(tr){if(tr.dataset.mal)byMal[tr.dataset.mal]=tr});var o=cfGet(),up=0,unknown=[];[].forEach.call(doc.querySelectorAll('manga'),function(m){var g=function(t){var el=m.querySelector(t);return el?(el.textContent||'').trim():''};var id=g('series_mangadb_id')||g('manga_mangadb_id');var ch=parseFloat(g('my_read_chapters'))||0;var tr=byMal[id];if(tr){var k=tr.dataset.h,cur=parseFloat(o[k]!=null?o[k]:tr.dataset.rc)||0;if(ch>cur){var td=tr.querySelector('td.rd');o[k]=td?cfSet(td,ch):ch;up++}}else if(g('series_title')){unknown.push({t:g('series_title'),c:ch||null,s:g('my_status')||'Reading',m:parseInt(id,10)||null})}});cfSave(o);ff();var msg=up+' '+((typeof I!=='undefined'&&I.imu)||'Lesestände übernommen');if(unknown.length){var obj={};unknown.forEach(function(u){var k=jsNorm(u.t);if(k&&!obj[k])obj[k]={name:u.t,chap:u.c,status:u.s==='Completed'?'Fertig':(u.s==='Reading'?'Am Lesen':'Gelesen'),mal_id:u.m}});xDown(JSON.stringify(obj,null,1),'application/json','imported_series.json');msg+='\n'+unknown.length+' '+((typeof I!=='undefined'&&I.imn)||'unbekannte Serien → imported_series.json (nach Manga/data legen)')}alert(msg)}catch(e){alert('Import: '+e)}};rd.readAsText(f)}
 
 // --- ▦ Kachel-Ansicht (JB): Cover-Galerie, komplett CLIENTSEITIG aus den Tabellen-Zeilen gebaut
 // (kein HTML-Gewicht; Bilder laden lazy). Zahl links = dein Stand in der USER-Status-Farbe,
@@ -263,14 +278,16 @@ function tileName(td){var nm=td&&td.querySelector('.nmline');if(!nm)return'';var
 function buildTiles(){refreezeHead();var c=document.getElementById('tiles');if(!c){c=document.createElement('div');c.id='tiles';var w=document.querySelector('.wrap');w.parentNode.insertBefore(c,w.nextSibling)}var out=[];var anyFav=false,sepDone=false;document.querySelectorAll('#t tbody tr').forEach(function(tr){if(tr.style.display==='none')return;
 // Favoriten-Trenner (JB): Favoriten stehen gepinnt oben — vor der ersten NICHT-Favoriten-
 // Kachel kommt EINE Linie ueber die volle Breite (entfaellt, wenn Favoriten ausgeblendet sind).
-var isFav=FAV.has(tr.dataset.h);if(isFav)anyFav=true;else if(anyFav&&!sepDone){out.push('<div class=tsep></div>');sepDone=true}var td=tr.cells[0],a=tr.querySelector('a.pill.go'),cc=tr.querySelector('td.c'),st=tr.querySelector('td.st'),pub=tr.querySelector('td.pub');var stc=(st&&(st.className.match(/st ?(\w+)?/)||[])[1])||'';var pc=PUBC[(pub?pub.textContent.trim():'')]||'';var parts=(cc?cc.textContent:'').split('/');var read=(parts[0]||'').trim().replace(/[^\d.,?]/g,''),lat=(parts[1]||'').replace(/[^\d.,?]/g,'');var cov=tr.dataset.cov;var img=cov?'<img data-src="'+escH(cov)+'" alt="">':'<div class=noimg>📚</div>';var nm=tileName(td);
+var isFav=FAV.has(tr.dataset.h);if(isFav)anyFav=true;else if(anyFav&&!sepDone){out.push('<div class=tsep></div>');sepDone=true}var td=tr.cells[0],a=tr.querySelector('a.pill.go');var stc=tr.dataset.pc||'';var pc=PUBC[tr.dataset.pub||'']||'';
+// Gelesen/Gesamt aus den getrennten Spalten (td.rd / td.tot) — die Kachel zeigt gelesen/gesamt.
+var rdCell=tr.querySelector('td.rd'),totCell=tr.querySelector('td.tot');var read=(rdCell?rdCell.textContent:'').replace(/[^\d.,?]/g,''),lat=(totCell?totCell.textContent:'').replace(/[^\d.,?]/g,'');var cov=tr.dataset.cov;var img=cov?'<img data-src="'+escH(cov)+'" alt="">':'<div class=noimg>📚</div>';var nm=tileName(td);
 // ＋Alt auf der Kachel (JB 09.07.2026): Alternativ-Quellen der Zeile als Ecken-Knopf im Cover —
 // nur bei Hover sichtbar, klappt als Overlay AUF dem Bild aus. Quelle ist die Tabellen-Zeile,
 // dadurch stimmen Pause-Umlenkung (applyPause) und Kapitel-Fix automatisch auch hier.
 var altHtml='';var altAs=[].slice.call(tr.querySelectorAll('details.alt a.pill.go'));
 if(altAs.length){var items=altAs.map(function(x){var g=x.classList.contains('galt');var lb=g?'🔍 Google':(x.textContent||'').trim();if(!lb||(!g&&(x.getAttribute('href')||'#')==='#'))return '';return '<a href="'+escH(x.href)+'" target=_blank rel=noopener>'+escH(lb)+'</a>'}).join('');
 if(items)altHtml='<div class=talt><button type=button class=taltb title="'+escH((typeof I!=='undefined'&&I.altm)||'＋ Alt')+'">＋</button><div class=taltm>'+items+'</div></div>'}
-out.push('<div class=tile><a href="'+escH(a?a.href:'#')+'" target=_blank rel=noopener title="'+escH(nm)+'">'+img+'</a>'+altHtml+'<div class=tchap><b class="st '+stc+'">'+escH(read||'0')+'</b><b class="tl '+pc+'">/'+escH(lat||'?')+'</b></div><div class=tname title="'+escH(nm)+'">'+escH(nm)+'</div></div>')});c.innerHTML=out.join('');
+out.push('<div class=tile><a href="'+escH(a?a.href:'#')+'" target=_blank rel=noopener title="'+escH(nm)+'">'+img+'</a>'+altHtml+'<div class=tchap><b class="rc '+stc+'">'+escH(read||'0')+'</b><b class="tl '+pc+'">/'+escH(lat||'?')+'</b></div><div class=tname title="'+escH(nm)+'">'+escH(nm)+'</div></div>')});c.innerHTML=out.join('');
 // EIGENES Lazy-Loading (natives loading=lazy laedt in eingebetteten/hintergruendigen Ansichten
 // oft gar nicht): Bild-src erst setzen, wenn die Kachel in Sichtweite kommt (600px Vorlauf).
 var tio=window.__tio;if(tio===undefined){tio=window.__tio=('IntersectionObserver' in window)?new IntersectionObserver(function(es){es.forEach(function(en){if(en.isIntersecting){var im=en.target;if(im.dataset.src){im.src=im.dataset.src;im.removeAttribute('data-src')}window.__tio.unobserve(im)}})},{rootMargin:'600px'}):null}
@@ -501,20 +518,37 @@ fetch('http://127.0.0.1:8765/confirm-source',{method:'POST',headers:{'Content-Ty
 (function(){var b=document.createElement('button');b.id='scb';b.className='savebadge';b.type='button';b.onclick=showSrc;document.body.appendChild(b);srcSave(srcGet())})();
 
 // +Alt-Akkordeon: oeffnet man ein Alternativen-Menue, schliessen sich die anderen (Aesthetik).
-document.addEventListener('toggle',function(e){var d=e.target;if(d.tagName==='DETAILS'&&d.classList.contains('alt')&&d.open){document.querySelectorAll('details.alt[open]').forEach(function(o){if(o!==d)o.open=false})}},true);
+// +Alt-Panel unter den Knopf setzen (position:fixed) und in den Viewport klemmen: NIE den Knopf
+// verdecken (unter ihm; kein Platz unten -> darueber), nie links/rechts aus dem Rahmen (JB 20.07.2026).
+function positionAltm(det){var m=det&&det.querySelector('.altm'),sm=det&&det.querySelector('summary');if(!m||!sm)return;
+ m.style.top='';m.style.left='';m.style.visibility='hidden';   // zuruecksetzen -> echte Groesse messen, nicht aufblitzen
+ var sr=sm.getBoundingClientRect(),mr=m.getBoundingClientRect(),pad=6,vw=innerWidth,vh=innerHeight;
+ var top=sr.bottom+4;                                  // unter dem Knopf (verdeckt ihn nie)
+ if(top+mr.height>vh-pad)top=Math.max(pad,sr.top-mr.height-4);   // kein Platz unten -> darueber
+ var left=sr.left;
+ if(left+mr.width>vw-pad)left=vw-pad-mr.width;         // nicht rechts raus
+ if(left<pad)left=pad;                                 // nicht links raus
+ m.style.top=Math.round(top)+'px';m.style.left=Math.round(left)+'px';m.style.visibility='visible'}
+function closeAlts(){document.querySelectorAll('details.alt[open]').forEach(function(o){o.open=false})}
+document.addEventListener('toggle',function(e){var d=e.target;if(d.tagName==='DETAILS'&&d.classList.contains('alt')&&d.open){document.querySelectorAll('details.alt[open]').forEach(function(o){if(o!==d)o.open=false});positionAltm(d)}},true);
+// Scrollt die Seite (Knopf wandert weg) oder aendert sich die Groesse -> offenes +Alt schliessen.
+addEventListener('scroll',function(){if(document.querySelector('details.alt[open]'))closeAlts()},{passive:true,capture:true});
+addEventListener('resize',closeAlts);
+// Klick ausserhalb eines offenen +Alt schliesst es (Panel liegt per fixed woanders im DOM-Fluss).
+document.addEventListener('click',function(e){if(document.querySelector('details.alt[open]')&&!e.target.closest('details.alt'))closeAlts()},true);
 
 // --- Boot: Favoriten markieren + initial (ungelesen>Bewertung) nach oben pinnen; Checkbox/Zaehler; dann Filter ---
 document.querySelectorAll('#t tbody tr').forEach(function(r){r.classList.toggle('fav',FAV.has(r.dataset.h))});
 // Tooltips + Such-Links einmalig verteilen (HTML-Diaet: Texte/Domain-Liste stehen in I.tt statt
 // x-fach je Zeile im HTML; die Google-URLs baut das Boot aus data-n/data-rc + der sq-Domain-Liste)
-function applyTips(){try{var T=(typeof I!=='undefined'&&I.tt)||null;if(!T)return;var G='https://www.google.com/search?q=';document.querySelectorAll('#t tbody tr').forEach(function(tr){var q=function(sel){return tr.querySelector(sel)};var m={'.arch':T.arch,'.unarch':T.unarch,'.favi':T.fav,'td.c':T.c,'.rep':T.rep,'.cfm':T.cfm,'.gsr':T.galt};for(var sel in m){var el=q(sel);if(el&&m[sel])el.title=m[sel]}var st=q('td.st');if(st){var cls=(st.className.match(/st ?(\w+)?/)||[])[1]||'';st.title=T.st[cls]||T.st['']||''}var n=tr.dataset.n||'',rc=tr.dataset.rc||'';
+function applyTips(){try{var T=(typeof I!=='undefined'&&I.tt)||null;if(!T)return;var G='https://www.google.com/search?q=';document.querySelectorAll('#t tbody tr').forEach(function(tr){var q=function(sel){return tr.querySelector(sel)};var m={'.arch':T.arch,'.unarch':T.unarch,'.favi':T.fav,'td.rd':T.c,'.rep':T.rep,'.cfm':T.cfm,'.gsr':T.galt};for(var sel in m){var el=q(sel);if(el&&m[sel])el.title=m[sel]}var n=tr.dataset.n||'',rc=tr.dataset.rc||'';
 // JB-Swap: 'suchen' (Aktion) = KOMBI-Suche ueber die Lese-Seiten (site:-Filter); +Alt = normale Google-Suche.
 // Beide Titel-Varianten anbieten (JB 08.07.2026: 'den Titel nehmen, der Treffer erzielt'):
 // "EN" OR "Romaji" -> Google waehlt selbst die Schreibweise, unter der die Reader die Serie fuehren.
 var q2=tr.dataset.q2,base=q2?('"'+n+'" OR "'+q2+'"'):n;
 var s1=q('a.gsr');if(s1)s1.href=G+encodeURIComponent(base+' chapter '+rc+' ('+(T.sq||'')+')');var s2=q('a.galt');if(s2)s2.href=G+encodeURIComponent(base+' manga online chapter '+rc)})}catch(e){}}
 // --- ⬆ nach-oben (JB): kleiner Pfeil unten rechts, sichtbar ab 600px Scrolltiefe ---
-(function(){var b=document.createElement('button');b.id='top';b.textContent='⬆';b.title=(typeof I!=='undefined'&&I.tp)||'Nach oben';b.onclick=function(){window.scrollTo({top:0,behavior:'smooth'})};document.body.appendChild(b);addEventListener('scroll',function(){b.style.display=scrollY>600?'block':'none'},{passive:true})})();
+(function(){var b=document.createElement('button');b.id='top';b.textContent='⬆';b.title=(typeof I!=='undefined'&&I.tp)||'Nach oben';b.onclick=function(){var e=scEl();if(e)e.scrollTo({top:0,behavior:'smooth'});else window.scrollTo({top:0,behavior:'smooth'})};document.body.appendChild(b);(scEl()||window).addEventListener('scroll',function(){b.style.display=scTop()>600?'block':'none'},{passive:true})})();
 // Einmalige Bereinigung (JB 05.07.2026): alte, dotlose Pause-Schluessel (z.B. bare 'mangafire'
 // aus dem temporaeren Umbau-Notbehelf) klemmten die Pause fest, weil togglePause heute
 // Hostnamen schreibt. Solche Reste entfernen; echte Nutzer-Pausen (Hostnamen mit '.') bleiben.

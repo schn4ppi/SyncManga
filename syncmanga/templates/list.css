@@ -4,56 +4,143 @@
    Das ist die LESBARE Quelle. render.py baut sie ueber _minify_css() minifiziert
    in die HTML ein -> die ausgelieferte Datei bleibt klein/schnell. Die REGEL-
    REIHENFOLGE ist bewusst 1:1 wie die minifizierte Auslieferung (kein Umsortieren
-   -> keine Spezifitaets-/Kaskaden-Ueberraschungen). Farbwelt: Terracotta (#d67756)
-   auf warmem Dunkelbraun (#14110f).
+   -> keine Spezifitaets-/Kaskaden-Ueberraschungen). Farbwelt: Terracotta (var(--akz))
+   auf warmem Dunkelbraun (#141110).
    ============================================================================= */
 
 /* --- Grundlayout ---------------------------------------------------------- */
-body{font-family:system-ui,Segoe UI,sans-serif;margin:22px;background:#14110f;color:#eee}
+/* ANTI-SCROLL (JB 22.07., magnetisch wie SyncYouTube Build 83): die SEITE scrollt nie —
+   body ist eine Flex-Spalte in voller Viewport-Hoehe, overflow:hidden. Der Kopf (#famkopf +
+   #headfix) bleibt fest, NUR #scrollarea (Tabelle/Kacheln) scrollt innen. */
+/* === FARB-TOKENS (JB 22.07.: 'ein gemeinsames System, ein Akzent pro Programm') ===========
+   Grund/Panels/Raender/Text/Status kommen aus der Dashboard-Palette und sind FAMILIEN-GETEILT;
+   der EINZIGE programm-eigene Wert ist --akz (Manga = Koralle). Umfaerben = nur diese Zeilen. */
+:root{
+  --bg:#141110;         /* Dashboard-Canvas */
+  --panel:#1a1714;      /* Kopf/Panels auf dem Canvas */
+  --panel2:#221c18;     /* erhabene Flaechen (Popups/Karten) */
+  --line:#3a332e;       /* Raender */
+  --line2:#241f1b;      /* dezente Raender */
+  --text:#e6ded7;       /* Haupttext */
+  --muted:#8a7d74;      /* gedaempft */
+  --akz:#d96a5a;        /* MANGA-AKZENT = Dashboard-Koralle (Identitaet, sparsam) */
+  --akz-ink:#fff;       /* Text auf Akzent */
+  --raise:#211c18;      /* Zeilen-Hover / leichte Anhebung ueber dem Canvas */
+}
+body.light{
+  --bg:#f3eee6; --panel:#faf7f4; --panel2:#f6f1ec; --line:#e0d8cd; --line2:#cfc2b8;
+  --text:#3a3128; --muted:#6a5c52; --akz:#c2543f; --akz-ink:#fff; --raise:#eee6df;
+}
+html{height:100%}
+body{font-family:system-ui,Segoe UI,sans-serif;margin:0;background:#141110;background:var(--bg);color:var(--text);
+     display:flex;flex-direction:column;height:100vh;height:100dvh;overflow:hidden}
+#famkopf{flex:none}
+/* Kopf/Spaltenkopf = Panel-Ton auf dem Canvas (Dashboard-Look: Panels auf --bg). Der Tabellenkopf
+   (th) trägt denselben --panel + sitzt bündig unter #headfix -> Kopf + Spaltenkopf sind EINE Fläche,
+   Trennlinie unter den Spaltenköpfen (th-box-shadow). #scrollarea = Canvas --bg. */
+body #famkopf{background:var(--panel)}
+#headfix{flex:none;padding:14px 22px 4px;background:var(--panel)}
+/* VOLLBREITE Tabelle (JB 22.07.: 'Ueberhang auf beiden Seiten'): der Scroll-Bereich hat KEIN
+   Seiten-Polster mehr - Zeilen, Trennlinien und die ⚠-Spalte laufen bis an die Kanten. Der
+   Randabstand steckt als --gutter in der ERSTEN/LETZTEN Zelle (und als margin bei dudarch/
+   welcome/tiles). */
+#scrollarea{--gutter:22px;flex:1;min-height:0;overflow:auto;padding:0 0 20px;background:var(--bg);
+  scrollbar-width:thin;scrollbar-color:var(--line) var(--bg)}   /* Balken erbt System-Töne (kein schwarzer Streifen) */
+/* WebKit/Chromium: Balken erbt System-Töne (Track = Canvas, Daumen = Rand-Ton) */
+#scrollarea::-webkit-scrollbar{width:10px;height:10px}
+#scrollarea::-webkit-scrollbar-track{background:var(--bg)}
+#scrollarea::-webkit-scrollbar-thumb{background:var(--line);border-radius:6px;border:2px solid var(--bg)}
+#scrollarea::-webkit-scrollbar-thumb:hover{background:var(--muted)}
 h1{font-size:20px;margin:0 0 4px}
 /* 📖-Knopf neben dem Titel: dezent, beim Hover deutlich (JB: Anleitung direkt an der Liste) */
 a.hguide{font-size:15px;text-decoration:none;opacity:.55;vertical-align:2px}
 a.hguide:hover{opacity:1;text-decoration:none}
-.sub{color:#999;font-size:13px;margin-bottom:12px}
+.sub{color:var(--muted);font-size:13px;margin-bottom:12px}
 
 /* --- Suchfeld + Filter-Buttons -------------------------------------------- */
-input{padding:8px 12px;width:230px;border-radius:8px;border:1px solid #444;background:#1e1a17;color:#eee}
-.btn{padding:7px 11px;border-radius:8px;border:1px solid #444;background:#1e1a17;color:#ccc;cursor:pointer;margin-right:5px;font-size:13px}
-.btn.on{background:#d67756;color:#111}                 /* aktiver Filter */
+input{padding:8px 12px;width:230px;border-radius:8px;border:1px solid var(--line);background:var(--panel2);color:var(--text)}
+/* Suchfeld GEDECKELT (JB 22.07.: 'ich habe einen Ultrawide, Suchfeld sollte begrenzt sein'):
+   waechst bis 340 px und stoppt -> auf breiten Schirmen keine Riesen-Suchleiste. Die Funktionen
+   bleiben links, die Optionen (Werkzeuge) rechts (Spacer schiebt sie an den Rand). */
+#q{flex:0 1 340px;width:auto;max-width:340px;min-width:150px}
+.btn{padding:7px 11px;border-radius:8px;border:1px solid var(--line);background:var(--panel2);color:#ccc;cursor:pointer;margin-right:5px;font-size:13px}
+.btn.on{background:var(--akz);color:#111}                 /* aktiver Filter */
 
 /* --- Tabelle + Spalten ---------------------------------------------------- */
-table{border-collapse:collapse;width:100%;font-size:14px;margin-top:12px}
+table{border-collapse:collapse;width:100%;font-size:14px;margin-top:0}  /* JB 22.07.: KEIN margin-top (sonst 2px schwarzer Strich zwischen Kopf und Spaltenkopf, der beim Scrollen verschwand) */
 /* Zell-Abstand FLIESSEND mit der Fensterbreite (JB 09.07.2026: 'fliessender Uebergang,
    kein ploetzliches Zusammenraufen'): clamp statt fester 10px. */
-th,td{padding:7px clamp(3px,.8vw,10px);border-bottom:1px solid #2a2522;text-align:left}
-th{cursor:pointer;color:#d67756;position:sticky;top:0;background:#14110f}   /* Kopf bleibt beim Scrollen */
+th,td{padding:7px clamp(3px,.8vw,10px);border-bottom:1px solid var(--line2);text-align:left}
+/* nowrap: Spalten-Ueberschriften brechen NIE um (JB 20.07.: 'KEIN ZEILENUMBRUCH!') */
+/* box-shadow als Unterlinie statt border-bottom: bei position:sticky + border-collapse rendert der
+   collapste Rahmen des Kopfes NICHT mit (Chrome-Fehler) -> die erste Zeile verlor ihre Trennlinie
+   und klebte optisch am Kopf ('keine Luft', wirkte dünner). Der Schatten klebt am sticky-Kopf. */
+th{cursor:pointer;color:var(--akz);position:sticky;top:0;background:var(--panel);white-space:nowrap;box-shadow:inset 0 -1px 0 var(--line2)}
+/* Randabstand in der ERSTEN/LETZTEN Spalte (statt Scroll-Polster): so laufen Kopfband, Zeilen
+   und Trennlinien komplett von Kante zu Kante - kein Ueberhang, nichts 'fliegt drueber'. */
+th:first-child,td:first-child{padding-left:var(--gutter,22px)}
+th:last-child,td:last-child{padding-right:var(--gutter,22px)}
 /* Schmale Spalten ruecken an ihren Inhalt (width:1%), der Ueberschuss sammelt sich in der
    Aktion-Spalte (td.act width:100%) — schliesst die grossen Luecken Titel<->Favorit und
    Quelle<->Bewertung bei JEDER Fensterbreite (JB 09.07.2026). */
+/* Schmale Spalten (Inhalt = eine Zeile). Breit bleiben nur Serie (1) und Aktion (9).
+   Spaltenordnung seit 20.07.2026 Runde 4 (DREI getrennte Kapitel-Spalten, JB 'Spalte, Spalte,
+   Spalte'): 1 Serie · 2 ⭐ · 3 gelesen · 4 übersetzt · 5 gesamt · 6 Zuletzt · 7 Quelle ·
+   8 Bewertung · 9 Aktion · 10 ⚠ . */
 #t th:nth-child(2),#t td:nth-child(2),#t th:nth-child(3),#t td:nth-child(3),
 #t th:nth-child(4),#t td:nth-child(4),#t th:nth-child(5),#t td:nth-child(5),
 #t th:nth-child(6),#t td:nth-child(6),#t th:nth-child(7),#t td:nth-child(7),
 #t th:nth-child(8),#t td:nth-child(8),#t th:nth-child(10),#t td:nth-child(10){width:1%}
-.hs{display:none}                    /* Mobile-Kurz-Header (gel./neu, ★) — nur im Mobile-Block an */
-td.c{text-align:center;font-weight:600;white-space:nowrap}   /* Kapitel gelesen/neu */
+.hs{display:none}                    /* Mobile-Kurz-Header (gel./üb./ges., ★) — nur im Mobile-Block an */
+/* Die drei Kapitel-Spalten DICHT beieinander (JB Runde 4): schmales Seitenpadding, gelesen
+   rechtsbündig / übersetzt zentriert / gesamt linksbündig -> "9  36  343" liest sich als Gruppe. */
+/* Die drei Zahlen NAH beieinander (JB 21.07.): minimales Seitenpadding; gelesen rechtsbündig /
+   ü zentriert (schmal) / gesamt linksbündig -> "987 1188 1188" liest sich als eng gruppiert. */
+td.rd,td.tl,td.tot,th.hgel,th.htl,th.hges{padding-left:3px;padding-right:3px;white-space:nowrap;font-weight:600}
+td.rd,th.hgel{text-align:right}
+td.tl,th.htl{text-align:center;color:#c9a35c;cursor:help}  /* übersetzt = online lesbar */
+td.tot,th.hges{text-align:left;color:#9a8f82;font-weight:500}  /* Gesamtwerk dezent */
+/* Abgeschlossenes Werk: die 'abgeschlossen'-Gesamtzahl violett statt grau/gold (JB 22.07.:
+   'neue Farbe fuer abgeschlossen, nicht grau'). Eigener Farbton, klar von allen anderen getrennt. */
+td.tl.done,td.tot.done{color:#b18fd8;font-weight:600}
+/* Trenner '/' zwischen den drei Kapitel-Spalten (JB 22.07.: 'mit / lieber'). Dezenter Schrägstrich
+   per ::before. WICHTIG: :not(:empty) -> bei leerer ü.-/gesamt-Zelle (abgeschlossene Serie) KEIN
+   Schrägstrich -> nie '987 / / 1188', sondern sauber '987 / 1188'. Kopfzeilen immer mit '/'. */
+th.htl::before,th.hges::before,td.tl:not(:empty)::before,td.tot:not(:empty)::before{content:"/";color:#6a5f57;font-weight:400;padding-right:3px}
+td.tl.unk{color:#6c6259;cursor:default}                       /* kein Übersetzungs-Stand bekannt */
 td.d{color:#aaa;white-space:nowrap}                          /* Zuletzt */
 td.src{white-space:nowrap}                                   /* Quelle haelt eine Zeile */
-td.pub{color:#9ab;font-size:12px;white-space:nowrap}         /* Publikations-Status */
 
-/* --- User-Fortschritt (Status-Spalte) + ⚠-Melde-Pille --------------------- */
-/* nowrap: beim Filtern passt die Tabelle die Spaltenbreiten dem sichtbaren Inhalt an — ohne
-   nowrap brach "Lese gerade" dann mitten im Wort um (JB-Fund beim Lese-gerade-/Neu-Filter). */
-.st{font-size:12px;white-space:nowrap}
-.st.r{color:#6fcf7f}     /* Lese gerade */
-.st.u{color:#e6c34a}     /* Pausiert (bis ~3 Monate) */
-.st.ulong{color:#c56b4a;font-weight:600}   /* laenger als ~3 Monate pausiert -> deutlicher */
-.st.f{color:#7f93a3}     /* Aufgeholt (alles Verfuegbare gelesen, wartet auf Neues - blaugrau, "ruhend") */
-.st.fin{color:#3a9d8f;font-weight:600}   /* Fertig */
+/* GLOBALE Fortschritts-Farben (.rc) -> gelten fuer die GELESEN-Spalte (td.rd.rc) in der Liste UND
+   fuer die Kacheln (buildTiles nutzt dieselbe Klasse). nowrap: beim Filtern schrumpft die Spalte
+   sonst und die Zahl bräche um (JB-Fund). */
+.rc{white-space:nowrap}
+.rc.r{color:#6fcf7f}     /* Lese gerade (grün) */
+.rc.u{color:#e6c34a}     /* Pausiert (gelb, bis ~3 Monate) */
+.rc.ulong{color:#c56b4a}   /* laenger als ~3 Monate pausiert -> deutlicher */
+.rc.f{color:#7f93a3}     /* Aufgeholt (alles Verfuegbare gelesen, wartet auf Neues - blaugrau) */
+.rc.fin{color:#3a9d8f}   /* Fertig (türkis) */
+/* Farb-Legende in der Steuerleiste (JB 22.07.): jedes Wort trägt SEINE Farbe -> selbsterklärend,
+   kein Kästchen. gelesen nutzt die .rc-Farben; ü.=gold, gesamt läuft=grau / abgeschlossen=violett. */
+/* Legende in DREI Zeilen uebereinander (je Kapitel-Spalte eine) - schmaler Block statt langer
+   Zeile, damit die Steuerleiste NICHT umbricht (JB 22.07.). Spaltennamen als ausgerichtete
+   linke Spalte, damit die Farbwoerter buendig starten. */
+/* EMBEDDED in die obere Kopfzeile (JB 22.07.: 'Legende weiter nach oben, embedded, nichts
+   anderes bewegen, dadurch schlanker'): fix in die freie Zone der Kopfleiste gesetzt (rechts vom
+   Statustext, links neben der angepinnten Box). position:fixed = AUSSER Fluss -> schiebt nichts,
+   und die .panels-Reihe verliert ihre Höhe -> Kopf wird schlanker. Rechts-Abstand hält die
+   angepinnte Box (fixed, ~110 px breit) frei. */
+.collegend{position:fixed;top:1px;right:150px;z-index:40;display:flex;flex-direction:column;gap:0;font-size:10px;line-height:1.3;opacity:.92;cursor:default}
+.lgrow{display:flex;align-items:center;gap:5px;white-space:nowrap}
+.collegend b{flex:none;min-width:52px;font-weight:700;opacity:.5;font-size:9px;text-transform:uppercase;letter-spacing:.03em}
+.collegend .rc,.collegend .lgt,.collegend .lgg,.collegend .lgd{font-weight:600}
+.lgt{color:#c9a35c}.lgg{color:#9a8f82}.lgd{color:#b18fd8}
+body.light .lgt{color:#96691c}body.light .lgg{color:#8a8072}body.light .lgd{color:#7a5aa8}
+@media(max-width:1300px){.collegend{display:none}}   /* schmal: Statustext+Legende+Pin würden kollidieren -> Spalten-Tooltips erklären */
 .finb{font-size:.85em}                    /* 🏁-Badge */
 .pill.rep{opacity:.55;cursor:pointer;padding:2px 7px;margin-left:4px}   /* "Link kaputt" melden */
 .pill.rep:hover{opacity:1;border-color:#c9952b}
 .pill.rep.on{opacity:1;color:#e6c34a;border-color:#c9952b}
-.nw{white-space:nowrap}
 td.repcell{text-align:center;width:1%;white-space:nowrap;padding-left:0}
 
 /* --- Statistik-/Empfehlungs-Akkordeon ------------------------------------- */
@@ -68,29 +155,39 @@ details.stats[open]>summary{opacity:.6}
    überdecken (JB: 'springt über alles / sehe nicht alle Titel'). */
 .statgrid{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
 details.stats[open]>.pdrop{position:absolute;top:100%;left:0;z-index:60;margin-top:4px;
-padding:8px 10px;background:#1e1a17;border:1px solid #2a2522;border-radius:9px;
+padding:8px 10px;background:var(--panel2);border:1px solid var(--line2);border-radius:9px;
 box-shadow:0 6px 18px rgba(0,0,0,.5);width:max-content;max-width:min(94vw,760px);
 max-height:min(70vh,460px);overflow:auto}
 .pdrop>.statgrid{margin-top:0}
-.stile{background:#1e1a17;border:1px solid #2a2522;border-radius:8px;padding:6px 11px;font-size:13px}
+.stile{background:var(--panel2);border:1px solid var(--line2);border-radius:8px;padding:6px 11px;font-size:13px}
 /* Empfehlungs-Kacheln sind LINKS (extern, AniList) -> wie Kacheln aussehen, beim Hover aufleuchten */
 a.stile{color:inherit;text-decoration:none;display:inline-block}
 a.stile:hover{border-color:#e0956a;color:#e0b56a}
 a{color:#e58;text-decoration:none}
 a:hover{text-decoration:underline}
-tr:hover{background:#1c1815}
+tr:hover{background:var(--raise)}  /* heller als die Datenflaeche #1c1814 (JB 22.07.: Hover muss auf dem Panel-Ton noch sichtbar sein) */
 
-/* --- +Alt-Akkordeon (inline; offen -> Summary blasser) -------------------- */
+/* --- +Alt = schwebendes Panel (JB 20.07.2026: 'wie +Spalten, im Rahmen, nichts verdecken'):
+   der Knopf (summary) bleibt inline in der Aktions-Zelle, die Links liegen in .altm und werden
+   beim Oeffnen per JS (positionAltm) als position:fixed unter den Knopf gesetzt + in den Viewport
+   geklemmt. So bleibt die Aktions-Zelle EINZEILIG (der Inhalt fliesst nicht mehr in die Zelle). */
 details.alt{display:inline}
 details.alt>summary{display:inline;list-style:none;cursor:pointer}
 details.alt[open]>summary{opacity:.6}
+.alt .altm{display:none}
+/* visibility:hidden bis positionAltm (nach dem async toggle-Event) top/left gesetzt hat -> KEIN
+   Aufblitzen an der falschen Stelle. Gemessen wird trotzdem korrekt (hidden hat Layout). */
+.alt[open] .altm{display:flex;flex-direction:column;gap:4px;position:fixed;z-index:70;visibility:hidden;
+ min-width:150px;max-width:min(300px,92vw);max-height:60vh;overflow:auto;padding:8px;
+ border-radius:10px;background:#1b1713;border:1px solid var(--line);box-shadow:0 6px 18px rgba(0,0,0,.55)}
+body.light .alt[open] .altm{background:var(--panel);border-color:var(--line);box-shadow:0 6px 18px rgba(0,0,0,.18)}
 
 /* --- Pills (Aktion/DB/+Alt/Site) ------------------------------------------ */
-.pill{display:inline-block;padding:2px 9px;margin:1px 3px;border-radius:999px;font-size:12px;line-height:1.7;border:1px solid #3a332e;background:#221d19;color:#d7c7bd}
+.pill{display:inline-block;padding:2px 9px;margin:1px 3px;border-radius:999px;font-size:12px;line-height:1.7;border:1px solid var(--line);background:var(--panel2);color:#d7c7bd}
 .pill:hover{background:#2f2823;text-decoration:none}
 /* öffnen/weiterlesen (primaer). Feste Mindestbreite -> "suchen"/+Alt beginnen in ALLEN Zeilen an
    derselben Stelle (JB: Aktionen spaltensynchron, "öffnen" ist sonst schmaler als "weiterlesen"). */
-.pill.go{background:#d67756;color:#1a1310;border-color:#d67756;font-weight:600;min-width:104px;text-align:center}
+.pill.go{background:var(--akz);color:#1a1310;border-color:var(--akz);font-weight:600;min-width:104px;text-align:center}
 .pill.go:hover{background:#e6906f}
 .pill.md{color:#7db3ff;border-color:#34506e}     /* Baka/AL-DB-Link */
 .pill.alt{color:#e0b56a;border-color:#5a4a2f}    /* +Alt-Menue */
@@ -101,15 +198,37 @@ details.alt[open]>summary{opacity:.6}
    Ursache war line-height 2.2: sobald die Aktions-Pills umbrachen, war jede Umbruch-Zeile
    ~2.2em hoch -> 107px-Zeilen. Flexbox mit kleinem gap laesst sie kompakt umbrechen; ab
    <=1200px werden die Pills Icon-only (wie MangaDex/AniList auf schmal) -> ~50px-Zeilen. */
-td.act{display:flex;flex-wrap:wrap;justify-content:flex-start;align-items:center;
-       gap:4px;width:100%}      /* nimmt den freien Platz -> Serie/Autor schrumpft auf Inhalt */
-td.act .pill{margin:0}          /* Abstaende kommen aus gap, nicht aus pill-margin */
+/* EINZEILIG (JB 20.07.2026: 'Aktion in einer Zeile, keine Umbrueche'): nowrap statt wrap. Moeglich,
+   seit +Alt ein schwebendes Panel ist (fliesst nicht mehr in die Zelle) und die Labels ab <=1200px
+   ausgeblendet werden (Icon-only). Die Zelle ist width:100% und schluckt den freien Platz. */
+/* Die Aktions-Pills liegen in einem inneren Flex-Streifen (.actrow), NICHT direkt im td.
+   Grund (JB 22.07.): display:flex auf dem <td> nimmt die Zelle aus dem Tabellen-Layout ->
+   sie fuellt die Zeilenhoehe NICHT und sitzt oben -> die Pills klebten am Kopf/oben ('fehlende
+   Distanz'). Als normale Zelle (vertical-align:middle) zentriert das td den .actrow-Streifen. */
+td.act{width:100%;vertical-align:middle}   /* nimmt den freien Platz -> Serie/Autor schrumpft auf Inhalt */
+.actrow{display:flex;flex-wrap:nowrap;justify-content:flex-start;align-items:center;gap:4px}
+td.act .pill{margin:0;white-space:nowrap}   /* Abstaende aus gap; Label NIE umbrechen (sonst 2-zeilige, dicke Zeile) */
+/* +Alt sitzt DIREKT bei den anderen Pills (JB 21.07.: 'kein Abstand zu Aktion' — das frühere
+   margin-left:auto schob es an den rechten Rand = grosser Spalt). Aligned über die Zeilen bleibt
+   es durch feste Slot-Breiten: der Primaerlink (.pill.go min-width) + ein IMMER vorhandener
+   Baka-Slot (.dbslot, unsichtbar wenn kein DB-Treffer) -> +Alt startet zeilengleich, ohne Spalt. */
 .pill.alt{white-space:nowrap}   /* '＋ Alt' nie intern umbrechen (JB: 'kaputte +alt-Sortierung') */
+td.act .dbslot{display:inline-flex;min-width:44px;justify-content:center}   /* Baka-Platz reservieren */
+/* DESKTOP (>1200px, Labels sichtbar): der Primaerlink bekommt eine FESTE Breite, damit ALLE
+   Status-Pills (weiterlesen/anfangen/beendet) exakt gleich breit sind. Sonst schiebt das
+   laengere 'weiterlesen' suchen/Baka/+Alt nach rechts — DAS ist JBs wiederkehrender
+   'Zeilenumglitch' (schrift-/zoom-/DPI-abhaengig; mit reinem min-width NICHT zuverlaessig weg,
+   da 'weiterlesen' den Boden je nach Schrift ueberschreitet). border-box haelt das Aussenmass
+   fest; das Innenmass (~112px) fasst die laengste Beschriftung ohne Abschneiden (12-15px geprueft). */
+@media(min-width:1201px){td.act .actrow>a.pill.go{width:132px;box-sizing:border-box;min-width:0}}
 /* Schmales Fenster (Zwischenbereich Desktop->Handy): Aktionen NUR Symbole, damit sie in EINE
    Zeile passen; die Labels kommen ab >1200px zurueck. Baka (DB-Link) bleibt sichtbar. */
 @media(max-width:1200px){
   td.act .pill .pl{display:none}
-  td.act .pill.go{min-width:0}
+  /* Nur-Symbol-Modus: KEIN min-width:0 (die Status-Symbole ↪/▶/🏁 sind unterschiedlich breit,
+     das schob 'beendet'-Zeilen um ~6px nach rechts — JBs 'Problem mit den Zeilen', 21.07.2026).
+     Feste Slot-Breite -> alle Primaerlinks gleich breit -> suchen/Baka/+Alt zeilengleich. */
+  td.act .pill.go{min-width:40px}
 }
 td.rt{text-align:center;font-weight:700;color:#e6c34a;white-space:nowrap}
 select.btn{padding:7px 8px;width:auto}
@@ -124,7 +243,7 @@ select.btn{padding:7px 8px;width:auto}
 body.au-hide .au{display:none}   /* ＋Spalten > Autor abgewaehlt (Desktop; mobil ist aus Default) */
 body.au-hide .shau{display:none} /* Kopfzeile folgt: ohne Autor nur noch 'Serie ↕' */
 .unk{color:#7a6f66;font-style:italic}    /* unbekannt / braucht Hilfe */
-.med{display:inline-block;font-size:10px;padding:1px 6px;border-radius:999px;border:1px solid #3a332e;background:#221d19;color:#c2a88f;vertical-align:1px}   /* Typ-Badge (Manga/Manhwa/…) */
+.med{display:inline-block;font-size:10px;padding:1px 6px;border-radius:999px;border:1px solid var(--line);background:var(--panel2);color:#c2a88f;vertical-align:1px}   /* Typ-Badge (Manga/Manhwa/…) */
 .adult,.adult-v{display:inline-block;font-size:10px;font-weight:700;padding:1px 6px;border-radius:999px;vertical-align:1px}
 .adult{border:1px solid #8a2f6f;background:#3a1c2e;color:#f08ad0}     /* 18+ sexuell (pink) */
 .adult-v{border:1px solid #7a5226;background:#3a2a18;color:#e0a86a}   /* 18+ Gewalt/Gore */
@@ -146,51 +265,65 @@ body.archmode tr:hover{background:#23201c}
 .spacer{flex:1}       /* schiebt die Werkzeuge (Desktop) nach rechts */
 .tools{display:contents}   /* Desktop: Werkzeug-Knoepfe fliessen normal in die Leiste (unsichtbarer Wrapper) */
 #gear{display:none}   /* Zahnrad NUR mobil (Media-Query blendet es ein); Desktop zeigt alle Werkzeuge */
-.wrap{overflow-x:auto}
+/* .wrap NICHT mehr selbst scrollen (sonst wird es zum sticky-Container und der Tabellenkopf
+   klebt an .wrap statt an #scrollarea) — das horizontale Scrollen uebernimmt #scrollarea. */
+.wrap{overflow:visible}
 
 /* --- Archiv-Knoepfe schweben oben rechts, AUSKLAPPBAR (JB 09.07.2026) ------ */
 /* <details class=pinbox>: Summary = kleiner 🗃⭐-Griff, offen = 2x2-Raster (gleiche Breiten).
    Desktop startet offen (open-Attribut), Mobile zu (Mini-Script im HTML). Fixed = folgt dem
    Scrollen; die Ampel links bleibt im Fluss und scrollt normal weg. */
-.pinbox{position:fixed;top:12px;right:12px;z-index:50;text-align:right}
+.pinbox{position:fixed;top:7px;right:12px;z-index:50;text-align:right}   /* JB 22.07.: Archiv/Fav etwas weiter nach oben */
 .pinbox>summary{list-style:none;display:inline-block;cursor:pointer}
 .pinbox>summary::-webkit-details-marker{display:none}
 .pinbox .pbc{display:inline-block;transition:transform .15s}
 details.pinbox[open] .pbc{transform:rotate(180deg)}
-.pinbox .pbody{display:grid;grid-template-columns:repeat(2,minmax(112px,1fr));gap:6px;margin-top:6px}
+/* Anzahl-Badges am EINGEKLAPPTEN Griff (JB 20.07.2026: 'Anzahl beim eingeklappten Symbol'):
+   🗃 N ⭐ N. Offen sind sie ueberfluessig (die Knoepfe darunter zeigen sie) -> ausgeblendet. */
+.pinbox .pbn{font-size:12px;font-weight:700;color:#e0b56a;margin:0 1px}
+details.pinbox[open] .pbn{display:none}
+/* Aufgeklappt = SOLIDES Panel (JB 22.07.: 'wie im Bild', nicht durchsichtig): eigener dunkler
+   Hintergrund + Rahmen, damit die Knöpfe nicht über den Kopf durchscheinen. */
+.pinbox .pbody{display:grid;grid-template-columns:repeat(2,minmax(112px,1fr));gap:6px;margin-top:6px;
+  background:#1b1714;border:1px solid var(--line2);border-radius:10px;padding:8px;box-shadow:0 8px 20px rgba(0,0,0,.55)}
+body.light .pinbox .pbody{background:var(--panel);border-color:var(--line)}
 .pinbox .btn{width:100%;box-shadow:0 2px 8px rgba(0,0,0,.4)}
 .pinbox>summary.btn{width:auto;margin-right:0}
 /* Titel/Untertitel rechts freihalten, damit die angepinnte Box sie nicht verdeckt. Die Ampel (.statusrow)
    steht darunter (nicht auf Box-Hoehe) und bleibt so ohnehin frei + voll lesbar. */
-h1,.sub{padding-right:275px}
+h1,#headfix>.sub{padding-right:275px}   /* Reserve nur für die Fallback-Sub-Zeile; die .famsub im Kopf NICHT (sonst großer Leer-Spalt) */
 
 /* Mobile-Regeln stehen GANZ UNTEN in dieser Datei (muessen die Basis-Regeln ueberstimmen —
    gleiche Spezifitaet gewinnt nach Reihenfolge; Lehre vom 08.07.2026: der Block stand hier
    VOR .statusbar & Co. und blieb dadurch teilweise wirkungslos). */
 
 /* --- Tag-Modus (JB): manueller ☀/🌙-Schalter (list.js applyTheme; ohne gespeicherte Wahl
-       zaehlt die OS-Einstellung). KEIN grelles Weiss: warmes Creme (#f3ecdc), alle Flaechen/
+       zaehlt die OS-Einstellung). KEIN grelles Weiss: warmes Creme (var(--bg)), alle Flaechen/
        Kontraste angepasst — VOLLSTAENDIG (auch Kacheln/Chips/Menues/Willkommen), sonst bleiben
        dunkle Inseln mit dunkler Schrift zurueck. Dunkel bleibt Default. ------------------- */
-body.light{background:#f3ecdc;color:#26201a}
+body.light{background:var(--bg);color:var(--text)}
 body.light .sub{color:#6f6557}
-body.light input{background:#fbf6ea;color:#26201a;border-color:#cfc2ab}
-body.light .btn{background:#fbf6ea;color:#4a4033;border-color:#cfc2ab}
-body.light .btn.on{background:#d67756;color:#fff}
-body.light th,body.light td{border-bottom-color:#e2d7c1}
-body.light th{color:#b85e3e;background:#f3ecdc}
+body.light input{background:var(--panel);color:var(--text);border-color:var(--line)}
+body.light .btn{background:var(--panel);color:var(--text);border-color:var(--line)}
+body.light .btn.on{background:var(--akz);color:#fff}
+body.light th,body.light td{border-bottom-color:var(--line2)}
+body.light th{color:#b85e3e;background:var(--panel);box-shadow:inset 0 -1px 0 var(--line2)}
 body.light td.d{color:#7a7064}
-body.light td.pub{color:#5b6b78}
-body.light .st.r{color:#2e9e4f}
-body.light .st.u{color:#a8821a}
-body.light .st.ulong{color:#b04a2a}
-body.light .st.f{color:#5f7585}
-body.light .st.fin{color:#2a7a6f}
+body.light td.tl{color:#96691c}
+body.light td.tot{color:#8a8072}
+body.light td.tl.done,body.light td.tot.done{color:#7a5aa8}  /* abgeschlossen violett (hell) */
+body.light td.tl.unk{color:#a89e90}
+body.light th.htl::before,body.light th.hges::before,body.light td.tl:not(:empty)::before,body.light td.tot:not(:empty)::before{color:#b3a892}  /* '/'-Trenner hell */
+body.light .rc.r{color:#2e9e4f}
+body.light .rc.u{color:#a8821a}
+body.light .rc.ulong{color:#b04a2a}
+body.light .rc.f{color:#5f7585}
+body.light .rc.fin{color:#2a7a6f}
 body.light a{color:#b1486d}
-body.light tr:hover{background:#ebe1cc}
-body.light .pill{background:#ece2cc;border-color:#d6c9ae;color:#57493c}
-body.light .pill:hover{background:#e4d8bf}
-body.light .pill.go{background:#d67756;color:#fff;border-color:#d67756}
+body.light tr:hover{background:var(--raise)}
+body.light .pill{background:var(--panel2);border-color:var(--line);color:var(--text)}
+body.light .pill:hover{background:var(--raise)}
+body.light .pill.go{background:var(--akz);color:#fff;border-color:var(--akz)}
 body.light .pill.go:hover{background:#c96543}
 body.light .pill.md{color:#3a6fae;border-color:#9bb6d6}
 body.light .pill.alt{color:#96691c;border-color:#cbb27a}
@@ -201,70 +334,95 @@ body.light .unk{color:#8a7f76}
 body.light .sh{color:#b06a3f}
 body.light .arch{color:#a07a5a}
 body.light .unarch{color:#2e9e4f}
-body.light.archmode tr:hover{background:#e7dcc4}
+body.light.archmode tr:hover{background:var(--raise)}
 /* Kacheln, Chips, Menues, Boxen — die im alten Auto-Theme vergessenen Flaechen */
-body.light .stile{background:#fbf6ea;border-color:#ddd0b6}
+body.light .stile{background:var(--panel);border-color:var(--line)}
 body.light a.stile:hover{border-color:#c47a4e;color:#8a5a1f}
-body.light .med{background:#efe5cf;border-color:#d6c9ae;color:#7a5f3f}
-body.light .gchip{background:#efe5cf;border-color:#d6c9ae;color:#57493c}
-body.light .gchip.on{background:#d67756;color:#fff;border-color:#d67756}
-body.light .xpanel{background:#fbf6ea;border-color:#ddd0b6;box-shadow:0 4px 14px rgba(120,95,60,.28)}
-body.light .xpanel label{color:#57493c}
-body.light .colbxs{background:#fbf6ea;border-color:#ddd0b6}
-body.light .colbox{color:#57493c}
-body.light .welcome{background:#fbf6ea;border-color:#ddd0b6;color:#5f5347}
+body.light .med{background:var(--panel2);border-color:var(--line);color:#7a5f3f}
+body.light .gchip{background:var(--panel2);border-color:var(--line);color:var(--text)}
+body.light .gchip.on{background:var(--akz);color:#fff;border-color:var(--akz)}
+body.light .xpanel{background:var(--panel);border-color:var(--line);box-shadow:0 4px 14px rgba(120,95,60,.28)}
+body.light .xpanel label{color:var(--text)}
+body.light .colbxs{background:var(--panel);border-color:var(--line)}
+body.light .colbox{color:var(--text)}
+body.light .welcome{background:var(--panel);border-color:var(--line);color:var(--muted)}
 body.light tr.fav{background:#efe3c8}
 body.light tr.fav:hover{background:#eadcbc}
 body.light tr.lucky td{background:#f0dfb5}
-body.light .rlegend{border-left-color:#ddd0b6}
+body.light .rlegend{border-left-color:var(--line)}
 body.light .pinbox .btn{box-shadow:0 2px 8px rgba(120,95,60,.3)}
 body.light .adult{border-color:#c26aa5;background:#f6dfee;color:#a02c78}
 body.light .adult-v{border-color:#b07a3a;background:#f4e6d2;color:#8a5a1f}
 body.light .cfm.on{color:#2e9e4f}
 /* Flaggen-Emojis (🇯🇵 = weisse Flaeche) brauchen auf Creme einen dunklen Rahmen (JB) */
-body.light .fl{border:1px solid #26201a;border-radius:3px;padding:0 1px;line-height:1.1;display:inline-block}
-body.light .tile img,body.light .tile .noimg{background:#efe5cf;border-color:#ddd0b6}
-body.light .tname{color:#4a4033}
-body.light #covfly{background:#fbf6ea;border-color:#ddd0b6;box-shadow:0 6px 20px rgba(120,95,60,.4)}
-body.light #covfly img{background:#efe5cf}
-body.light #syncbar{background:#fbf6ea;border-color:#ddd0b6;color:#57493c;box-shadow:0 2px 8px rgba(120,95,60,.3)}
-body.light #syncbar .track{background:#e4d8bf}
+body.light .fl{border:1px solid var(--text);border-radius:3px;padding:0 1px;line-height:1.1;display:inline-block}
+body.light .tile img,body.light .tile .noimg{background:var(--panel2);border-color:var(--line)}
+body.light .tname{color:var(--text)}
+body.light #covfly{background:var(--panel);border-color:var(--line);box-shadow:0 6px 20px rgba(120,95,60,.4)}
+body.light #covfly img{background:var(--panel2)}
+body.light #syncbar{background:var(--panel);border-color:var(--line);color:var(--text);box-shadow:0 2px 8px rgba(120,95,60,.3)}
+body.light #syncbar .track{background:var(--raise)}
 body.light details.xguide>summary,body.light .xhelp{color:#6f6557}
 body.light details.xguide>summary:hover{color:#96691c}
 body.light .xhelp a{color:#96691c}
-body.light .xhelp code{background:#efe5cf}
+body.light .xhelp code{background:var(--panel2)}
 
 /* --- Genre-Chips (Mehrfach-Filter mit Live-Counts + Ausgrauen) ------------ */
-.gchip{display:inline-block;cursor:pointer;margin:2px;padding:2px 9px;border-radius:999px;font-size:12px;border:1px solid #3a332e;background:#221d19;color:#d7c7bd}
+.gchip{display:inline-block;cursor:pointer;margin:2px;padding:2px 9px;border-radius:999px;font-size:12px;border:1px solid var(--line);background:var(--panel2);color:#d7c7bd}
 .gchip i{opacity:.55;font-style:normal}                /* Live-Count je Genre */
-.gchip.on{background:#d67756;color:#1a1310;border-color:#d67756;font-weight:600}
+.gchip.on{background:var(--akz);color:#1a1310;border-color:var(--akz);font-weight:600}
 .gchip.off{opacity:.3;pointer-events:none}             /* 0 Treffer -> ausgegraut */
 .gchips{max-width:700px;margin:6px 0 2px}
+/* Filter-Popup (JB 22.07.: Typ+Genre+18+ in EINEM Menue -> Steuerleiste bricht auch schmal
+   nicht mehr um). Gleiches Dropdown-Muster wie die Panels; die drei Controls behalten ihre
+   IDs (cf/gf/nf) -> das JS bleibt unveraendert. */
+details.fpop{display:inline-block;position:relative}
+details.fpop>summary{display:inline-block;list-style:none;cursor:pointer}
+details.fpop>summary::-webkit-details-marker{display:none}
+details.fpop[open]>.fpanel{position:absolute;top:100%;left:0;z-index:70;margin-top:4px;
+  display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:8px 10px;background:var(--panel2);
+  border:1px solid var(--line);border-radius:9px;box-shadow:0 6px 18px rgba(0,0,0,.5);
+  width:max-content;max-width:min(92vw,720px)}
 details.genres{display:inline-block;position:relative}
 details.genres>summary{display:inline-block;list-style:none}
 /* Genre-Filter klappt als DROPDOWN auf (JB 05.07.2026): nach unten/rechts, die Filterzeile
    bewegt sich NICHT; Klick woanders schliesst (JS). */
 details.genres[open]>.gchips{position:absolute;top:100%;left:0;z-index:60;margin:4px 0 0;
-padding:8px 10px;background:#1e1a17;border:1px solid #2a2522;border-radius:9px;
+padding:8px 10px;background:var(--panel2);border:1px solid var(--line2);border-radius:9px;
 box-shadow:0 6px 18px rgba(0,0,0,.5);width:max-content;max-width:min(92vw,700px)}
 /* Panels (Statistik/Empfehlungen/Spalten/Pausen) unausgeklappt DIREKT nebeneinander (JB: enger Abstand) */
-.panels{display:flex;flex-wrap:wrap;gap:4px 8px;align-items:flex-start}
+.panels{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:flex-start}   /* JB 22.07.: 1-2px mehr Luft zwischen den Funktionen */
 /* Aufgeklappt = DROPDOWN unter dem Button (JB 05.07.2026): die Button-Reihe bleibt stehen,
    kein Zeilenumbruch der Buttons; nur EIN Panel offen (JS-Akkordeon). */
 .panels>details{position:relative}
-.panels>details[open]>.colbxs{position:absolute;top:100%;left:0;z-index:60;margin-top:4px}
+.panels>details[open]>.colbxs,.panels>details.quellen[open]>.qpanel{position:absolute;top:100%;left:0;z-index:60;margin-top:4px}
 
 /* --- Quellen-/Reader-Ampel (statusbar rechts eine gemeinsame Legende) ------ */
 /* Ampel: die ZEILEN (Chips) enden vor der angepinnten Box; die LEGENDE sitzt rechts UNTER der
    Favorit-Box, mit etwas Abstand nach oben (JB-Wunsch, Runde 3). */
-.statusbar{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;font-size:12px;opacity:.9;margin:14px 0 12px}
-.statusrows{flex:1}
 .statusrow{line-height:1.85;padding-right:255px}
 .rlegend{margin-top:8px}
 .srcchip{margin-right:10px;white-space:nowrap}
 a.srcchip{color:inherit;text-decoration:none;cursor:pointer}   /* klickbare Quelle/Lese-Seite */
 a.srcchip:hover{text-decoration:underline}
-.rlegend{display:flex;flex-direction:column;gap:3px;font-size:11px;opacity:.75;white-space:nowrap;text-align:left;border-left:1px solid #2a2522;padding-left:14px}
+.rlegend{display:flex;flex-direction:column;gap:3px;font-size:11px;opacity:.75;white-space:nowrap;text-align:left;border-left:1px solid var(--line2);padding-left:14px}
+/* --- 🚦 Quellen als ausklappbares Panel (JB 21.07.2026) ------------------- */
+/* Ausklapp-Fenster wie +Spalten: beide Ampel-Zeilen + Legende darunter. Die alte,
+   immer sichtbare .statusbar ist raus; .statusrow/.rlegend werden hier wiederverwendet. */
+details.quellen{display:inline-block}
+details.quellen>summary{display:inline-block;list-style:none;cursor:pointer}
+details.quellen>summary::-webkit-details-marker{display:none}
+/* Kleines schwebendes Fenster (JB: 'eigene kleine Fenster wie +Spalten'): schmal + bei vielen
+   Chips scrollbar, damit es NIE aus dem Viewport laeuft (Knopf sitzt mitten in der Panel-Reihe). */
+.qpanel{background:var(--panel2);border:1px solid var(--line2);border-radius:9px;padding:9px 12px;
+        width:max-content;max-width:min(88vw,420px);max-height:52vh;overflow:auto;
+        box-shadow:0 6px 18px rgba(0,0,0,.45)}
+.qpanel .statusrow{line-height:2;padding-right:0;font-size:12px}      /* kein 255px-Reserve im Panel */
+.srclabel{font-weight:700;text-decoration:underline;text-underline-offset:2px;margin-right:2px}  /* 'Datenquellen:'/'Lese-Seiten:' hervorheben (JB 21.07.) */
+.qpanel .rlegend{margin-top:9px;padding-top:8px;border-left:0;padding-left:0;border-top:1px solid var(--line2);
+        flex-direction:row;flex-wrap:wrap;gap:6px 14px;white-space:normal}
+body.light .qpanel{background:var(--panel);border-color:var(--line)}
+body.light .qpanel .rlegend{border-top-color:var(--line)}
 
 /* --- ausgegrauter Filter-Button (0 Treffer) ------------------------------- */
 .btn.off{opacity:.35;pointer-events:none}
@@ -284,7 +442,7 @@ tr.fav:hover{background:#2a2016}
 details.xport{display:inline-block;position:relative}
 details.xport>summary{display:inline-block;list-style:none;cursor:pointer}
 /* kompakt: Panel schmiegt sich an den Text (JB), kleine Schrift/Buttons, minimale Abstaende */
-.xpanel{position:absolute;right:0;top:110%;z-index:60;display:flex;flex-direction:column;gap:3px;background:#1e1a17;border:1px solid #2a2522;border-radius:7px;padding:5px 8px;white-space:nowrap;width:max-content;box-shadow:0 4px 14px rgba(0,0,0,.5)}
+.xpanel{position:absolute;right:0;top:110%;z-index:60;display:flex;flex-direction:column;gap:3px;background:var(--panel2);border:1px solid var(--line2);border-radius:7px;padding:5px 8px;white-space:nowrap;width:max-content;box-shadow:0 4px 14px rgba(0,0,0,.5)}
 .xpanel label{font-size:11px;color:#d7c7bd;cursor:pointer;display:inline-flex;align-items:center;gap:3px}
 .xpanel label input{margin:0;width:12px;height:12px}
 .xpanel .btn{font-size:11px;padding:2px 8px;text-align:left}
@@ -294,13 +452,13 @@ details.xguide>summary{list-style:none;cursor:pointer;font-size:11px;color:#b8a9
 details.xguide>summary:hover{color:#e0b56a}
 .xhelp{font-size:11px;line-height:1.55;color:#b8a99c;white-space:normal;width:330px;margin-top:3px}
 .xhelp a{color:#e0b56a}
-.xhelp code{background:#2a2522;padding:0 4px;border-radius:4px}
+.xhelp code{background:var(--line2);padding:0 4px;border-radius:4px}
 /* --- Erster Start ohne Serien: freundlicher Hinweis statt leerer Tabelle (kein Alarm-Gefuehl) --- */
-.welcome{margin:18px 0;padding:22px;text-align:center;color:#c9bdb4;font-size:14px;background:#1e1a17;border:1px solid #2a2522;border-radius:10px}
+.welcome{margin:18px var(--gutter,22px);padding:22px;text-align:center;color:#c9bdb4;font-size:14px;background:var(--panel2);border:1px solid var(--line2);border-radius:10px}
 /* --- Genre-Ausschluss (3. Zustand): rot + durchgestrichen = dieses Genre ausblenden --- */
 .gchip.ex{border-color:#c0392b;color:#c0392b;text-decoration:line-through}
-/* --- Lesestand-Klick: Kapitel-Zelle ist editierbar --- */
-td.c{cursor:pointer}
+/* --- Lesestand-Klick: die GELESEN-Spalte ist editierbar (chapEdit) --- */
+td.rd{cursor:pointer}
 /* --- 🎲 Treffer kurz aufleuchten lassen --- */
 tr.lucky td{background:#3a2a1f;transition:background 2s}
 /* --- Kompakt-Modus (JB): schmalere Zeilen, kleinere Pills --- */
@@ -310,7 +468,7 @@ body.dense .pill.go{min-width:88px}
 #dns.on{background:#e0b56a;color:#1a1310;border-color:#e0b56a}
 /* ☀/☾-Knopf: IMMER gelb (JB), sitzt rechts direkt neben Im-/Export */
 #thm{color:#e6c34a;border-color:#5a4a2f;font-size:14px;min-width:34px}
-body.light #thm{color:#a8821a;border-color:#cbb27a;background:#fbf6ea}
+body.light #thm{color:#a8821a;border-color:#cbb27a;background:var(--panel)}
 /* --- Titel-Bestaetigung: ✔ auf unsicheren Matches (Klick = "Titel stimmt", Wochen-Lauf pinnt fest) --- */
 .cfm{cursor:pointer;opacity:.45;margin-right:3px}
 .cfm:hover{opacity:1}
@@ -319,11 +477,11 @@ body.light #thm{color:#a8821a;border-color:#cbb27a;background:#fbf6ea}
 .favh,td.favcol{width:1%;text-align:center;padding-left:4px;padding-right:4px;white-space:nowrap}
 .favh{cursor:default}
 /* --- Spalten ein/ausblenden: body.hc<n> versteckt die n-te Spalte (Kopf + Zellen) --- */
-body.hc3 #t th:nth-child(3),body.hc3 #t td:nth-child(3),body.hc4 #t th:nth-child(4),body.hc4 #t td:nth-child(4),body.hc5 #t th:nth-child(5),body.hc5 #t td:nth-child(5),body.hc6 #t th:nth-child(6),body.hc6 #t td:nth-child(6),body.hc7 #t th:nth-child(7),body.hc7 #t td:nth-child(7),body.hc8 #t th:nth-child(8),body.hc8 #t td:nth-child(8){display:none}
+body.hc4 #t th:nth-child(4),body.hc4 #t td:nth-child(4),body.hc5 #t th:nth-child(5),body.hc5 #t td:nth-child(5),body.hc6 #t th:nth-child(6),body.hc6 #t td:nth-child(6),body.hc7 #t th:nth-child(7),body.hc7 #t td:nth-child(7),body.hc8 #t th:nth-child(8),body.hc8 #t td:nth-child(8){display:none}
 details.cols{display:inline-block}
 details.cols>summary{display:inline-block;list-style:none}
 /* Spalten-Menue: minimaler Streifen — Kaestchen klebt am Wort (gap 2px), enge Gruppen (JB-Wunsch) */
-.colbxs{display:flex;flex-direction:row;flex-wrap:wrap;gap:1px 8px;margin:4px 0 2px;background:#1e1a17;border:1px solid #2a2522;border-radius:7px;padding:2px 7px;width:fit-content}
+.colbxs{display:flex;flex-direction:row;flex-wrap:wrap;gap:1px 8px;margin:4px 0 2px;background:var(--panel2);border:1px solid var(--line2);border-radius:7px;padding:2px 7px;width:fit-content}
 .colbox{font-size:11px;color:#d7c7bd;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:2px}
 .colbox input{margin:0;width:12px;height:12px}
 /* ⏸-Pausen-Menue (JB Runde 38): viele Reader -> begrenzte Hoehe + Scrollen; Status-Punkt je Seite */
@@ -334,12 +492,12 @@ details.cols>summary{display:inline-block;list-style:none}
 .rgo{text-decoration:none;font-size:13px}
 /* Konsolidierungs-Badge (×n) + Sammelgruppe der Ein-Serien-Domains (aufklappbar) */
 .pbadge{font-size:9px;color:#9a8a80;margin-left:2px}
-.ssg{flex-basis:100%;margin-top:2px;border-top:1px dashed #2a2522;padding-top:2px}
+.ssg{flex-basis:100%;margin-top:2px;border-top:1px dashed var(--line2);padding-top:2px}
 .ssg>summary{list-style:none;cursor:pointer;display:inline-block}
 .ssg>summary::before{content:'▸ ';font-size:10px;color:#9a8a80}
 .ssg[open]>summary::before{content:'▾ '}
 .ssgi{display:flex;flex-wrap:wrap;gap:1px 8px;padding:2px 0 0 14px}
-body.light .ssg{border-top-color:#ddd0b6}
+body.light .ssg{border-top-color:var(--line)}
 /* --- ▦ Kachel-Ansicht (JB): Cover-Grid. Zahl links = dein Stand (User-Status-Farbe),
        Zahl rechts = Gesamt (Verlags-Status-Farbe). Klick aufs Cover = weiterlesen/öffnen. --- */
 #tiles{display:none}
@@ -353,27 +511,27 @@ body.tiles #t tbody{display:none}
 body.tiles #t thead th:nth-child(9){color:transparent}
 /* Trennlinie zwischen Favoriten-Kacheln und dem Rest (JB): volle Grid-Breite */
 .tsep{grid-column:1/-1;border-top:2px solid rgba(214,119,86,.5);margin:4px 0}
-body.tiles #tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px 12px;margin-top:10px}
+body.tiles #tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px 12px;margin:10px var(--gutter,22px) 0}
 /* Dichteres Grid (~50% mehr je Reihe) NUR in Kombination mit dem Kompakt-Modus (JB 09.07.2026:
    'ohne Kompakt-Modus war die vorherige Darstellung besser') */
 body.dense.tiles #tiles{grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:12px 10px}
 .tile a{display:block}
-.tile img,.tile .noimg{width:100%;aspect-ratio:2/3;object-fit:cover;border-radius:9px;background:#221d19;border:1px solid #2a2522}
+.tile img,.tile .noimg{width:100%;aspect-ratio:2/3;object-fit:cover;border-radius:9px;background:var(--panel2);border:1px solid var(--line2)}
 .tile img{display:block}
 .tile .noimg{display:flex;align-items:center;justify-content:center;font-size:36px;opacity:.55}
-.tile a:hover img,.tile a:hover .noimg{border-color:#d67756}
+.tile a:hover img,.tile a:hover .noimg{border-color:var(--akz)}
 .tchap{margin-top:5px;font-size:13px;font-weight:600}
 .tchap .tl{color:#8a7d74}
 .tl.pOn{color:#6fcf7f}.tl.pDone{color:#3a9d8f}.tl.pHia{color:#e6c34a}.tl.pStop{color:#c56b4a}.tl.pSoon{color:#9aa}
 .tname{font-size:12px;color:#d7c7bd;line-height:1.3;margin-top:2px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
 /* --- Empfehlungs-Genre-Chips (JB 10.07.2026): 3 Zustaende aus/an/★Prio, dezent unter dem Hinweis --- */
 .rchips{display:flex;flex-wrap:wrap;gap:4px;margin:0 0 8px}
-.rchip{font-size:11px;padding:2px 8px;border-radius:999px;border:1px solid #3a332e;background:transparent;color:#8a7d74;cursor:pointer;line-height:1.5}
-.rchip:hover{border-color:#d67756;color:#d7c7bd}
-.rchip.on{background:#2a2522;border-color:#d67756;color:#f0e6dd}
+.rchip{font-size:11px;padding:2px 8px;border-radius:999px;border:1px solid var(--line);background:transparent;color:#8a7d74;cursor:pointer;line-height:1.5}
+.rchip:hover{border-color:var(--akz);color:#d7c7bd}
+.rchip.on{background:var(--line2);border-color:var(--akz);color:#f0e6dd}
 .rchip.prio{background:#e0b56a;border-color:#e0b56a;color:#1a1310;font-weight:600}
-body.light .rchip{border-color:#ddd0b6;color:#8a7d74}
-body.light .rchip.on{background:#efe5cf;border-color:#d67756;color:#4a4033}
+body.light .rchip{border-color:var(--line);color:#8a7d74}
+body.light .rchip.on{background:var(--panel2);border-color:var(--akz);color:var(--text)}
 body.light .rchip.prio{background:#e0b56a;border-color:#e0b56a;color:#1a1310}
 /* --- ＋Alt auf der Kachel (JB 09.07.2026): Ecken-Knopf im Cover, nur bei Hover sichtbar;
    das Menue klappt als Overlay AUF dem Bild aus (max-Hoehe = Bildbereich, scrollt bei vielen) --- */
@@ -382,32 +540,32 @@ body.light .rchip.prio{background:#e0b56a;border-color:#e0b56a;color:#1a1310}
 .tile:hover .talt,.tile .talt.open{opacity:1;pointer-events:auto}
 @media (hover:none){.tile .talt{opacity:.85;pointer-events:auto}}
 .taltb{width:26px;height:26px;border:1px solid rgba(255,255,255,.25);border-radius:50%;background:rgba(18,15,13,.72);color:#fff;font-size:16px;line-height:1;cursor:pointer;padding:0}
-.taltb:hover,.talt.open .taltb{background:#d67756;border-color:#d67756}
-.talt .taltm{display:none;position:absolute;top:30px;right:0;min-width:120px;max-width:160px;max-height:140px;overflow-y:auto;flex-direction:column;gap:3px;padding:6px;border-radius:10px;background:rgba(18,15,13,.93);border:1px solid #3a332e;box-shadow:0 4px 14px rgba(0,0,0,.5)}
+.taltb:hover,.talt.open .taltb{background:var(--akz);border-color:var(--akz)}
+.talt .taltm{display:none;position:absolute;top:30px;right:0;min-width:120px;max-width:160px;max-height:140px;overflow-y:auto;flex-direction:column;gap:3px;padding:6px;border-radius:10px;background:rgba(18,15,13,.93);border:1px solid var(--line);box-shadow:0 4px 14px rgba(0,0,0,.5)}
 .talt.open .taltm{display:flex}
 .taltm a{color:#f0e6dd;font-size:11px;text-decoration:none;padding:3px 7px;border-radius:6px;background:rgba(255,255,255,.08);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.taltm a:hover{background:#d67756;color:#1a1310}
-body.light .taltb{background:rgba(255,252,246,.85);color:#4a4033;border-color:#ddd0b6}
-body.light .talt .taltm{background:rgba(255,252,246,.95);border-color:#ddd0b6}
-body.light .taltm a{color:#4a4033;background:rgba(0,0,0,.06)}
-body.light .taltm a:hover{background:#d67756;color:#fff}
+.taltm a:hover{background:var(--akz);color:#1a1310}
+body.light .taltb{background:rgba(255,252,246,.85);color:var(--text);border-color:var(--line)}
+body.light .talt .taltm{background:rgba(255,252,246,.95);border-color:var(--line)}
+body.light .taltm a{color:var(--text);background:rgba(0,0,0,.06)}
+body.light .taltm a:hover{background:var(--akz);color:#fff}
 #til.on{background:#e0b56a;color:#1a1310;border-color:#e0b56a}
 /* --- Cover-Vorschau beim Hover (JB): schwebendes Bild neben dem Serientitel, lazy geladen --- */
-#covfly{position:fixed;z-index:70;pointer-events:none;display:none;background:#1e1a17;border:1px solid #3a332e;border-radius:8px;padding:4px;box-shadow:0 6px 20px rgba(0,0,0,.55)}
-#covfly img{display:block;width:140px;height:auto;min-height:60px;border-radius:5px;background:#2a2522}
+#covfly{position:fixed;z-index:70;pointer-events:none;display:none;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:4px;box-shadow:0 6px 20px rgba(0,0,0,.55)}
+#covfly img{display:block;width:140px;height:auto;min-height:60px;border-radius:5px;background:var(--line2)}
 @media(max-width:760px){#covfly{display:none!important}}
 /* Cover-Lightbox per Tipp (JB 09.07.2026, Mobile): zentriertes Bild + abdunkelnder Hintergrund;
    Tipp irgendwo schliesst (JS). display wird per JS auf flex gesetzt. */
 #covtap{position:fixed;inset:0;z-index:200;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.72);padding:24px}
-#covtap img{max-width:88vw;max-height:80vh;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.6);background:#2a2522}
+#covtap img{max-width:88vw;max-height:80vh;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.6);background:var(--line2)}
 /* --- ⬆ nach-oben-Knopf (JB): unten rechts, erscheint erst ab etwas Scrolltiefe --- */
-#top{position:fixed;right:14px;bottom:14px;z-index:60;display:none;width:38px;height:38px;border-radius:50%;border:1px solid #3a332e;background:#221d19;color:#e0b56a;font-size:16px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4)}
+#top{position:fixed;right:14px;bottom:14px;z-index:60;display:none;width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:var(--panel2);color:#e0b56a;font-size:16px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.4)}
 #top:hover{background:#2f2823}
-body.light #top{background:#fbf6ea;border-color:#cbb27a;color:#96691c;box-shadow:0 2px 8px rgba(120,95,60,.3)}
+body.light #top{background:var(--panel);border-color:#cbb27a;color:#96691c;box-shadow:0 2px 8px rgba(120,95,60,.3)}
 /* --- Fortschrittsbalken (JB): oben rechts neben der Pin-Box, nur waehrend eines laufenden Syncs --- */
-#syncbar{position:fixed;top:12px;right:300px;z-index:49;display:none;width:230px;background:#1e1a17;border:1px solid #2a2522;border-radius:8px;padding:6px 10px;font-size:11px;color:#c9bdb4;box-shadow:0 2px 8px rgba(0,0,0,.4)}
-#syncbar .track{height:6px;background:#2a2522;border-radius:4px;overflow:hidden;margin-top:4px}
-#syncbar .fill{height:100%;width:0;background:#d67756;transition:width .6s}
+#syncbar{position:fixed;top:12px;right:300px;z-index:49;display:none;width:230px;background:var(--panel2);border:1px solid var(--line2);border-radius:8px;padding:6px 10px;font-size:11px;color:#c9bdb4;box-shadow:0 2px 8px rgba(0,0,0,.4)}
+#syncbar .track{height:6px;background:var(--line2);border-radius:4px;overflow:hidden;margin-top:4px}
+#syncbar .fill{height:100%;width:0;background:var(--akz);transition:width .6s}
 /* pausiert (Tray geschlossen / kein Herzschlag mehr): ausgegraut statt kommentarlos weg (JB) */
 #syncbar.pau{opacity:.55}
 #syncbar.pau .fill{background:#8a7d74}
@@ -444,7 +602,7 @@ body.light .altrow .go.dud, body.light details.alt a.pill.go.dud{background:#fbe
 /* 🔗 Link-kaputt in der Archiv-Ansicht (JB 08.07.2026, Runde 2): die betroffenen Serien stehen
    als ROTE ZEILEN oben in der Tabelle (wie Favoriten-Pinning), archivierte darunter — zurueckholen
    direkt in der Zeile (⚠✓ / roter Link). #dudarch ist nur noch die Kopfzeile mit Sammel-↺. */
-#dudarch{display:none;margin:10px 0;padding:6px 12px;border:1px solid #a33;border-radius:10px;background:#20090b}
+#dudarch{display:none;margin:10px var(--gutter,22px);padding:6px 12px;border:1px solid #a33;border-radius:10px;background:#20090b}
 body.archview #dudarch{display:block}
 #dudarch:empty{display:none!important}
 #dudarch h3{margin:0;font-size:1em;color:#f88}
@@ -463,6 +621,9 @@ body.light.archview tr.dudrow td:first-child{box-shadow:inset 3px 0 0 #d88}
 
 /* --- Zwischenstufe (JB 09.07.2026 'fliessender Uebergang'): unter 1000px weicht zuerst
        nur die Zuletzt-Spalte, der Rest rueckt dank clamp-Padding schon eng zusammen. --- */
+/* Laptop/kleiner Desktop: die am wenigsten dringende Spalte "Zuletzt" (letztes Lese-Datum, jetzt
+   Spalte 6) weicht zuerst — die drei Kapitel-Spalten/Bewertung/Aktion bleiben (JB: sinnvolle
+   Formatierung auf jedem Geraet). */
 @media(max-width:1000px){
 #t th:nth-child(6),#t td:nth-child(6){display:none}
 }
@@ -487,11 +648,11 @@ body.light.archview tr.dudrow td:first-child{box-shadow:inset 3px 0 0 #d88}
        (9) Kacheln: 4 je Reihe. Zoom-Baseline: viewport minimum-scale=1 + overflow-x hidden. --- */
 @media(max-width:760px){
 html,body{overflow-x:hidden}
-body{margin:8px}
+#headfix{padding:8px 8px 3px}
+#scrollarea{--gutter:8px;padding:0 0 12px}
 h1{font-size:17px;margin:2px 0 4px}
 h1,.sub{padding-right:0}
 .sub{font-size:11px;margin-bottom:6px}
-.statusbar{display:none}
 .med{display:none}
 /* ⚙ Zahnrad (JB 09.07.2026): selten genutzte Werkzeuge mobil hinter EIN Zahnrad, damit die
    Leiste nicht ueberladen ist. Ausgeblendet bis ⚙ getippt (body.gearon); Desktop zeigt das
@@ -503,10 +664,18 @@ h1,.sub{padding-right:0}
 /* Werkzeuge mobil AN EINEM ORT: das Zahnrad oeffnet die ganze Gruppe als eigenen Block direkt
    unter der Leiste (JB 09.07.2026: 'alles beim Zahnrad, an einem Ort'). Zu = versteckt. */
 .tools{display:none}
-#dns{display:none}   /* Kompakt-Modus mobil raus (JB 09.07.2026: 'brauchen wir auf mobile nicht') */
+/* Kompakt-Knopf mobil im ⚙-Zahnrad erreichbar (JB 20.07.: 'es muss einen Effekt haben') —
+   in der Leiste selbst bleibt er versteckt (Platz), im aufgeklappten Werkzeug-Block sichtbar. */
+#dns{display:none}
+body.gearon .tools #dns{display:inline-block}
+/* Kompakt MOBIL spuerbar: noch dichtere Zeilen + kleinere Schrift als der Mobile-Standard. */
+body.dense table{font-size:11px}
+body.dense th,body.dense td{padding:2px 3px}
+body.dense #t td:first-child{font-size:10px;line-height:1.15}
+body.dense .pill{padding:1px 5px;font-size:10px}
 body.gearon .tools{display:flex;flex-wrap:wrap;gap:4px;flex-basis:100%;margin-top:2px;
- padding:6px;border:1px solid #2a2522;border-radius:9px;background:#1b1713}
-body.light.gearon .tools{border-color:#ddd0b6;background:#fbf6ea}
+ padding:6px;border:1px solid var(--line2);border-radius:9px;background:#1b1713}
+body.light.gearon .tools{border-color:var(--line);background:var(--panel)}
 /* Im-/Export-Panel mobil im Fluss statt schwebend rechts (sonst laeuft es aus dem Screen) */
 .xpanel{position:static;width:auto;max-width:100%;box-shadow:none;white-space:normal}
 table{font-size:12.5px}
@@ -515,25 +684,29 @@ table{font-size:12.5px}
 #t td:first-child{font-size:11px;line-height:1.25}
 th,td{padding:4px 4px}
 input{flex:1;min-width:110px}
-#t th:nth-child(3),#t td:nth-child(3),#t th:nth-child(4),#t td:nth-child(4),#t th:nth-child(6),#t td:nth-child(6),#t th:nth-child(7),#t td:nth-child(7),#t th:nth-child(10),#t td:nth-child(10){display:none}
+/* Handy: zeigt Serie · ⭐ · gelesen · übersetzt · gesamt · Bewertung · Aktion.
+   Weg: Zuletzt (6), Quelle (7), ⚠ (10) — die drei Kapitel-Spalten bleiben (JB Runde 4). */
+#t th:nth-child(6),#t td:nth-child(6),#t th:nth-child(7),#t td:nth-child(7),#t th:nth-child(10),#t td:nth-child(10){display:none}
 .pill .pl{display:none}
 .pill.go{min-width:0}
 .pill.md{display:none}   /* Baka/AL-DB-Link: reiner Info-Link, mobil entbehrlich (Platz!) */
+td.act .dbslot{min-width:0}   /* mobil KEINEN Baka-Platz reservieren (Baka eh aus) */
 .pill{padding:2px 8px;margin:1px 2px}
 /* Die 3 Symbol-Pills (▶ 🔍 ＋) bleiben in EINER Zeile (JB 09.07.: 'kein Zeilenumbruch') —
    Platz kommt vom ausgeblendeten Autor (unten). Nur ein AUFGEKLAPPTES +Alt wird zum Block
    und waechst frei nach UNTEN (statt die Tabelle seitlich zu sprengen).
-   WICHTIG (JB 15.07.): das Desktop-flex (td.act{display:flex;flex-wrap:wrap}) hier auf Mobil
-   ZURUECKNEHMEN — sonst stapeln die Icons im Hochformat untereinander (dicke Zeilen). Als
-   inline-block + white-space:nowrap bleiben sie in EINER Zeile, die Zeile wird so schlank
-   wie im Querformat. */
-td.act{display:block;line-height:1.8;white-space:nowrap}
+   WICHTIG (JB 15.07.): das Desktop-flex (.actrow) hier auf Mobil ZURUECKNEHMEN — sonst stapeln
+   die Icons im Hochformat untereinander (dicke Zeilen). Als inline-block + white-space:nowrap
+   bleiben sie in EINER Zeile, die Zeile wird so schlank wie im Querformat. */
+td.act .actrow{display:block;line-height:1.8;white-space:nowrap}
 /* NUR den Abstand zuruecksetzen (Basis .pill ist schon inline-block) — KEIN display hier,
    sonst schlaegt die hoehere Spezifitaet das '.pill.md{display:none}' und Baka taucht mobil
    wieder auf (JB 15.07.: Baka machte die Zeile zu breit -> horizontales Scrollen). */
 td.act .pill{margin:1px 2px}
-details.alt[open]{display:block;white-space:normal;font-size:11px;margin-top:2px}
-details.alt[open] .pill{font-size:11px;padding:2px 6px;margin:1px}
+/* +Alt bleibt mobil ein schwebendes Panel (nicht mehr inline aufklappen) -> Aktions-Zelle bleibt
+   einzeilig; nur Schrift im Panel etwas kompakter. */
+details.alt[open] .altm{font-size:12px}
+details.alt[open] .altm .pill{font-size:12px;padding:3px 8px;margin:1px}
 .altrow{flex-wrap:wrap;row-gap:2px}
 .altrow .go{max-width:150px}
 /* Autor-Zeile mobil aus (JB 09.07.: 'autor kann weg') — Wiederkehr ueber ＋Spalten > Autor;
@@ -576,7 +749,7 @@ details.genres{order:4}
    nach rechts aus dem Bildschirm'). Der schwebende Dropdown haengt am weit rechts sitzenden
    Knopf und laeuft dort aus dem Screen. Mobil deshalb NORMAL IM FLUSS darunter (position:static)
    -> die Chips brechen ueber die volle Breite um, nie ueber den Rand. Desktop bleibt schwebend. */
-details.genres[open]>.gchips,.panels>details[open]>.colbxs{position:static;width:auto;
+details.genres[open]>.gchips,.panels>details[open]>.colbxs,.panels>details.quellen[open]>.qpanel,details.fpop[open]>.fpanel{position:static;width:auto;
  max-width:100%;box-shadow:none;margin:4px 0}
 details.genres[open]>.gchips{display:flex;flex-wrap:wrap;flex-basis:100%}
 body.tiles #tiles{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px 6px}
@@ -587,10 +760,10 @@ body.tiles #tiles{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px 6px}
        weniger vertikale Kopfzeile -> die Liste beginnt frueher, mehr Zeilen sofort sichtbar.
        Greift ueber die HOEHE (max-height 520px) -> trifft Handys quer, nie normale Laptops. --- */
 @media (orientation:landscape) and (max-height:520px){
- body{margin:6px}
+ body{margin:0}                      /* Anti-Scroll: kein Body-Margin (Querformat-Handy) */
+ #headfix{padding:6px 10px 2px}
  h1{font-size:15px;margin:0 0 1px}
  .sub{font-size:10px;margin-bottom:4px}
- .statusbar{display:none}          /* Ampeln quer weg -> Platz fuer die Liste */
  .ctrl{gap:3px}
  .panels{gap:2px 4px}
  th,td{padding:3px 6px}
@@ -603,5 +776,18 @@ body.tiles #tiles{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px 6px}
    der ersten Fassung) — deshalb griff die 8er-Regel zuvor nicht (JB: 'zeigt nur vier'). Deckt
    den Normal- UND den Kompakt-Modus (body.dense) ab, sonst schlaegt dessen Regel zurueck. */
 @media (orientation:landscape) and (hover:none){
- body.tiles #tiles,body.dense.tiles #tiles{grid-template-columns:repeat(8,1fr)!important;gap:7px}
+ body.tiles #tiles{grid-template-columns:repeat(8,1fr)!important;gap:7px}
+ /* Kompakt HAT hier einen Effekt (JB 20.07.: 'kleiner darstellen tut nichts'): 10 statt 8. */
+ body.dense.tiles #tiles{grid-template-columns:repeat(10,1fr)!important;gap:5px}
+}
+
+/* --- Sehr kleine Displays ("Gameboy", <=430px, JB 20.07.2026: 'jedes Geraet vernuenftig'):
+       Serie · gelesen · übersetzt · gesamt · Aktion. Weg: ⭐ (2) und Bewertung (8) — die drei
+       Zahlen bleiben, der Link bleibt, nichts scrollt seitlich. Kacheln: 3 pro Reihe. --- */
+@media(max-width:430px){
+ #t th:nth-child(2),#t td:nth-child(2),#t th:nth-child(8),#t td:nth-child(8){display:none}
+ table{font-size:12px}
+ #t td:first-child{font-size:10.5px}
+ th,td{padding:3px 3px}
+ body.tiles #tiles{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px 5px}
 }

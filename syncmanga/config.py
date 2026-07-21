@@ -9,7 +9,9 @@ unveraendert weiterlaeuft; die Standalone-App setzt sie spaeter selbst (Phase 5/
 
 # Datenversion: hochzaehlen erzwingt beim naechsten Lauf eine vollstaendige Neu-Anreicherung
 # (Titel/Flaggen/Bewertung/Autor), sonst nur fehlende/veraltete Eintraege ("resume").
-CACHE_VER = 31         # 31: Titelwahl NUR aus alt_en (JB Runde 35: fremdsprachige Titel raus)
+CACHE_VER = 32         # 32: Uebersetzt-Stand (trans/trans_ts via MangaUpdates) fuer ALLE Serien
+                       #     nachladen (JB 20.07.: 'gelesen / übersetzt / gesamt' in der Kapitel-
+                       #     Zelle); 31: Titelwahl NUR aus alt_en (JB Runde 35)
 NAMELEN = 40           # ab hier Anzeige-Titel mit … kuerzen
 
 # Alternativ-Reader (aktuelle Community-Top 2026, getrennt nach Manga vs. Manhwa/Manhua).
@@ -64,6 +66,10 @@ DEAD_READERS = (
     # Interstitial-Netzwerk (JB-Fund: vinlandsagamanga.net -> "click to read" -> jjk0.com mit
     # FALSCHEM Slug 'jujutsu-kaisen-...' fuer Vinland-Kapitel -> maximal verwirrend, nie verlinken)
     "vinlandsagamanga", "jjk0",
+    # Soft-200-Werbelander (JB-Fund 20.07.2026, Magic Marriage): JEDE Kapitel-URL (auch
+    # chapter-99999) antwortet 200 und leitet per JS auf /lander (Werbung) um — kein Inhalt.
+    # Kam als Keiyoushi-Pattern-Reader rein und vergiftete 39 Cache-Eintraege.
+    "24hnovel",
 )
 
 
@@ -211,8 +217,8 @@ def save_override(path, key, name, search=None, mb_id=None):
     `mb_id` (MangaBaka-ID) = Ground-Truth-Pin: die Anreicherung holt den Record dann per
     catalog.lookup_id statt per Suche (kein Fehlmatch, JB 07.07.2026).
     Das ist die Datei-Haelfte des "Braucht Hilfe"-Flows (Spec §2a) — reine Nutzer-Daten."""
-    import os
     import json
+    import os
     if not (key and name):
         raise ValueError("save_override braucht key und name")
     data = {}
@@ -267,8 +273,8 @@ def load_settings(path):
 
 def save_settings(path, settings):
     """Settings atomar schreiben (tmp + os.replace). Gibt das geschriebene Dict zurueck."""
-    import os
     import json
+    import os
     data = {**SETTINGS_DEFAULTS, **(settings or {})}
     tmp = path + ".tmp"
     with open(tmp, "w", encoding="utf-8") as f:

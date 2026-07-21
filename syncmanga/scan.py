@@ -13,16 +13,16 @@ HARTE REGELN (CLAUDE.md): Browser-DBs werden NUR read-only in einen Temp-Ordner 
 Liefert pro Serie ein Dict `items`, keyed by `norm(name)`:
   {'name', 'status', 'chap', 'site', 'lv', 'url'}
 """
-import os
 import glob
 import json
+import os
 import re
 import shutil
 import sqlite3
 import sys
 import tempfile
 
-from .parse import host, series_from, norm, CH, URLCH, GARB
+from .parse import CH, GARB, URLCH, host, norm, series_from
 
 # Hosts, die nie eine Manga-Serie sind (Verlauf-/Lesezeichen-Rauschen filtern).
 BLACKLIST = re.compile(r'google|youtube|reddit|amazon|steampowered|store\.steam|steamcommunity|'

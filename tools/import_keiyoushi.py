@@ -27,9 +27,9 @@ if PKG not in sys.path:
 
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
 
-from syncmanga import readerlink                        # noqa: E402
-from syncmanga.parse import host as host_of             # noqa: E402
-from syncmanga.config import is_dead_reader, is_paywall_site, UNSAFE_SITES  # noqa: E402
+from syncmanga import readerlink  # noqa: E402
+from syncmanga.config import UNSAFE_SITES, is_dead_reader, is_paywall_site  # noqa: E402
+from syncmanga.parse import host as host_of  # noqa: E402
 
 OUT = os.path.join(PKG, "data", "readers_pattern.json")
 # Offizieller, maschinenlesbarer Quellen-Index (Nachfolger der Tachiyomi-Extensions).

@@ -20,7 +20,9 @@ import time
 import urllib.error
 from urllib.parse import quote
 
-from . import health as srcstatus     # Quellen-Status (frueher srcstatus.py, jetzt in health)
+from . import (
+    health as srcstatus,  # Quellen-Status (frueher srcstatus.py, jetzt in health)
+)
 from .common import Pacer, get_json
 from .parse import norm
 
@@ -65,7 +67,7 @@ def _titles(rec):
 # Bewusst nur eindeutige Funktionswoerter; englische Titel nutzen keins davon als Wort.
 _NON_EN_WORDS = {"los", "las", "el", "les", "le", "la", "un", "une", "der", "die", "das",
                  "und", "ein", "eine", "del", "de", "du", "des", "et", "y", "para", "por",
-                 "dos", "das", "uma", "um", "il", "gli", "lo", "una", "che", "di",
+                 "dos", "uma", "um", "il", "gli", "lo", "una", "che", "di",
                  "fille", "fils", "mon", "ma", "mes", "avec"}
 _NON_EN_PREFIX = ("d'", "l'", "d’", "l’")
 # Sprach-ANNOTATIONEN in Titeln (JB Runde 42, 'Stranger Case (French)'): MangaBaka haengt

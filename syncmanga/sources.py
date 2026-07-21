@@ -11,12 +11,12 @@ Flagge/Land, Status, Bewertung, Autor, …). KEINE Verhaltensänderung gegenübe
 Ergänzen einer Quelle = neue lookup-Funktion hier + eine Zeile in enrich_one / probe_sources.
 (Eine echte Registry-Datenstruktur folgt bei Bedarf in einer späteren Phase.)
 """
+import difflib
 import re
 import time
-import difflib
+import urllib.error
 import urllib.parse
 import urllib.request
-import urllib.error
 
 from .common import UA, Pacer, get_json, post_json
 from .parse import norm, pick_english
@@ -169,14 +169,26 @@ def mf_chapter_link(titles, chapter, verify=None):
 
 
 def _mf_verify(url):
-    """Direkt-Lese-Link bestaetigen: 200 UND nicht auf die Serien-/Startseite umgeleitet."""
+    """Direkt-Lese-Link bestaetigen: 200, nicht umgeleitet UND ECHTER Inhalt im Body.
+
+    MangaFire-Umbau v2 (JB-Befund 20.07.2026): die Seite antwortet fuer JEDEN Pfad 200 mit einer
+    ~3-KB-JS-Huelle (auch fuer erfundene Kapitel) — Status+Redirect allein sind wertlos und
+    haben Muell-Links 'verifiziert'. Jetzt muss der Body zusaetzlich nach gerendertem Kapitel
+    aussehen (Mindestgroesse + Slug-Titel im HTML), sonst gilt der Link als NICHT bestaetigt."""
     from urllib.parse import urlparse
     MF_PACER.wait()
     try:
         req = urllib.request.Request(url, headers={**_MF_HEAD, "Accept": "text/html"})
         with urllib.request.urlopen(req, timeout=12) as r:
             final = r.geturl() or url
-            return getattr(r, "status", 200) == 200 and urlparse(final).path.rstrip("/") == urlparse(url).path.rstrip("/")
+            if getattr(r, "status", 200) != 200 or urlparse(final).path.rstrip("/") != urlparse(url).path.rstrip("/"):
+                return False
+            body = r.read(120000).decode("utf-8", "replace")
+        if len(body) < 15000:                      # JS-Huelle ist ~3 KB — echte Seiten deutlich groesser
+            return False
+        m = re.search(r"/title/[a-z0-9]+-([a-z0-9-]+)/", url)
+        slug_word = (m.group(1).split("-")[0] if m else "")
+        return bool(slug_word) and slug_word in body.lower()
     except Exception:
         return False
 
@@ -814,19 +826,67 @@ def mu_foreign_titles(name, fetch_search=None, fetch_series=None):
         return []
 
 
-def mu_authors(series_id):
-    """MangaUpdates-Detail: Autoren. Im Such-Ergebnis fehlt das authors-Feld - nur im Series-GET vorhanden."""
+def _mu_latest_chapter(rec):
+    """MangaUpdates-latest_chapter -> float | None. MU liefert die zuletzt SCANLATIERTE
+    (uebersetzte) Kapitelzahl — anders als total_chapters (Gesamtwerk) der genaue 'Uebersetzt'-
+    Stand (JB 15.07.2026: Junk the Black Shadow 36 uebersetzt bei 343 gesamt)."""
+    try:
+        v = float(rec.get("latest_chapter"))
+        return v if 0 < v <= 100000 else None
+    except (TypeError, ValueError):
+        return None
+
+
+def _mu_updated_ts(rec):
+    """MangaUpdates-last_updated (Record-Aktualisierung ~= letzte Release-Erfassung) -> Unix-Sekunden."""
+    lu = rec.get("last_updated")
+    if isinstance(lu, dict):
+        try:
+            return int(lu.get("timestamp") or 0) or None
+        except (TypeError, ValueError):
+            return None
+    return None
+
+
+def mu_detail(series_id):
+    """MangaUpdates-Series-GET -> {authors, trans, trans_ts}. EIN Abruf fuer Autoren UND den
+    Uebersetzungs-Stand (latest_chapter + last_updated). Im Such-Ergebnis fehlen diese Felder."""
+    out = {"authors": "", "trans": None, "trans_ts": None}
     if not series_id:
-        return ""
+        return out
     try:
         rec = get_json(f"https://api.mangaupdates.com/v1/series/{series_id}",
                        headers={**UA, "Accept": "application/json"})
         all_a = rec.get("authors") or []
         auths = [a.get("name", "") for a in all_a if (a.get("type") or "").lower() != "artist"] \
             or [a.get("name", "") for a in all_a]
-        return ", ".join([x for x in dict.fromkeys(auths) if x][:2])
+        out["authors"] = ", ".join([x for x in dict.fromkeys(auths) if x][:2])
+        out["trans"] = _mu_latest_chapter(rec)
+        out["trans_ts"] = _mu_updated_ts(rec)
     except Exception:
-        return ""
+        pass
+    return out
+
+
+def mu_authors(series_id):
+    """Nur Autoren (Rueckwaerts-Kompatibilitaet). -> Kommastring oder ''."""
+    return mu_detail(series_id).get("authors") or ""
+
+
+def mu_api_id(raw):
+    """MangaBaka fuehrt die MangaUpdates-ID BASE36-kodiert (wie in der /series/{id}-URL,
+    z.B. 'c8mp52y'); die JSON-API braucht die Dezimal-ID (int('c8mp52y',36)). Ein schon
+    numerischer Wert (wie mu_rating ihn liefert) bleibt unveraendert. -> int | None."""
+    if isinstance(raw, bool):            # bool ist int-Subtyp -> vor der int-Pruefung abfangen
+        return None
+    if isinstance(raw, int):
+        return raw or None
+    if isinstance(raw, str) and raw.strip():
+        try:
+            return int(raw.strip(), 36) or None
+        except ValueError:
+            return None
+    return None
 
 
 # ---------------- Kitsu ----------------

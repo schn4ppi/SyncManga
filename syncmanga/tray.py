@@ -17,7 +17,7 @@ import threading
 import webbrowser
 
 from . import __version__, config, i18n, update
-from .__main__ import run, resolve_paths, parse_args, choose_lang
+from .__main__ import choose_lang, parse_args, resolve_paths, run
 
 PKG_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -236,8 +236,8 @@ class TrayApp:
             # Fortschrittsbalken des Erstaufbaus und laedt sich am Ende von selbst neu. Dazu die
             # Tray-Meldung, damit klar ist, was passiert.
             try:
-                from .render import render as _render
                 from .__main__ import copy_guides
+                from .render import render as _render
                 copy_guides(self.paths["out_dir"])
                 _render([], self.paths["out_dir"], html, lang=self.lang)
             except Exception:
@@ -489,7 +489,7 @@ class TrayApp:
         first = not os.path.isfile(self.paths["out_html"])
         if not first:
             try:                                # UNFERTIGER Aufbau (JB: '417 in der Liste, aber
-                import json as _json            # nichts taucht auf') -> sofort weitermachen,
+                import json as _json  # nichts taucht auf') -> sofort weitermachen,
                 d = _json.load(open(os.path.join(self.data_dir, "data", "sync_progress.json"),
                                     encoding="utf-8"))
                 first = int(d.get("done") or 0) < int(d.get("total") or 0)

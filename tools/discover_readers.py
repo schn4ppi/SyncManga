@@ -18,7 +18,7 @@ PKG = os.path.normpath(os.path.join(HERE, ".."))      # SyncManga/
 if PKG not in sys.path:
     sys.path.insert(0, PKG)
 
-from syncmanga import readers, readerlink              # noqa: E402
+from syncmanga import readerlink, readers  # noqa: E402
 
 SNAP = os.path.join(PKG, "data", "readers_moe.json")
 OUT = os.path.join(PKG, "data", "readers_pattern.json")

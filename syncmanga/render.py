@@ -11,23 +11,25 @@ Neu als eigenständige, testbare Funktionen extrahiert:
   - chapter_label(ch): Kapitel-Anzeige ('?' bei None, ganze Zahl ohne Nachkomma, sonst float).
   - next_and_unread(chap, latest): naechstes Kapitel, offene Kapitel, bereinigtes latest.
 """
+import html
+import json
 import os
 import re
-import json
-import html
 import time
 import urllib.parse
-from datetime import datetime, timezone
 from collections import Counter
+from datetime import datetime, timezone
 
-from .parse import norm, is_dynamic, host
-from . import config as _config           # Modul-Zugriff: PAUSED_READERS wird zur Laufzeit gesetzt
-from .config import NAMELEN, UNSAFE_SITES, is_dead_reader, is_paused_reader, is_no_read
-from .readerlink import is_chapter_url
-from .catalog import cover_url
+from . import (
+    config as _config,  # Modul-Zugriff: PAUSED_READERS wird zur Laufzeit gesetzt
+)
+from . import enrich as _enrich  # recs_load (Empfehlungen, frueher recs.py)
+from . import health as srcstatus  # Quellen-Status (frueher srcstatus.py)
 from . import i18n
-from . import enrich as _enrich                  # recs_load (Empfehlungen, frueher recs.py)
-from . import health as srcstatus                # Quellen-Status (frueher srcstatus.py)
+from .catalog import cover_url
+from .config import NAMELEN, UNSAFE_SITES, is_dead_reader, is_no_read, is_paused_reader
+from .parse import host, is_dynamic, norm
+from .readerlink import is_chapter_url
 
 # Quellen-Status-Panel (JBs Anforderung): Farbe je Quelle, damit JB SIEHT, was klemmt.
 _STATUS_COLOR = {"ok": "#3a7d3a", "degraded": "#c9952b", "down": "#c0392b"}
@@ -193,6 +195,27 @@ def chapter_label(ch):
     return str(int(ch)) if ch == int(ch) else str(ch)
 
 
+def trans_age(ts, s, now=None):
+    """Relatives Alter des Uebersetzungs-Stands -> (kompakter Text, exaktes Datum) fuer die
+    Uebersetzt-Spalte (JB 20.07.2026: 'vor 1 Jahr' sagt, ob noch aktiv uebersetzt wird)."""
+    if not ts:
+        return "", ""
+    now = now if now is not None else time.time()
+    days = int((now - ts) // 86400)
+    if days <= 0:
+        txt = s["trans_age_today"]
+    elif days < 7:
+        txt = s["trans_age_d"].format(n=days)
+    elif days < 35:
+        txt = s["trans_age_w"].format(n=days // 7)
+    elif days < 365:
+        txt = s["trans_age_mo"].format(n=max(1, days // 30))
+    else:
+        txt = s["trans_age_y"].format(n=days // 365)
+    exact = datetime.fromtimestamp(ts, timezone.utc).strftime('%d.%m.%Y')
+    return txt, exact
+
+
 def next_and_unread(chap, latest):
     """Ziel-Kapitel (= dein AKTUELLES, JB: man hoert mitten im Kapitel auf; '' ohne chap),
     offene Kapitel und bereinigtes latest. Liegt 'latest' <= gelesenem Kapitel (Quelle hinkt
@@ -229,7 +252,8 @@ def status_panel(s):
     label = s.get("source_status_label", "Quellen")
     # Leerzeichen zwischen den Chips = Umbruch-Gelegenheit (Chips selbst sind nowrap) —
     # ohne sie war die Zeile UNBRECHBAR und zwang Mobile in >1000px Breite (JB 08.07.2026).
-    return f'<div class=statusrow>{label}: {" ".join(chips)}</div>'
+    # Label fett+unterstrichen (JB 21.07.: 'sonst ueberliest man das').
+    return f'<div class=statusrow><span class=srclabel>{label}:</span> {" ".join(chips)}</div>'
 
 
 _READER_COLOR = {"ok": "#3a7d3a", "cloudflare": "#c9952b", "no-images": "#c9952b",
@@ -287,7 +311,8 @@ def reader_panel(s):
         chips.append(_chip(url, col, name, s.get("paused_tip", tip) if paused else tip,
                            "⏸" if paused else "●", f' data-rh="{html.escape(hostn)}"'))
     label = s.get("reader_status_label", "Lese-Seiten")
-    return f'<div class=statusrow>{label}: {" ".join(chips)}</div>'  # Leerzeichen = Umbruch (s.o.)
+    return (f'<div class=statusrow><span class=srclabel>{label}:</span> '
+            f'{" ".join(chips)}</div>')  # Label fett+unterstrichen; Leerzeichen = Umbruch (s.o.)
 
 
 def _reader_legend(s):
@@ -299,12 +324,19 @@ def _reader_legend(s):
             f'<span><span style="color:{_READER_COLOR["down"]}">●</span> {html.escape(s["legend_down"])}</span></div>')
 
 
-def status_block(s):
-    """Datenquellen- + Lese-Seiten-Zeile eng untereinander, EINE Ampel-Legende rechts mittig."""
+def _quellen_menu(s):
+    """Datenquellen- + Lese-Seiten-Ampel als AUSKLAPPBARES Panel (JB 21.07.2026:
+    'Leseseiten und Datenquellen wie +Spalten/Statistik ausklappbar, ein eigenes
+    kleines Fenster; die Ampel-Legende beim Ausklappen mit dazu'). Beim Aufklappen:
+    beide Ampel-Zeilen + die gemeinsame Legende. Leer -> Knopf taucht nicht auf."""
     rows = status_panel(s) + reader_panel(s)
     if not rows:
         return ""
-    return f'<div class=statusbar><div class=statusrows>{rows}</div>{_reader_legend(s)}</div>'
+    label = s.get("quellen_menu", "🚦 Quellen")
+    title = s.get("quellen_menu_title", "Status der Datenquellen und Lese-Seiten")
+    return (f'<details class=quellen><summary class="pill alt" title="{html.escape(title)}">'
+            f'{label}</summary><div class=qpanel><div class=statusrows>{rows}</div>'
+            f'{_reader_legend(s)}</div></details>')
 
 
 def _type_label(t):
@@ -519,15 +551,19 @@ def _alt_cell(e, s, sites_q, nxt, full):
     # 🕰 Wayback ENTFERNT (JB-Entscheidung Runde 25): das Archiv spielte auf toten Seiten deren
     # Weiterleitungs-Skripte ab und landete auf fremden Mangas — mehr Verwirrung als Rettung.
     # Manuelle Funde (z.B. Blogspot-Archive) laufen stattdessen als series_overrides-Eintrag.
+    # +Alt ist ein eigenes SCHWEBENDES Panel (JB 20.07.2026: 'wie bei +Spalten, im Rahmen bleiben,
+    # nicht die Option verdecken'): die Links liegen in .altm, das JS (positionAltm) setzt es beim
+    # Oeffnen per position:fixed unter den Knopf und klemmt es in den Viewport. Dadurch bleibt die
+    # Aktions-Zelle EINZEILIG (frueher floss der Inhalt inline in die Zelle -> viele Umbrueche).
     return (f'<details class=alt><summary class="pill alt">{_pl(s["alt_menu"])}</summary>'
-            f'{gcombined}{res_inner}{own}</details>')
+            f'<div class=altm>{gcombined}{res_inner}{own}</div></details>')
 
 
 def _cols_menu(s):
     """Menue 'Spalten' (neben den Panels): je optionaler Spalte eine Checkbox -> body.hc<n> ein/aus.
-    Spalte 1 (Serie) + 8 (Aktion) bleiben immer sichtbar. JS: toggleCol()."""
-    cols = [(3, s["col_user"]), (4, s["col_status"]), (5, s["col_chapters"]),
-            (6, s["col_last"]), (7, s["col_source"]), (8, s["col_rating"])]
+    Serie (1), ⭐ (2), gelesen (3), Aktion (9), ⚠ (10) bleiben immer sichtbar. JS: toggleCol()."""
+    cols = [(4, s["col_trans"]), (5, s["col_total"]), (6, s["col_last"]),
+            (7, s["col_source"]), (8, s["col_rating"])]
     # KEIN Leerzeichen zwischen Kaestchen und Wort (Abstand macht allein das CSS-gap: 2px, JB-Wunsch).
     boxes = "".join(f'<label class=colbox><input type=checkbox id=col{n} checked '
                     f'onchange="toggleCol({n},this)">{html.escape(nm)}</label>' for n, nm in cols)
@@ -669,7 +705,14 @@ def render(rows, out_dir, out_html, namelen=NAMELEN, lang="de", readers_snap=Non
         full = e['name']
         disp = full if len(full) <= namelen else full[:namelen - 1].rstrip() + '…'
         d = datetime.fromtimestamp(e['lv'], timezone.utc).strftime('%d.%m.%Y') if e['lv'] else '–'
-        nxt, unread, latest = next_and_unread(e['chap'], e.get('latest'))
+        # Uebersetzungs-Stand (JB 20.07.2026): "neu" + Fortschritt richten sich nach dem, was ONLINE
+        # LESBAR ist (uebersetzt), nicht nach dem Gesamtwerk. Junk the Black Shadow zaehlt 343 gesamt,
+        # aber nur 36 uebersetzt -> "neu" = neue UEBERSETZTE Kapitel, "Aufgeholt" = allen uebersetzten
+        # Stand gelesen. Wo kein Uebersetzungs-Stand bekannt ist (keine MU-Daten), zaehlt weiter das
+        # Gesamtwerk (unveraendertes Verhalten). Die Gesamtzahl bleibt in der Kapitel-Zelle sichtbar.
+        _trans = e.get('trans')
+        readable = _trans if (_trans and _trans > 0) else e.get('latest')
+        nxt, unread, latest = next_and_unread(e['chap'], readable)
         uprog = user_progress(e['chap'], latest, e['lv'], now_ts, pub_status=e.get('pub_status'))
         pcnt[uprog] += 1
         for _g in (e.get('genres') or []):
@@ -702,14 +745,40 @@ def render(rows, out_dir, out_html, namelen=NAMELEN, lang="de", readers_snap=Non
         # Kapitel-Zelle "gelesen / gesamt": bei Fehlmatch die ECHTE (kleinere) DB-Zahl zeigen, damit die
         # Diskrepanz SICHTBAR ist (+ ❓). Sonst gesamt = groesste bekannte Zahl; '?' wenn unbekannt.
         _tot = _lat if mismatch else ((_lat if (_lat and _lat > (_read or 0)) else _read) if _lat else None)
-        # Gesamt-Teil mit eigenem Tooltip bei NEUEN Kapiteln (JB Runde 38, Feature 3):
-        # Hover ueber die Gesamtzahl nennt die neuen Kapitel; der Zell-Tooltip (Klick:
-        # Lesestand korrigieren, applyTips) bleibt fuer den Rest der Zelle erhalten.
-        _new_tip = (f' title="{html.escape(s["new_chaps_tip"].format(n=unread))}"'
-                    if unread else '')
-        prog = (f'{chapter_label(_read)} / '
-                f'<span class=totc{_new_tip}>{chapter_label(_tot) if _tot else "?"}</span>')
+        # DREI dicht stehende, EINZELN sortierbare Spalten (JB 20.07.2026, 4. Runde: 'Spalte, Spalte,
+        # Spalte'): links GELESEN (Fortschritts-Farbe), Mitte ÜBERSETZT (was online lesbar ist; –
+        # wenn unbekannt), rechts GESAMT (? wenn unbekannt). KEIN "+N"-Abzeichen mehr (JB: 'ich will
+        # nicht mit einem Plus wissen, wie viel ich noch lesen muss, sondern einfach dazwischen sehen,
+        # wie viel noch da ist'). `unread` = readable - gelesen (geclippt) = verbleibend lesbar; danach
+        # sortiert die Übersetzt-Spalte ('wo habe ich am meisten zu lesen', meine Entscheidung).
         dyn_badge = f'<span class="unk" title="{html.escape(s["dynamic_hint"])}"> ⓘ</span>' if dyn else ''
+        rd_cell = (f'<td class="rd rc {cls}" data-rv="{int(_read or 0)}"'
+                   f'{" data-dyn=1" if dyn else ""}>{chapter_label(_read)}{dyn_badge}</td>')
+        # ÜBERSETZT == GESAMT -> nur EINE Zahl, IMMER in der Mittelspalte (ü.); gesamt bleibt leer,
+        # damit die zwei Zahlen DICHT beieinander stehen (JB 22.07.2026: 'in die Mitte zusammen').
+        # Frueher wurde bei abgeschlossenen Serien die ü.-Spalte geleert -> Loch in der Mitte
+        # ('109   / 201'). 3 Zahlen (ü. != gesamt) bleiben unveraendert. Daten-Attribute (Sortierung
+        # nach verbleibend/gesamt) bleiben immer erhalten.
+        _tot_blank = bool(_trans and _tot and float(_trans) == float(_tot))
+        # Abgeschlossenes Werk bekommt eine EIGENE Farbe fuer die Gesamtzahl (JB 22.07.: 'nicht grau,
+        # neue Farbe fuer abgeschlossen'). Die 'abgeschlossen'-Zahl steckt beim Collapse in der ü.-Zelle,
+        # sonst in der gesamt-Zelle -> Klasse 'done' (CSS: violett, klar unterscheidbar von gold/grau).
+        _done = any(w in (e.get('pub_status') or '').lower() for w in _DONE_WORDS)
+        if _trans and _trans > 0:
+            _tage, _texact = trans_age(e.get('trans_ts'), s, now_ts)
+            _ttip = s["trans_tip"].format(ch=chapter_label(_trans), age=(_tage or s["trans_age_today"]),
+                                          date=(_texact or "?"))
+            tl_cell = (f'<td class="tl{" done" if (_done and _tot_blank) else ""}" data-tl="{unread}" '
+                       f'title="{html.escape(_ttip)}">{chapter_label(_trans)}</td>')
+        else:
+            tl_cell = (f'<td class="tl unk" data-tl="{unread}" '
+                       f'title="{html.escape(s["trans_none_tip"])}">{s["trans_none"]}</td>')
+        if _tot_blank:
+            tot_cell = f'<td class="tot" data-tot="{int(_tot or 0)}"></td>'
+        elif _tot:
+            tot_cell = f'<td class="tot{" done" if _done else ""}" data-tot="{int(_tot)}">{chapter_label(_tot)}</td>'
+        else:
+            tot_cell = '<td class="tot" data-tot="0">?</td>'
         _t = (e.get('type') or '').capitalize()  # Typ jetzt direkt aus dem Katalog (MangaBaka)
         med = _t if _t in MEDIA_FILTER else medium(e.get('country'))   # Fallback: aus Herkunftsland
         med_badge = f'<span class="med">{med}</span> ' if med else ''
@@ -756,9 +825,7 @@ def render(rows, out_dir, out_html, namelen=NAMELEN, lang="de", readers_snap=Non
                      if (e.get('conf') or 1.0) < 0.62 and str(e.get('md_id') or '').startswith('mb:') else '')
         fin_badge = (f'<span class="finb" title="{html.escape(s["finished_badge_title"])}">🏁 </span>'
                      if uprog == "prog_finished" else '')
-        pub = e.get('pub_status') or ''
-        pub_cell = (f'<td class="pub">{html.escape(pub)}</td>' if pub
-                    else f'<td class="pub unk">{s["unknown"]}</td>')
+        pub = e.get('pub_status') or ''   # keine eigene Spalte mehr -> als data-pub fuer Kacheln/Tooltips
         # STABILER Archiv-Schluessel: DB-ID ("mb:123"/UUID) ueberdauert alles; sonst der Roh-
         # Verlaufsname ("n:"+k), der sich bei Titelkorrekturen nie aendert. norm(full) nur noch
         # als letzte Reserve (direkt konstruierte Zeilen, z.B. Tests).
@@ -778,19 +845,18 @@ def render(rows, out_dir, out_html, namelen=NAMELEN, lang="de", readers_snap=Non
                     mig[al] = key
         plabel = s[uprog]
         trs.append(
-            f'<tr data-s="{html.escape(plabel)}"{help_attr} data-c="{html.escape(e.get("country") or "")}" data-medium="{med}" data-gen="{html.escape(" ".join(e.get("genres") or []))}" data-adult="{html.escape(e.get("adult_kind") or "")}" data-h="{html.escape(key)}"{f' data-lh="{html.escape(e["lh_status"])}"' if e.get("lh_status") else ""} data-au="{html.escape(author.lower())}" data-n="{html.escape(full.lower())}" data-mal="{e.get("mal_id") or ""}" data-mst="{MAL_STATUS.get(uprog, "Reading")}" data-rc="{int(_read or 0)}"{f' data-cov="{html.escape(_cov)}"' if (_cov := cover_url(e.get("cover"))) else ""}{f' data-q2="{html.escape(_q2.lower())}"' if (_q2 := (e.get("title_romaji") or "")).strip() and norm(_q2) != norm(full) else ""}>'
+            f'<tr data-s="{html.escape(plabel)}"{help_attr} data-c="{html.escape(e.get("country") or "")}" data-medium="{med}" data-gen="{html.escape(" ".join(e.get("genres") or []))}" data-adult="{html.escape(e.get("adult_kind") or "")}" data-h="{html.escape(key)}"{f' data-lh="{html.escape(e["lh_status"])}"' if e.get("lh_status") else ""} data-au="{html.escape(author.lower())}" data-n="{html.escape(full.lower())}" data-mal="{e.get("mal_id") or ""}" data-mst="{MAL_STATUS.get(uprog, "Reading")}" data-pc="{cls}"{f' data-pub="{html.escape(pub)}"' if pub else ""} data-rc="{int(_read or 0)}" data-un="{unread}" data-rdf="{int(readable or 0)}"{f' data-cov="{html.escape(_cov)}"' if (_cov := cover_url(e.get("cover"))) else ""}{f' data-q2="{html.escape(_q2.lower())}"' if (_q2 := (e.get("title_romaji") or "")).strip() and norm(_q2) != norm(full) else ""}>'
             # HTML-Diaet (JB): die STATISCHEN Tooltip-Texte stehen NICHT mehr je Zeile im HTML
             # (6 Attribute x ~800 Zeilen = mehrere 100 KB), sondern einmal in I.tt — das JS-Boot
             # setzt sie beim Laden (applyTips). Dynamische Titles (voller Name, dsite) bleiben inline.
             f'<td title="{html.escape(full)}"><div class=nmline><span class=arch onclick="arch(this.closest(\'tr\').dataset.h)">🗃</span><span class=unarch onclick="arch(this.closest(\'tr\').dataset.h)">↩</span>{help_badge}{cfm_badge}{fin_badge}{("<span class=fl>" + flag + "</span>") if flag else ""} {adult_badge}{med_badge}{html.escape(disp)}</div>{au}</td>'
             f'<td class=favcol><span class=favi onclick="fav(this.closest(\'tr\').dataset.h)">⭐</span></td>'
-            f'<td class="st {cls}">{html.escape(plabel)}</td>'
-            f'{pub_cell}'
-            f'<td class="c" data-un="{unread}" data-lat="{int(_tot or 0)}"{" data-dyn=1" if dyn else ""}>{prog}{dyn_badge}</td>'
+            # DREI dichte, einzeln sortierbare Spalten (JB 20.07.2026 Runde 4): gelesen · übersetzt · gesamt
+            f'{rd_cell}{tl_cell}{tot_cell}'
             f'<td class="d" data-ts="{int(e["lv"])}">{d}</td>'
             f'<td class="src">{srccell}</td>'
             f'{rt_cell}'
-            f'<td class=act>{prim}<a class="pill gsr" href="#" target=_blank>{_pl(s["search"])}</a>{mdlink}{altcell}</td>'
+            f'<td class=act><div class=actrow>{prim}<a class="pill gsr" href="#" target=_blank>{_pl(s["search"])}</a><span class=dbslot>{mdlink}</span>{altcell}</div></td>'
             f'<td class=repcell><button class="pill rep" onclick="rep(this)">⚠</button></td></tr>')
     upd = datetime.now().strftime('%d.%m.%Y %H:%M')
     PROG_ORDER = ("prog_reading", "prog_caught", "prog_finished", "prog_paused", "prog_backlog")
@@ -799,10 +865,15 @@ def render(rows, out_dir, out_html, namelen=NAMELEN, lang="de", readers_snap=Non
            + f" · {s['dead_sources']} {dead} · {s['updated']} {upd}")
     # KONSOLIDIERT (JB: Zeilenumbruch der 6 Filter-Knoepfe "schlimm"): EIN Dropdown statt sechs
     # Buttons — Live-Counts je Option pflegt regray() im JS (Basistext steckt in data-l).
+    # "ohne Angelesene" (JB 20.07.): Serien, bei denen nur ~Kapitel 1 gelesen ist (mal
+    # reingeschaut), auf Wunsch ausblenden — Backlog (0 gelesen) bleibt sichtbar.
+    _nib_n = sum(1 for e in rows if 0 < (e.get("chap") or 0) <= 1)
     filter_btns = (f'<select id=pf class=btn onchange="fsSel(this)" title="{html.escape(s["filter_all_tip"])}">'
                    f'<option value="">{s["filter_all"]} ({len(rows)})</option>'
                    + "".join(f'<option value="{html.escape(s[k])}" title="{html.escape(s["prog_tips"][k])}">'
                              f'{s[k]} ({pcnt.get(k, 0)})</option>' for k in PROG_ORDER)
+                   + f'<option value="__ohne_angelesene__" title="{html.escape(s["filter_nibbled_tip"])}">'
+                   f'{s["filter_nibbled"]} ({len(rows) - _nib_n})</option>'
                    + '</select>')
     # Hilfe-Knopf IMMER zeigen — auch bei 0 (JB: "fuer das gute Gefuehl einer 0").
     help_btn = (f'<button id=hb class=btn onclick="fh(this)" title="{html.escape(s["help_button_title"])}">'
@@ -842,29 +913,50 @@ def render(rows, out_dir, out_html, namelen=NAMELEN, lang="de", readers_snap=Non
     type_opts = "".join(f"<option>{m}</option>" for m in MEDIA_FILTER)   # Manga/Manhwa/Manhua/Webtoon/Comic
     genre_chips = "".join(f'<span class=gchip data-g="{html.escape(g)}" onclick="toggleGenre(this)">{html.escape(g.capitalize())} <i>{c}</i></span>'
                           for g, c in genre_ct.most_common(30))
+    # Farb-Legende (JB 22.07.: 'kleine Legende für gelesen/ü./gesamt'): das Wort trägt seine eigene
+    # Farbe -> selbsterklärend, kein Extra-Kästchen. gelesen = Fortschritt (.rc-Klassen), ü. = gold,
+    # gesamt = grau (läuft) / violett (abgeschlossen). Sitzt in der Steuerleiste; mobil ausgeblendet.
+    # Drei Zeilen ÜBEREINANDER (JB 22.07.: einzeilig war zu breit -> Steuerleisten-Umbruch),
+    # je Kapitel-Spalte eine Zeile: Spaltenname (ausgerichtet) + ihre Farb-Bedeutungen.
+    col_legend = (
+        f'<span class=collegend title="{html.escape(s["legend_title"])}">'
+        f'<span class=lgrow><b>{s["col_read"]}</b><span class="rc r">{s["legend_read"]}</span>'
+        f'<span class="rc u">{s["legend_paused"]}</span><span class="rc f">{s["legend_caught"]}</span>'
+        f'<span class="rc fin">{s["legend_finread"]}</span><span class=rc>{s["legend_backlog"]}</span></span>'
+        f'<span class=lgrow><b>{s["col_trans"]}</b><span class=lgt>{s["legend_trans"]}</span></span>'
+        f'<span class=lgrow><b>{s["col_total"]}</b><span class=lgg>{s["legend_ongoing"]}</span>'
+        f'<span class=lgd>{s["legend_completed"]}</span></span></span>')
     # Struktur der ausgelieferten HTML (mit <!-- Ankern --> zum Zurechtfinden, obwohl minifiziert):
     #   Kopf+Ampel · Statistik/Empfehlungen · Steuerleiste · Tabelle (eine <tr> je Serie) · Skripte.
     # CSS/JS kommen minifiziert aus den lesbaren Templates (list.css/list.js), Zeilen aus `trs`.
-    P = f"""<!doctype html><html lang={lang}><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1,minimum-scale=1"><meta name=color-scheme content="dark light"><link rel=manifest href=manifest.json><meta name=theme-color content="#d67756"><link rel=apple-touch-icon href=apple-touch-icon.png><title>{s['title']}</title><style>
+    P = f"""<!doctype html><html lang={lang}><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1,minimum-scale=1"><meta name=color-scheme content="dark light"><meta name=mlts content="{int(now_ts)}"><link rel=manifest href=manifest.json><meta name=theme-color content="#d96a5a"><link rel=apple-touch-icon href=apple-touch-icon.png><title>{s['title']}</title><style>
 {CSS}
 </style></head><body>
-<!-- Kopf: Titel · Untertitel (Zusammenfassung) · Quellen-/Reader-Ampel --><h1>📚 {s['title']} <a class=hguide href="{s['guide_file']}" target=_blank title="{html.escape(s['guide_title'])}">📖</a></h1>
+<!-- ANTI-SCROLL (JB 22.07., magnetisch): die SEITE scrollt nie (body = Flex-Spalte, 100vh,
+     overflow:hidden). Kopf (#headfix: Titel/Panels/Steuerleiste) bleibt FEST oben, nur die
+     Tabelle (#scrollarea) scrollt innen; der Tabellenkopf (th sticky) klebt in #scrollarea. -->
+<div id=headfix>
+<!-- Kopf: Titel · Untertitel (Zusammenfassung). Die Quellen-/Reader-Ampel ist jetzt ausklappbar (🚦 Quellen) unten in .panels --><h1>📚 {s['title']} <a class=hguide href="{s['guide_file']}" target=_blank title="{html.escape(s['guide_title'])}">📖</a></h1>
 <div class=sub>{sub}</div>
-{status_block(s)}
-<!-- Statistik + Empfehlungen (nebeneinander) -->
-<div class=panels>{stats_panel(rows, pcnt, s)}{recommendations_panel(rows, s)}{_cols_menu(s)}{_pause_menu(s, rows)}</div>
+<!-- Statistik + Empfehlungen + Spalten + Quellen-Ampel (alle ausklappbar, nebeneinander) -->
+<div class=panels>{stats_panel(rows, pcnt, s)}{recommendations_panel(rows, s)}{_cols_menu(s)}{_quellen_menu(s)}{_pause_menu(s, rows)}{col_legend}</div>
 <!-- Steuerleiste: Fortschritts-Filter · neu/Hilfe · Suche · Typ · Genre · 18+ · Archiv -->
 <div class=ctrl>{filter_btns}{new_btn}{help_btn}
-<input id=q placeholder="{html.escape(s['search_placeholder'])}" oninput=qf()><select id=cf class=btn onchange=ff()><option value="">{s['type_all']}</option>{type_opts}</select><details class=genres><summary class=btn id=gfs title="{html.escape(s['genre_toggle'])}">{s['genre_all']} ▾</summary><div id=gf class=gchips>{genre_chips}</div></details><select id=nf class=btn onchange="setNsfw(this)" title="{html.escape(s['nsfw_title'])}"><option value="">{s['nsfw_all']}</option><option value="both">{s['nsfw_hide_both']}</option><option value="sexual">{s['nsfw_hide_sexual']}</option><option value="gore">{s['nsfw_hide_gore']}</option></select><button id=rand class=btn onclick="luckyPick()" title="{html.escape(s['lucky_title'])}">🎲</button><span class=spacer></span><button id=gear class=btn onclick="toggleGear()" title="{html.escape(s['gear_title'])}">⚙</button><span class=tools><button id=til class=btn onclick="toggleTiles()" title="{html.escape(s['tiles_title'])}">▦</button><button id=dns class=btn onclick="toggleDense()" title="{html.escape(s['dense_title'])}">⬍</button><button id=thm class=btn onclick="toggleTheme()" title="{html.escape(s['theme_title'])}">☀</button><details class=xport><summary class=btn title="{html.escape(s['export_menu_title'])}">⤴ {s['export_menu']}</summary><div class=xpanel><label><input type=checkbox id=xarch> {s['export_with_arch']}</label><label><input type=checkbox id=xfav> {s['export_fav_only']}</label><button class=btn onclick="exportMal()" title="{html.escape(s['export_mal_title'])}">{s['export_mal']}</button><button class=btn onclick="exportJson()">{s['export_json']}</button><label class=btn title="{html.escape(s['import_mal_title'])}">{s['import_mal']}<input type=file accept=".xml,text/xml" style="display:none" onchange="importMal(this)"></label><details class=xguide><summary>{s['xg_title']}</summary><div class=xhelp>{s['xg_up']}<br>{s['xg_down']}<br>{s['xg_al']}<br>{s['xg_more']}<br>{s['xg_bug']}</div></details></div></details><button id=sb class=btn onclick="saveState()" title="{html.escape(s['state_export_title'])}">💾</button></span><button id=cfb class=btn onclick="showCfm()" title="{html.escape(s['confirm_export_title'])}" style="display:none">✔ 0</button><button id=rb class=btn onclick="showBrk()" title="{html.escape(s['report_export_title'])}" style="display:none">🛠 0</button></div>
+<input id=q placeholder="{html.escape(s['search_placeholder'])}" oninput=qf()><details class=fpop><summary class=btn title="{html.escape(s['filter_title'])}">{s['filter_menu']} ▾</summary><div class=fpanel><select id=cf class=btn onchange=ff()><option value="">{s['type_all']}</option>{type_opts}</select><details class=genres><summary class=btn id=gfs title="{html.escape(s['genre_toggle'])}">{s['genre_all']} ▾</summary><div id=gf class=gchips>{genre_chips}</div></details><select id=nf class=btn onchange="setNsfw(this)" title="{html.escape(s['nsfw_title'])}"><option value="">{s['nsfw_all']}</option><option value="both">{s['nsfw_hide_both']}</option><option value="sexual">{s['nsfw_hide_sexual']}</option><option value="gore">{s['nsfw_hide_gore']}</option></select></div></details><button id=rand class=btn onclick="luckyPick()" title="{html.escape(s['lucky_title'])}">🎲</button><span class=spacer></span><button id=gear class=btn onclick="toggleGear()" title="{html.escape(s['gear_title'])}">⚙</button><span class=tools><button id=til class=btn onclick="toggleTiles()" title="{html.escape(s['tiles_title'])}">▦</button><button id=dns class=btn onclick="toggleDense()" title="{html.escape(s['dense_title'])}">⬍</button><button id=thm class=btn onclick="toggleTheme()" title="{html.escape(s['theme_title'])}">☀</button><details class=xport><summary class=btn title="{html.escape(s['export_menu_title'])}">⤴ {s['export_menu']}</summary><div class=xpanel><label><input type=checkbox id=xarch> {s['export_with_arch']}</label><label><input type=checkbox id=xfav> {s['export_fav_only']}</label><button class=btn onclick="exportMal()" title="{html.escape(s['export_mal_title'])}">{s['export_mal']}</button><button class=btn onclick="exportJson()">{s['export_json']}</button><label class=btn title="{html.escape(s['import_mal_title'])}">{s['import_mal']}<input type=file accept=".xml,text/xml" style="display:none" onchange="importMal(this)"></label><details class=xguide><summary>{s['xg_title']}</summary><div class=xhelp>{s['xg_up']}<br>{s['xg_down']}<br>{s['xg_al']}<br>{s['xg_more']}<br>{s['xg_bug']}</div></details></div></details><button id=sb class=btn onclick="saveState()" title="{html.escape(s['state_export_title'])}">💾</button></span><button id=cfb class=btn onclick="showCfm()" title="{html.escape(s['confirm_export_title'])}" style="display:none">✔ 0</button><button id=rb class=btn onclick="showBrk()" title="{html.escape(s['report_export_title'])}" style="display:none">🛠 0</button></div>
 <!-- Fortschrittsbalken (JB): zeigt laufende Anreicherung; JS pollt data/sync_progress.json (nur ueber http) -->
 <div id=syncbar><span id=synctxt></span><div class=track><div class=fill></div></div></div>
 <!-- Angepinnt oben rechts, AUSKLAPPBAR (JB 09.07.2026: 'nimmt auf Mobile sehr viel Platz'):
      Sommary-Griff + 2x2-Raster; Desktop startet offen, Mobile zu (Mini-Script darunter). -->
-<details class=pinbox id=pb open><summary class=btn title="{html.escape(s['pinbox_tip'])}">🗃 ⭐ <span class=pbc>▾</span></summary><div class=pbody><button id=vb class=btn onclick="toggleArchview()" title="{html.escape(s['archview_title'])}">🗃 {s['archive_count']}: 0</button><button id=ab class=btn onclick="toggleArchmode()" title="{html.escape(s['archmode_title'])}">{s['archive']}</button><button id=vfb class=btn onclick="toggleFavview(this)" title="{html.escape(s['fav_button_title'])}">⭐ {s['fav_button']}: 0</button><button id=fm class=btn onclick="toggleFavmode()" title="{html.escape(s['fav_mode_title'])}">⭐ {s['fav_mode']}</button></div></details>
-<script>if(innerWidth<761){{var _pb=document.getElementById('pb');if(_pb)_pb.removeAttribute('open');}}</script>
+<details class=pinbox id=pb><summary class=btn title="{html.escape(s['pinbox_tip'])}">🗃 <b class=pbn id=pbca>0</b> ⭐ <b class=pbn id=pbcf>0</b> <span class=pbc>▾</span></summary><div class=pbody><button id=vb class=btn onclick="toggleArchview()" title="{html.escape(s['archview_title'])}">🗃 {s['archive_count']}: 0</button><button id=ab class=btn onclick="toggleArchmode()" title="{html.escape(s['archmode_title'])}">{s['archive']}</button><button id=vfb class=btn onclick="toggleFavview(this)" title="{html.escape(s['fav_button_title'])}">⭐ {s['fav_button']}: 0</button><button id=fm class=btn onclick="toggleFavmode()" title="{html.escape(s['fav_mode_title'])}">⭐ {s['fav_mode']}</button></div></details>
+<!-- Pinbox startet IMMER eingeklappt (JB 20.07.: 'sollte immer standardmaessig eingeklappt sein');
+     die Zaehler am Griff (🗃 N ⭐ N) zeigen den Inhalt auch zu. -->
+</div><!-- /#headfix (fester Kopf) -->
+<!-- #scrollarea: der EINZIGE scrollende Bereich (JB 22.07. anti-scroll) — Tabelle + Kacheln -->
+<div id=scrollarea>
 <!-- Tabelle: eine <tr> je Serie; Filter/Sortierung/Archiv lesen die data-* Attribute der Zeile -->
 {'' if trs else f'<div class=welcome>{s["welcome_empty"]}</div>'}
-<div class=wrap><table id=t><thead><tr><th><span class=sh onclick="s(0)">{s['col_series']}&nbsp;↕</span><span class=shau> · <span class=sh onclick="sortAuthor()">{s['col_author']}&nbsp;↕</span></span></th><th class=favh title="{html.escape(s['fav_title'])}">⭐</th><th onclick=s(2) title="{html.escape(s['col_user_title'])}">{s['col_user']}</th><th onclick=s(3)>{s['col_status']}</th><th onclick=s(4) title="{html.escape(s['col_chapters'] + ' — ' + s['col_chapters_title'])}">{s['col_chapters_s']}</th><th onclick=s(5)>{s['col_last']}</th><th onclick=s(6)>{s['col_source']}</th><th onclick=s(7)><span class=hl>{s['col_rating']}</span><span class=hs>{s['col_rating_s']}</span></th><th>{s['col_action']}</th><th title="{html.escape(s['report_broken_title'])}"></th></tr></thead><tbody>{''.join(trs)}</tbody></table></div>
+<div class=wrap><table id=t><thead><tr><th><span class=sh onclick="s(0)">{s['col_series']}&nbsp;↕</span><span class=shau> · <span class=sh onclick="sortAuthor()">{s['col_author']}&nbsp;↕</span></span></th><th class=favh title="{html.escape(s['fav_title'])}">⭐</th><th class=hgel onclick=s(2) title="{html.escape(s['col_read'] + ' — ' + s['col_read_title'])}"><span class=hl>{s['col_read']}</span><span class=hs>{s['col_read_s']}</span></th><th class=htl onclick=s(3) title="{html.escape(s['col_trans'] + ' — ' + s['col_trans_title'])}"><span class=hl>{s['col_trans']}</span><span class=hs>{s['col_trans_s']}</span></th><th class=hges onclick=s(4) title="{html.escape(s['col_total'] + ' — ' + s['col_total_title'])}"><span class=hl>{s['col_total']}</span><span class=hs>{s['col_total_s']}</span></th><th onclick=s(5)>{s['col_last']}</th><th onclick=s(6)>{s['col_source']}</th><th onclick=s(7)><span class=hl>{s['col_rating']}</span><span class=hs>{s['col_rating_s']}</span></th><th>{s['col_action']}</th><th title="{html.escape(s['report_broken_title'])}"></th></tr></thead><tbody>{''.join(trs)}</tbody></table></div>
+</div><!-- /#scrollarea -->
 <!-- Skripte: Interaktivität (list.js, minifiziert) + Service-Worker (nur über http) -->
 {jsvars}<script>{JS}</script><script>if('serviceWorker'in navigator&&location.protocol.indexOf('http')===0){{navigator.serviceWorker.register('sw.js').catch(function(){{}})}}</script></body></html>"""
     os.makedirs(out_dir, exist_ok=True)

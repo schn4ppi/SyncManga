@@ -26,7 +26,7 @@ from urllib.parse import urlparse
 
 from .common import Pacer
 from .config import is_dead_reader
-from .parse import norm, host, clean_title, CH
+from .parse import CH, clean_title, host, norm
 
 READER_PACER = Pacer(0.25)
 # Hoefliche Zusatz-Bremse je HOST: mangafire blockt Bots nach zu vielen schnellen Anfragen (403-
@@ -483,7 +483,10 @@ def _harvest_num(token):
         return None
 
 
-_CNUM = re.compile(r'/c0*(\d+(?:\.\d+)?)/?(?:$|[?#])')   # mangatown-Stil: /manga/x/c016/
+# mangatown-/mangago-Stil: /manga/x/c016/ ODER mitten im Pfad /read-manga/x/nbt/c008.4/pg-1/
+# (JB-Befund 20.07.2026: das $-Ende liess mangagos c008.4 durchfallen -> der gepinnte Kapitel-
+# Override galt als Serien-Seite und ein Muell-'Kapitel-Link' gewann Kapitel-vor-Seite).
+_CNUM = re.compile(r'/c0*(\d+(?:\.\d+)?)(?:/|$|[?#])')
 _TAGS = re.compile(r'<[^>]+>')
 _ANCHOR = re.compile(r'<a\b[^>]*?href=["\']([^"\']+)["\'][^>]*>(.*?)</a>', re.S | re.I)
 
@@ -573,6 +576,42 @@ def is_chapter_url(url):
     if _MF_READ_URL.match(url or ""):
         return True
     return has_chapter_token(url)
+
+
+# MangaFire /title/{id-slug}/chapter/{x}: echte Kapitel-IDs sind OPAK und GROSS (>5000, z.B.
+# 4807126); eine KLEINE Zahl ist eine selbstgebaute Kapitel-NUMMER — seit dem MangaFire-Umbau v2
+# (20.07.2026: Seite antwortet fuer ALLES 200 mit JS-Huelle) nicht mehr per HTTP widerlegbar und
+# praktisch immer Muell (JB-Fund Magic Marriage /chapter/9). Grenze wie chapfix.MAX_CHAPTER.
+_MF_NUM_CHAPTER = re.compile(r"^(https?://(?:www\.)?mangafire\.to/title/[^/]+)/chapter/(\d+(?:\.\d+)?)/?$", re.I)
+_MF_OPAQUE_MIN = 5000
+
+
+def heal_bad_links(links):
+    """Lese-Link-Liste [(url, name), ...] HEILEN (JB-Befund 20.07.2026, nicht-destruktiv):
+      1. tote Reader raus (is_dead_reader — z.B. 24hnovel-Soft-200-Werbelander),
+      2. mangafire /chapter/{kleine Zahl} -> Serien-Seite (opake IDs > 5000 bleiben),
+      3. Host-Dedup: die Serien-SEITE fliegt, wenn derselbe Host schon einen KAPITEL-Link
+         stellt (JB: 'zwei mal mangafire in +alt'); identische URLs nur einmal.
+    Reihenfolge bleibt erhalten; gibt immer eine NEUE Liste zurueck."""
+    healed = []
+    for ln in (links or []):
+        if not ln or not ln[0]:
+            continue
+        u, nm = ln[0], (ln[1] if len(ln) > 1 else "")
+        if is_dead_reader(host(u)):
+            continue
+        m = _MF_NUM_CHAPTER.match(u)
+        if m and float(m.group(2)) <= _MF_OPAQUE_MIN:
+            u = m.group(1)
+        healed.append([u, nm])
+    chapter_hosts = {host(u) for u, _nm in healed if is_chapter_url(u)}
+    out, seen = [], set()
+    for u, nm in healed:
+        if u in seen or (not is_chapter_url(u) and host(u) in chapter_hosts):
+            continue
+        seen.add(u)
+        out.append([u, nm])
+    return out
 
 
 def swap_chapter(url, chapter):

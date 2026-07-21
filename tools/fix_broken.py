@@ -20,7 +20,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 PKG = os.path.normpath(os.path.join(HERE, ".."))
 if PKG not in sys.path:
     sys.path.insert(0, PKG)
-from syncmanga.parse import norm                                # noqa: E402
+from syncmanga.parse import norm  # noqa: E402
 
 OV = os.path.join(PKG, "data", "series_overrides.json")
 BROKEN = os.path.join(PKG, "data", "broken_links.json")

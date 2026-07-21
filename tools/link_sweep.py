@@ -26,7 +26,8 @@ PKG = os.path.normpath(os.path.join(HERE, ".."))
 if PKG not in sys.path:
     sys.path.insert(0, PKG)
 
-from syncmanga import linkhealth as lh, readerlink, config   # noqa: E402
+from syncmanga import config, readerlink
+from syncmanga import linkhealth as lh  # noqa: E402
 
 
 def find_cache():

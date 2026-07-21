@@ -34,7 +34,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 PKG = os.path.normpath(os.path.join(HERE, ".."))
 if PKG not in sys.path:
     sys.path.insert(0, PKG)
-from syncmanga.parse import host as host_of                    # noqa: E402
+from syncmanga.parse import host as host_of  # noqa: E402
 
 INDEX_URL = "https://raw.githubusercontent.com/keiyoushi/extensions/repo/index.min.json"
 OUT = os.path.join(PKG, "data", "reader_atlas.json")

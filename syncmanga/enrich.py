@@ -15,22 +15,32 @@ welche Quelle klemmt (Dashboard-Panel + Tray).
 
 Pfade/Overrides kommen als Parameter (cache_path, health_dir, cap, name_fix) — ein Kern, zwei Builds.
 """
+import json
 import os
 import re
-import json
-import time
 import statistics
 import threading
+import time
 from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 
 from . import catalog, readerlink
-from . import health as srcstatus      # Quellen-Status (frueher srcstatus.py, jetzt in health)
+from . import (
+    health as srcstatus,  # Quellen-Status (frueher srcstatus.py, jetzt in health)
+)
 from .config import CACHE_VER, is_dead_reader, is_no_read
-from .parse import norm, host, slug_from_url, is_novel_url, is_dynamic, romaji_score
-from .sources import md_latest, md_titles_from_url, md_chapter_link, mf_chapter_link, dy_chapter_link
-from .sources import link_ok, al_lookup, al_english_by_id
+from .parse import host, is_dynamic, is_novel_url, norm, romaji_score, slug_from_url
+from .sources import (
+    al_english_by_id,
+    al_lookup,
+    dy_chapter_link,
+    link_ok,
+    md_chapter_link,
+    md_latest,
+    md_titles_from_url,
+    mf_chapter_link,
+)
 
 RATING_PRIOR_C = 6.8     # globaler Mittel-Score (0-10) zur Bayes-Glaettung (fuer bayes_adjust-Reuse)
 RATING_PRIOR_M = 300     # Pseudo-Stimmen (Gewicht des Priors)
@@ -341,7 +351,7 @@ def fill_one_reserves(v):
     norm-gleich oder >=0.93), dann MD-Kapitel NUR bei nachweislichem EN-Kapitel
     (chapter_only), Comick nur fuer die Gruppen-Info (Tracker, kein Reader!), zuletzt
     Muster-Reader/Sitemaps. Ergaenzt NUR (nie ersetzen, ein Link je neuem Host)."""
-    from .sources import md_lookup, ck_chapter_link
+    from .sources import ck_chapter_link, md_lookup
     nxt = v.get("read_chap") or 1
     have = {host(u) for u, _ in (v.get("read_urls") or []) if u}
     new = []
@@ -372,7 +382,7 @@ def fill_one_reserves(v):
     # API-Quellen ZUERST (JB 14.07.: alte/Nischen-Titel wie Junjo Romantica hatten keine
     # Quelle, MangaFire/Dynasty finden sie ueber die API). Diverse Titel (latein+CJK).
     if titles:
-        from .sources import mf_chapter_link, dy_chapter_link
+        from .sources import dy_chapter_link, mf_chapter_link
         for _api in (mf_chapter_link, dy_chapter_link):
             try:
                 u, s2 = _api(titles, nxt)
@@ -775,7 +785,10 @@ def _live_links(links):
     Cache-ALTBESTAND: der Reuse-Zweig kopierte gespeicherte Links wortwoertlich weiter — ein Link,
     der VOR einer Domain-Sperre gebaut wurde, ueberlebte die Sperre sonst fuer immer (JB-Fund:
     vinlandsagamanga blieb 'weiterlesen', obwohl die Domain laengst gesperrt war).
-    NO_READ_HOSTS raus (JB 14.07.: mangadex ist als Lese-Link tot, bleibt aber Datenquelle)."""
+    NO_READ_HOSTS raus (JB 14.07.: mangadex ist als Lese-Link tot, bleibt aber Datenquelle).
+    Zusaetzlich heilt readerlink.heal_bad_links (JB-Befund 20.07.): mangafire-/chapter/{kleine
+    Zahl}-Muell -> Serien-Seite; Serien-Seiten-Dublette desselben Hosts raus (+Alt zeigte
+    mangafire doppelt). Greift damit fuer Reuse UND frische Treffer gleichermassen."""
     out = []
     for ln in (links or []):
         try:
@@ -784,7 +797,7 @@ def _live_links(links):
             continue
         if u and not is_dead_reader(host(u)) and not is_no_read(host(u)):
             out.append(list(ln))
-    return out
+    return readerlink.heal_bad_links(out)
 
 
 def keep_last_good(links, cache_entry):
@@ -1251,6 +1264,22 @@ def enrich(items, cache_path, health_dir, cap, name_fix=None, cache_ver=CACHE_VE
                     nc["latest"] = lt
         if agg:
             nc["rating"], nc["rating_n"], nc["ratings"] = agg
+        # Uebersetzungs-Stand (JB 20.07.2026): eigene Spalte "Uebersetzt" = letztes ONLINE
+        # verfuegbares EN-Kapitel + Alter. total_chapters (latest) ist das GESAMTwerk (Junk
+        # the Black Shadow 343), aber uebersetzt sind nur 36 — MangaUpdates.latest_chapter ist
+        # dieser Scanlation-Stand. MangaBaka liefert die MU-ID (base36) mit -> EIN Detail-Abruf
+        # gibt trans (Kapitel) + trans_ts (Datum). Nur Nicht-Novels; fehlt die ID, bleibt leer.
+        if not nc.get("novel"):
+            from . import sources as S
+            mu_id = S.mu_api_id((rec.get("source_ids") or {}).get("manga_updates"))
+            if mu_id:
+                mud = S.mu_detail(mu_id)
+                if mud.get("trans") is not None:
+                    nc["trans"] = mud["trans"]
+                if mud.get("trans_ts"):
+                    nc["trans_ts"] = mud["trans_ts"]
+                if not nc.get("author") and mud.get("authors"):   # MangaBaka-Autor leer -> MU
+                    nc["author"] = mud["authors"]
         # Cover-Fallback-Kette (JB: 'wenn eine Quelle kein Bild hat, nimm die naechste'):
         # MangaBaka -> MangaDex ueber bekannte UUID -> MangaDex ueber STRENGE Titelsuche
         # (>=0.8, sonst falsches Bild) -> AniList. Der MangaDex-Treffer fuellt nebenbei ein
@@ -1491,6 +1520,8 @@ def assemble_rows(items, cache, name_fix):
             e.update({kk: c.get(kk) for kk in ("country", "flag", "type", "latest", "pub_status",
                                                "md_id", "md_url", "link_ok", "rating", "rating_n",
                                                "ratings", "author", "novel", "adult_kind",
+                                               # Uebersetzungs-Stand (JB 20.07.): eigene Spalte "Uebersetzt"
+                                               "trans", "trans_ts",
                                                "title_native", "needs_help", "conf", "src", "genres",
                                                "read_url", "read_site", "read_urls", "ov",
                                                # read_chap mitkopieren (Runde 35): _merge_action
@@ -1506,6 +1537,20 @@ def assemble_rows(items, cache, name_fix):
                                                "title_romaji", "alt_titles")})
             if c.get("title"):
                 e["md_title"] = c["title"]
+            # SELBSTHEILUNG BEIM ZUSAMMENBAU (JB-Befund 20.07., Lost-Update): laeuft parallel ein
+            # zweiter Sync, kann ein alter Cache-Stand eine externe Heilung ueberschreiben — und
+            # capped/stale Eintraege gehen NICHT durch enrich_one (_live_links). Deshalb heilt
+            # JEDES Rendering die kopierten Links selbst (tote Reader, mangafire-Nummern-Muell,
+            # Host-Dubletten) — was im Cache steht, ist damit fuers HTML egal.
+            e["read_urls"] = _live_links(e.get("read_urls"))
+            if e.get("read_url"):
+                ru = _live_links([[e["read_url"], e.get("read_site") or ""]])
+                if ru:
+                    e["read_url"], e["read_site"] = ru[0][0], (ru[0][1] if len(ru[0]) > 1 else "")
+                elif e["read_urls"]:
+                    e["read_url"], e["read_site"] = e["read_urls"][0][0], (e["read_urls"][0][1] if len(e["read_urls"][0]) > 1 else "")
+                else:
+                    e["read_url"], e["read_site"] = "", ""
 
     def _merge_action(o, e):
         """Aktions-Felder (read_url/read_urls/ov) beim Zwillings-Merge VEREINEN — kein Link geht verloren.
@@ -1562,7 +1607,8 @@ def assemble_rows(items, cache, name_fix):
             # besser als der andere, darf die gemergte Zeile nicht "unbekannt" bleiben, nur weil der
             # leere Zwilling zuerst gesehen wurde. Fuellt nur LEERE Felder (nie Gutes ueberschreiben).
             for f in ("pub_status", "author", "latest", "rating", "rating_n", "ratings", "genres",
-                      "adult_kind", "type", "flag", "country", "title_native", "md_url"):
+                      "adult_kind", "type", "flag", "country", "title_native", "md_url",
+                      "trans", "trans_ts"):
                 if not o.get(f) and e.get(f):
                     o[f] = e[f]
             _merge_action(o, e)
@@ -1592,7 +1638,8 @@ def assemble_rows(items, cache, name_fix):
         # nur leere Felder auffuellen (nie Gutes ueberschreiben). needs_help wird beim Render neu bestimmt.
         prefer_e = bool(e.get("md_id")) and not o.get("md_id")
         for f in ("pub_status", "author", "latest", "rating", "rating_n", "ratings", "genres",
-                  "adult_kind", "type", "flag", "country", "title_native", "md_url", "md_id", "conf", "name"):
+                  "adult_kind", "type", "flag", "country", "title_native", "md_url", "md_id", "conf", "name",
+                  "trans", "trans_ts"):
             if e.get(f) and (prefer_e or not o.get(f)):
                 o[f] = e[f]
         _merge_action(o, e)

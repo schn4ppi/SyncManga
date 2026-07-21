@@ -24,8 +24,8 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 PKG = os.path.normpath(os.path.join(HERE, ".."))
 if PKG not in sys.path:
     sys.path.insert(0, PKG)
-from syncmanga.readerlink import entry_slugs                   # noqa: E402
-from syncmanga.parse import norm                               # noqa: E402
+from syncmanga.parse import norm  # noqa: E402
+from syncmanga.readerlink import entry_slugs  # noqa: E402
 
 CACHE = os.path.normpath(os.path.join(PKG, "..", "..", "SyncDashTray", "System", "md_cache.json"))
 OV = os.path.join(PKG, "data", "series_overrides.json")
@@ -165,7 +165,7 @@ def main():
             if url:
                 # Gespeicherte Alt-DBs koennen noch totes /read/-Schema tragen (Fallback bei
                 # nicht erreichbarer Sitemap) -> beim Schreiben heilen, NIE tot eintragen.
-                from syncmanga.readerlink import is_dead_read_scheme, heal_read_scheme
+                from syncmanga.readerlink import heal_read_scheme, is_dead_read_scheme
                 if is_dead_read_scheme(url):
                     url = heal_read_scheme(url)
                     if not url:

@@ -22,8 +22,8 @@ import json
 import os
 import threading
 import time
-import urllib.request
 import urllib.error
+import urllib.request
 from urllib.parse import urlparse
 
 from .common import Pacer

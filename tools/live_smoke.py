@@ -20,9 +20,13 @@ if PKG not in sys.path:
 
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
 
-from syncmanga import readerlink                              # noqa: E402
-from syncmanga.sources import (md_lookup, md_chapter_link,    # noqa: E402
-                               wt_chapter_link, ck_chapter_link)
+from syncmanga import readerlink  # noqa: E402
+from syncmanga.sources import (  # noqa: E402
+    ck_chapter_link,
+    md_chapter_link,
+    md_lookup,
+    wt_chapter_link,
+)
 
 readerlink.load_readers(os.path.join(PKG, "data", "readers_pattern.json"))
 fails = 0

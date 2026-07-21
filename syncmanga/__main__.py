@@ -15,9 +15,9 @@ import os
 import sys
 
 from . import config, i18n
-from .scan import scan_all
 from .enrich import enrich
 from .render import render
+from .scan import scan_all
 
 PKG_DIR = os.path.dirname(os.path.abspath(__file__))
 # Mitgelieferte Standard-Overrides (data/overrides.json neben dem Paket), falls der
@@ -89,7 +89,7 @@ def run(data_dir, lang=None, full=False, force=False):
     name_fix = config.load_overrides(ov)
     src = paths["sources"] if os.path.exists(paths["sources"]) else BUNDLED_SOURCES
     config.apply_sources(config.load_sources(src))   # self-updatebarer Reader-Vorrat
-    from . import readerlink                          # die 660 Direkt-Links (Hauptnutzen) laden
+    from . import readerlink  # die 660 Direkt-Links (Hauptnutzen) laden
     so = os.path.join(data_dir, "series_overrides.json")
     readerlink.load_overrides(so if os.path.exists(so) else BUNDLED_SERIES)
     # Muster-Reader laden (fehlte: ohne diesen Aufruf liefen nur die 3 eingebauten Defaults)

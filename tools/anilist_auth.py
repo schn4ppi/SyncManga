@@ -19,8 +19,8 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 PKG = os.path.normpath(os.path.join(HERE, ".."))
 if PKG not in sys.path:
     sys.path.insert(0, PKG)
-from syncmanga.common import post_json                           # noqa: E402
-from syncmanga.anilist import TOKEN_SERVICE, API                 # noqa: E402
+from syncmanga.anilist import API, TOKEN_SERVICE  # noqa: E402
+from syncmanga.common import post_json  # noqa: E402
 
 CLIENT_ID = 44883        # JBs API-Client "Claude Sync" (die ID ist nicht geheim)
 AUTH_URL = (f"https://anilist.co/api/v2/oauth/authorize?client_id={CLIENT_ID}"

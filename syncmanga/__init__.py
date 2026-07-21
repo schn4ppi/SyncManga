@@ -21,4 +21,5 @@ __version__ = "0.3.9"
 # geschuetzt (Suite SyncEngine/manga_update.py, Standalone-.exe der Freunde, Tray, Tests),
 # ohne dass jede Datei es einzeln tun muss — ein Emoji im print() darf nie den Lauf killen.
 from .common import use_utf8_stdio as _use_utf8_stdio  # noqa: E402
+
 _use_utf8_stdio()

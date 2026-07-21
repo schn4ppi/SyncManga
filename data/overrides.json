@@ -140,11 +140,15 @@
     },
     "ylgnevolutionbeginswithbigtree": {
       "name": "Evolution Begins With A Big Tree",
-      "baka": 494246
+      "baka": 910
     },
     "evolutionbeginswithbigtree": {
       "name": "Evolution Begins With A Big Tree",
-      "baka": 494246
+      "baka": 910
+    },
+    "startingoverastree": {
+      "name": "Evolution Begins With A Big Tree",
+      "baka": 910
     },
     "oneshotjikanteishiyuushabusoukaijoudoujinshi": {
       "name": "Jikan Teishi Yuusha (Doujinshi)",
@@ -607,6 +611,38 @@
       "name": "Surviving the Game as a Barbarian",
       "search": "Surviving the Game as a Barbarian",
       "mb_id": 2036
+    },
+    "searchresultsforeatingmagicalpowermademestrongest": {
+      "mb_id": 33758,
+      "name": "Search and Destroy"
+    },
+    "rebuildworldchapter": {
+      "mb_id": 2185,
+      "name": "Rebuild World"
+    },
+    "henkyounoroukishibardloenchapter": {
+      "mb_id": 28617,
+      "name": "Old Knight in the Frontier: Bard Roehn"
+    },
+    "isekaiizakayanobuchapter": {
+      "mb_id": 402,
+      "name": "Otherworldly Izakaya \"Nobu\""
+    },
+    "mywifeisdemonqueenchapter": {
+      "mb_id": 22547,
+      "name": "Legendary Wizard"
+    },
+    "skeletonknightinanotherworldchapter": {
+      "mb_id": 2648,
+      "name": "Skeleton Knight in Another World"
+    },
+    "jishouheibonmazokunoeiyuulifebkyuumazokunanonicheatdungeonwotsukutteshimattakekkachapter": {
+      "mb_id": 28285,
+      "name": "The Hero Life of a (Self-Proclaimed) \"Mediocre\" Demon!"
+    },
+    "zombiegirlfriendsubenglish": {
+      "mb_id": 114497,
+      "name": "Zombie Girlfriend!"
     }
   }
 }
