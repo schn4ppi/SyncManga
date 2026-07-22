@@ -1,0 +1,27 @@
+# Publiziert jedes GitHub-Release automatisch als neue winget-Version
+# (JB-Verteilform-Standard 22.07.2026, Stufe 2). Braucht EINMALIG das Repo-Secret
+# WINGET_TOKEN: ein klassisches PAT (scope: public_repo) von JBs GitHub-Konto —
+# damit erstellt die Action den Versions-PR an microsoft/winget-pkgs ueber den
+# bestehenden Fork schn4ppi/winget-pkgs.
+name: Publish to WinGet
+
+on:
+  release:
+    types: [released]
+
+jobs:
+  winget:
+    runs-on: windows-latest
+    steps:
+      - name: Version aus dem Tag ableiten (v.0.4.1 -> 0.4.1)
+        id: ver
+        shell: pwsh
+        run: |
+          $v = "${{ github.event.release.tag_name }}" -replace '^[vV]\.?', ''
+          "version=$v" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+      - uses: vedantmgoyal9/winget-releaser@v2
+        with:
+          identifier: schn4ppi.SyncManga
+          version: ${{ steps.ver.outputs.version }}
+          installers-regex: '-Setup\.exe$'
+          token: ${{ secrets.WINGET_TOKEN }}
