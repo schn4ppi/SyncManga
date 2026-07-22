@@ -59,7 +59,8 @@ exe = EXE(
     upx=False,
     console=False,             # Tray-App, kein Konsolenfenster
     disable_windowed_traceback=False,
-    icon=None,
+    # Familien-Emblem (S im Gleichdick, gruen) als Datei-Icon — erzeugt via make_icon.py
+    icon=os.path.join(SPECPATH, "SyncManga.ico"),
     # Metadaten in den exe-Eigenschaften (Firma/Beschreibung/Version) -> SmartScreen/Explorer
     # zeigen etwas Serioeses statt "Unbekannter Herausgeber ohne Angaben" (JB-Wunsch 2b).
     version=os.path.join(SPECPATH, "version_info.txt"),

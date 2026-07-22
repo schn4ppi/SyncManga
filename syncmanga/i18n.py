@@ -100,7 +100,7 @@ STRINGS = {
                            "Top-Genres (aus Serien mit mindestens 20 gelesenen Kapiteln)."),
         "archive": "Archivieren",
         "archive_count": "Archiv",
-        "help_button": "❓ Hilfe: {n}",
+        "help_button": "❓<span class=hl> Hilfe:</span> {n}",
         "new_button": "{n}", "new_button_title": "Nur Serien mit ungelesenen Kapiteln",
         "help_button_title": "Nur Serien, die Hilfe brauchen: kein Treffer/Autor – "
                              "Titel prüfen oder korrigieren",
@@ -329,7 +329,7 @@ STRINGS = {
                            "(from series with at least 20 chapters read)."),
         "archive": "Archive",
         "archive_count": "Archived",
-        "help_button": "❓ Help: {n}",
+        "help_button": "❓<span class=hl> Help:</span> {n}",
         "new_button": "{n}", "new_button_title": "Only series with unread chapters",
         "help_button_title": "Only series that need help: no match/author – "
                              "check or correct the title",

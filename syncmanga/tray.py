@@ -4,13 +4,14 @@ Schlankes Standalone-Tray der App „SyncManga".
 
 Linksklick = Liste öffnen. Menü: Aktualisieren · Liste öffnen · Sprache · Hilfe · Beenden.
 Single-Instance (PID-Lock, neue Instanz übernimmt). Mehrsprachig über syncmanga.i18n.
-Gleicher Look wie Claude Sync (Kreis-Pfeile-Icon), reduziert.
+Gleicher Look wie die Vollsuite: Familien-Emblem (S im Gleichdick) in Manga-GRÜN.
 
 Aufruf:  python -m syncmanga.tray [DATENORDNER] [--lang de|en]
 
 Die GUI (pystray/PIL/tkinter) wird manuell getestet; die reinen Helfer
-(menu_labels, icon_color, single_instance) sind unit-getestet.
+(menu_labels, emblem_bild, punkt_farbe, single_instance) sind unit-getestet.
 """
+import math
 import os
 import sys
 import threading
@@ -24,17 +25,95 @@ PKG_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # ---------------- reine, testbare Helfer ----------------
 
-def icon_color(busy=False, dead=0):
-    """Icon-Farbe = Zustand (wie Claude Sync): terracotta ok, grün Sync, gelb/magenta/rot tote Quellen."""
-    if busy:
-        return (90, 175, 95)        # grün: Lauf aktiv
+# --- Familien-Emblem (S im Gleichdick, JB 22.07.2026) -------------------------
+# Geometrie aus Doku/Branding/sync_emblem.svg (Familien-Repo) — bewusst als Kopie,
+# damit die giveable exe autark bleibt. Manga-Emblem = GRÜN (SCHEMA.md-Palette:
+# die Emblem-Farbe folgt der Oberfläche). Sync läuft = berührend umschließender
+# Gleichdick-Rahmen; hier in Familien-GOLD, denn Grün auf Grün wäre unsichtbar
+# (die Vollsuite spiegelt es: Gold-Emblem + grüner Rahmen).
+EMBLEM_GRUEN = (127, 176, 105)   # #7fb069
+EMBLEM_RILLE = (20, 17, 16)      # #141110 (S-Rille wie im SVG)
+RAHMEN_GOLD = (201, 149, 43)     # #c9952b
+_ECKEN = ((10.0, 96.6), (110.0, 96.6), (60.0, 10.0))
+_S_BEZIER = ((73, 34), (70, 26), (57, 23), (49, 26), (40, 29), (38, 37), (41, 44),
+             (44, 51), (54, 53), (60, 55), (68, 57), (75, 61), (75, 69),
+             (75, 79), (65, 85), (55, 84), (46, 83), (40, 78), (39, 71))
+
+
+def punkt_farbe(dead=0):
+    """Status-Punkt unten rechts (Calm): None = alles ruhig, gelb = 1-2 Datenquellen
+    offline, rot = 3+ (das alte Neon-Magenta ist abgeschafft, JB 22.07.)."""
     if dead >= 3:
-        return (230, 30, 30)        # rot: 3+ Quellen tot
-    if dead == 2:
-        return (255, 0, 200)        # neon-magenta: 2 tot
-    if dead == 1:
-        return (235, 205, 30)       # gelb: 1 tot
-    return (214, 119, 86)           # terracotta: alles ok
+        return (230, 30, 30)
+    if dead >= 1:
+        return (235, 205, 30)
+    return None
+
+
+def emblem_bild(dead=0, busy=False, update_pending=False, groesse=64):
+    """Tray-Symbol = Familien-Emblem, KONSTANT grün. Sync läuft = GOLD-Rahmen
+    (Gleichdick-Form, minimal größer, berührend umschließend); Quellen-Zustand
+    als Punkt unten rechts; Update-Badge oben rechts wie gehabt.
+    `groesse`: Kantenlänge des gelieferten Bilds (64 = Tray; 256 = exe-Icon-Master)."""
+    from PIL import Image, ImageDraw
+    gr = 4                               # Überabtastung: gezeichnet 4x, dann verkleinert
+    S = groesse * gr
+    ein = S / 64.0                       # Layout-Einheit = 1 Pixel der 64er-Tray-Größe
+    img = Image.new("RGBA", (S, S), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+    # Gleichdick = KONSTANTE Breite 100 in jeder Richtung -> BBox exakt 100x100
+    # (x 10..110, y 10..110: unten bulgt der Bogen bis y=110); mittig einpassen.
+    sk = (S - 6 * ein) / 100.0
+    ox = oy = 3 * ein - 10 * sk
+
+    def P(x, y):
+        return (x * sk + ox, y * sk + oy)
+
+    pts = []                             # drei 60°-Bögen um die jeweils dritte Ecke
+    for i in range(3):
+        a, b = _ECKEN[i], _ECKEN[(i + 1) % 3]
+        c = _ECKEN[(i + 2) % 3]
+        w0 = math.atan2(a[1] - c[1], a[0] - c[0])
+        w1 = math.atan2(b[1] - c[1], b[0] - c[0])
+        while w1 - w0 > math.pi:
+            w1 -= 2 * math.pi
+        while w1 - w0 < -math.pi:
+            w1 += 2 * math.pi
+        for t in range(25):
+            w = w0 + (w1 - w0) * t / 24
+            pts.append(P(c[0] + 100 * math.cos(w), c[1] + 100 * math.sin(w)))
+    if busy:
+        band = int(6 * ein)              # Band mittig auf der Kante -> außen ~3 px Rahmen
+        d.line(pts + pts[:1], fill=RAHMEN_GOLD, width=band, joint="curve")
+        for ecke in _ECKEN:
+            x, y = P(*ecke)
+            d.ellipse([x - band / 2, y - band / 2, x + band / 2, y + band / 2],
+                      fill=RAHMEN_GOLD)
+    d.polygon(pts, fill=EMBLEM_GRUEN)
+    kurve = []                           # S-Rille: Bezier-Kette abtasten, runde Linie + Kappen
+    for s0 in range(0, len(_S_BEZIER) - 3, 3):
+        p0, p1, p2, p3 = _S_BEZIER[s0:s0 + 4]
+        for t in range(17):
+            u = t / 16.0
+            v = 1 - u
+            kurve.append(P(v**3 * p0[0] + 3 * v * v * u * p1[0] + 3 * v * u * u * p2[0] + u**3 * p3[0],
+                           v**3 * p0[1] + 3 * v * v * u * p1[1] + 3 * v * u * u * p2[1] + u**3 * p3[1]))
+    breite = int(14 * sk)
+    d.line(kurve, fill=EMBLEM_RILLE, width=breite, joint="curve")
+    for x, y in (kurve[0], kurve[-1]):
+        r = breite / 2
+        d.ellipse([x - r, y - r, x + r, y + r], fill=EMBLEM_RILLE)
+    punkt = punkt_farbe(dead)
+    if punkt:
+        r = 11 * ein
+        cx = cy = S - r - 2 * ein
+        d.ellipse([cx - r, cy - r, cx + r, cy + r], fill=EMBLEM_RILLE)   # dunkler Ring
+        r2 = r - 2 * ein
+        d.ellipse([cx - r2, cy - r2, cx + r2, cy + r2], fill=punkt)
+    img = img.resize((groesse, groesse), Image.LANCZOS)
+    if update_pending:
+        draw_update_badge(ImageDraw.Draw(img))   # Badge NACH dem Verkleinern -> bleibt scharf
+    return img
 
 
 def draw_update_badge(d):
@@ -149,16 +228,8 @@ class TrayApp:
 
     # ----- icon -----
     def _image(self):
-        from PIL import Image, ImageDraw
-        img = Image.new("RGBA", (64, 64), (0, 0, 0, 0))
-        d = ImageDraw.Draw(img)
-        d.ellipse([5, 5, 59, 59], fill=icon_color(self.busy.locked(), self.dead))
-        d.arc([18, 18, 46, 46], 35, 300, fill=(255, 255, 255), width=5)
-        d.polygon([(46, 24), (39, 15), (53, 18)], fill=(255, 255, 255))
-        d.polygon([(18, 40), (25, 49), (11, 46)], fill=(255, 255, 255))
-        if self._update_pending:
-            draw_update_badge(d)
-        return img
+        # Familien-Emblem in Manga-Grün; Lauf = Gold-Rahmen, Quellen = Punkt (JB 22.07.)
+        return emblem_bild(self.dead, self.busy.locked(), bool(self._update_pending))
 
     def _refresh_icon(self):
         try:

@@ -39,7 +39,7 @@ body{font-family:system-ui,Segoe UI,sans-serif;margin:0;background:#141110;backg
    (th) trägt denselben --panel + sitzt bündig unter #headfix -> Kopf + Spaltenkopf sind EINE Fläche,
    Trennlinie unter den Spaltenköpfen (th-box-shadow). #scrollarea = Canvas --bg. */
 body #famkopf{background:var(--panel)}
-#headfix{flex:none;padding:14px 22px 4px;background:var(--panel)}
+#headfix{flex:none;padding:9px 22px 4px;background:var(--panel)}  /* JB 22.07.: Statistik/Empfehlungen-Reihe ~5px höher (wie die Pinbox) */
 /* VOLLBREITE Tabelle (JB 22.07.: 'Ueberhang auf beiden Seiten'): der Scroll-Bereich hat KEIN
    Seiten-Polster mehr - Zeilen, Trennlinien und die ⚠-Spalte laufen bis an die Kanten. Der
    Randabstand steckt als --gutter in der ERSTEN/LETZTEN Zelle (und als margin bei dudarch/
@@ -144,7 +144,7 @@ body.light .lgt{color:#96691c}body.light .lgg{color:#8a8072}body.light .lgd{colo
 td.repcell{text-align:center;width:1%;white-space:nowrap;padding-left:0}
 
 /* --- Statistik-/Empfehlungs-Akkordeon ------------------------------------- */
-details.stats{margin:-2px 0;position:relative}
+details.stats{margin:0;position:relative}  /* JB 22.07.: -2px zog Statistik/Empfehlungen HOCH -> Reihe stand schief */
 details.stats>summary{display:inline-block;cursor:pointer;list-style:none}
 details.stats[open]>summary{opacity:.6}
 
@@ -261,8 +261,16 @@ body.archmode tr:hover{background:#23201c}
 /* --- Sortier-Sub-Header (Serie/Autor) + Steuerleiste ---------------------- */
 .sh{cursor:pointer;color:#cf9b6f;font-weight:400}
 .sh:hover{color:#e6b58a}
-.ctrl{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.ctrl{display:flex;flex-wrap:wrap;gap:8px;align-items:center}  /* JB 22.07.: gleicher Rhythmus wie .panels — bricht die Leiste um, entstehen saubere Zeilen */
 .spacer{flex:1}       /* schiebt die Werkzeuge (Desktop) nach rechts */
+/* JB 22.07.: bricht die Steuerleiste um (schmalere Fenster/Dashboard-Embed), soll jede
+   Zeile GEFÜLLT sein und Rest-Luft in der MITTE sitzen statt am Rand. Der Spacer riss
+   die Werkzeuge sonst auf eine eigene, rechts-löchrige Zeile — hier fällt er weg und
+   space-between verteilt die Rest-Luft zwischen den Knöpfen. */
+@media (min-width:641px) and (max-width:1200px){
+  .spacer{display:none}
+  .ctrl{justify-content:space-between}
+}
 .tools{display:contents}   /* Desktop: Werkzeug-Knoepfe fliessen normal in die Leiste (unsichtbarer Wrapper) */
 #gear{display:none}   /* Zahnrad NUR mobil (Media-Query blendet es ein); Desktop zeigt alle Werkzeuge */
 /* .wrap NICHT mehr selbst scrollen (sonst wird es zum sticky-Container und der Tabellenkopf
@@ -391,7 +399,9 @@ details.genres[open]>.gchips{position:absolute;top:100%;left:0;z-index:60;margin
 padding:8px 10px;background:var(--panel2);border:1px solid var(--line2);border-radius:9px;
 box-shadow:0 6px 18px rgba(0,0,0,.5);width:max-content;max-width:min(92vw,700px)}
 /* Panels (Statistik/Empfehlungen/Spalten/Pausen) unausgeklappt DIREKT nebeneinander (JB: enger Abstand) */
-.panels{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:flex-start}   /* JB 22.07.: 1-2px mehr Luft zwischen den Funktionen */
+/* JB 22.07. „formschön": mehr Luft (8/12), Knöpfe vertikal ZENTRIERT (kein Schiefstand),
+   fester Abstand zur Steuerleiste darunter = ruhiger Zeilen-Rhythmus. */
+.panels{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;margin-bottom:8px}
 /* Aufgeklappt = DROPDOWN unter dem Button (JB 05.07.2026): die Button-Reihe bleibt stehen,
    kein Zeilenumbruch der Buttons; nur EIN Panel offen (JS-Akkordeon). */
 .panels>details{position:relative}
@@ -485,7 +495,12 @@ details.cols>summary{display:inline-block;list-style:none}
 .colbox{font-size:11px;color:#d7c7bd;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:2px}
 .colbox input{margin:0;width:12px;height:12px}
 /* ⏸-Pausen-Menue (JB Runde 38): viele Reader -> begrenzte Hoehe + Scrollen; Status-Punkt je Seite */
-.pausebxs{max-height:230px;overflow-y:auto;max-width:540px}
+/* Pausen-Liste als ENGES Raster (JB 22.07.: 'wie eine Excel-Tabelle'): 2 buendige Spalten,
+   eine Seite je Zelle, Checkbox klebt am Text. Der Flex-Umbruch davor ergab ausgefranste
+   Spalten mit scheinbar losgeloesten Kaestchen. */
+.pausebxs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px 12px;align-items:center;max-height:230px;overflow-y:auto;max-width:540px}
+.pausebxs .colbox{overflow:hidden;text-overflow:ellipsis}
+.pausebxs .ssg{grid-column:1/-1}
 .pausebxs .dot{margin:0 2px 0 1px}
 /* 💡-Empfehlungen: 📖 = Kapitel-1-Direktlink neben dem DB-Verweis (JB Runde 38, Feature 4) */
 .rwrap{display:inline-flex;align-items:center;gap:3px}
@@ -727,7 +742,8 @@ h1{padding-right:88px}
 /* Steuerleiste neu geordnet (reines CSS 'order', .ctrl ist bereits ein Flex-Container):
    Suche zuerst + allein auf ihrer Zeile (flex-basis 100%), dann Filter, zuletzt Werkzeuge. */
 #q{order:1;flex:1 1 100%}
-#pf{order:2}
+#pf{order:2;max-width:104px}      /* JB 22.07.: 'Alle' kurz — aufgeklappt ist das Menue eh gross */
+details.fpop{order:3}   /* Filter-Menue mit in die Reihe (JB 22.07. iPhone) */
 #cf{order:3}
 details.genres{order:4}
 #nf{order:5}
@@ -740,16 +756,18 @@ details.genres{order:4}
 #rb{order:12}
 /* die Spacer-Luecke ist mobil ausgeblendet (.spacer{display:none} oben) -> Zahnrad rueckt an
    den Wuerfel; #til/#thm/#sb brauchen keinen eigenen order mehr (stecken in .tools). */
-/* Statistik/Empfehlungen/Spalten/Pausen in EINER Zeile (JB 09.07.2026): kleinere Schrift,
-   kein Umbruch — die vier Knoepfe teilen sich die Breite. */
-.panels{gap:3px;flex-wrap:nowrap}
-.panels>details>summary{font-size:11px;white-space:nowrap}
+/* Panels-Knoepfe mobil (JB 22.07., iPhone): inzwischen FUENF Knoepfe (Quellen kam dazu) —
+   nowrap lief aus dem Bild (overflow-x:hidden schnitt ab). Jetzt: umbrechen erlaubt +
+   engere Pills, damit moeglichst alles in eine Zeile passt. */
+.panels{gap:3px;flex-wrap:wrap}
+.panels>details>summary{font-size:11px;white-space:nowrap;padding:3px 7px}
 .panels .colbxs,.gchips{max-width:calc(100vw - 24px)}
+.pausebxs{grid-template-columns:1fr}
 /* Genre-/Spalten-Dropdown mobil NICHT absolut ueberlagern (JB 09.07.2026: 'Chips verschwinden
    nach rechts aus dem Bildschirm'). Der schwebende Dropdown haengt am weit rechts sitzenden
    Knopf und laeuft dort aus dem Screen. Mobil deshalb NORMAL IM FLUSS darunter (position:static)
    -> die Chips brechen ueber die volle Breite um, nie ueber den Rand. Desktop bleibt schwebend. */
-details.genres[open]>.gchips,.panels>details[open]>.colbxs,.panels>details.quellen[open]>.qpanel,details.fpop[open]>.fpanel{position:static;width:auto;
+details.genres[open]>.gchips,.panels>details[open]>.colbxs,.panels>details.quellen[open]>.qpanel,details.fpop[open]>.fpanel,details.stats[open]>.pdrop{position:static;width:auto;
  max-width:100%;box-shadow:none;margin:4px 0}
 details.genres[open]>.gchips{display:flex;flex-wrap:wrap;flex-basis:100%}
 body.tiles #tiles{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px 6px}
@@ -785,7 +803,9 @@ body.tiles #tiles{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px 6px}
        Serie · gelesen · übersetzt · gesamt · Aktion. Weg: ⭐ (2) und Bewertung (8) — die drei
        Zahlen bleiben, der Link bleibt, nichts scrollt seitlich. Kacheln: 3 pro Reihe. --- */
 @media(max-width:430px){
- #t th:nth-child(2),#t td:nth-child(2),#t th:nth-child(8),#t td:nth-child(8){display:none}
+ #t th:nth-child(2),#t td:nth-child(2){display:none}   /* JB 22.07.: Bewertung (8) bleibt SICHTBAR — nur der Stern (2) weicht */
+ .pill.go{padding:1px 6px;font-size:11px}   /* weiterlesen kompakter, Tippflaeche bleibt (JB 22.07.) */
+ td.act .actrow{line-height:1.65}
  table{font-size:12px}
  #t td:first-child{font-size:10.5px}
  th,td{padding:3px 3px}

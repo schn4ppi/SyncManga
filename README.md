@@ -21,9 +21,12 @@ nur **lesend** (über eine Kopie) und verändert in den Browsern nichts. Es werd
 Manga-Datenbanken im Internet abgefragt (Titel/Bewertung/Status), niemals deine Daten gesendet.
 
 ### Starten
-- **Fertige App:** `SyncManga.exe` doppelklicken. Beim ersten Start warnt Windows-SmartScreen
-  evtl. vor einer „unbekannten" App (die Datei ist nicht teuer signiert) → *Weitere Informationen*
-  → *Trotzdem ausführen*.
+- **Installer (empfohlen):** `SyncManga-Setup.exe` doppelklicken — installiert ohne
+  Admin-Rechte unter deinem Benutzerkonto (Autostart als abwählbarer Haken, sauberer
+  Uninstall-Eintrag) und umgeht die meisten Defender-Fehlalarme auf Einzeldatei-exes.
+- **Fertige App (eine Datei):** `SyncManga.exe` doppelklicken. Beim ersten Start warnt
+  Windows-SmartScreen evtl. vor einer „unbekannten" App (die Datei ist nicht teuer signiert)
+  → *Weitere Informationen* → *Trotzdem ausführen*.
 - **Mit Python:** `python -m syncmanga` (einmaliger Lauf) oder `python -m syncmanga.tray` (Tray).
 
 ### Tray-Menü
@@ -107,8 +110,12 @@ The list is **fully mobile-optimized** (since v0.3.4).
 (title/rating/status); your data never leaves your machine.
 
 ### Run it
-- **Packaged app:** double-click `SyncManga.exe`. On first launch Windows SmartScreen may warn
-  about an "unknown" app (the file is not expensively signed) → *More info* → *Run anyway*.
+- **Installer (recommended):** double-click `SyncManga-Setup.exe` — installs per-user
+  (no admin rights, autostart as an optional checkbox, clean uninstall entry) and avoids
+  most Defender false positives on bare single-file exes.
+- **Packaged app (single file):** double-click `SyncManga.exe`. On first launch Windows
+  SmartScreen may warn about an "unknown" app (the file is not expensively signed)
+  → *More info* → *Run anyway*.
 - **With Python:** `python -m syncmanga` (one run) or `python -m syncmanga.tray` (tray).
 
 ### Tray menu
