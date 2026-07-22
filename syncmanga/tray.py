@@ -428,6 +428,20 @@ class TrayApp:
             return
         self._notify(s["upd_installing"].format(v=v))
         try:
+            if update.installiert_via_setup(exe):
+                # Installierte Variante (JB-Befund 22.07.): NIE die exe tauschen — das wuerde
+                # den onedir-Nutzer zurueck in die onefile-Form drehen (Defender-Risiko).
+                # Stattdessen das Setup still ausfuehren; ohne Setup-Asset/digest im Release
+                # lieber beim alten Stand bleiben (fail-safe).
+                if not info.get("setup_url"):
+                    self._notify(s["upd_failed"].format(e="Release ohne Setup-Asset"))
+                    return
+                neu = update.download_setup(info, os.path.dirname(exe))
+                try:
+                    os.remove(self.lockfile)     # sauber uebergeben wie bei on_quit
+                except OSError:
+                    pass
+                update.apply_setup_update(neu, exe)   # kehrt nicht zurueck (Setup + Neustart)
             new = update.download_exe(info, os.path.dirname(exe))
             try:
                 os.remove(self.lockfile)         # sauber uebergeben wie bei on_quit

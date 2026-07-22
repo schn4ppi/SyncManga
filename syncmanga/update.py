@@ -111,6 +111,8 @@ def check_program_version(current, fetch_version):
 
 RELEASE_API = f"https://api.github.com/repos/{REPO}/releases/latest"
 EXE_ASSET = "syncmanga.exe"          # erwarteter Asset-Name (case-insensitiv verglichen)
+SETUP_ASSET = "syncmanga-setup.exe"  # Installer-Asset (seit v0.4.1); Update-Weg der installierten Variante
+INNO_UNINSTALL_KEY = r"Software\Microsoft\Windows\CurrentVersion\Uninstall\{7E4A2C1B-5B7E-4C93-9C41-3A5F92D8B0E4}_is1"   # AppId aus build/SyncManga.iss
 MIN_EXE_SIZE = 5 * 2 ** 20           # Plausibilitaets-Untergrenze: kleiner = kaputter Download
 
 
@@ -118,6 +120,42 @@ def frozen_exe():
     """Pfad der laufenden .exe — oder None im Quellbaum (dann gibt es nichts zu tauschen)."""
     import sys
     return sys.executable if getattr(sys, "frozen", False) else None
+
+
+def installiert_via_setup(exe=None, _reg_check=None):
+    """True, wenn die App per Inno-Setup installiert wurde (JB-Befund 22.07.: der alte
+    Updater drehte Setup-Nutzer beim exe-Tausch zurueck in die riskante onefile-Form).
+
+    Zwei unabhaengige Zeichen: der _internal-Ordner neben der exe (onedir-Layout) ODER der
+    Inno-Uninstall-Eintrag in der Registry. Letzterer ueberlebt auch, wenn ein Alt-Updater
+    die exe schon einmal durch onefile ersetzt hat -> solche Nutzer werden beim naechsten
+    Update in die Setup-Welt ZURUECKGEHEILT. `_reg_check` ist fuer Tests injizierbar."""
+    exe = exe or frozen_exe()
+    if exe and os.path.isdir(os.path.join(os.path.dirname(exe), "_internal")):
+        return True
+    if _reg_check is not None:
+        return bool(_reg_check())
+    try:
+        import winreg
+        with winreg.OpenKey(winreg.HKEY_CURRENT_USER, INNO_UNINSTALL_KEY):
+            return True
+    except (OSError, ImportError):
+        return False
+
+
+def pick_setup_asset(assets, repo=REPO):
+    """(setup_asset, sha256_aus_digest) — rein, testbar. Gleicher Repo-Pin wie pick_assets;
+    die Pruefsumme kommt aus GitHubs Asset-`digest` ("sha256:<hex>"), NICHT aus einem
+    .sha256-Asset (das wuerde der sha-Matcher der Alt-Clients faelschlich greifen)."""
+    prefix = f"https://github.com/{repo}/releases/download/"
+    for a in assets or []:
+        if not isinstance(a, dict) or not str(a.get("browser_download_url", "")).startswith(prefix):
+            continue
+        if str(a.get("name", "")).lower() == SETUP_ASSET:
+            digest = str(a.get("digest") or "")
+            sha = digest.split(":", 1)[1].lower() if digest.lower().startswith("sha256:") else ""
+            return a, sha
+    return None, ""
 
 
 def pick_assets(assets, repo=REPO):
@@ -158,11 +196,15 @@ def check_release(current, fetch_json):
         return {"available": False, "version": ""}
     tag = str(data.get("tag_name") or "").strip()
     exe, sha = pick_assets(data.get("assets"))
+    setup, setup_sha = pick_setup_asset(data.get("assets"))
     return {"available": bool(exe) and is_newer(tag, current),
             "version": tag.lstrip("vV."),
             "exe_url": (exe or {}).get("browser_download_url", ""),
             "size": int((exe or {}).get("size") or 0),
-            "sha_url": (sha or {}).get("browser_download_url", "")}
+            "sha_url": (sha or {}).get("browser_download_url", ""),
+            "setup_url": (setup or {}).get("browser_download_url", ""),
+            "setup_size": int((setup or {}).get("size") or 0),
+            "setup_sha": setup_sha}
 
 
 def verify_exe(data, expected_size=0, expected_sha=""):
@@ -224,6 +266,38 @@ def download_exe(info, dest_dir, fetch=None):
         f.write(data)
     os.replace(tmp, target)
     return target
+
+
+def download_setup(info, dest_dir, fetch=None):
+    """Installer verifiziert nach `SyncManga_setup_new.exe` laden -> Pfad. OHNE digest-SHA
+    wird ABGELEHNT (fail-safe: lieber kein Update, als den Setup-Nutzer ohne Pruefsumme zu
+    aktualisieren oder ihn per exe-Tausch in die onefile-Form zu drehen)."""
+    if not info.get("setup_sha"):
+        raise ValueError("Update verworfen: Release liefert keinen digest fuers Setup")
+    fetch = fetch or fetch_https
+    data = fetch(info["setup_url"])
+    ok, why = verify_exe(data, info.get("setup_size") or 0, info["setup_sha"])
+    if not ok:
+        raise ValueError(f"Update verworfen: {why}")
+    target = os.path.join(dest_dir, "SyncManga_setup_new.exe")
+    tmp = target + ".tmp"
+    with open(tmp, "wb") as f:
+        f.write(data)
+    os.replace(tmp, target)
+    return target
+
+
+def apply_setup_update(setup_exe, running_exe):
+    """Installierte Variante aktualisieren: Setup STILL ausfuehren und die App sofort
+    beenden (gibt die Dateisperren frei; CloseApplications=no im iss). Die cmd-Kette
+    wartet auf das Setup und startet die App danach neu."""
+    import subprocess
+    kette = ('cmd /c ""' + setup_exe + '" /VERYSILENT /SUPPRESSMSGBOXES /NORESTART'
+             ' & start "" "' + running_exe + '""')
+    subprocess.Popen(kette, close_fds=True,
+                     creationflags=getattr(subprocess, "DETACHED_PROCESS", 0x8)
+                     | getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0x200))
+    os._exit(0)                          # wie apply_exe_update: nichts darf festhalten
 
 
 def apply_exe_update(new_exe, running_exe, restart=True):
