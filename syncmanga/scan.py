@@ -85,8 +85,17 @@ def copy_locked(src, name):
 
     `name` = Zieldateiname im Temp-Ordner (z.B. "places_copy.sqlite"). Der Browser kann
     laufen; gelesen wird ausschliesslich die Kopie, nie das Original.
+
+    PROZESS-EIGENER Name (Befund 23.07.): der Zielname bekommt die PID angehaengt.
+    Vorher war er FEST — liefen zwei Scans gleichzeitig, ueberschrieben sie einander
+    die Kopie und lasen fremde Daten. Im Gate (8 Parallel-Prozesse) kippte dadurch
+    test_scan_firefox_history_bookmarks_and_merge sporadisch (Lesezeichen-Status
+    'Gelesen' statt 'Am Lesen'); produktiv trifft dieselbe Falle Tray-Sync + manuellen
+    Lauf zur gleichen Zeit. Aufraeumen bleibt Sache des Temp-Ordners (nie loeschen wir
+    fremde Dateien).
     """
-    tmp = os.path.join(tempfile.gettempdir(), name)
+    stamm, endung = os.path.splitext(name)
+    tmp = os.path.join(tempfile.gettempdir(), f"{stamm}_{os.getpid()}{endung}")
     shutil.copy(src, tmp)
     for ext in ("-wal", "-shm"):
         if os.path.exists(src + ext):

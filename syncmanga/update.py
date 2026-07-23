@@ -112,7 +112,15 @@ def check_program_version(current, fetch_version):
 RELEASE_API = f"https://api.github.com/repos/{REPO}/releases/latest"
 EXE_ASSET = "syncmanga.exe"          # erwarteter Asset-Name (case-insensitiv verglichen)
 SETUP_ASSET = "syncmanga-setup.exe"  # Installer-Asset (seit v0.4.1); Update-Weg der installierten Variante
-INNO_UNINSTALL_KEY = r"Software\Microsoft\Windows\CurrentVersion\Uninstall\{7E4A2C1B-5B7E-4C93-9C41-3A5F92D8B0E4}_is1"   # AppId aus build/SyncManga.iss
+# AppId aus build/SyncManga.iss. Die DOPPELTE schliessende Klammer ist KEIN Tippfehler:
+# im iss steht `AppId={{7E4A2C1B-…}}`, und Inno Setup entschaerft nur die OEFFNENDE
+# Doppelklammer (`{{` -> `{`) — die schliessenden bleiben beide stehen. Der real angelegte
+# Schluessel heisst darum `{7E4A2C1B-…}}_is1` (am 23.07. an einer echten Installation
+# nachgemessen). Bis v0.4.1 stand hier eine Klammer zu wenig, weshalb die Registry-Heilung
+# in `installiert_via_setup` nie greifen konnte. Die AppId selbst wird NICHT korrigiert —
+# das waere eine neue Produkt-Identitaet und wuerde bei v0.4.1-Nutzern eine zweite
+# Installation neben der alten anlegen.
+INNO_UNINSTALL_KEY = r"Software\Microsoft\Windows\CurrentVersion\Uninstall\{7E4A2C1B-5B7E-4C93-9C41-3A5F92D8B0E4}}_is1"
 MIN_EXE_SIZE = 5 * 2 ** 20           # Plausibilitaets-Untergrenze: kleiner = kaputter Download
 
 
@@ -122,15 +130,54 @@ def frozen_exe():
     return sys.executable if getattr(sys, "frozen", False) else None
 
 
+def v2_installation(exe=None):
+    """{app}-Ordner der Verteilform v2 — oder None.
+
+    v2 (JB-Go 23.07., „Wir muessen sauber sein"): SyncManga wird NICHT mehr als selbst
+    gebaute .exe ausgeliefert, sondern als Skripte auf dem offiziellen, von der Python
+    Software Foundation signierten Embeddable-Python. Layout im Programmordner:
+
+        {app}\\python\\pythonw.exe      <- PSF-signierter Interpreter (mitgeliefert)
+        {app}\\app\\SyncManga.py        <- unser Einstieg + Paket + Daten
+
+    Erkannt wird das am laufenden Interpreter: liegt `pythonw.exe` in einem Ordner namens
+    `python` und existiert daneben `app`, laeuft die installierte v2-Variante. `exe` ist
+    fuer Tests injizierbar (sonst der laufende Interpreter)."""
+    import sys
+    exe = exe or sys.executable
+    if not exe:
+        return None
+    ordner = os.path.dirname(os.path.abspath(exe))
+    if os.path.basename(ordner).lower() != "python":
+        return None
+    app = os.path.dirname(ordner)
+    return app if os.path.isdir(os.path.join(app, "app")) else None
+
+
+def programm_exe(exe=None):
+    """(start_exe, argument) zum Neustarten der laufenden App — verteilformunabhaengig.
+
+    v2: (…\\python\\pythonw.exe, …\\app\\SyncManga.py). Gepackte exe: (exe, ""). Quellbaum:
+    (None, "") — dort gibt es nichts zu aktualisieren."""
+    app = v2_installation(exe)
+    if app:
+        import sys
+        return (exe or sys.executable), os.path.join(app, "app", "SyncManga.py")
+    return frozen_exe(), ""
+
+
 def installiert_via_setup(exe=None, _reg_check=None):
     """True, wenn die App per Inno-Setup installiert wurde (JB-Befund 22.07.: der alte
     Updater drehte Setup-Nutzer beim exe-Tausch zurueck in die riskante onefile-Form).
 
-    Zwei unabhaengige Zeichen: der _internal-Ordner neben der exe (onedir-Layout) ODER der
-    Inno-Uninstall-Eintrag in der Registry. Letzterer ueberlebt auch, wenn ein Alt-Updater
-    die exe schon einmal durch onefile ersetzt hat -> solche Nutzer werden beim naechsten
-    Update in die Setup-Welt ZURUECKGEHEILT. `_reg_check` ist fuer Tests injizierbar."""
+    Drei unabhaengige Zeichen: das v2-Layout (python\\ + app\\ nebeneinander), der
+    _internal-Ordner neben der exe (altes onedir-Layout) ODER der Inno-Uninstall-Eintrag in
+    der Registry. Letzterer ueberlebt auch, wenn ein Alt-Updater die exe schon einmal durch
+    onefile ersetzt hat -> solche Nutzer werden beim naechsten Update in die Setup-Welt
+    ZURUECKGEHEILT. `_reg_check` ist fuer Tests injizierbar."""
     exe = exe or frozen_exe()
+    if v2_installation(exe):
+        return True
     if exe and os.path.isdir(os.path.join(os.path.dirname(exe), "_internal")):
         return True
     if _reg_check is not None:
@@ -287,13 +334,49 @@ def download_setup(info, dest_dir, fetch=None):
     return target
 
 
-def apply_setup_update(setup_exe, running_exe):
+def verknuepfung():
+    """Pfad der Startmenue-Verknuepfung — oder "" wenn es sie nicht gibt."""
+    appdata = os.environ.get("APPDATA")
+    if not appdata:
+        return ""
+    p = os.path.join(appdata, "Microsoft", "Windows", "Start Menu", "Programs", "SyncManga.lnk")
+    return p if os.path.isfile(p) else ""
+
+
+def neustart_ziel(running_exe, arg="", _lnk=None):
+    """Was nach dem stillen Setup-Lauf gestartet wird -> (ziel, argument).
+
+    Bevorzugt die Startmenue-Verknuepfung, und das ist kein Schoenheitsgriff: beim Aufstieg
+    von der alten exe-Form auf Verteilform v2 ENTFERNT das Setup `{app}\\SyncManga.exe`
+    (InstallDelete). Ein Neustart auf den alten exe-Pfad liefe danach ins Leere — der
+    Nutzer haette ein stilles Update und keine laufende App mehr. Die Verknuepfung legt
+    der Installer in beiden Verteilformen neu an und zeigt immer auf den richtigen Start.
+    Fehlt sie (Verknuepfung geloescht), bleibt der uebergebene Pfad der Rueckfallweg."""
+    lnk = verknuepfung() if _lnk is None else _lnk
+    return (lnk, "") if lnk else (running_exe, arg)
+
+
+def setup_kette(setup_exe, running_exe, arg=""):
+    """cmd-Zeile fuer apply_setup_update — ausgelagert, damit sie ohne Prozessstart
+    testbar ist. `arg` ist bei Verteilform v2 das zu startende Skript (pythonw.exe SKRIPT)."""
+    start = 'start "" "' + running_exe + '"'
+    if arg:
+        start += ' "' + arg + '"'
+    return ('cmd /c ""' + setup_exe + '" /VERYSILENT /SUPPRESSMSGBOXES /NORESTART'
+            ' & ' + start + '"')
+
+
+def apply_setup_update(setup_exe, running_exe, arg=""):
     """Installierte Variante aktualisieren: Setup STILL ausfuehren und die App sofort
     beenden (gibt die Dateisperren frei; CloseApplications=no im iss). Die cmd-Kette
-    wartet auf das Setup und startet die App danach neu."""
+    wartet auf das Setup und startet die App danach neu.
+
+    Das IST der „Dateikopien statt exe-Tausch"-Weg der Verteilform v2: Inno kopiert die
+    neuen Skripte in die bestehende Installation; es gibt keine selbst gebaute exe mehr,
+    die getauscht werden koennte — und damit auch keinen Reputations-Reset je Release."""
     import subprocess
-    kette = ('cmd /c ""' + setup_exe + '" /VERYSILENT /SUPPRESSMSGBOXES /NORESTART'
-             ' & start "" "' + running_exe + '""')
+    ziel, ziel_arg = neustart_ziel(running_exe, arg)
+    kette = setup_kette(setup_exe, ziel, ziel_arg)
     subprocess.Popen(kette, close_fds=True,
                      creationflags=getattr(subprocess, "DETACHED_PROCESS", 0x8)
                      | getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0x200))

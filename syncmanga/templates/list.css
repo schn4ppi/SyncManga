@@ -263,13 +263,15 @@ body.archmode tr:hover{background:#23201c}
 .sh:hover{color:#e6b58a}
 .ctrl{display:flex;flex-wrap:wrap;gap:8px;align-items:center}  /* JB 22.07.: gleicher Rhythmus wie .panels — bricht die Leiste um, entstehen saubere Zeilen */
 .spacer{flex:1}       /* schiebt die Werkzeuge (Desktop) nach rechts */
-/* JB 22.07.: bricht die Steuerleiste um (schmalere Fenster/Dashboard-Embed), soll jede
-   Zeile GEFÜLLT sein und Rest-Luft in der MITTE sitzen statt am Rand. Der Spacer riss
-   die Werkzeuge sonst auf eine eigene, rechts-löchrige Zeile — hier fällt er weg und
-   space-between verteilt die Rest-Luft zwischen den Knöpfen. */
+/* JB 22.07. (2. Runde — space-between verstreute die letzte Reihe „omg"): bricht die
+   Steuerleiste um (schmalere Fenster/Dashboard-Embed), gilt: ALLES linksbündig eng
+   gepackt (gap 6px, so passt eher noch ein Symbol in die Zeile), NUR das letzte
+   Symbol (💾) rechtsbündig — die Rest-Luft sitzt damit vor dem 💾 in der Mitte,
+   nie als Streu-Löcher über die ganze Zeile. */
 @media (min-width:641px) and (max-width:1200px){
   .spacer{display:none}
-  .ctrl{justify-content:space-between}
+  .ctrl{gap:6px}
+  #sb{margin-left:auto}
 }
 .tools{display:contents}   /* Desktop: Werkzeug-Knoepfe fliessen normal in die Leiste (unsichtbarer Wrapper) */
 #gear{display:none}   /* Zahnrad NUR mobil (Media-Query blendet es ein); Desktop zeigt alle Werkzeuge */

@@ -15,7 +15,7 @@ Phase 2 (Herauslösen aus SyncEngine/manga_update.py) — Stand:
 
 # Quelle der Wahrheit zur LAUFZEIT (auch in der gepackten exe; Basis des Selbst-Updates).
 # Ein Test erzwingt Gleichschritt mit Core/VERSION und Manga/build/version_info.txt.
-__version__ = "0.4.1"
+__version__ = "0.4.2"
 
 # stdout/stderr sofort beim Import des Kerns auf UTF-8 stellen. So ist JEDER Einstieg
 # geschuetzt (Suite SyncEngine/manga_update.py, Standalone-.exe der Freunde, Tray, Tests),

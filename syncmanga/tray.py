@@ -417,7 +417,9 @@ class TrayApp:
                 self._notify(s["upd_none"].format(v=__version__))
             return
         v = info["version"]
-        exe = update.frozen_exe()
+        # Verteilformunabhaengig: gepackte exe ODER Skripte auf dem mitgelieferten
+        # PSF-signierten Python (v2). `arg` ist dort das Startskript fuer den Neustart.
+        exe, arg = update.programm_exe()
         if not exe or not (manual or self.settings.get("auto_update")) or self.busy.locked():
             if manual or v != self._upd_seen:
                 self._upd_seen = v
@@ -436,12 +438,13 @@ class TrayApp:
                 if not info.get("setup_url"):
                     self._notify(s["upd_failed"].format(e="Release ohne Setup-Asset"))
                     return
-                neu = update.download_setup(info, os.path.dirname(exe))
+                neu = update.download_setup(info, self.data_dir)
                 try:
                     os.remove(self.lockfile)     # sauber uebergeben wie bei on_quit
                 except OSError:
                     pass
-                update.apply_setup_update(neu, exe)   # kehrt nicht zurueck (Setup + Neustart)
+                # kehrt nicht zurueck (Setup + Neustart); `arg` startet bei v2 das Skript
+                update.apply_setup_update(neu, exe, arg)
             new = update.download_exe(info, os.path.dirname(exe))
             try:
                 os.remove(self.lockfile)         # sauber uebergeben wie bei on_quit
@@ -522,12 +525,16 @@ class TrayApp:
             self._info(i18n.strings(self.lang)["privacy"])
 
     def _info(self, text):
+        """Hinweisfenster ueber die Windows-eigene MessageBox (user32).
+
+        Frueher tkinter — das ist seit Verteilform v2 (23.07.) nicht mehr verfuegbar: die
+        offizielle Embeddable-Distribution der Python Software Foundation liefert Tcl/Tk
+        bewusst nicht mit ("Tcl/tk ... and pip are not included"). user32.MessageBoxW ist
+        in jedem Windows da, braucht keine Abhaengigkeit und sieht heimischer aus.
+        MB_OK | MB_ICONINFORMATION | MB_SETFOREGROUND = 0x40040."""
         try:
-            import tkinter as tk
-            from tkinter import messagebox
-            r = tk.Tk(); r.withdraw()
-            messagebox.showinfo("SyncManga", text)
-            r.destroy()
+            import ctypes
+            ctypes.windll.user32.MessageBoxW(None, str(text), "SyncManga", 0x40040)
         except Exception:
             print(text)
 
