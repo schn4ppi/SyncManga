@@ -23,10 +23,15 @@ Manga-Datenbanken im Internet abgefragt (Titel/Bewertung/Status), niemals deine 
 ### Starten
 - **Installer (empfohlen):** `SyncManga-Setup.exe` doppelklicken — installiert ohne
   Admin-Rechte unter deinem Benutzerkonto (Autostart als abwählbarer Haken, sauberer
-  Uninstall-Eintrag) und umgeht die meisten Defender-Fehlalarme auf Einzeldatei-exes.
-- **Fertige App (eine Datei):** `SyncManga.exe` doppelklicken. Beim ersten Start warnt
-  Windows-SmartScreen evtl. vor einer „unbekannten" App (die Datei ist nicht teuer signiert)
-  → *Weitere Informationen* → *Trotzdem ausführen*.
+  Uninstall-Eintrag). **Seit v0.4.2 wird gar keine selbst gebaute Programmdatei mehr
+  installiert:** der Installer bringt den offiziellen, von der Python Software Foundation
+  signierten Embeddable-Python mit, SyncManga läuft als Skripte darauf. Das nimmt den
+  üblichen Virenscanner-Fehlalarmen auf Einzeldatei-exes die Grundlage.
+- **Einzeldatei-exe (`SyncManga.exe`) — nur noch für Bestandsnutzer bis v0.4.1**, deren
+  eingebauter Updater sie namentlich erwartet. Sie läuft weiterhin, ist aber nicht mehr
+  der empfohlene Weg; neu installiert wird über den Installer.
+- Beim ersten Start warnt Windows-SmartScreen evtl. vor einer „unbekannten" App (die Datei
+  ist nicht teuer signiert) → *Weitere Informationen* → *Trotzdem ausführen*.
 - **Mit Python:** `python -m syncmanga` (einmaliger Lauf) oder `python -m syncmanga.tray` (Tray).
 
 ### Tray-Menü
@@ -111,11 +116,16 @@ The list is **fully mobile-optimized** (since v0.3.4).
 
 ### Run it
 - **Installer (recommended):** double-click `SyncManga-Setup.exe` — installs per-user
-  (no admin rights, autostart as an optional checkbox, clean uninstall entry) and avoids
-  most Defender false positives on bare single-file exes.
-- **Packaged app (single file):** double-click `SyncManga.exe`. On first launch Windows
-  SmartScreen may warn about an "unknown" app (the file is not expensively signed)
-  → *More info* → *Run anyway*.
+  (no admin rights, autostart as an optional checkbox, clean uninstall entry). **Since
+  v0.4.2 no self-built program file is installed at all:** the installer bundles the
+  official embeddable Python distribution, code-signed by the Python Software Foundation,
+  and SyncManga runs as scripts on it. That removes the very shape antivirus heuristics
+  flag on single-file exes.
+- **Single-file `SyncManga.exe` — kept for existing users on v0.4.1 and older**, whose
+  built-in updater expects it by name. It still runs, but it is no longer the recommended
+  route; fresh installs should use the installer.
+- On first launch Windows SmartScreen may warn about an "unknown" app (the file is not
+  expensively signed) → *More info* → *Run anyway*.
 - **With Python:** `python -m syncmanga` (one run) or `python -m syncmanga.tray` (tray).
 
 ### Tray menu
