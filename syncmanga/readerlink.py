@@ -140,7 +140,21 @@ def _chapter_str(chapter):
 
 
 # Kapitel-Token in einem URL-Pfad (chapter-100, chapter/100, ch_12.5, episode-3 ...)
-_CHAPTOK = re.compile(r'(?:chapter|episode|chap|ch)[-_/]?(\d+(?:[.-]\d+)?)', re.I)
+#
+# Die beiden Wachen sind gemessen noetig, nicht vorsorglich (05.08.2026): ohne sie trifft
+# das kurze `ch` die Buchstaben MITTEN in einem anderen Wort. `netflix.com/watch/81715790`
+# galt so als Kapitel 81715790, `weebcentral.com/series/01J76XY[CH2]B6...` als Kapitel 2 —
+# eine SERIENSEITE, die sich damit selbst als Kapitel ausgab. Schlimmer noch bei comix.to:
+# in `/g8e3-ichi-the-wit[ch/10234364]-chapter-87` gewann das Zufalls-Treffer die Nummer
+# 10234364 statt 87, und genau diese Nummer vergleicht `live_aufloesen` gegen die
+# Kapitelliste — der richtige Link wurde also verworfen, weil die Nummer nicht passte.
+#   (?<![a-z])   Token darf nicht in einem Wort stehen (watch, witch, -FcH76.jpg)
+#   (?![a-z]{2}) danach hoechstens EIN Buchstabe: `chapter-171a` ist ein echtes Kapitel,
+#                `/episode/4rOoJ6Egrf8K2...` (Spotify-Kennung) ist keins.
+# Gemessen an 4826 Cache-URLs: 2 Fehlurteile weg, 1 Nummer korrigiert, kein echtes
+# Kapitel verloren. Gleicher Fehlertyp wie das `ads?` in `re-ad` (Seiten-Beweis, 05.08.).
+_CHAPTOK = re.compile(r'(?<![a-z])(?:chapter|episode|chap|ch)[-_/]?(\d+(?:[.-]\d+)?)(?![a-z]{2})',
+                      re.I)
 
 
 def _ok(status, final_url, req_url=None):
