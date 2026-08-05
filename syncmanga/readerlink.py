@@ -826,6 +826,87 @@ SERIES_OVERRIDES = {}        # norm(name) -> {"name":..., "chapter": "...{n}..."
 _DEAD_MF_READ = re.compile(r"^https?://(?:www\.)?mangafire\.to/read/", re.I)
 
 
+def ist_echtes_kapitel(url):
+    """True nur fuer Links, die WIRKLICH an einem Kapitel landen (JB-Befund 23.07.2026).
+
+    `is_chapter_url` prueft die Gestalt der URL — und die luegt beim toten MangaFire-Schema
+    `/read/{slug}.{id}/en/chapter-N`: es TRAEGT ein Kapitel-Token, leitet aber auf die
+    Serienseite um. Diese strengere Fassung gab es bisher nur als lokale Hilfsfunktion in
+    `enrich.demote_series_pages`, und dort nur fuer die HERAUSFORDERER — der vorderste Link
+    wurde mit der naiven Fassung geprueft. Ergebnis: ein toter Link vorn galt als Kapitel,
+    blockierte damit sein eigenes Nachruecken und ueberlebte jede Runde (62 von 808
+    Haupt-Leselinks, gemessen an der ausgelieferten Liste). Genau dieselbe Asymmetrie
+    steckte in `render._go_link`, wo JBs eigener Verlaufs-Link den geprueften Reader-Link
+    schlug. Deshalb steht die Regel jetzt EINMAL hier und wird ueberall benutzt."""
+    from .parse import chapter_of
+    if not is_chapter_url(url):
+        return False
+    if _MF_READ_URL.match(url or ""):
+        return True                       # MangaFire-API-Lese-URL: opake ID, echtes Kapitel
+    if "mangafire" in (host(url) or "") and chapter_of(url, "") is not None:
+        return False                      # totes Rate-Schema (numerische Kapitelnummer)
+    if bauart_ist_serienseite(url):
+        return False
+    return True
+
+
+# Reader-Bauarten, deren SERIENSEITE sich schon an der URL erkennen laesst — ohne einen
+# einzigen Abruf (Befund 23.07.2026, an den echten Seiten gemessen). Das ist wertvoll, weil
+# bei genau diesen Hosts ein Abruf NICHTS beweist:
+#   * mangafire.to ist eine reine Einzelseiten-App: JEDER Pfad — auch frei erfundener
+#     Unsinn — liefert dieselbe 3-KB-Huelle mit HTTP 200 und byte-gleicher Pruefsumme.
+#     Ein Pruefer ohne Browser kann dort Kapitel, Serienseite und Totes prinzipiell nicht
+#     unterscheiden. Die URL-FORM ist das einzige belastbare Signal.
+#   * roliascan.com braucht hinter der Kapitelnummer eine nicht ableitbare Zahl
+#     (`/read/<slug>/ch161-94888/`). Ohne sie antwortet der Server 301 auf die Serienseite,
+#     also mit HTTP 200 am falschen Ziel. Gemessen: 24 solche Links im Bestand.
+_SERIENSEITE_FORM = (
+    # mangafire /title/{key} ohne jeden Kapitel-Teil = Serienseite per Bauart (73 Links)
+    re.compile(r"https?://(?:www\.)?mangafire\.to/title/[^/]+/?$", re.I),
+    # roliascan /read/{slug} ohne /ch{N}-{ID}/ -> 301 auf /manga/{slug}
+    re.compile(r"https?://(?:www\.)?roliascan\.com/read/[^/]+/?$", re.I),
+)
+
+
+def bauart_ist_serienseite(url):
+    """True, wenn die URL schon ihrer BAUART nach eine Serienseite ist — ohne Netz.
+
+    Frueherkennung fuer Hosts, bei denen ein Abruf nichts beweist (siehe Tabelle oben)."""
+    return any(m.match(url or "") for m in _SERIENSEITE_FORM)
+
+
+# Reader, bei denen eine falsche URL-Form mechanisch in die richtige umgeschrieben werden
+# kann. mangahub.io hat GENAU zwei Routen: `/manga/{slug}` ist die Serienseite mit der
+# Kapitelliste, `/chapter/{slug}/chapter-{n}` die Leseseite. Eine Kapitel-Route unterhalb
+# von `/manga/` gibt es NICHT — der Router wirft jeden weiteren Pfadteil weg und liefert
+# unveraendert die Serienseite, mit HTTP 200 und ohne Weiterleitung (JB-Fund 23.07.,
+# nachgemessen: /chapter/ = 9 Seiten, /manga/…/chapter-54/ = 0 Seiten, und ein frei
+# erfundenes Suffix liefert byte-gleich dieselbe Serienseite).
+_UMSCHREIBEN = (
+    (re.compile(r"^(https?://(?:www\.)?mangahub\.io)/manga/([^/]+)/(chapter-[0-9.]+)/?$", re.I),
+     r"\1/chapter/\2/\3"),
+    # MangaFire hat seine Lese-Route umbenannt (JB-Fund 05.08.2026, im Browser belegt):
+    #   /title/{key}/read/{sprache}/{id}   -> generischer Titel, KEINE Kapitelseiten
+    #   /title/{key}/chapter/{id}          -> „Solo Leveling - Chapter 109", 6 Seiten
+    # Von aussen ist das nicht messbar (beide liefern dieselbe 3-KB-Huelle der
+    # Einzelseiten-App) — nur der Browser sieht den Unterschied. Betrifft 37 Links.
+    (re.compile(r"^(https?://(?:www\.)?mangafire\.to/title/[^/]+)/read/[a-z-]{2,5}/(\d+)/?$",
+                re.I),
+     r"\1/chapter/\2"),
+)
+
+
+def form_heilen(url):
+    """Bekannte Fehlform in die richtige Form umschreiben -> neue URL (oder die alte).
+
+    Rein und ohne Netz. Nicht-destruktiv gedacht: der Aufrufer entscheidet, ob er den
+    alten Link daneben behaelt."""
+    for muster, ersatz in _UMSCHREIBEN:
+        if muster.match(url or ""):
+            return muster.sub(ersatz, url)
+    return url
+
+
 def is_dead_read_scheme(url):
     """True fuer das ALTE, tote mangafire-Reader-Schema `/read/{slug}.{id}/en/chapter-N` (JB/linkhealth
     07.07.2026): seit dem MangaFire-Umbau leitet es per 200 auf die Titelseite um. Solche Overrides

@@ -29,7 +29,7 @@ from . import i18n
 from .catalog import cover_url
 from .config import NAMELEN, UNSAFE_SITES, is_dead_reader, is_no_read, is_paused_reader
 from .parse import host, is_dynamic, norm
-from .readerlink import is_chapter_url
+from .readerlink import form_heilen, is_chapter_url, ist_echtes_kapitel
 
 # Quellen-Status-Panel (JBs Anforderung): Farbe je Quelle, damit JB SIEHT, was klemmt.
 _STATUS_COLOR = {"ok": "#3a7d3a", "degraded": "#c9952b", "down": "#c0392b"}
@@ -91,6 +91,36 @@ def _short(s):
     """Lange Quellen-Domain auf SRC_MAXLEN kuerzen (… am Ende)."""
     s = s or ""
     return s if len(s) <= SRC_MAXLEN else s[:SRC_MAXLEN - 1] + "…"
+
+
+# Reader-Namen, die sich nicht aus der Domain ableiten lassen (Gross-/Kleinschreibung
+# mitten im Wort). Alles andere entsteht mechanisch aus dem Host.
+_SCHREIBWEISE = {
+    "mangahub": "MangaHub", "mangabolt": "MangaBolt", "mangaread": "MangaRead",
+    "manhwabuddy": "ManhwaBuddy", "mangafire": "MangaFire", "mangago": "MangaGo",
+    "weebcentral": "WeebCentral", "mangakatana": "MangaKatana", "mangadex": "MangaDex",
+    "asurascans": "AsuraScans", "mangaupdates": "MangaUpdates", "webtoons": "Webtoons",
+    "zazamanga": "Zazamanga", "comicasura": "Comicasura", "manganato": "Manganato",
+}
+
+
+def quellen_name(roh):
+    """Einheitlicher Anzeigename einer Quelle — „comicasura.net" und „Comicasura"
+    ergeben beide „Comicasura".
+
+    JB-Fund 05.08.2026: In der Quelle-Spalte stand dieselbe Seite mal mit, mal ohne
+    Endung — betroffen waren 10 Reader (Comicasura/comicasura.net, MangaBolt/
+    mangabolt.com, Mgeko/mgeko.cc …). Ursache: Der Name kommt aus dem Cache-Feld `site`,
+    und wo das fehlte, fiel die Anzeige auf den nackten Host zurueck. Beides ist richtig,
+    aber nebeneinander sieht es nach Zufall aus. Jetzt entscheidet EINE Funktion."""
+    s = (roh or "").strip()
+    if not s or s == "–":
+        return s or "–"
+    kern = s.lower().replace("www.", "").split("/")[0]
+    kern = re.sub(r"\.(?:com|net|org|io|to|cc|gg|me|online|fun|pro|space|site|xyz|top|su|is|in)$",
+                  "", kern)
+    kern = kern.split(".")[-1] if "." in kern else kern      # sub.domain -> domain
+    return _SCHREIBWEISE.get(kern, kern[:1].upper() + kern[1:] if kern else s)
 
 # User-Fortschritt (Leser): wenige, klare Werte, automatisch abgeleitet (JB-Entscheidung).
 PAUSE_DAYS = 60        # ab so vielen Tagen ohne Besuch gilt eine offene Serie als "Pausiert"
@@ -444,6 +474,20 @@ def _db_pill(e):
             f'title="In der Datenbank ansehen">{label}</a>')
 
 
+def _kap_attr(e):
+    """` data-kap="54"` fuer den Kapitel-Auflöser — oder "" bei unbekanntem Lesestand.
+
+    Der Serien-Schluessel steht ohnehin schon als `data-h` an der Zeile; zusammen mit
+    dieser Kapitelnummer kann `list.js` beim Klick `/lesen?serie=…&kapitel=…` aufrufen,
+    statt dem eingefrorenen `href` zu folgen (Spec `Doku/SYNCMANGA_AUFLOESER_SPEC.md`).
+
+    Das `href` bleibt bewusst die feste URL: Ohne Tray, ohne JavaScript, auf dem
+    Handy-Spiegel und in der Cloud funktioniert die Liste damit exakt wie bisher —
+    der Rueckfall ist die Bauform selbst, kein Sonderweg."""
+    chap = e.get("chap")
+    return f' data-kap="{html.escape(str(chap))}"' if chap else ""
+
+
 def _primary_action(e, s, now_ts, unsafe, g, uprog=None):
     """Primaerer Aktions-Link (anfangen/weiterlesen/beendet) + Quelle-Spalte -> (prim, srccell).
 
@@ -477,8 +521,13 @@ def _primary_action(e, s, now_ts, unsafe, g, uprog=None):
     # Kapitel schlaegt Serien-Seite (JB Runde 35, Farmer/Murim: der frische eigene Klick auf die
     # SERIEN-Root verdraengte den verifizierten Kapitel-Link). Nur bei bekanntem Lesestand —
     # bei '?' ist die Serien-Seite ausdruecklich gewollt (Runde 31).
+    # `ist_echtes_kapitel` statt `is_chapter_url` (JB-Befund 23.07.2026): JBs eigener
+    # Verlaufs-Link gewinnt hier gegen den geprueften Reader-Link. Beim toten MangaFire-
+    # Schema war das fatal — die URL TRAEGT ein Kapitel-Token, landet aber auf der
+    # Serienseite. So ueberlebte ein Besuch von vor dem MangaFire-Umbau als "Weiterlesen"
+    # und verdraengte den funktionierenden Link (gemessen: 62 von 808 Zeilen).
     if (direct and rl and e.get('chap')
-            and not is_chapter_url(direct.get('url') or '') and is_chapter_url(rl)):
+            and not ist_echtes_kapitel(direct.get('url') or '') and is_chapter_url(rl)):
         direct = None
     # Label-DREIKLANG (JB Runde 42): das Label beschreibt den ZUSTAND, nicht die URL —
     # '?' -> "anfangen", abgeschlossen+durch -> "beendet", sonst "weiterlesen" (beim
@@ -492,22 +541,26 @@ def _primary_action(e, s, now_ts, unsafe, g, uprog=None):
 
     if direct:
         dsite = direct.get('host') or host(direct.get('url')) or '–'
-        link = html.escape(direct["url"])
+        # Bekannte Fehlformen schon HIER heilen, nicht erst im Auflöser: Auf dem
+        # Handy-Spiegel und in der Cloud läuft kein Tray — dort ist dieses href das
+        # Einzige, was der Klick hat (JB-Fund 05.08.: mangafire /read/{sprache}/{id}).
+        link = html.escape(form_heilen(direct["url"]))
         # Quelle einheitlich (JB: kursiv/grau war verwirrend); Herkunft steht im Tooltip.
         tip = dsite if (direct.get('chap') or 0) >= (e['chap'] or 0) else f"{dsite} — {s['source_stale_hint']}"
-        return (f'<a class="pill go" href="{link}" target=_blank>{_pl(_label(direct["url"]))}</a>',
-                f'<span title="{html.escape(tip)}">{html.escape(_short(dsite))}</span>')
+        return (f'<a class="pill go"{_kap_attr(e)} href="{link}" target=_blank>{_pl(_label(direct["url"]))}</a>',
+                f'<span title="{html.escape(tip)}">{html.escape(_short(quellen_name(dsite)))}</span>')
     # Der verifizierte Link zaehlt auch, wenn JBs EIGENE Lese-Seite unsicher ist (mangahasu):
     # genau dann ist der sichere Kapitel-Link die beste Umleitung — nicht die Google-Suche
     # (JB Runde 35, Million Lives). Nur ein selbst unsicherer read_url bleibt tabu.
+    rl = form_heilen(rl) if rl else rl          # dito für den geprüften Reader-Link
     if rl and not any(u in rl for u in UNSAFE_SITES):
         # keine lebende EIGENE Quelle -> verifizierter Reader-Kapitel-Link statt Suche
         rsite = rsite0 or host(rl) or '–'
         # "zuletzt von <Gruppe>" (JB Runde 39, Idee 4): die Scan-Gruppe aus der Comick-API
         # wandert in den Quelle-Tooltip — zeigt, wo neue Kapitel zuerst erscheinen.
         _grp = f' · {s["last_group_tip"].format(g=e["last_group"])}' if e.get('last_group') else ''
-        return (f'<a class="pill go" href="{html.escape(rl)}" target=_blank>{_pl(_label(rl))}</a>',
-                f'<span title="{html.escape(rsite)} — {html.escape(s["source_auto_hint"] + _grp)}">{html.escape(_short(rsite))}</span>')
+        return (f'<a class="pill go"{_kap_attr(e)} href="{html.escape(rl)}" target=_blank>{_pl(_label(rl))}</a>',
+                f'<span title="{html.escape(rsite)} — {html.escape(s["source_auto_hint"] + _grp)}">{html.escape(_short(quellen_name(rsite)))}</span>')
     # nirgends ein Kapitel-Link -> Suche (Label bleibt zustandsbasiert; Quelle-Spalte
     # zeigt "Quelle unsicher", der Klick fuehrt zur eingegrenzten Suche)
     return (f'<a class="pill go" href="{g}" target=_blank>{_pl(_label())}</a>',
@@ -537,7 +590,7 @@ def _alt_cell(e, s, sites_q, nxt, full):
     # (JB 07.07.2026) -> localStorage -> naechster Sync pinnt sie fest (apply_source_confirms).
     res_inner = ''.join(
         f'<span class=altrow>'
-        f'<a class="pill go"{pp} href="{html.escape(u)}" target=_blank title="{html.escape(_res_tip(u))}">'
+        f'<a class="pill go"{pp} href="{html.escape(form_heilen(u))}" target=_blank title="{html.escape(_res_tip(u))}">'
         f'{html.escape(nm)}</a>'
         f'<button type=button class=pin onclick="cfmSrc(this)" title="{html.escape(s["src_confirm"])}">✔</button>'
         f'</span>' for u, nm, pp in reserves if u)

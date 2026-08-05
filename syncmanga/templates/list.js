@@ -565,3 +565,35 @@ document.addEventListener('click',function(ev){
   [].forEach.call(ps,function(d){if(d.open&&!d.contains(ev.target))d.open=false;});});}
 panelAccordion();
 applyTheme();applyTips();applyChapFix();applyDense();auApply();pinFavs(true);updateAb();updateFav();regray();ff();applyTiles();applyPause();pollSync();restoreSort();/* restoreScroll() entfernt (JB 15.07.: 'startet irgendwo, war nervig') -> Liste beginnt IMMER oben */
+
+
+// --- 🔗 Kapitel-Aufloeser (Spec Doku/SYNCMANGA_AUFLOESER_SPEC.md, 23.07.2026) ---
+// Ein gespeicherter Link altert ab der Sekunde, in der er geschrieben wird. Laeuft das
+// Tray, fragen wir beim KLICK nach dem aktuellen Ziel, statt dem eingefrorenen href zu
+// folgen: /lesen?serie=…&kapitel=… entscheidet dort frisch (bestaetigt -> live von der
+// Serienseite gelesen -> Vorrat -> Serienseite -> Suche) und leitet weiter.
+//
+// RUECKFALL IST DIE BAUFORM, kein Sonderweg: Das href bleibt die feste URL. Diese
+// Umleitung greift AUSSCHLIESSLICH, wenn die Seite vom Tray selbst ausgeliefert wurde
+// (127.0.0.1). Auf dem Handy-Spiegel (file:// aus OneDrive) und in der Cloud
+// (manga.j-bk.org) passiert also GAR NICHTS — dort klickt man wie bisher direkt aufs
+// Ziel. Ohne JavaScript ebenso. Es kann nichts kaputtgehen, was heute funktioniert.
+(function () {
+  var vomTray = location.protocol === 'http:' &&
+                (location.hostname === '127.0.0.1' || location.hostname === 'localhost');
+  if (!vomTray) return;                       // Handy/Cloud/file:// -> unveraendert
+  document.addEventListener('click', function (ev) {
+    var a = ev.target.closest && ev.target.closest('a.pill.go');
+    if (!a || ev.defaultPrevented || ev.button !== 0) return;
+    if (ev.metaKey || ev.ctrlKey || ev.shiftKey || ev.altKey) return;   // eigene Tab-Wahl
+    var kap = a.dataset.kap;
+    var tr = a.closest('tr');
+    var serie = tr && tr.dataset.h;
+    if (!kap || !serie) return;               // ohne Ziel-Angabe: href gilt
+    ev.preventDefault();
+    var ziel = location.origin + '/lesen?serie=' + encodeURIComponent(serie) +
+               '&kapitel=' + encodeURIComponent(kap);
+    // Gleiches Fenster-Verhalten wie der urspruengliche Link (target=_blank).
+    window.open(ziel, a.target || '_blank', 'noopener');
+  }, true);
+})();

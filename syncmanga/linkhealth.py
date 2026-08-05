@@ -16,6 +16,7 @@ bestaetigten Negativ-Messungen (`decide`), und BLOCKED/DOWN werden NIE herabgest
 Fast + schonend: `classify_result` ist rein (kein Netz, voll testbar); `check_url` ist der duenne
 Netz-Wrapper ueber readerlink.fetch_status (mit dessen Pacing/UA).
 """
+import re
 from enum import Enum
 from urllib.parse import urlparse
 
@@ -132,6 +133,95 @@ def check_url(url, titles=None, timeout=8):
     Nutzt das Pacing/den User-Agent von readerlink. Reine Logik steckt in classify_result."""
     status, final, body = _rl.fetch_status(url, timeout=timeout)
     return classify_result(url, status, final, body, titles=titles)
+
+
+# ---------------- Seiten-Beweis (JB-Auftrag 23.07.2026) ----------------
+# Bisher entschied der HTTP-Status plus die GESTALT der URL, ob ein Link „lebt". Beides
+# luegt: Soft-404-Reader antworten 200 auf alles, und das tote MangaFire-Schema traegt ein
+# Kapitel-Token, landet aber auf der Serienseite. Das Vorbild dafuer, wie man es richtig
+# macht, liefert das Mihon-/Keiyoushi-Oekosystem: dort gilt eine Quelle als funktionierend,
+# wenn ihr `pageListParse` fuer ein Kapitel eine NICHT-LEERE Seitenliste liefert.
+#
+# Genau das prueft `seiten_beweis`: Kapitelseiten legen ihre Bilder fortlaufend in EIN
+# Verzeichnis (gemessen 23.07.: comicasura 68, manganato 42, mgeko 17, mangahub 9 Bilder in
+# einem Ordner) — eine Serienseite hat null. Die Funktion ist rein: sie bekommt HTML und
+# gibt Zahlen zurueck, damit sie ohne Netz testbar bleibt.
+#
+# GRENZE, die man kennen muss: Reader, die ihre Seitenliste per JavaScript nachbauen, sind
+# so NICHT pruefbar — im ausgelieferten HTML steht dann keine einzige Bild-URL. Live belegt
+# am 23.07.: comix.to zeigt im Browser 3 Seiten, liefert im HTML aber nichts. Ein „keine
+# Seiten" ist bei solchen Hosts ein Fehlalarm des Verfahrens, KEIN kaputter Link. Wer die
+# Quote auswertet, muss das mitrechnen; entscheiden kann nur ein echter Browser-Aufruf.
+# Bild-URLs. WICHTIG (Befund 23.07., JB-Fund an mangahub): Reader schreiben ihre
+# Seitenliste oft OHNE Protokoll in eine JS-Variable — `imgx.mghcdn.com/made-in-abyss/54/1.jpg`
+# statt `https://imgx.…`. Die erste Fassung verlangte `https?://` und uebersah dadurch
+# komplette Kapitel. Jetzt sind beide Formen erlaubt, protokoll-relativ (`//host/…`)
+# eingeschlossen. Die Laengen-Deckel ({0,62} je Host-Teil, {1,400} Pfad) sind kein Stil:
+# ohne den https-Anker startet der Musterversuch an fast jeder Position, und ein
+# UNGEDECKELTER Lazy-Pfad wurde quadratisch (Schluss-Review gemessen: 80-KB-Block ohne
+# Trenner -> 27,5 s). Gedeckelt bleibt der Lauf linear.
+_BILD_URL = re.compile(
+    r'(?:https?:)?(?://)?(?:[a-z0-9][a-z0-9\-]{0,62}\.)+[a-z]{2,10}/[^\s"\'\\<>]{1,400}?'
+    r'\.(?:jpg|jpeg|png|webp|avif)', re.I)
+
+# Wegwerf-Bilder, die auf JEDER Seite stehen und sonst eine Serienseite faelschlich
+# „beweisen" wuerden. GESCHICHTE dieses Filters — zweimal an derselben Wurzel gescheitert:
+#   Fassung 1 prüfte Teilzeichen: `ads?` traf das „ad" in „re-ad" -> 25 % aller Links
+#     grundlos verworfen (JB-Fund an made-in-abyss).
+#   Fassung 2 prüfte „Wortgrenzen" — aber Bindestrich IST in Serien-Slugs kein Trenner:
+#     „ad-astra", „cover-story", „flag-of-the-blue-sky" flogen weiter raus
+#     (Schluss-Review-Fund, gemessen).
+# Fassung 3 prüft deshalb GANZE Abschnitte: Host-Teile (getrennt an . und -), ganze
+# Pfad-Segmente und deren _-Teile (Unterstrich trennt Deko-Verzeichnisse wie
+# `manga_covers`, kommt in Serien-Slugs aber praktisch nicht vor), sowie den Dateinamen
+# ohne Endung. „ad-astra" ist EIN Segment und faellt durch keinen dieser Checks.
+_DEKO_WORT = frozenset({
+    "thumb", "thumbs", "thumbnail", "thumbnails", "cover", "covers", "avatar", "avatars",
+    "logo", "logos", "banner", "banners", "icon", "icons", "favicon", "ad", "ads",
+    "advert", "adverts", "sprite", "sprites", "placeholder", "profile", "flag", "flags"})
+
+MIN_SEITEN = 3          # ab drei Bildern in einem Verzeichnis ist es keine Zierde mehr
+
+
+def _ist_deko(host, pfad):
+    """True, wenn Host oder Pfad ein Deko-Verzeichnis/-Dateinamen tragen (siehe oben)."""
+    for teil in re.split(r"[.\-]", (host or "").lower()):
+        if teil in _DEKO_WORT:
+            return True
+    segmente = [s for s in (pfad or "").lower().split("/") if s]
+    if segmente:
+        # Dateiname ohne Endung zusaetzlich pruefen (logo.png, flag.svg …)
+        segmente.append(segmente[-1].rsplit(".", 1)[0])
+    for seg in segmente:
+        for teil in seg.split("_"):
+            if teil in _DEKO_WORT:
+                return True
+    return False
+
+
+def seiten_beweis(html):
+    """HTML einer Kapitelseite -> (anzahl_seiten, verzeichnis) — rein, ohne Netz.
+
+    `anzahl_seiten` ist die groesste Gruppe von Bild-URLs im SELBEN Verzeichnis desselben
+    Hosts. Deko (Titelbilder, Logos, Vorschaubilder) wird vorher aussortiert; erst ab
+    `MIN_SEITEN` gilt eine Seite als bewiesen. Kein Treffer -> (0, "")."""
+    from collections import Counter
+    gruppen = Counter()
+    for b in _BILD_URL.findall(html or ""):
+        rein = b.split("//", 1)[-1] if "//" in b else b          # Protokoll abschneiden
+        host, _, pfad = rein.partition("/")
+        if _ist_deko(host, pfad):
+            continue
+        gruppen[f"{host}/{pfad.rsplit('/', 1)[0]}"] += 1
+    if not gruppen:
+        return 0, ""
+    ordner, n = gruppen.most_common(1)[0]
+    return n, ordner
+
+
+def hat_seiten(html):
+    """True, wenn das HTML eine echte Kapitel-Seitenliste enthaelt (>= MIN_SEITEN Bilder)."""
+    return seiten_beweis(html)[0] >= MIN_SEITEN
 
 
 def decide(prev_fails, verdict):

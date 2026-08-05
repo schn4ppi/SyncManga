@@ -86,12 +86,6 @@
       "chapter": "https://manhwaz.com/webtoon/{slug}/chapter-{n}/"
     },
     {
-      "name": "Ravenscans",
-      "host": "ravenscans.org",
-      "type": "manga",
-      "chapter": "https://ravenscans.org/chapter/{slug}-chapter-{n}/"
-    },
-    {
       "name": "Readberserk",
       "host": "readberserk.com",
       "type": "manga",
@@ -126,12 +120,6 @@
       "host": "kaliscan.com",
       "type": "manhwa",
       "chapter": "https://kaliscan.com/manga/{slug}/chapter-{n}/"
-    },
-    {
-      "name": "Manhwahub",
-      "host": "manhwahub.net",
-      "type": "manhwa",
-      "chapter": "https://manhwahub.net/webtoon/{slug}/chapter-{n}/"
     },
     {
       "name": "Mgread",
@@ -216,6 +204,12 @@
       "host": "toonitube.com",
       "type": "manhwa",
       "chapter": "https://toonitube.com/read/{slug}/chapter-{n}/"
+    },
+    {
+      "name": "Pawmanga",
+      "host": "pawmanga.com",
+      "type": "manga",
+      "chapter": "https://pawmanga.com/{slug}-chapter-{n}/"
     }
   ]
 }

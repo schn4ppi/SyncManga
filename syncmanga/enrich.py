@@ -975,7 +975,6 @@ def demote_series_pages(cache, items=None):
     mangafire-Links mit NUMERISCHER Kapitelnummer zaehlen nicht als Kapitel (totes Rate-Schema,
     leitet selbst zur Serienseite). Stehen NUR Seiten zur Wahl, rueckt mangadex nach hinten
     (JB 14.07.: 'dann wuerde ich mangafire nehmen')."""
-    from .parse import chapter_of as _chof
     moved = 0
     for k, c in cache.items():
         if not isinstance(c, dict) or c.get("novel"):
@@ -985,19 +984,18 @@ def demote_series_pages(cache, items=None):
         if not chap:
             continue                                     # unbekannter Lesestand -> Seite gewollt
         links = [list(l) for l in (c.get("read_urls") or []) if l and l[0]]
-        if len(links) < 2 or readerlink.is_chapter_url(links[0][0]):
+        # Die STRENGE Pruefung gilt jetzt auch fuer den Amtsinhaber (JB-Befund 23.07.2026).
+        # Vorher stand hier `is_chapter_url` — ein toter MangaFire-Link vorn galt damit als
+        # Kapitel, die Funktion stieg aus, und der funktionierende Reader dahinter rueckte
+        # NIE nach. Der kaputte Link schuetzte so seine eigene Reparatur.
+        if len(links) < 2 or readerlink.ist_echtes_kapitel(links[0][0]):
             continue
         if c.get("ov") and _ov_is_chapter(c, k, it, chap):
             continue                                     # Kapitel-Override bleibt vorn
-        def _is_chapter(u):
-            if not readerlink.is_chapter_url(u):
-                return False
-            if readerlink._MF_READ_URL.match(u or ""):
-                return True                              # MangaFire-API-Lese-URL = echtes Kapitel
-            if "mangafire" in (host(u) or "") and _chof(u, "") is not None:
-                return False                             # numerisches mangafire = totes Rate-Schema
-            return True
-        best = next((i for i, l in enumerate(links) if _is_chapter(l[0])), None)
+        # Ehemals lokale Kopie dieser Regel — sie lebt jetzt in readerlink, damit Rangfolge
+        # UND Render dieselbe Auskunft bekommen (die Abweichung war der eigentliche Fehler).
+        best = next((i for i, l in enumerate(links)
+                     if readerlink.ist_echtes_kapitel(l[0])), None)
         if best is None:
             # Nur Seiten zur Wahl: eine mangadex-Front macht Platz fuer die erste
             # NICHT-mangadex-Seite (JB-Praeferenz MangaFire > MangaDex bei Seiten).
