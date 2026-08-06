@@ -4,7 +4,7 @@
 > Anime, Manga, Novels, Musik, Hörbücher, Filme und Serien — mit eigener Bibliothek,
 > eigenem Leser, eigenem Spieler, eigener Veredelung.
 >
-> **Stand:** 2026-08-06 · **Fassung:** 0.1 (Startschuss) · **Pflege:** JB + Claude
+> **Stand:** 2026-08-06 · **Fassung:** 0.2 · **Pflege:** JB + Claude
 
 ---
 
@@ -107,6 +107,15 @@ Novels oder Manga**. Genau dort ist SyncMangas Stärke.
 | E22 | Oberflächentechnik | Lokaler Server + Web-Oberfläche, **Video extern** (VLC/mpv) | 🟡 |
 | E23 | Signatur | OV-Zertifikat + **Zeitstempel**; Reputation hängt am Zertifikat | ✅ |
 | E24 | Medien-Umfang | Drei Schichten (§6); Grenze = Einheiten + Identität | ✅ |
+| E25 | Spieler-Motor | **libmpv** Standard, **libVLC** zweite Umsetzung hinter derselben Schnittstelle | ✅ |
+| E26 | Plattform-Offenheit | **Alle Logik hinter einer HTTP-Schnittstelle** — jede Hülle bleibt möglich | 🔑✅ |
+| E27 | Ordnerstruktur | Etablierte Konventionen **übernehmen**, nie erfinden (§4.6) | ✅ |
+| E28 | Pfade | **Wurzel-Kennung + relativer Pfad**, nie absolute Pfade als Identität | 🔑✅ |
+| E29 | Umbenennen | Nur in eingeladenen Ordnern · immer Probelauf · immer rückgängig | ✅ |
+| E30 | Mängel | **Deklarieren, nicht verschweigen und nicht blockieren**; Suche läuft weiter | ✅ |
+| E31 | Titel-Zuordnung | Mehrere gewichtete Zeugen; **Popularität nur als Stichentscheid** | 🔑✅ |
+| E32 | Export | **Grundrecht**, in Standardformaten; HTML-Datei wird Freigabe-Format | ✅ |
+| E33 | Spiele | Playnite-Modell übernehmen, nicht nachbauen; **Spielzeit = Fortschritt** | ✅ |
 
 ---
 
@@ -228,6 +237,41 @@ Masse → Nachtfenster · Erneuerung *besser* → niedrigste.
   Komga, Kobo, VLC, Jellyfin lesen sie alle.
 - **Metadaten in die Datei**, nicht nur ins Register: ID3/Vorbis/MP4-Atome, MKV-Tags,
   EPUB-OPF, `ComicInfo.xml` im CBZ. Eine herausgelöste Datei muss sich selbst erklären.
+
+**E28 — Pfade:** gespeichert wird **Wurzel-Kennung + relativer Pfad**
+(`NAS-Filme` + `Der Wüstenplanet (2021)/…`), nie ein absoluter Pfad. Platte umziehen =
+eine Einstellung ändern, alles folgt. Verschwindet eine Datei, wird der Eintrag **nicht
+gelöscht**, sondern als *vermisst* markiert — der Fingerabdruck sucht sie woanders.
+So überleben Plex und Jellyfin Laufwerkswechsel.
+
+**E27 — Ordnerstruktur: übernehmen, nicht erfinden.** Dann lesen Jellyfin, Plex, Kavita,
+Komga und Audiobookshelf die Bibliothek ohne Zutun — die Regel „überlebt das Programm"
+in ihrer konkretesten Form. Quelle: TRaSH Guides, Jellyfin-Namenskonvention.
+
+```
+Filme/     Der Wüstenplanet (2021)/Der Wüstenplanet (2021).mkv
+                                   ├── cover.jpg · poster.jpg
+                                   └── Der Wüstenplanet (2021).de.srt
+Serien/    Frieren/Season 01/Frieren - S01E14 - Der Zauber….mkv
+Anime/     wie Serien, aber absolute Folgennummer mitführen (Fansubs zählen so)
+Manga/     Solo Leveling/Solo Leveling Vol.01.cbz   (+ ComicInfo.xml im Archiv)
+Musik/     Nujabes/Modal Soul (2005)/01 - Feather.flac  (+ cover.jpg)
+Hörbücher/ Frank Herbert/Der Wüstenplanet (2021)/Der Wüstenplanet.m4b
+           └── M4B: EINE Datei mit eingebetteten Kapiteln — der Standard
+Novels/    Lord of the Mysteries/Band 03/Lord of the Mysteries - Band 03.epub
+DJ-Sets/   Künstler @ Event-Ort (2026-07-14)/…            (MixesDB-Konvention)
+```
+
+**E29 — Umbenennen und Aufräumen:**
+
+| Dateien | Standard |
+|---|---|
+| **Von uns beschafft** | umbenennen **an** — wir haben sie benannt |
+| **Fremde / lokale Dateien** | **nur lesen.** Aufräumen ist eine Einladung **pro Ordner** |
+
+Zwei Regeln machen aus „übergriffig" „hilfreich": **immer erst Probelauf** (vorher/nachher
+als Liste, dann bestätigen — danach läuft der Ordner still weiter) und **immer rückgängig**
+(Umbenennungs-Tagebuch). Wenn Irrtum nichts kostet, ist Eingriff nicht schlimm.
 
 ---
 
@@ -355,8 +399,9 @@ Bewegung, die man nicht bestellt hat · verstecken, was das System über einen d
 |---|---|
 | **1 · Kern** | Anime · Manga · Novel · Film · Serie · Musik · Hörbuch |
 | **2 · Naher Ring** | Webtoon/Manhwa/Manhua · Comic · eBook · Podcast · Hörspiel · **Fanfiction** · Doku · YouTube-Kanal als Serie |
-| **3 · Ferner Ring** | Visual Novel (nur Titel) · Artbook/Doujinshi · Live-TV · Konzertmitschnitt · Videospiele (Liste) |
-| **draußen** | Memes · lose Dateien · Fotos |
+| **2 · Naher Ring** *(Nachtrag)* | **DJ-Sets / Mixe / Radioshows** · Vorträge & Konferenztalks |
+| **3 · Ferner Ring** | Visual Novel (nur Titel) · Artbook/Doujinshi · Live-TV · Konzertmitschnitt · **Spiele + Emulatoren** · **Sportevents** · Theater-/Opernaufzeichnung · **physische Sammlung** |
+| **draußen** | Memes · lose Dateien · Fotos · Software allgemein |
 
 - **Fanfiction: eigenes Medium**, nicht unter Light Novel. Struktur identisch, aber
   Herkunft, Rechte und Qualitätsverteilung völlig anders. AO3 hat das beste Tag-System im
@@ -367,6 +412,25 @@ Bewegung, die man nicht bestellt hat · verstecken, was das System über einen d
   kein Werk.
 - **Die Schichtzuordnung ist nutzerabhängig.** Wer 5000 Visual Novels hat, für den rückt
   die Schicht nach oben. Die Ringe ordnen den *Bauaufwand*, nicht die Wichtigkeit.
+- **DJ-Sets** passen elegant: der Mix ist die Einheit, die **Tracklist wird zu
+  Kapitelmarken** — dann verhält sich ein Set wie ein Hörbuch mit Kapiteln.
+  Quellen: **1001Tracklists** (API mit `find_by_media_url`, nimmt eine SoundCloud- oder
+  YouTube-Adresse und liefert die Tracklist) und **MixesDB**.
+  ⚠️ Automatisches Erkennen von Tracks *in* einem Mix ist ungelöst — AcoustID scheitert an
+  Beatmatching und Tonhöhenverschiebung. Marken müssen von Hand setzbar sein.
+- **Sportevents** passen wörtlich in die Leiter: Saison 25/26 → Spieltag 14 → Spiel → Minute.
+- **Physische Sammlung**: „ich besitze es, habe aber keine Datei" — ein Werk ohne Ausgabe
+  ist im Modell erlaubt. Quelle: Discogs, Open Library.
+- **Spiele (E33):** **Playnite** ist der Maßstab (MIT, offen) — importiert Steam, Epic, GOG,
+  EA, Ubisoft, Battle.net, Xbox, Amazon **und Emulatoren** (RetroArch, Dolphin, PCSX2,
+  RPCS3, PPSSPP, MAME). **Nicht nachbauen, anbinden.**
+  Aufnahmebedingung erfüllt, weil **Spielzeit der Fortschritt ist** (Steam liefert sie),
+  Errungenschaften als zweite Skala. ROM = Werk, Emulator = „Spieler" — dieselbe
+  Rollenverteilung wie Datei ↔ mpv.
+  Von Steam übernehmen: **Big Picture ist die Vorlage für den Fernsehmodus** (nicht Netflix),
+  und „Zuletzt gespielt" oben ist eine unabhängige Bestätigung unserer Startseite.
+- **Kein Medium, aber gebraucht:** Streaming-Abos als **Verfügbarkeitsquelle**
+  („wo kann ich das sehen", JustWatch) — gehört zur Verfügbarkeit, nicht zur Zwiebel.
 
 ---
 
@@ -480,6 +544,40 @@ Für Dateien, die niemand sauber benannt hat (`"Nujabes" - Aruarian Dance (HQ)_f
 > 🔑 **Der Fingerabdruck schlägt den Namen. Immer.** Der Dateiname ist die *letzte*
 > Auskunft, nicht die erste. Die meisten Programme machen es andersherum.
 
+**E31 — Titel-Zuordnung: mehrere Zeugen, gewichtet.** Ähnlichkeit allein reicht belegt
+nicht — Levenshtein & Co. erzeugen Falschtreffer, und Manga-Titel sind das schlimmste
+denkbare Feld dafür („Ich wurde der X der Y" ist ein ganzes Genre).
+
+| Zeuge | Gewicht | Bemerkung |
+|---|---|---|
+| **Autor / Zeichner** | ⭐⭐⭐ | stärkster Einzelunterscheider — kaum jemand nutzt ihn |
+| **Cover-Wahrnehmungshash** | ⭐⭐⭐ | billig, sehr stark, **in dieser Szene ungenutzt** |
+| Titel über **alle** Varianten | ⭐⭐ | Romaji, Englisch, Original, Synonyme — MangaBaka liefert alle |
+| Erscheinungsjahr | ⭐⭐ | trennt Remakes und Namensvettern |
+| Typ + Ursprungsland | ⭐⭐ | Manga / Manhwa / Manhua |
+| Kapitelzahl-Plausibilität | ⭐ | 1100 ≠ 40 Kapitel |
+| **Popularität** | ⭐ | **nur Stichentscheid** |
+
+> ⚠️ **Popularität ist ein Stichentscheid, kein Beweis.** Wiegt sie schwerer als Autor oder
+> Jahr, werden **systematisch obskure Werke in berühmte einsortiert** — die schlimmste
+> Fehlerart, weil sie unsichtbar ist.
+
+**Vor dem Vergleich normalisieren:** Kleinschreibung · Unicode-NFKC · Satzzeichen weg ·
+Makron auflösen (ō → ou/o) · Staffel-/Teil-Marker weg · Zusätze wie „(Official)",
+„Manhwa", „Novel" weg.
+
+**Gegen Umbenennungen** (Asura Scans benennt Serien regelmäßig um):
+
+> 🔑 **Die Identität eines Werks hängt niemals am Titel einer Seite.**
+> Seitentitel sind Eigenschaften, nicht Identität.
+
+Praktisch: **Slug-Geschichte führen** — jede URL und jeder Slug, den wir je gesehen haben,
+wird behalten. Benennt eine Seite um, stirbt der alte Link → ⚠-Ablauf → der neue wird
+angehängt.
+
+**Drei Ausgänge, nie zwei:** sicher → übernehmen · unsicher → **Postfach mit 3 Kandidaten
++ Cover** · sehr unsicher → gar nichts. Lieber eine Lücke als ein falscher Eintrag.
+
 **Zum Ziel 100 %:** nicht erreichbar — 99 % schon. Das richtige Ziel ist nicht
 „100 % automatisch", sondern **100 % geklärt**: die Reste warten höflich in einem Kasten,
 den man freiwillig öffnet, statt zu unterbrechen.
@@ -580,6 +678,23 @@ Anzeige statt des Videos ist.
 ⚠️ **Nicht bestandene Prüfung = automatisch zurück in die Warteschlange mit anderer
 Quelle**, plus Abwertung dieser Quelle. Der Nutzer erfährt es erst, wenn *alle* Quellen
 gescheitert sind.
+
+**E30 — Mängel deklarieren.** Nicht jeder Makel ist ein Ausschlussgrund:
+
+> 🔑 **Kein Mangel wird stillschweigend hingenommen — und keiner blockiert.** Er steht in
+> einem Wort auf der Kachel, und die Warteschlange sucht im Hintergrund weiter. Findet sie
+> eine bessere Fassung, wird getauscht.
+
+| Mangel | Nachweis (alles ffprobe/ffmpeg, alles billig) |
+|---|---|
+| **Eingebrannte Untertitel** | keine Untertitelspur + Release-Name („HardSub") + Gruppen-Ruf |
+| **Übersteuerter Ton** | EBU-R128: True Peak > 0 dBTP, Lautheit außerhalb der Norm |
+| **Falsches FLAC** (aus MP3) | Spektrum: harte Kante bei 16 kHz — die klassische Plage |
+| **Falsche Auflösung** | „1080p" im Namen vs. tatsächlicher Strom |
+| **Fehlende Tonspur** | Sprachen im Container vs. erwartet |
+
+Ergebnis ist ein **Qualitätsblatt** je Datei, im Regal auf ein Wort verdichtet:
+`⚠ eingebrannte Untertitel` · `⚠ Ton übersteuert` · `✓ geprüft`.
 
 ### 9.5 Torrent, VPN, Schadsoftware
 
@@ -801,11 +916,70 @@ greifen · keine ungefragten Adminrechte.
 Häkchen für Fähigkeiten (schreiben nur Konfiguration, entfernen keinen Code) und getrennt
 davon für **Fremdsoftware**: Python (mitgeliefert), VLC/mpv, ffmpeg, Deno.
 
+⚠️ **winget verleiht kein Vertrauen.** Es prüft die SHA-256 gegen das Manifest — du bekommst
+*die richtige Datei*, nicht eine *vertrauenswürdige*. Smart App Control prüft danach
+trotzdem die Signatur. **Die Signatur ist der einzige Hebel.**
+(Korrektur einer früheren Einschätzung, 06.08.2026.)
+SyncManga hat den winget-Workflow (`schn4ppi.SyncManga`), **SyncYouTube hat gar keinen** —
+daher die Blockade bei Testnutzern.
+
 ### 12.3 Neuerungen zeigen
 
 Änderungen, die den Bestand betreffen (neue Stimmen-Modelle, neue Übersetzungsgüte), werden
 **im Programm** kurz und knapp gezeigt — nicht nur in den GitHub-Notizen.
 Eine Zeile, ein Beispiel zum Anhören, ein Knopf „übernehmen" oder „später".
+
+### 12.4 Hülle und Spieler — F01 beantwortet
+
+**Hülle:** eigenes Fenster (**pywebview**, `huelle.py` existiert bereits) mit der
+Web-Oberfläche darin. Fühlt sich an wie ein Programm, ist innen weiter Web — also bleibt
+das Entwicklungstempo mit `importlib.reload` + F5 erhalten.
+
+**E25 — Spieler: libmpv als Motor, libVLC als zweite Umsetzung.**
+
+| | libmpv | libVLC |
+|---|---|---|
+| **ASS/SSA-Untertitel** | **libass = Referenzumsetzung** — Stile, Karaoke, Schilder korrekt | belegte Probleme bei Positionierung/Farben/Effekten, Ruckler beim Untertitelwechsel |
+| Bildausgabe | Skalierung, HDR-Tonemapping, Interpolation, eigene Shader (**Anime4K**) | solide, weniger Kontrolle |
+| Einbettung | saubere C-API | einfacher zu verpacken |
+| Wer baut darauf | IINA, Celluloid, MPC-QT | VLC selbst |
+| **Wo VLC gewinnt** | — | DVD/Blu-ray-**Menüs**, DVB/TV-Karten, Streaming-Server, geht mit **kaputten Dateien** gnädiger um |
+
+Für Anime ist es nicht knapp: Fansub-Untertitel sind gestylt und positioniert, VLC macht
+sie kaputt. **Beide bleiben verfügbar** — Spieler ist eine Fähigkeit hinter einer
+Schnittstelle (E11). ⚠️ **Kein eigenes VLC-Fenster mehr**: der Motor zeichnet ins eigene
+Fenster, die Steuerleiste liegt darüber, der Fernsehmodus sieht aus wie ein Streamingdienst.
+
+**E26 — Plattform-Offenheit.** Die Frage ist nicht „welches Framework", sondern:
+**gibt es eine saubere Schnittstelle zwischen Logik und Oberfläche?**
+
+> 🔑 **Alle Logik hinter einer HTTP-Schnittstelle.** Dann redet jede Hülle mit demselben
+> Server — und jedes Framework bleibt für immer offen. Kostet jetzt nichts, ist später
+> unbezahlbar.
+
+| Hülle | Aufwand | Wann |
+|---|---|---|
+| Browser | 0 | sofort |
+| **Eigenes Fenster** (pywebview) | fast 0, vorhanden | **gewählt** |
+| PWA am Handy | 0 | sofort — aber iOS räumt Speicher ab, kein Hintergrund-Download |
+| Hülle mit nativem Spieler (Tauri/Capacitor) | mittel | wenn Offline + Video am Handy ernst werden |
+| Voll nativ (Kotlin Multiplatform, Flutter) | groß | nur bei Bedarf |
+
+Stand 2026: Flutter ~46 % Anteil; **Kotlin Multiplatform wächst am schnellsten** (+120 %/Jahr)
+und teilt *Logik*, nicht Oberfläche — passt zu unserem Schnitt; Tauri baut 10–20× kleinere
+Binärdateien als Electron.
+
+### 12.5 Export und Freigabe
+
+> **E32: Export ist kein Feature, sondern ein Grundrecht.**
+
+Standardformate, damit es woanders ankommt: Bibliothek als JSON/CSV · **MAL-XML**
+(De-facto-Austausch für Anime/Manga-Listen) · OPML für Podcasts · M3U für Wiedergabelisten ·
+die Dateien liegen ohnehin in Standardformaten.
+
+**Freigeben:** SyncMangas **einzelne HTML-Datei** wird vom Hauptprodukt zum
+**Freigabe-Format** befördert — eine nur lesbare Momentaufnahme, läuft überall, braucht
+nichts. Für echten Zugriff: Gerätekopplung mit widerrufbarem Token (vorhanden).
 
 ---
 
@@ -813,7 +987,7 @@ Eine Zeile, ein Beispiel zum Anhören, ein Knopf „übernehmen" oder „später
 
 | # | Frage | Blockiert |
 |---|---|---|
-| F01 | **Oberflächentechnik**: Web-Oberfläche im Browser, eigenes Fenster (pywebview, `huelle.py`), oder nativ? Video muss extern laufen — Browser können kein MKV und keine ASS-Untertitel | §5, Auslieferung |
+| ~~F01~~ | ~~Oberflächentechnik~~ → **beantwortet, siehe §12.4** | — |
 | F02 | Endgültiger **Name** | Alles Sichtbare |
 | F03 | Umgang mit **Sprichwörtern** beim Übersetzen | §10.2 |
 | F04 | Wie stark **Namens-Verwestlichung** — Voreinstellung an oder aus? | §10.2 |
@@ -847,6 +1021,7 @@ Eine Zeile, ein Beispiel zum Anhören, ein Knopf „übernehmen" oder „später
 
 | Datum | Was |
 |---|---|
+| 2026-08-06 | Fassung 0.2 — E25–E33 ergänzt: Spieler-Motor (libmpv/libVLC), Plattform-Offenheit über HTTP-Schnittstelle, Ordnerkonventionen und Pfadhaltung, Umbenennungsregeln, Mängel-Deklaration, Titel-Zuordnung mit gewichteten Zeugen, Export als Grundrecht, Spiele über Playnite. **F01 beantwortet** (§12.4). Zwiebel um DJ-Sets, Sportevents, Spiele/Emulatoren, physische Sammlung erweitert. **Korrektur:** winget verleiht kein Vertrauen (§12.1). |
 | 2026-08-06 | Fassung 0.1 — Startschuss. E01–E24 festgehalten, F01–F10 eröffnet. Grundlage: Brainstorming-Sitzung JB + Claude, mit Recherche zu Marktlage, Farbforschung, WCAG, *arr-Stand, TTS-Stand, Signaturlage, MangaDex-Verfügbarkeit, Cloudflare-Umgehung. |
 
 ---
