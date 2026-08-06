@@ -4,7 +4,7 @@
 > Anime, Manga, Novels, Musik, Hörbücher, Filme und Serien — mit eigener Bibliothek,
 > eigenem Leser, eigenem Spieler, eigener Veredelung.
 >
-> **Stand:** 2026-08-06 · **Fassung:** 0.2 · **Pflege:** JB + Claude
+> **Stand:** 2026-08-06 · **Fassung:** 0.3 · **Pflege:** JB + Claude
 
 ---
 
@@ -116,6 +116,18 @@ Novels oder Manga**. Genau dort ist SyncMangas Stärke.
 | E31 | Titel-Zuordnung | Mehrere gewichtete Zeugen; **Popularität nur als Stichentscheid** | 🔑✅ |
 | E32 | Export | **Grundrecht**, in Standardformaten; HTML-Datei wird Freigabe-Format | ✅ |
 | E33 | Spiele | Playnite-Modell übernehmen, nicht nachbauen; **Spielzeit = Fortschritt** | ✅ |
+| E34 | Fenster | 🔑 **Es gibt nie zwei Fenster.** Motor zeichnet in unsere Fläche | 🔑✅ |
+| E35 | Bedienelemente | **Der Motor liefert Pixel, wir liefern alles andere** | 🔑✅ |
+| E36 | Navigation | **Seitenleiste** führt · Kopfzeile global · Reiter nur im Werk · keine Menüzeile | ✅ |
+| E37 | Sichtbarkeit | Vier Stufen; Stufe 1 = **max. 1 Haupthandlung** | ✅ |
+| E38 | Tiefe | **3 Ebenen** (Regal→Werk→Einheit); alles andere ist eine **Tafel** | 🔑✅ |
+| E39 | Ordnertiefe | **Der Container ersetzt den Ordner**; max. Medium/Werk/(Gruppe)/Datei | ✅ |
+| E40 | Eigene Dateien | Regal **„Eigenes"** — nie umbenannt, nie verschoben | ✅ |
+| E41 | Eingriffe | **Vorschlagen statt verändern** — übergriffig ist das Schweigen, nicht das Wissen | 🔑✅ |
+| E42 | Qualitätsnetz | Layout-Wächter · Text-Wächter · Bildvergleich · Affe · Nutzungszähler | ✅ |
+| E43 | Titel-Schema | **Rollen statt Zeichenkette**: Urheber · Titel · Kontext · Zeitpunkt | ✅ |
+| E44 | Live | Live-TV **ja** (mit EPG), Live-Sport-Streams **nein** — ein Moment ist kein Werk | ✅ |
+| E45 | Anforderungen | **Die Suche ist die Anforderung** — kein zweiter Modus | ✅ |
 
 ---
 
@@ -377,7 +389,48 @@ Optionen sind für die 10 %, keine Entschuldigung für schwache Standards.
 **Belegt falsch, in jeder Gruppe:** einrichten müssen bevor man genießen darf ·
 Bewegung, die man nicht bestellt hat · verstecken, was das System über einen denkt.
 
-### 5.5 Flüssigkeit
+### 5.5 Navigation (E36–E38)
+
+**Seitenleiste führt.** Belegt: unter 5 Punkten gewinnt die Kopfzeile, ab 5–10 die Seitenleiste —
+das Auge fixiert im **F-Muster** ohnehin oben und links und erfasst in einem Blick mehr
+senkrechte Einträge. Wir haben über zehn Regale. Sie bietet zudem Platz für Hierarchie,
+aktive Zustände und Zähler.
+
+**Kopfzeile nur global** (Suche, Einstellungen, Profil) — nie Navigation. Reife Programme
+nutzen genau diese Teilung. Die Suche ist zugleich das **Anforderungsfeld** (E45).
+
+⚠️ **Keine Menüzeile** (`Datei · Bearbeiten · Ansicht`) — ein Relikt, das alles hinter zwei
+Klicks versteckt. **Reiter nur innerhalb eines Werks** (Übersicht · Einheiten · Beziehungen ·
+Dateien · Wissen), weil Reiter „das gehört zusammen" signalisieren.
+
+**E37 — Vier Sichtbarkeits-Stufen:**
+
+| Stufe | Wo | Grenze |
+|---|---|---|
+| 1 · Fläche | direkt sichtbar | **max. 1 Haupthandlung** + 5 Navigationspunkte |
+| 2 · Kontext | bei Auswahl | max. 4 |
+| 3 · Auf Zuruf | ⋯ / Rechtsklick | unbegrenzt |
+| 4 · Werkstatt | Einstellungen | unbegrenzt |
+
+> **Prüfstein: wenn du erklären musst, was ein Knopf tut, gehört er nicht auf die Fläche.**
+> Kein Knopf ohne Wort — Symbol allein ist ein Ratespiel.
+
+**E38 — Tiefenregel: drei Ebenen.** Regal → Werk → Einheit. Alles andere ist eine **Tafel**.
+
+> 🔑 **Der Unterschied zwischen Ebene und Tafel ist der Griff gegen das
+> „ich muss einen neuen Tab aufmachen"-Gefühl.** Eine Ebene *ersetzt*, wo du bist.
+> Eine Tafel legt sich *darüber* und gibt dich zurück, wo du warst.
+
+Warteschlange, Werkstatt, Postfach und Werk-Wissen sind **immer Tafeln** — man verliert nie
+seinen Platz, um etwas nachzusehen.
+
+**Fernseher:** Seitenleiste wird Symbolstreifen, Kopf- und Befehlsleiste verschwinden.
+**Handheld:** Vorbild ist **nicht Big Picture** (JB 06.08.: „war immer shit"), sondern die
+**Steam-Deck-Oberfläche und EmulationStation** — eine Achse wechselt die Sammlung, eine
+blättert, A startet. ⚠️ **Fokus muss immer sichtbar sein** (kräftiger Rahmen, nicht nur
+Farbwechsel) — der häufigste Fehler in Fernsehoberflächen.
+
+### 5.6 Flüssigkeit
 
 1. **Vorgerechneter Startseiten-Zustand** — die Startseite fragt nie die Bibliothek
 2. **Skelett in Endmaßen** — nichts springt; das Ärgernis ist Springen, nicht Spätsein
@@ -950,6 +1003,28 @@ sie kaputt. **Beide bleiben verfügbar** — Spieler ist eine Fähigkeit hinter 
 Schnittstelle (E11). ⚠️ **Kein eigenes VLC-Fenster mehr**: der Motor zeichnet ins eigene
 Fenster, die Steuerleiste liegt darüber, der Fernsehmodus sieht aus wie ein Streamingdienst.
 
+**E34/E35 — Es gibt nie zwei Fenster.**
+
+> 🔑 libmpv und libVLC zeichnen in eine **Fläche innerhalb unseres Fensters**. Ein Motor,
+> der das nicht kann, ist kein Motor, den wir nehmen.
+>
+> 🔑 **Der Motor liefert Pixel. Alles andere liefern wir.** Steuerleiste, Spulbalken,
+> Untertitelmenü, Tastenkürzel, Fernbedienung — alles unser Code, über die Videofläche
+> gezeichnet. mpv und VLC zeichnen **keinen einzigen Knopf**.
+
+Damit ist „beide müssen identisch aussehen" nicht schwer, sondern **konstruktiv unsichtbar**.
+So bauen IINA und Celluloid auf libmpv auf. Netflix, Disney+ und Amazon haben das Problem
+nie, weil ihr Spieler kein Programm ist, sondern ein Rechteck im selben Dokument.
+
+⚠️ **Folge für F01:** ein Browser kann keine native Videofläche einbetten. Das **eigene
+Fenster (pywebview) ist damit technische Voraussetzung**, keine Vorliebe.
+
+**Blu-ray:** ⚠️ **Playlist-Verschleierung** ist eine echte Schutzmaßnahme — Hunderte
+Scheintitel mit verwürfelten Segmentkarten. Nicht nachbauen: **MakeMKVs Logik nutzen**
+(ab 1.16.4 deutlich besser bei Java-Verschleierung) und quer prüfen mit der
+**Laufzeit gegen TMDB** — die Echtheitsprüfung aus §9.4 ist zugleich der Haupttitel-Finder.
+Ergebnis: **eine MKV, alle Spuren drin, Menü und Werbung weg.**
+
 **E26 — Plattform-Offenheit.** Die Frage ist nicht „welches Framework", sondern:
 **gibt es eine saubere Schnittstelle zwischen Logik und Oberfläche?**
 
@@ -983,6 +1058,24 @@ nichts. Für echten Zugriff: Gerätekopplung mit widerrufbarem Token (vorhanden)
 
 ---
 
+## 12.6 Qualitätsnetz (E42)
+
+Ausgangslage: **ein Tester.** Damit ist Fehlerfreiheit nicht garantierbar — wohl aber, dass
+**kein Fehler etwas zerstört** und **kein Fehler still bleibt**.
+
+| Garantie | fängt | Aufwand |
+|---|---|---|
+| **Verhaltensnetz** (vorhanden: 17 Tests, kein Netz/Platte) | Logikfehler | vorhanden |
+| **Layout-Wächter** — behauptet: nichts ragt über den Rand · nichts überlappt ungewollt · kein waagerechtes Scrollen · jedes Ziel ≥ 24 px | überlappende Rahmen, Text außerhalb, zu kleine Symbole | klein, hoher Ertrag |
+| **Bildvergleich** je Bauteil bei 360/834/1280/3440 | alles Optische | mittel |
+| **Text-Wächter** — alle Zeichenketten aus *einer* Quelle; kein unübersetzter Schlüssel, keine Überlänge in fester Breite, **keine CJK-Zeichen in DE/EN** | „plötzlich japanische Zeichen" | klein |
+| **Der Affe** — klickt zufällig, meldet Abstürze | die abstrusen Situationen ohne Testnutzer | klein |
+| **Aufnahme & Wiedergabe** einer echten Sitzung | „läuft nur in meinem Ablauf" | mittel |
+
+Dazu: **neue Funktionen kommen dunkel** (Schalter, standardmäßig aus) und **Nutzungszähler,
+rein lokal** — ohne Zahlen rätst du, welche Funktion niemand anfasst (Beispiel: der
+Equalizer in SyncYouTube). Ungenutzte Funktionen sind Belastung, nicht Vermögen.
+
 ## 13. Offene Fragen
 
 | # | Frage | Blockiert |
@@ -996,7 +1089,9 @@ nichts. Für echten Zugriff: Gerätekopplung mit widerrufbarem Token (vorhanden)
 | F07 | **Text-Korrektur** schlecht lektorierter Verlagstexte — wie weit darf die KI eingreifen? | §10.2 |
 | F08 | **Eigene Werk-IDs** zusätzlich zu ASIN/ISBN/AniList — sinnvoll oder Ballast? | §4.4 |
 | F09 | **LANoMAT**: Bibliotheken auf LAN-Partys einsehen und tauschen | später |
-| F10 | **Remixe und Coverversionen** — eigenes Werk oder Ausgabe? | §4.2 |
+| F10 | **Remixe und Coverversionen** — eigenes Werk oder Ausgabe? MusicBrainz-Modell (Work→Recording→Release) übernehmen? | §4.2 |
+| F11 | **Geräteprofile** für Handhelds (Steam Deck, ROG Ally, …) — selbst pflegen oder von EmuDeck übernehmen? | §6 |
+| F12 | **Übergabe an eine zweite KI** — welches Werkzeug für die Abarbeitung (DeepSeek günstig/1M-Kontext, Cursor im Editor, Codex parallel)? Entscheidend ist ohnehin das Pflichtenheft, nicht das Modell | Umsetzung |
 
 ---
 
@@ -1021,6 +1116,7 @@ nichts. Für echten Zugriff: Gerätekopplung mit widerrufbarem Token (vorhanden)
 
 | Datum | Was |
 |---|---|
+| 2026-08-06 | Fassung 0.3 — E34–E45: **kein zweites Fenster** (der Motor liefert Pixel, wir liefern die Bedienung) · Navigation mit Seitenleiste, vier Sichtbarkeits-Stufen, Tiefenregel Ebene-vs-Tafel · Container ersetzt Ordner · Regal „Eigenes" · Vorschlagen statt Verändern · Qualitätsnetz mit Layout- und Text-Wächter · Titel-Schema als Rollen · Live-TV ja / Live-Sport nein · die Suche ist die Anforderung. Blu-ray-Playlist-Verschleierung dokumentiert. F11–F12 eröffnet. **JB-Korrektur:** Big Picture ist *nicht* die Vorlage für den Fernsehmodus — die Steam-Deck-Oberfläche und EmulationStation sind es. |
 | 2026-08-06 | Fassung 0.2 — E25–E33 ergänzt: Spieler-Motor (libmpv/libVLC), Plattform-Offenheit über HTTP-Schnittstelle, Ordnerkonventionen und Pfadhaltung, Umbenennungsregeln, Mängel-Deklaration, Titel-Zuordnung mit gewichteten Zeugen, Export als Grundrecht, Spiele über Playnite. **F01 beantwortet** (§12.4). Zwiebel um DJ-Sets, Sportevents, Spiele/Emulatoren, physische Sammlung erweitert. **Korrektur:** winget verleiht kein Vertrauen (§12.1). |
 | 2026-08-06 | Fassung 0.1 — Startschuss. E01–E24 festgehalten, F01–F10 eröffnet. Grundlage: Brainstorming-Sitzung JB + Claude, mit Recherche zu Marktlage, Farbforschung, WCAG, *arr-Stand, TTS-Stand, Signaturlage, MangaDex-Verfügbarkeit, Cloudflare-Umgehung. |
 
