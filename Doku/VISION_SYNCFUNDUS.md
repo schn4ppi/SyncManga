@@ -4,7 +4,7 @@
 > Anime, Manga, Novels, Musik, Hörbücher, Filme und Serien — mit eigener Bibliothek,
 > eigenem Leser, eigener Bühne, eigener Veredelung.
 >
-> **Stand:** 2026-08-07 · **Fassung:** 0.6 · **Pflege:** JB + Claude
+> **Stand:** 2026-08-07 · **Fassung:** 0.7 · **Pflege:** JB + Claude
 
 ---
 
@@ -160,6 +160,17 @@ Novels oder Manga**. Genau dort ist SyncMangas Stärke.
 | E75 | Bühne | Untertitel: `srt`/`vtt` zeichnen **wir**, `ass` zeichnet der Motor | ✅ |
 | E76 | Erweiterung | Fortschritt hängt am **Werk**, nicht an der Seite — Quellen sind austauschbar | 🔑✅ |
 | E77 | Bühne | Gamepad-Belegung ist **fest** — Muskelgedächtnis schlägt Anpassbarkeit | ✅ |
+| E78 | Suche | **Das kluge Regal** — eine gespeicherte Suche wird ein Regal, das sich selbst füllt | ✅ |
+| E79 | Suche | Erweiterte Suche **zugeklappt**, aber mit Zähler — nie ein unsichtbarer scharfer Filter | ✅ |
+| E80 | Bühne | **10 s tippen, halten spult** (4× → 12× → 30×) — spulen, nie schnell abspielen | ✅ |
+| E81 | Bühne | Bedienung liegt **im Bild** und blendet weich weg: raus 420 ms, rein 120 ms | ✅ |
+| E82 | Bühne | **Pausenkarte** nach 12 s, am Rand, mit Rollen — **nie** Empfehlungen | ✅ |
+| E83 | Sprache | **„Ton & Text"** statt „Spuren" · Einstellen (Zahnrad) ≠ Auswählen | ✅ |
+| E84 | Bühne | Folgen wohnen **unter** der Bühne, nicht in einer Tafel | ✅ |
+| E85 | Anzeige | Zahlentrio: die Luft gehört dem **Trenner**, ausgerichtet mit Ziffernleerzeichen | ✅ |
+| E86 | Titel | **Alle Sprachen gleichrangig** — Englisch ist nicht die Wahrheit, Romanisierung ist ein Titel unter vielen | 🔑✅ |
+| E87 | Erkennung | **Nie früh verwerfen** — im Zweifel ins Postfach, nie wegfiltern | 🔑✅ |
+| E88 | Regal | Jede Kachel trägt **ihren Namen** — kein reines Bilderraten | ✅ |
 
 ### Die Unverhandelbaren
 
@@ -177,7 +188,9 @@ wegoptimiert werden · **E57** nie eine Zahl erfinden; Unbekanntes ist `…` ·
 **E58** Leserichtung gehört zur Ausgabe, nicht zur Einstellung ·
 **E67** die Erweiterung spricht nur mit dem eigenen Rechner ·
 **E73** die drei Zahlen bedeuten drei verschiedene Dinge und werden nie vermischt ·
-**E76** Fortschritt hängt am Werk, nie an der Quelle
+**E76** Fortschritt hängt am Werk, nie an der Quelle ·
+**E86** alle Sprachen eines Titels sind gleichrangig ·
+**E87** nie früh verwerfen — im Zweifel ins Postfach
 
 ---
 
@@ -599,6 +612,61 @@ als Kürzel, mit einem Aufklapper, der zeigt, was verborgen wurde.
 7. Tippfehler kosten nichts (Levenshtein ≤ 2 ab vier Zeichen) — aber **nur**, wenn die
    exakte Suche leer bleibt, sonst verwässert es die guten Treffer.
 
+**E79 — die erweiterte Suche.** Die Leiste oben beantwortet die häufige Frage; alles Genauere
+liegt eine Etage tiefer und bleibt **zugeklappt**, aber mit einer **Zahl am Knopf**. Der
+häufigste Fehler erweiterter Suchen ist der unsichtbare scharfe Filter — man sucht, bekommt
+nichts und versteht nicht warum.
+
+| Feld | Bauart |
+|---|---|
+| Umfang (Kapitel/Folgen), Jahr | **zwei Felder, beide dürfen leer sein.** Kein Aufklappmenü mit „100–200, 200–500, 500+" — das ist immer falsch geschnitten |
+| Genre, Herkunft, Serienzustand | dieselbe **Dreistufigkeit** wie oben (E55): einmal *nur das*, zweimal *das nicht*. Eine Geste, überall |
+| Der Satz darunter | *„Gesucht wird: Umfang 100–∞ · Korea · nicht Isekai"* — kein Ratespiel, welche Knöpfe gedrückt sind (§5.6) |
+
+**E78 — das kluge Regal.** Eine Suche, die man dreimal tippt, ist ein Regal.
+*„Koreanische Manhwa, abgeschlossen, über 100 Kapitel, kein Isekai"* wird per Knopf zu einem
+Regal auf der Startseite und füllt sich von selbst — die Bedingung wird gespeichert, nicht die
+Trefferliste. Das ist die Brücke zwischen Suche und Startseite und kostet uns keine neue Technik.
+
+### 5.8.1 Titel sind vielsprachig — und das ist keine Kleinigkeit
+
+**E86 — es gibt keinen „richtigen" Titel.** Ein Werk hat einen japanischen, einen
+romanisierten, einen englischen, oft einen deutschen und manchmal fünf Fan-Titel. Englisch ist
+**kein** Vorzugstitel, sondern einer von vielen — und oft der schlechteste, weil er von einer
+Aggregatorseite schlecht übersetzt wurde.
+
+| Art | Beispiel | Rolle |
+|---|---|---|
+| Original (Landessprache) | 進撃の巨人 · 나 혼자만 레벨업 | **die Wahrheit.** Wird immer gespeichert, auch wenn niemand sie liest |
+| Romanisierung | Shingeki no Kyojin · Na Honjaman Level Up | Suchhilfe. Mehrere Systeme (Hepburn, Kunrei, RR, McCune-Reischauer) — **alle** speichern |
+| Offiziell fremdsprachig | Attack on Titan · Solo Leveling | meist die Anzeige, aber nur, weil sie geläufig ist |
+| Deutsch | Attack on Titan · *(oft gleich)* | Anzeige, wenn vorhanden |
+| Fan / Aggregator | *„Advancing Giants"*, *„I Level Up Alone"* | ⚠️ **nur zum Finden, nie zum Anzeigen** |
+
+**Regeln daraus:**
+1. Gesucht wird in **allen** Titeln, angezeigt wird der aus deiner Anzeigesprache — mit Rückfall
+   auf offiziell fremdsprachig, dann Romanisierung, dann Original.
+2. Romanisierungen werden **normalisiert** verglichen: Längungsstriche weg (`Tōkyō` = `Toukyou`
+   = `Tokyo`), Bindestriche und Leerzeichen egal.
+3. Ein neuer Titel von einer Seite wird **hinzugefügt**, nie ersetzt. Der Titelvorrat wächst nur.
+4. ⚠️ **Keine Sprache wird zur Wahrheit erklärt.** Wer Englisch als Leitwährung nimmt, verliert
+   jedes Werk, das nie eine englische Lizenz hatte — und das sind gerade die interessanten.
+
+**E87 — nie früh verwerfen.** Die gefährlichste Falle liegt nicht im Nicht-Finden, sondern im
+**voreiligen Aussortieren**. Ein Werk mit falsch geschriebenem Titel, mit einer Kapitelzahl, die
+nicht passt, mit einem Genre, das die Quelle falsch getaggt hat — all das darf **nie** stumm
+herausfallen.
+
+| statt | machen wir |
+|---|---|
+| unklaren Treffer verwerfen | ins **Postfach** legen, mit dem Grund |
+| „passt nicht zum Muster" | Muster merken, Fund **markieren**, weiterlaufen |
+| Doppelte automatisch löschen | zusammenführen — und die zweite Fassung behalten, bis jemand widerspricht |
+| Alte/ruhende Werke ausblenden | leiser stellen (Archiv, E69), nie entfernen |
+
+> Ein verlorenes Werk merkt niemand. Ein falsch einsortiertes sieht man sofort und kann es
+> richten. Deshalb ist **Falsch-Behalten immer besser als Richtig-Wegwerfen.**
+
 ### 5.9 Der Leser (E58, E61, E65)
 
 **E58 — die Leserichtung hängt am Werk, nicht am Leser.** Wer eine japanische Seite von links
@@ -677,6 +745,20 @@ zerreißt eine lange Überschrift die Zahlenreihe.
 ⚠️ Vorher stand dort *„Kapitel 88 von 122 übersetzt"* — JB fragte zu Recht, warum sich
 Kapitel 89 dann weiterlesen lässt. Drei Zahlen, drei Bedeutungen, keine Prosa.
 
+**E85 — wo die Luft hingehört.** JB-Fund 07.08.2026: *„nicht alle haben ein Leerzeichen —
+liegt es an den 1000er-Kapiteln?"* Ja, genau daran. Bei fester Zellbreite füllt `1140` die Zelle
+ganz aus und klebt am Schrägstrich, während `132` schwebt. Der Abstand kam aus dem **Rest** der
+Zelle, und der ist von der Stellenzahl abhängig.
+
+| falsch | richtig |
+|---|---|
+| feste Zellbreite in `ch`, Zahlen rechts/mittig/links darin | Zahlen mit **Ziffernleerzeichen** (`U+2007`, exakt eine Ziffer breit) auf gleiche Länge gebracht |
+| Abstand entsteht aus dem Leerraum der Zelle | Abstand gehört dem **Trenner**: `padding:0 .5ch` am `/` — immer gleich, egal wie viele Stellen |
+| Breite fest verdrahtet (`4.2ch`) | Füllbreite aus der **breitesten Zahl der aktuellen Ansicht** — ein Regal ohne 1000er hat keine 1000er-Lücken |
+| überall gleich | in der **Liste** wird gefüllt (Spalten sollen fluchten), in der **Einzelzeile** nicht (nichts zum Ausrichten) |
+
+Damit steht hinter jedem `/` immer genau ein halbes Zeichen Luft — auch vor dem `…`.
+
 **E73 — die dritte Zahl heißt „erschienen", nicht „gesamt".** JB-Einwand 07.08.2026:
 *„Ist gesamt für dich nur verfügbar, wenn der Manga abgeschlossen ist?"* — Nein, und genau
 das war der Denkfehler in meiner Beschriftung.
@@ -696,6 +778,29 @@ eine **vierte** Information — und die trägt bereits die Farbe (E62), nicht di
 nicht"* oder wie Hiatus. Drei Punkte lesen sich wie *„geht weiter, wir wissen es nur nicht"*.
 Und weil „erschienen" fast immer bekannt ist, tauchen sie ohnehin selten auf.
 
+### 5.10.1 Die Kachelgrößen — und warum keine ohne Namen (E88)
+
+⚠️ **Korrektur 07.08.2026.** Im ersten Entwurf gab es eine *Mini-Kachel*: nur Bild, kein Text,
+möglichst viele auf einmal. JB fragte zu Recht: *„Dann sehe ich nicht, welchen Manga ich lese —
+ist das cool?"* **Nein.** Die Begründung war „mehr Werke pro Bildschirm", und das ist eine
+Zahl, kein Nutzen.
+
+| Größe | Wofür | Text |
+|---|---|---|
+| **Held** | die eine wahrscheinlichste Fortsetzung | voll: Titel-Logo, Fortschritt, Knopf |
+| **Kachel** | die Regale — der Normalfall | Titel + eine Zeile Zustand |
+| **Zeile** | lange Listen, Suche, Archiv | Titel, Urheber, Zahlentrio, Aktion |
+| ~~Mini~~ → **Dicht** | wenn viele auf den Schirm sollen | **Titel bleibt**, nur einzeilig gekürzt; alles andere fällt weg |
+
+**E88 — jede Kachel trägt ihren Namen.** Cover sind wiedererkennbar, wenn man ein Werk **kennt**.
+Genau dann braucht man sie aber nicht. Beim Suchen, beim Stöbern und bei allem Neuen ist das
+Cover ein Rätsel — und ein Regal mit 800 Titeln wird zum Memory-Spiel. Die Prioritätsleiter
+(§5.2) darf **Zustand, Fortschritt und Quelle** streichen; **der Titel ist Rang 1 und fällt nie.**
+
+Was stattdessen dichter wird: Titel auf **eine** Zeile mit Auslassung, Zustandsfarbe wandert in
+einen 3-px-Streifen unter dem Bild, Zahlen verschwinden. Damit passen fast so viele Kacheln auf
+den Schirm — und man weiß trotzdem, was man ansieht.
+
 ### 5.11 Gelernte Fallen
 
 Fehler, die in dieser Sitzung tatsächlich passiert sind. Für die zweite KI wertvoller als
@@ -713,6 +818,9 @@ jede Regel, die nie gebrochen wurde.
 | **Eigene `display`-Regel schlägt `[hidden]`** | versteckte Bauteile bleiben sichtbar | einmal global `[hidden]{display:none!important}` — sonst ist jedes `hidden` bei Flex-Elementen wirkungslos |
 | **Einpassen macht Zoom wirkungslos** | Rahmen bleibt gleich groß, nur der Text schrumpft | wo etwas automatisch eingepasst wird, darf der Regler **nicht** die Quelle vergrößern, sondern muss die **Füllung** steuern (**E74**) |
 | **Feste `px` in einer skalierten Fläche** | Sprechblasen schrumpfen, während der Rahmen wächst | ein Maßstab `--sk` an der Fläche; **alles** darin rechnet damit — Schrift, Abstände, Rahmenbreiten |
+| **`--sk` am falschen Element** | in einem Geschwisterzweig (Endlosstreifen) ist die Variable undefiniert und die Rechnung ungültig | Maßstäbe gehören an den **gemeinsamen** Vorfahren, nicht an einen Zweig |
+| **`visibility:hidden` statt `display:none`** | unten bleibt ein leerer Streifen stehen | `visibility` reserviert den Platz weiter — wer Platz zurückgeben will, braucht `display:none` (JB-Fund: Endlosstreifen) |
+| **Zellbreite trägt den Abstand** | vierstellige Zahlen kleben, dreistellige schweben | die Luft gehört dem Trenner, nicht dem Zellrest (**E85**) |
 
 ### 5.12 Die Bühne (E72, E75, E77)
 
@@ -736,6 +844,53 @@ weiß:
 | **Kapitelstriche** | Container bei Filmen · Kapiteldateien bei Hörbüchern · **Tracklist** bei DJ-Sets |
 | **hellerer Teil** | was auf der Platte liegt — bei lokalen Dateien sofort voll, und **deshalb** aussagekräftig, wenn nicht |
 | **Vorschaubild beim Überfahren** | einmal beim Einlagern erzeugt, ein Kachelbild je Folge (~200 kB, ffmpeg, alle 10 s) — kein Netz, kein Warten |
+
+**E81 — die Bedienung liegt IM Bild und blendet weg.** Nie unter dem Bild, nie in einer eigenen
+Leiste. Nach **2,5 s** Ruhe blendet sie aus (Netflix, YouTube und Plex nehmen 3 s; kürzer wirkt
+hektisch, länger vergisst man sie).
+
+| | Wert | Grund |
+|---|---|---|
+| Ausblenden | **420 ms** weich | hartes Verschwinden liest sich wie ein Absturz |
+| Einblenden | **120 ms** | Ausblenden ist Höflichkeit, Einblenden ist Reaktion — die Zeiten dürfen nicht gleich sein |
+| Untertitel | rutschen in derselben Bewegung nach unten | sonst kleben sie mitten im Bild, wo eben Knöpfe waren |
+| Mauszeiger | `cursor:none` mit | ein schwebender Pfeil stört mehr als eine Leiste |
+| bleibt sichtbar | Zeiger auf der Leiste · Tafel offen · **pausiert** | |
+
+**E80 — zehn Sekunden tippen, halten spult.** Symmetrisch 10/10 in beide Richtungen (nicht
+10/30 wie YouTube — das ist Vortrags-Denke, nicht Serien-Denke).
+
+| gehalten seit | Tempo | |
+|---|---|---|
+| < 0,4 s | — | war ein Tipp: **10 s** |
+| ab 0,4 s | **4×** | Spulen beginnt, Kachelbild erscheint |
+| ab 1,4 s | **12×** | |
+| ab 2,6 s | **30×** | |
+| loslassen | — | springt dorthin und läuft weiter |
+
+⚠️ **Das ist Spulen, kein schnelles Abspielen.** Kein Ton, keine verzerrten Stimmen — nur die
+Kachelbilder, die beim Einlagern ohnehin entstehen. Deshalb ruckelt es nie, auch bei 30×.
+Vorbild ist **Plex/Kodi** (Staffelung), aber als *eine Geste* statt als drei Tastenkombinationen
+wie bei VLC (`Shift`/`Alt`/`Strg` + Pfeil).
+
+**E82 — die Pausenkarte.** Nach **12 s** Pause erscheint am **Rand** (nicht in der Mitte, das
+Bild bleibt sichtbar) eine Karte: Folgentitel, Jahr, Studio, drei Sätze Inhalt, und eine
+**Rollenzeile** — wer gerade zu sehen ist, mit Gesicht. Das beantwortet die einzige Frage, für
+die man überhaupt pausiert: *„Moment, wer ist das nochmal?"*
+⚠️ **Nie Empfehlungen in der Pause.** Netflix zeigt dort „Ähnliche Titel" — das ist Werbung im
+eigenen Wohnzimmer. Die Rollen kommen aus dem Werk-Wissen (§10.1), das für Übersetzung und
+Vertonung ohnehin gebaut wird.
+
+**E83 — „Ton & Text", nicht „Spuren".** *Spuren* ist ein Fachwort aus dem Schnitt und wird als
+„Untertitel" gelesen, obwohl auch der Ton drin ist. *Sprache* wäre falsch, sobald man 5.1 gegen
+Stereo tauscht. *Fassung* ist zu abstrakt. **Ton & Text** benennt beide Hälften.
+Und **Einstellen ≠ Auswählen**: die Untertitel-Werkstatt (Größe, Hintergrund, Schrift,
+**Versatz ±**, gilt-für-alles/nur-hier) sitzt hinter einem eigenen **Zahnrad** daneben.
+Auswählen ist eine Entscheidung pro Folge, Einstellen eine fürs Leben.
+
+**E84 — Folgen wohnen unter der Bühne.** Als Kachelreihe mit Bild, Nummer, Dauer,
+Fortschrittsstreifen und Staffelwahl — nicht in einer Tafel. Eine Tafel ist für das, was das
+*laufende* Bild betrifft; die Nachbarfolgen sind Navigation und gehören in die Fläche darunter.
 
 **E75 — wer die Untertitel zeichnet.** `srt` und `vtt` zeichnen **wir**: dann gelten
 Hausschrift, Kontrastsaum und deine Größeneinstellung. `ass`/`ssa` mit Karaoke, Schildern und
@@ -1570,6 +1725,37 @@ mitgeliefert, nur erkannt und angebunden.
 
 ---
 
+## 13.1 Wie weit wir sind
+
+**Noch keine Zeile Code — und das ist Absicht.** Was bisher entstand, ist das Pflichtenheft und
+elf Entwürfe (siehe `ENTWUERFE.md`). Der Stand nach Bausteinen aus §16.2:
+
+| # | Baustein | Entschieden | Gezeichnet | Gebaut |
+|---|---|---|---|---|
+| 1 | Register + Werk-Modell | ✅ vollständig | — | ⬜ |
+| 2 | Warteschlange | ✅ vollständig | ⬜ | ⬜ |
+| 3 | Erkennung + Identität | ✅ vollständig (E48, E76, E87) | teilweise (Erweiterung) | ⬜ |
+| 4 | Regal + Startseite | ✅ vollständig | ✅ | ⬜ |
+| 5 | Suche | ✅ vollständig | ✅ | ⬜ |
+| 6 | Leser | ✅ vollständig | ✅ | ⬜ |
+| 7 | Bühne | ✅ vollständig | ✅ | ⬜ |
+| 8 | Erweiterung | ✅ vollständig | ✅ | ⬜ |
+| 9 | Beschaffung | ✅ Grundsätze, offen: F05, F06 | ⬜ | ⬜ |
+| 10 | Veredelung | ✅ Grundsätze, offen: F03, F04, F07 | ⬜ | ⬜ |
+
+**In Zahlen:** 88 Entscheidungen · 12 Regeln der Bauart und des Vertrauens · 11 offene Fragen ·
+10 gelernte Fallen · 11 Entwürfe.
+
+**Was als nächstes fehlt, in dieser Reihenfolge:**
+1. **Die Werk-Seite** — ohne sie ist die Kette Startseite → Werk → Einheit (E38) nicht belegt.
+2. **F10 entscheiden** (Album oder Lied?) — blockiert die gesamte Musikschicht.
+3. **Das Postfach** — der Ausgang aus E48/E87 ist beschrieben, aber nie gezeichnet.
+4. **Die Warteschlange sichtbar** — §4.5 ist der Motor des Programms und hat noch kein Gesicht.
+5. **Zertifikat abschließen** (§12.1) — läuft, siehe Bestellung; braucht Vorlauf vor der
+   ersten ausführbaren Fassung.
+
+---
+
 ## 14. Was das Vorhaben töten kann
 
 1. ⚠️ **Zu viel verschmelzen** — Fortschritt wird bedeutungslos. Die Trennregel §4.2
@@ -1591,6 +1777,7 @@ mitgeliefert, nur erkannt und angebunden.
 
 | Datum | Was |
 |---|---|
+| 2026-08-07 | Fassung 0.7 — **E78–E88.** Neu: **§5.8.1 Titel sind vielsprachig** (kein „richtiger" Titel; Englisch ist keine Leitwährung; Romanisierungen normalisiert vergleichen; Titelvorrat wächst nur) und **E87 nie früh verwerfen** — Falsch-Behalten schlägt Richtig-Wegwerfen. **§5.10.1 Kachelgrößen:** die Mini-Kachel ohne Titel ist gestrichen (JB: „dann sehe ich nicht, welchen Manga ich lese") — Titel ist Rang 1 der Prioritätsleiter und fällt nie; stattdessen „Dicht" mit einzeiligem Titel. **Bühne erweitert:** 10 s tippen / halten spult mit 4×–12×–30× (Vergleich Netflix, Plex, Jellyfin, Kodi, Prime, VLC, mpv) · Bedienung liegt im Bild und blendet weich weg (420 ms raus, 120 ms rein) · Pausenkarte nach 12 s mit Rollenzeile, nie Empfehlungen · „Ton & Text" statt „Spuren", Einstellen vom Auswählen getrennt (Zahnrad) · Folgen unter der Bühne. **Suche:** erweiterte Suche zugeklappt mit Zähler, dieselbe Dreistufigkeit, und **das kluge Regal** (gespeicherte Suche wird Regal). **E85 Zahlentypografie:** die Luft gehört dem Trenner, ausgerichtet mit Ziffernleerzeichen, Füllbreite aus der aktuellen Ansicht — damit hören vierstellige Kapitel auf, am Schrägstrich zu kleben. **Neu: §13.1 Wie weit wir sind** und **`Doku/ENTWUERFE.md`** als Index der elf Entwürfe. Drei weitere Fallen in §5.11 (`visibility` reserviert Platz · Maßstab am falschen Element · Zellbreite trägt den Abstand). |
 | 2026-08-07 | Fassung 0.6 — **E72–E77.** Neu: **§5.12 Die Bühne** (Video, Musik, Hörbuch auf einer Fläche; die Leiste als Landkarte der Folge; wer welche Untertitel zeichnet; feste Gamepad-Belegung; der Übergang Hören ↔ Lesen). **§8.4 um E76 erweitert:** wie die Erweiterung dasselbe Werk auf verschiedenen Seiten, unter anderen Titeln, von anderen Gruppen und mit anderer Kapitelzählung wiedererkennt — die Adresse ist ein Hinweis, nie ein Beweis. **E58 verschärft:** Leserichtung hat zwei Achsen (Fluss + Achse); Chinesisch ist der Sonderfall, weil Webtoon und gebundener Band verschieden laufen. **JB-Funde:** „Spieler" war zweideutig → **Bühne**, das Wort kommt auf die Verbotsliste des Text-Wächters (Dokument durchgesehen und umgestellt) · „gesamt" hieß fälschlich Endstand → **erschienen**, drei Zahlen, alle echt · `…` statt `?` · Geführt-Modus zoomte nicht, sondern verkleinerte den Text (Einpassen hebt Zoom auf). Drei neue Fallen in §5.11. |
 | 2026-08-07 | Fassung 0.5 — **E53–E71.** Neu: **§5.8 Die Suche** (ein Feld, zwei Gruppen, drei Zustände, dreistufige Filter, Zusammenführungsregeln, die sieben Entnerv-Regeln) · **§5.9 Der Leser** (Leserichtung als Eigenschaft der Ausgabe, ein Griff mit zwei Gedächtnissen, keine Restzeit beim Lesen) · **§5.10 Schrift und Zeichen** (Inter/Literata/Atkinson/JetBrains Mono; ▶ vs. Lesezeichen-Pfeil; zwei Farbskalen; Wortabzeichen statt Emoji; die Kapitelzelle) · **§5.11 Gelernte Fallen** (sieben Fehler, die in dieser Sitzung wirklich passiert sind) · **§8.4 Die Browser-Erweiterung** (vier Knopfzustände, drei Eingriffe je Seite, nur `127.0.0.1`, Adapterliste lokal). Die „zehn unverhandelbaren" aufgeteilt in **zehn Regeln der Bauart** und **vier Regeln des Vertrauens** — die alte Zehnerliste bleibt unverändert. Entwürfe: `suche.html`, `erweiterung.html`; `leser.html` und `regal.html` überarbeitet. **JB-Funde:** geteilter Regler zwischen Zoom und Schriftgröße · „Kapitel 88 von 122" war zweideutig · 🖐-Emoji unlesbar · Restdauer beim Lesen setzt unter Druck. |
 | 2026-08-07 | Fassung 0.4 — **Name entschieden: SyncFundus** (der Fundus ist im Theater und Film der Bestand, aus dem man schöpft). Datei umbenannt. E46–E52: Meilensteine nur einmal · Blu-ray über externes Werkzeug einbinden statt selbst entschlüsseln · **genau ein Ausgang pro Datei** (JB-Einwand gegen kaskadierende Regeln — berechtigt, Modell vereinfacht) · Fehlerprotokoll lokal/verschlüsselt/opt-in · GPU nachgebend · Anmeldungen erneuern sich still · deterministischer Kern. Warteschlange um die drei Fehlerarten und vergiftete Aufträge erweitert. Qualitätsnetz um die extreme Stufe erweitert (JB: „machen"). **Neu: §16 Übergabe an eine zweite KI** mit verbindlicher Baureihenfolge. **Neu: die zehn unverhandelbaren.** Aufgeräumt: §12.6 war falsch eingerückt, §5.6/5.7 neu geordnet. |
