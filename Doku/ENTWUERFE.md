@@ -29,7 +29,7 @@ Wer baut, baut gegen das Vision-Dokument; die Entwürfe zeigen, wie es aussehen 
 |---|---|---|
 | **Die Werk-Seite** | die Infoseite, die für Film, Anime *und* Manga dieselbe sein muss | Startseite → Werk → Einheit ist unvollständig |
 | **Die Hover-Karte** | was beim Überfahren einer Kachel erscheint, ohne zu nerven | Regal |
-| **Musik & Hörbuch als Regal** | hängt an **F10**: ist das Album ein Werk oder das Lied? | §4.2 |
+| **Musik & Hörbuch als Regal** | F10 ist beantwortet (E96) — jetzt zeichenbar | §4.2 |
 | **Das Postfach** | wo alles landet, was nicht eindeutig war (E48, E87) | Erkennung |
 | **Die Warteschlange** | die sichtbare Seite von §4.5 — was läuft, was hängt, warum | Beschaffung |
 | **Der Installer** | Häkchen für Fremdsoftware, erster Start | §12.2 |

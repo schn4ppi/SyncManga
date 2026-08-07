@@ -4,7 +4,7 @@
 > Anime, Manga, Novels, Musik, Hörbücher, Filme und Serien — mit eigener Bibliothek,
 > eigenem Leser, eigener Bühne, eigener Veredelung.
 >
-> **Stand:** 2026-08-07 · **Fassung:** 0.7 · **Pflege:** JB + Claude
+> **Stand:** 2026-08-07 · **Fassung:** 0.8 · **Pflege:** JB + Claude
 
 ---
 
@@ -171,6 +171,14 @@ Novels oder Manga**. Genau dort ist SyncMangas Stärke.
 | E86 | Titel | **Alle Sprachen gleichrangig** — Englisch ist nicht die Wahrheit, Romanisierung ist ein Titel unter vielen | 🔑✅ |
 | E87 | Erkennung | **Nie früh verwerfen** — im Zweifel ins Postfach, nie wegfiltern | 🔑✅ |
 | E88 | Regal | Jede Kachel trägt **ihren Namen** — kein reines Bilderraten | ✅ |
+| E89 | Werk | Ein **Ausschnitt** ist eine Ausgabe, nie ein neues Werk | ✅ |
+| E90 | Veredelung | **Karaoke = Mitlesen** — eine Technik, ein Name, überall dieselbe | ✅ |
+| E91 | Bühne | **„Zur Quelle"** — zurück zur Herkunftsseite, an der aktuellen Stelle | ✅ |
+| E92 | Bühne | **Mini-Bühne** unten als Leiste, wenn etwas nebenher läuft | ✅ |
+| E93 | Suche | **Transkript-Suche** über Untertitel *und* Buchtext — gehört in die Suche | ✅ |
+| E94 | Bühne | Folgen: am PC **Raster**, am Fernseher **Reihe** mit sichtbarer Staffelwand | ✅ |
+| E95 | Leser | **Ein Ort für den Fortschritt** — dieselbe Leiste in jedem Modus | ✅ |
+| E96 | Musik | **Das Lied ist das Werk**, die Aufnahme die Ausgabe, das Album eine Gruppe | 🔑✅ |
 
 ### Die Unverhandelbaren
 
@@ -244,6 +252,32 @@ Sonderfolge (OVA/ONA/Special/Film) · Alternative Fassung · Sammlung.
 **Reihenfolge** (OVA-Problem): Erscheinung ≠ Chronologie ≠ empfohlene Reihenfolge.
 Graph speichern, Reihenfolge als **Wahl** anbieten, Community-Reihenfolgen importierbar.
 Nicht berechnen wollen.
+
+#### E96 — Musik im vorhandenen Modell (F10 beantwortet)
+
+**JB, 07.08.2026: „Das Lied ist das Werk, dann kommt das Album."** Damit ist F10 geschlossen —
+und das Schöne daran: es braucht **keinen neuen Begriff**. MusicBrainz' drei Ebenen fallen genau
+auf unsere vorhandenen:
+
+| MusicBrainz | bei uns | Beispiel |
+|---|---|---|
+| **Work** (die Komposition) | **Werk** | *Sakura, Sakura* |
+| **Recording** (eine Aufnahme davon) | **Ausgabe** | Studiofassung 2016 · Live in Tokio 2019 · Ushio-Remix · Remaster 2023 |
+| **Release** (Album/Single) | **Gruppe** (dritte Sprosse der Leiter) | *A Silent Voice OST* |
+
+Damit lösen sich die Fälle, an denen jede Musikbibliothek scheitert, von selbst:
+
+- **Coverversion** — anderes Werk, aber über eine **Beziehung** („Neuaufnahme von") verbunden.
+  Der Fortschritt zählt getrennt, also sind es zwei Werke (**E03**).
+- **Remix** — dieselbe Aufnahme, andere Fassung ⇒ **Ausgabe** desselben Werks.
+- **Live-Fassung** — Ausgabe.
+- **Derselbe Song auf drei Alben** — ein Werk, eine Aufnahme, drei Gruppen. Nicht dreimal im Regal.
+- **DJ-Set** — ein eigenes Werk mit Laufzeit; die Tracklist ist eine **Beziehungsliste**
+  auf die enthaltenen Werke, mit Zeitmarke. Deshalb springen die Kapitelstriche der Bühne
+  dort von Titel zu Titel (§5.12).
+
+Und weil das Album eine Gruppe ist, gilt automatisch die Regel aus §4.3: **die Gruppe zählt
+keinen eigenen Fortschritt.** „Album zu 60 % gehört" gibt es nicht — gehört werden Lieder.
 
 ### 4.3 Die Leiter
 
@@ -822,6 +856,32 @@ jede Regel, die nie gebrochen wurde.
 | **`visibility:hidden` statt `display:none`** | unten bleibt ein leerer Streifen stehen | `visibility` reserviert den Platz weiter — wer Platz zurückgeben will, braucht `display:none` (JB-Fund: Endlosstreifen) |
 | **Zellbreite trägt den Abstand** | vierstellige Zahlen kleben, dreistellige schweben | die Luft gehört dem Trenner, nicht dem Zellrest (**E85**) |
 
+### 5.11.1 Was SyncYouTube schon kann (Bestandsaufnahme 07.08.2026)
+
+⚠️ **JB-Einwand: „du hast nicht genau hingeschaut, was wir bereits erschaffen haben."**
+Berechtigt. Der Downloader hat einen gewachsenen Spieler; einiges davon hätte ich hier neu
+erfunden. Die Übernahmeliste:
+
+| Vorhanden in `oberflaeche.py` | Was daraus wird |
+|---|---|
+| **⏪/⏩ bis 32×** (mehrfach drücken) | **übernommen, verbessert**: gehalten statt mehrfach gedrückt (E80) |
+| **Untertitel-Panel** — Größe, Schrift, Farben, Schatten, Hintergrund, Versatz, **Live-Vorschau** | genau die Werkstatt hinter dem Zahnrad. Beim Bau **den vorhandenen Code übernehmen**, nicht neu schreiben |
+| **✂ Ausschnitt** wie ein Twitch-Clip: A/B ziehen, Spieler springt mit, als neuer Titel speichern, Original bleibt | **fehlte** → **E89**: der Ausschnitt ist eine **Ausgabe** des Werks, nie ein neues Werk. Favorit je Gruppe wie bisher |
+| **Karaoke mit Romaji** (LRCLIB, wortweise) | **fehlte** → **E90**: das ist dieselbe Technik wie *Mitlesen* beim Hörbuch. Ein Name, eine Umsetzung |
+| **Auf YouTube öffnen** (springt zur Stelle) · Link kopieren ohne Zeitstempel | **fehlte** → **E91 „Zur Quelle"**, verallgemeinert auf jede Herkunft |
+| **Mini-Player** (Cover + Regler, eingebettet) | **E92 Mini-Bühne** — genau das braucht Musik, wenn man nebenher stöbert |
+| **Playlist herauslösen / eingliedern** (andockbares Fenster) | bei uns: Warteschlange klebt rechts, klappt weg. Freie Fenster gehören zum Layout-Editor, nicht zur Bühne |
+| **Ausgabegerät Browser ↔ VLC** | **erben wir nicht** — libmpv steckt schon im Fenster (E34). Das war eine Notlösung |
+| **Transkript-Suche** über alle Untertitel, Funde als Playlist | **E93** — die unterschätzteste Funktion. Gehört in die **Suche**, und dann für Untertitel *und* Buchtext |
+| Bild-in-Bild · Sleep-Timer · Crossfade · Tempo · SponsorBlock · ❤ · **eigene Tastenbelegung** | alles richtig, alles eins zu eins übernehmen |
+| **Kompakt-Ansicht: „mehr Kacheln, nur Bild + Titel"** | ⚠️ bestätigt **E88** aus dem eigenen Bestand: auch die dichteste Ansicht trug immer den Titel |
+| Playlists: Sync, .m3u, Smart-Playlists, Mixer (Radio, Meistgespielt, Zuletzt) · ✨ Entdecken · Abos mit Regeln · Autotag (MusicBrainz + iTunes) · Umbenennung mit **Probelauf und Rückgängig** · Dubletten-/Pfad-Heilung | gehört nicht in die Bühne, aber alles in §9/§10 — nichts davon neu erfinden |
+
+> **Der eine echte Unterschied:** im Downloader ist der Spieler **ein Fenster unter vielen**
+> (andockbar, herauslösbar, Layout-Editor). Bei SyncFundus ist die Bühne eine **Ebene** — man
+> geht hinein und wieder heraus (E38). Grund: hier wird auch gelesen, und ein Leser in einem
+> andockbaren Fensterchen ist kein Leser.
+
 ### 5.12 Die Bühne (E72, E75, E77)
 
 > **E72 — das Wort „Spieler" ist verboten.** Im Deutschen ist ein Spieler ein Mensch mit
@@ -887,6 +947,13 @@ Stereo tauscht. *Fassung* ist zu abstrakt. **Ton & Text** benennt beide Hälften
 Und **Einstellen ≠ Auswählen**: die Untertitel-Werkstatt (Größe, Hintergrund, Schrift,
 **Versatz ±**, gilt-für-alles/nur-hier) sitzt hinter einem eigenen **Zahnrad** daneben.
 Auswählen ist eine Entscheidung pro Folge, Einstellen eine fürs Leben.
+
+**E94 — Folgen: zwei Anordnungen, ein Inhalt.** Am **PC** ein Raster (viele auf einen Blick,
+Maus kann zielen). Am **Fernseher** eine **Reihe nach rechts** mit größeren Kacheln und
+Einrast-Punkten — dort gibt es nur vier Richtungstasten, und eine Reihe ist die einzige Form,
+die sich mit vier Tasten ohne Nachdenken bedienen lässt. **Der Staffelwechsel ist eine Wand**:
+ein senkrechter, beschrifteter Balken zwischen den Staffeln, damit niemand unbemerkt in
+Staffel 1 rutscht.
 
 **E84 — Folgen wohnen unter der Bühne.** Als Kachelreihe mit Bild, Nummer, Dauer,
 Fortschrittsstreifen und Staffelwahl — nicht in einer Tafel. Eine Tafel ist für das, was das
@@ -1719,7 +1786,7 @@ mitgeliefert, nur erkannt und angebunden.
 | F07 | **Text-Korrektur** schlecht lektorierter Verlagstexte — wie weit darf die KI eingreifen? | §10.2 |
 | F08 | **Eigene Werk-IDs** zusätzlich zu ASIN/ISBN/AniList — sinnvoll oder Ballast? | §4.4 |
 | F09 | **LANoMAT**: Bibliotheken auf LAN-Partys einsehen und tauschen | später |
-| F10 | **Remixe und Coverversionen** — eigenes Werk oder Ausgabe? MusicBrainz-Modell (Work→Recording→Release) übernehmen? | §4.2 |
+| ~~F10~~ | ~~Remixe und Coverversionen~~ → **beantwortet: E96** (JB 07.08.2026 — „Das Lied ist das Werk, dann kommt das Album") | — |
 | F11 | **Geräteprofile** für Handhelds (Steam Deck, ROG Ally, …) — selbst pflegen oder von EmuDeck übernehmen? | §6 |
 | F12 | **Übergabe an eine zweite KI** — welches Werkzeug für die Abarbeitung (DeepSeek günstig/1M-Kontext, Cursor im Editor, Codex parallel)? Entscheidend ist ohnehin das Pflichtenheft, nicht das Modell | Umsetzung |
 
@@ -1777,6 +1844,7 @@ elf Entwürfe (siehe `ENTWUERFE.md`). Der Stand nach Bausteinen aus §16.2:
 
 | Datum | Was |
 |---|---|
+| 2026-08-07 | Fassung 0.8 — **E89–E96, F10 geschlossen.** **Musik im vorhandenen Modell:** das Lied ist das Werk, die Aufnahme die Ausgabe, das Album eine Gruppe (§4.2) — MusicBrainz' drei Ebenen fallen genau auf unsere vorhandenen, kein neuer Begriff nötig; Coverversion, Remix, Live-Fassung und DJ-Set lösen sich damit von selbst. **Neu: §5.11.1 Bestandsaufnahme SyncYouTube** (JB-Einwand: „du hast nicht genau hingeschaut, was wir bereits erschaffen haben") — Ausschnitt-Werkzeug, Karaoke mit Romaji, „Auf YouTube öffnen", Mini-Player und Transkript-Suche fehlten im Entwurf und sind jetzt E89–E93; das vorhandene Untertitel-Panel wird übernommen statt neu geschrieben; die Kompakt-Ansicht des Downloaders bestätigt E88 aus dem eigenen Bestand. **E94** Folgen am PC als Raster, am Fernseher als Reihe mit Staffelwand. **E95** ein Ort für den Fortschritt — die angedockte Schiene im Endlosstreifen ist gestrichen, sie war doppelt und liess unten eine halbleere Leiste stehen (JB: „der Bildschirm wird nicht magisch größer"). **Behoben:** Spulen sprang beim Loslassen nochmal 10 s, weil `mouseleave` und `mouseup` beide stoppten; Zahnrad sah aus wie eine Sonne; „Warteschlange" öffnete die Ton-Tafel; Pausenkarte gibt es jetzt für alle drei Gestalten. |
 | 2026-08-07 | Fassung 0.7 — **E78–E88.** Neu: **§5.8.1 Titel sind vielsprachig** (kein „richtiger" Titel; Englisch ist keine Leitwährung; Romanisierungen normalisiert vergleichen; Titelvorrat wächst nur) und **E87 nie früh verwerfen** — Falsch-Behalten schlägt Richtig-Wegwerfen. **§5.10.1 Kachelgrößen:** die Mini-Kachel ohne Titel ist gestrichen (JB: „dann sehe ich nicht, welchen Manga ich lese") — Titel ist Rang 1 der Prioritätsleiter und fällt nie; stattdessen „Dicht" mit einzeiligem Titel. **Bühne erweitert:** 10 s tippen / halten spult mit 4×–12×–30× (Vergleich Netflix, Plex, Jellyfin, Kodi, Prime, VLC, mpv) · Bedienung liegt im Bild und blendet weich weg (420 ms raus, 120 ms rein) · Pausenkarte nach 12 s mit Rollenzeile, nie Empfehlungen · „Ton & Text" statt „Spuren", Einstellen vom Auswählen getrennt (Zahnrad) · Folgen unter der Bühne. **Suche:** erweiterte Suche zugeklappt mit Zähler, dieselbe Dreistufigkeit, und **das kluge Regal** (gespeicherte Suche wird Regal). **E85 Zahlentypografie:** die Luft gehört dem Trenner, ausgerichtet mit Ziffernleerzeichen, Füllbreite aus der aktuellen Ansicht — damit hören vierstellige Kapitel auf, am Schrägstrich zu kleben. **Neu: §13.1 Wie weit wir sind** und **`Doku/ENTWUERFE.md`** als Index der elf Entwürfe. Drei weitere Fallen in §5.11 (`visibility` reserviert Platz · Maßstab am falschen Element · Zellbreite trägt den Abstand). |
 | 2026-08-07 | Fassung 0.6 — **E72–E77.** Neu: **§5.12 Die Bühne** (Video, Musik, Hörbuch auf einer Fläche; die Leiste als Landkarte der Folge; wer welche Untertitel zeichnet; feste Gamepad-Belegung; der Übergang Hören ↔ Lesen). **§8.4 um E76 erweitert:** wie die Erweiterung dasselbe Werk auf verschiedenen Seiten, unter anderen Titeln, von anderen Gruppen und mit anderer Kapitelzählung wiedererkennt — die Adresse ist ein Hinweis, nie ein Beweis. **E58 verschärft:** Leserichtung hat zwei Achsen (Fluss + Achse); Chinesisch ist der Sonderfall, weil Webtoon und gebundener Band verschieden laufen. **JB-Funde:** „Spieler" war zweideutig → **Bühne**, das Wort kommt auf die Verbotsliste des Text-Wächters (Dokument durchgesehen und umgestellt) · „gesamt" hieß fälschlich Endstand → **erschienen**, drei Zahlen, alle echt · `…` statt `?` · Geführt-Modus zoomte nicht, sondern verkleinerte den Text (Einpassen hebt Zoom auf). Drei neue Fallen in §5.11. |
 | 2026-08-07 | Fassung 0.5 — **E53–E71.** Neu: **§5.8 Die Suche** (ein Feld, zwei Gruppen, drei Zustände, dreistufige Filter, Zusammenführungsregeln, die sieben Entnerv-Regeln) · **§5.9 Der Leser** (Leserichtung als Eigenschaft der Ausgabe, ein Griff mit zwei Gedächtnissen, keine Restzeit beim Lesen) · **§5.10 Schrift und Zeichen** (Inter/Literata/Atkinson/JetBrains Mono; ▶ vs. Lesezeichen-Pfeil; zwei Farbskalen; Wortabzeichen statt Emoji; die Kapitelzelle) · **§5.11 Gelernte Fallen** (sieben Fehler, die in dieser Sitzung wirklich passiert sind) · **§8.4 Die Browser-Erweiterung** (vier Knopfzustände, drei Eingriffe je Seite, nur `127.0.0.1`, Adapterliste lokal). Die „zehn unverhandelbaren" aufgeteilt in **zehn Regeln der Bauart** und **vier Regeln des Vertrauens** — die alte Zehnerliste bleibt unverändert. Entwürfe: `suche.html`, `erweiterung.html`; `leser.html` und `regal.html` überarbeitet. **JB-Funde:** geteilter Regler zwischen Zoom und Schriftgröße · „Kapitel 88 von 122" war zweideutig · 🖐-Emoji unlesbar · Restdauer beim Lesen setzt unter Druck. |
