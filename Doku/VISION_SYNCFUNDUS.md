@@ -1,10 +1,10 @@
-# SyncRegal — Vision & Fundament
+# SyncFundus — Vision & Fundament
 
 > **Arbeitstitel.** Der Nachfolger von SyncManga und SyncYouTube: **ein** Programm für
 > Anime, Manga, Novels, Musik, Hörbücher, Filme und Serien — mit eigener Bibliothek,
 > eigenem Leser, eigenem Spieler, eigener Veredelung.
 >
-> **Stand:** 2026-08-06 · **Fassung:** 0.3 · **Pflege:** JB + Claude
+> **Stand:** 2026-08-07 · **Fassung:** 0.4 · **Pflege:** JB + Claude
 
 ---
 
@@ -38,7 +38,7 @@ durch **Überarbeiten**. Wer etwas hinzufügt, räumt gleichzeitig auf.
 
 ---
 
-## 1. Was SyncRegal ist
+## 1. Was SyncFundus ist
 
 Ein **lokales, privates Medienregal** für alles, was man liest, sieht und hört.
 Es baut seine Bibliothek **aus dem eigenen Verhalten** (Browserverlauf, Erweiterung,
@@ -128,6 +128,22 @@ Novels oder Manga**. Genau dort ist SyncMangas Stärke.
 | E43 | Titel-Schema | **Rollen statt Zeichenkette**: Urheber · Titel · Kontext · Zeitpunkt | ✅ |
 | E44 | Live | Live-TV **ja** (mit EPG), Live-Sport-Streams **nein** — ein Moment ist kein Werk | ✅ |
 | E45 | Anforderungen | **Die Suche ist die Anforderung** — kein zweiter Modus | ✅ |
+| E46 | Meilensteine | Erscheinen **einmal**, danach nur im Rückblick — nie als Startliste | ✅ |
+| E47 | Blu-ray | Externes Werkzeug **einbinden** (`makemkvcon`), nie selbst entschlüsseln | ✅ |
+| E48 | Erkennung | 🔑 **Genau ein Ausgang pro Datei** — keine Regelkaskade, kein Wiedereinstieg | 🔑✅ |
+| E49 | Fehlerprotokoll | Lokal sammeln · verschlüsselt · **opt-in** hochladen · keine privaten Inhalte | ✅ |
+| E50 | GPU-Nutzung | **Nachgebend**: bei Ruhe nehmen, bei Bedarf sofort freigeben | ✅ |
+| E51 | Anmeldungen | Erneuern sich still; gefragt wird nur bei **echtem Entzug** | ✅ |
+| E52 | Kern | **Deterministisch** — kein `random`, kein `now()` in der Logik | 🔑✅ |
+
+### Die zehn unverhandelbaren
+
+Für eine schnelle Orientierung — wer eine dieser Regeln bricht, bricht das Programm:
+
+**E02** Kern kennt keine Medien · **E03** Fortschritt trennt Werke · **E11** kein fremdes
+Datenmodell im Kern · **E12** Quellenkatalog nur zur Laufzeit · **E16** niemals Zugangsdaten ·
+**E20** Fingerabdruck vor Dateiname · **E26** alles hinter einer HTTP-Schnittstelle ·
+**E34** nie zwei Fenster · **E48** genau ein Ausgang pro Datei · **E52** deterministischer Kern
 
 ---
 
@@ -240,6 +256,30 @@ Auftrag { was · womit · Priorität · Versuche · Zustand · Zeitfenster }
 
 **Prioritäten:** was gerade benutzt wird → sofort · Vorrat (N Einheiten voraus) → hoch ·
 Masse → Nachtfenster · Erneuerung *besser* → niedrigste.
+
+**Drei Fehlerarten, strikt getrennt** — das ist die ganze Kur gegen still verrottende
+Warteschlangen:
+
+| Art | Beispiel | Reaktion |
+|---|---|---|
+| **Vorübergehend** | Netz weg, 503, Zeitüberschreitung | wiederholen mit wachsendem Abstand |
+| **Dauerhaft** | 404, Format kaputt, Quelle tot | **nicht** wiederholen — Quelle abwerten, andere nehmen |
+| ⚠️ **Unser Fehler** | Ausnahme im eigenen Code | 🔑 **niemals wiederholen** — sofort anhalten, einfrieren, melden |
+
+> ⚠️ **Eine Warteschlange, die einen Programmfehler wiederholt, dreht sich für immer.**
+> Deshalb ist die dritte Zeile keine Feinheit, sondern die wichtigste Regel der Warteschlange.
+
+**Vergiftete Aufträge:** nach N Fehlschlägen fliegt ein Auftrag aus der Hauptschlange in eine
+**sichtbare** Liste „Steckengeblieben". Nie still, nie ewig.
+
+**Was Selbstheilung kann:** Quelle wechseln · Format wechseln · Auflösung senken · später
+erneut · ein als kaputt erkanntes Muster markieren und dessen Ergebnisse zurückrollen.
+**Was sie nicht kann:** den eigenen Codefehler beheben. Da hilft nur melden.
+
+**E50 — Zeitfenster und Speicher, nachgebend:** die Warteschlange nimmt sich GPU-Speicher,
+wenn das System ruhig ist, und **gibt ihn sofort frei**, wenn ein anderer Dienst ihn braucht.
+Ein laufender Auftrag wird dabei sauber angehalten und später fortgesetzt, nicht abgebrochen.
+Nachtfenster sind einstellbar, nicht fest verdrahtet.
 
 ### 4.6 Die Ablage
 
@@ -430,7 +470,27 @@ seinen Platz, um etwas nachzusehen.
 blättert, A startet. ⚠️ **Fokus muss immer sichtbar sein** (kräftiger Rahmen, nicht nur
 Farbwechsel) — der häufigste Fehler in Fernsehoberflächen.
 
-### 5.6 Flüssigkeit
+### 5.6 Nachvollziehbarkeit — nichts entscheidet stumm
+
+Drei Grundsätze gegen verzerrte Prioritäten:
+
+1. **Nichts wird verworfen, nur einsortiert** (E48) — es gibt keinen Mülleimer für Unerkanntes.
+2. **Jede Entscheidung hinterlässt eine Spur.** Zu jedem Eintrag gibt es „Warum ist das hier?"
+   — welche Quelle, welcher Punktestand, welche Alternativen. Fällt aus dem Register heraus,
+   weil dort ohnehin Quelle und Datum gestempelt sind (§4.4).
+3. 🔑 **Keine Regel darf stumm greifen.** Jeder Endzustand wird gezählt und angezeigt.
+   Ein Zähler „342 Dateien liegen im Postfach, davon 210 wegen Regel R7" ist der Unterschied
+   zwischen einem System, dem man traut, und einem, das leise lügt.
+
+**E46 — Meilensteine erscheinen einmal.** Beim Erreichen eine kurze Einblendung, danach nur
+noch im **Jahresrückblick**. Nie eine Liste beim Start, nie ein Abzeichen-Regal.
+⚠️ Und: **keine Serien/Streaks** — die bestrafen Urlaub.
+
+**Debuggen** folgt daraus: jeder Auftrag schreibt, *was* er entschieden hat und *warum* —
+eine Entscheidungsspur pro Werk, kein Protokollmüll. Jeder Auftrag ist **wiederholbar** mit
+derselben Eingabe (möglich nur wegen E52). Jede Kette hat einen **Trockenlauf**.
+
+### 5.7 Flüssigkeit
 
 1. **Vorgerechneter Startseiten-Zustand** — die Startseite fragt nie die Bibliothek
 2. **Skelett in Endmaßen** — nichts springt; das Ärgernis ist Springen, nicht Spätsein
@@ -576,6 +636,19 @@ Erkennung selbst aktualisiert wurde.
 | Amazon Prime Video | kein Export — **nur über die Erweiterung** |
 | Netflix | Verlaufs-Export (CSV), halbautomatisch |
 
+**E51 — Wie oft muss man sich neu anmelden?** Unterschiedlich, und das Programm muss den
+Unterschied verstecken:
+
+| Weg | Haltbarkeit | Erneuerung |
+|---|---|---|
+| **OAuth** (AniList, MAL, Twitch) | Zugriffsmarke kurz (Stunden), **Erneuerungsmarke lang** | **still im Hintergrund** — der Nutzer merkt nichts |
+| **Browser-Cookie** (Crunchyroll, Prime) | Wochen bis Monate | läuft irgendwann ab → einmal neu im Browser einloggen |
+| **Gerätekopplung** (eigene Geräte) | bis zum Widerruf | nie |
+
+> **Gefragt wird nur bei echtem Entzug.** Eine ablaufende Marke ist kein Ereignis für den
+> Nutzer. Dazu eine Seite **„Verbindungen"**, die für jedes Konto zeigt: verbunden seit,
+> zuletzt erneuert, was wir davon lesen — und ein Knopf zum Trennen.
+
 > 🔑 **E16: Das Programm speichert niemals Zugangsdaten. Es benutzt nur Sitzungen, die der
 > Browser ohnehin hat.** Autofill/Passwortspeicher auslesen wäre der Punkt, an dem das
 > Programm von „liest meine Spuren" zu „hält meine Schlüssel" kippt. Gewinn gegenüber der
@@ -596,6 +669,26 @@ Für Dateien, die niemand sauber benannt hat (`"Nujabes" - Aruarian Dance (HQ)_f
 
 > 🔑 **Der Fingerabdruck schlägt den Namen. Immer.** Der Dateiname ist die *letzte*
 > Auskunft, nicht die erste. Die meisten Programme machen es andersherum.
+
+**E48 — Genau ein Ausgang pro Datei.**
+
+> 🔑 Es gibt **keine** Regel, die aussortiert, und **keine** zweite, die wieder einsortiert.
+> Der Weg ist linear: die Kaskade läuft durch und endet in **genau einem** von drei
+> Endzuständen.
+
+| Endzustand | wann | Papierkorb? |
+|---|---|---|
+| **Werk** | identifiziert | nein |
+| **Eigenes** | Medium erkannt, aber keine Datenbank kennt es (Familienvideo, eigene Aufnahme) | nein |
+| **Postfach** | Medium erkannt, Zuordnung unsicher | nein |
+
+**Alle drei sind gültige Endzustände. Keiner ist ein Papierkorb.** Damit kann keine Regel eine
+andere überstimmen, es gibt keine Wiedereintritte und nichts zu verschachteln — die Sorge vor
+verzerrten Prioritäten durch kaskadierende Regeln ist konstruktiv ausgeschlossen.
+
+Der Zähler aus §5.7 zählt entsprechend **nicht** „aussortiert", sondern **wie viele Dateien in
+welchem Endzustand gelandet sind**. Eine Zahl, die steigt, wo sie nicht steigen soll, ist dann
+sofort sichtbar.
 
 **E31 — Titel-Zuordnung: mehrere Zeugen, gewichtet.** Ähnlichkeit allein reicht belegt
 nicht — Levenshtein & Co. erzeugen Falschtreffer, und Manga-Titel sind das schlimmste
@@ -929,7 +1022,7 @@ ist **bayessche Überraschung** (unerwartet *und* voraussichtlich gut bewertet).
 in einen **eigenen** Topf.
 
 > 🔑 **E19: Das Profil ist lesbar und von Hand korrigierbar.** Eine Seite „Das denkt
-> SyncRegal über dich" — sichtbar, editierbar, exportierbar, löschbar. Netflix und Spotify
+> SyncFundus über dich" — sichtbar, editierbar, exportierbar, löschbar. Netflix und Spotify
 > verstecken das. Es ist die einzige ehrliche Antwort auf „wie schärfe ich meine Meinung".
 
 ---
@@ -1058,7 +1151,7 @@ nichts. Für echten Zugriff: Gerätekopplung mit widerrufbarem Token (vorhanden)
 
 ---
 
-## 12.6 Qualitätsnetz (E42)
+### 12.6 Qualitätsnetz (E42)
 
 Ausgangslage: **ein Tester.** Damit ist Fehlerfreiheit nicht garantierbar — wohl aber, dass
 **kein Fehler etwas zerstört** und **kein Fehler still bleibt**.
@@ -1075,6 +1168,61 @@ Ausgangslage: **ein Tester.** Damit ist Fehlerfreiheit nicht garantierbar — wo
 Dazu: **neue Funktionen kommen dunkel** (Schalter, standardmäßig aus) und **Nutzungszähler,
 rein lokal** — ohne Zahlen rätst du, welche Funktion niemand anfasst (Beispiel: der
 Equalizer in SyncYouTube). Ungenutzte Funktionen sind Belastung, nicht Vermögen.
+
+**Die extreme Stufe** (JB-Go 06.08.2026 — „machen"):
+
+| | Was | Warum |
+|---|---|---|
+| **E52 · Deterministischer Kern** | kein `random`, kein `now()` **in der Logik** — beides wird hineingereicht | **jeder** Fehler wird exakt reproduzierbar; ohne das ist alles darunter wertlos |
+| **Eigenschaftsbasiertes Prüfen** | nicht Testfälle schreiben, sondern **Regeln, die immer gelten**; das Werkzeug sucht Gegenbeispiele (**Hypothesis**, mit **HypoFuzz** adaptiv) | das ist der „Testnutzer, mit dem du nicht rechnest" |
+| **Simulationslauf** | ein Jahr Bibliotheksbetrieb in Sekunden gegen erfundene Quellen | findet Ketten, die erst nach Monaten entstehen |
+| **Dauerhafte Invarianten** | auch im **laufenden** Programm prüft ein Hintergrundauftrag ständig die Stimmigkeit | fängt Verfall durch die echte Welt |
+
+Regeln, die immer gelten müssen (die ersten vier Eigenschaften):
+- *Jede Datei, die hineingeht, kommt als Werk **oder** Eigenes **oder** ins Postfach — nie verschwindet eine.*
+- *Die Leiter sortiert bei jeder Eingabe stabil.*
+- *Fortschritt geht nie rückwärts, außer der Nutzer setzt ihn.*
+- *Jede Handkorrektur überlebt jede Neuanreicherung.*
+
+**E49 — Fehlerprotokoll.** Alles Auffällige wird **lokal** gesammelt, nicht nur Abstürze:
+404er, Weiterleitung auf die Serienseite statt aufs Kapitel, fehlgeschlagene Echtheitsprüfung,
+tote Quelle, Muster ohne Treffer. Das ist maschinell erkennbar und der wertvollste Rohstoff
+für Verbesserungen.
+
+| | |
+|---|---|
+| **Wo** | lokale Protokolldatei, rollierend begrenzt |
+| **Was drin steht** | Quelle, Fehlerart, Muster-Kennung, Zeitpunkt — **keine Dateipfade, keine Titel, keine Namen** |
+| **Hochladen** | opt-in, verschlüsselt, mit **Vorschau vor dem Senden** |
+| **Wohin** | **eigener Server** — GlitchTip (Sentry-kompatibel, 4 Container statt 40+, läuft auf 2 GB) |
+| **Abstürze** | derselbe Weg, mit Stapelspur |
+
+### 12.7 Datenträger einlesen (E47)
+
+⚠️ **Rechtslage Deutschland:** § 95a UrhG verbietet das Umgehen wirksamer technischer
+Schutzmaßnahmen (AACS, BD+, Cinavia). § 53 UrhG erlaubt die Privatkopie, aber nicht das
+Brechen des Schutzes dafür. Der Widerspruch ist bekannt und gewollt. **JB hat das zur
+Kenntnis genommen und für sein autarkes System entschieden** (06.08.2026).
+
+**Bauform — dieselbe Trennung wie beim Quellenkatalog (E12):**
+
+> **SyncFundus entschlüsselt nichts selbst.** Es ruft ein **externes Werkzeug** auf, das der
+> Nutzer separat installiert — genau wie ffmpeg, VLC oder Deno.
+
+| Werkzeug | Rolle | Anmerkung |
+|---|---|---|
+| **MakeMKV** (`makemkvcon`) | **die Wahl** — vollwertige Befehlszeile, Nachbearbeitungs-Haken (nächster Titel wird gerippt, während der vorige weiterverarbeitet wird), Einstellungen in `settings.conf` | ab 1.16.4 deutlich besser bei Java-Playlist-Verschleierung |
+| **libmmbd** aus MakeMKV | kann als `libaacs.dll` / `libbdplus.dll` untergeschoben werden, dann lesen auch HandBrake und VLC direkt | Linux: `libbluray`, `libbdplus0`, `libaacs0` |
+| ~~AnyDVD HD~~ | ⚠️ **keine Empfehlung mehr** — RedFox-Seite und Software seit Juni 2024 nicht erreichbar | |
+| DVDFab u. a. | kommerziell, kostenpflichtig | nur wenn MakeMKV versagt |
+
+**Unsere Seite der Arbeit** (und die ist der eigentliche Wert):
+Haupttitel finden über **Laufzeit gegen TMDB** statt über Rätselraten · Spuren und Sprachen
+prüfen (§9.4) · Metadaten setzen · als **eine MKV** einlagern, Menü und Werbung weg ·
+in die Warteschlange als regulärer Auftragstyp `einlesen`.
+
+Der Installer bekommt dafür ein eigenes Häkchen unter „Fremdsoftware" (§12.2) — nicht
+mitgeliefert, nur erkannt und angebunden.
 
 ## 13. Offene Fragen
 
@@ -1116,9 +1264,65 @@ Equalizer in SyncYouTube). Ungenutzte Funktionen sind Belastung, nicht Vermögen
 
 | Datum | Was |
 |---|---|
+| 2026-08-07 | Fassung 0.4 — **Name entschieden: SyncFundus** (der Fundus ist im Theater und Film der Bestand, aus dem man schöpft). Datei umbenannt. E46–E52: Meilensteine nur einmal · Blu-ray über externes Werkzeug einbinden statt selbst entschlüsseln · **genau ein Ausgang pro Datei** (JB-Einwand gegen kaskadierende Regeln — berechtigt, Modell vereinfacht) · Fehlerprotokoll lokal/verschlüsselt/opt-in · GPU nachgebend · Anmeldungen erneuern sich still · deterministischer Kern. Warteschlange um die drei Fehlerarten und vergiftete Aufträge erweitert. Qualitätsnetz um die extreme Stufe erweitert (JB: „machen"). **Neu: §16 Übergabe an eine zweite KI** mit verbindlicher Baureihenfolge. **Neu: die zehn unverhandelbaren.** Aufgeräumt: §12.6 war falsch eingerückt, §5.6/5.7 neu geordnet. |
 | 2026-08-06 | Fassung 0.3 — E34–E45: **kein zweites Fenster** (der Motor liefert Pixel, wir liefern die Bedienung) · Navigation mit Seitenleiste, vier Sichtbarkeits-Stufen, Tiefenregel Ebene-vs-Tafel · Container ersetzt Ordner · Regal „Eigenes" · Vorschlagen statt Verändern · Qualitätsnetz mit Layout- und Text-Wächter · Titel-Schema als Rollen · Live-TV ja / Live-Sport nein · die Suche ist die Anforderung. Blu-ray-Playlist-Verschleierung dokumentiert. F11–F12 eröffnet. **JB-Korrektur:** Big Picture ist *nicht* die Vorlage für den Fernsehmodus — die Steam-Deck-Oberfläche und EmulationStation sind es. |
 | 2026-08-06 | Fassung 0.2 — E25–E33 ergänzt: Spieler-Motor (libmpv/libVLC), Plattform-Offenheit über HTTP-Schnittstelle, Ordnerkonventionen und Pfadhaltung, Umbenennungsregeln, Mängel-Deklaration, Titel-Zuordnung mit gewichteten Zeugen, Export als Grundrecht, Spiele über Playnite. **F01 beantwortet** (§12.4). Zwiebel um DJ-Sets, Sportevents, Spiele/Emulatoren, physische Sammlung erweitert. **Korrektur:** winget verleiht kein Vertrauen (§12.1). |
 | 2026-08-06 | Fassung 0.1 — Startschuss. E01–E24 festgehalten, F01–F10 eröffnet. Grundlage: Brainstorming-Sitzung JB + Claude, mit Recherche zu Marktlage, Farbforschung, WCAG, *arr-Stand, TTS-Stand, Signaturlage, MangaDex-Verfügbarkeit, Cloudflare-Umgehung. |
+
+---
+
+## 16. Übergabe an eine zweite KI
+
+Dieses Dokument ist das Pflichtenheft. Der Bau soll von einem zweiten Agenten ausgeführt
+werden; hier stehen die Bedingungen dafür.
+
+> ⚠️ **Die Übergabequalität hängt am Pflichtenheft, nicht am Modell.** Eine vage Vorlage
+> lässt keinen Agenten arbeiten, eine gute lässt jeden fähigen arbeiten.
+
+### 16.1 Voraussetzungen
+
+1. **Dieses Dokument vollständig lesen**, bevor eine Zeile geschrieben wird.
+2. **Superpowers-Plugin installieren** (JB-Vorgabe 06.08.2026):
+   `/plugin install superpowers@claude-plugins-official` — die Brainstorming-Fertigkeit
+   verfeinert Aufgaben durch Rückfragen, bevor gebaut wird.
+3. **Code-Signatur-Zertifikat muss vorhanden sein**, bevor die erste ausführbare Fassung
+   entsteht (§12.1) — die Reputation baut sich am Zertifikat auf und braucht Vorlauf.
+
+### 16.2 Verbindliche Reihenfolge
+
+| # | Baustein | fertig, wenn |
+|---|---|---|
+| 1 | **Register + Werk-Modell** (§4.2–4.4) | die vier Eigenschaften aus §12.6 grün sind |
+| 2 | **Warteschlange** (§4.5) | die drei Fehlerarten getrennt behandelt werden und „Steckengeblieben" sichtbar ist |
+| 3 | **Erkennung + Identität** (§8) | genau ein Ausgang pro Datei (E48), Postfach funktioniert |
+| 4 | **Oberfläche: Regal + Startseite** (§5) | Layout-Wächter bei 360/834/1280/3440 grün |
+| 5 | **Leser** | Papier/Nacht-Modi, Fortschritt zweistufig |
+| 6 | **Spieler** (libmpv in eigener Fläche, E34/E35) | kein zweites Fenster, Steuerung ist unsere |
+| 7 | **Beschaffung** (§9) | Echtheitsprüfung läuft vor jedem Einlagern |
+| 8 | **Veredelung** (§10) | Werk-Wissen trägt Übersetzung *und* Vertonung |
+
+**Nichts aus Stufe N+1 beginnen, solange N nicht fertig ist.** Der Grund steht in §14.
+
+### 16.3 Arbeitsregeln für den Agenten
+
+- **Die zehn unverhandelbaren** (§3) sind nicht verhandelbar. Wer eine davon brechen will,
+  fragt JB — und ändert sie im Dokument, bevor er baut.
+- **Kein Baustein gilt als fertig**, bevor er bei 360/834/1280/3440 px geprüft ist (§5.2).
+- **Jede Entscheidung, die dieses Dokument nicht abdeckt**, wird als neue E-Nummer mit
+  Begründung eingetragen — nicht stillschweigend getroffen.
+- **Deterministischer Kern (E52) ab der ersten Zeile.** Nachträglich einzuziehen ist teuer.
+- **Standardformate ab der ersten Zeile** (E06) — ein eigenes Format zu ersetzen ist teurer
+  als eines zu vermeiden.
+
+### 16.4 Wo die Wahrheit steht
+
+| | |
+|---|---|
+| Bauplan | **dieses Dokument** |
+| Was zuletzt beschlossen wurde | §15 Änderungsverlauf |
+| Was noch offen ist | §13 |
+| Was das Vorhaben tötet | §14 |
+| Bestehender Code als Vorlage | `schn4ppi/SyncYouTube` (Server, Warteschlange, Oberfläche, Geräte) und `schn4ppi/SyncManga` (Anreicherung, Overrides, Linkgesundheit) |
 
 ---
 
