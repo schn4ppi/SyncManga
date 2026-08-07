@@ -4,7 +4,7 @@
 > Anime, Manga, Novels, Musik, Hörbücher, Filme und Serien — mit eigener Bibliothek,
 > eigenem Leser, eigenem Spieler, eigener Veredelung.
 >
-> **Stand:** 2026-08-07 · **Fassung:** 0.4 · **Pflege:** JB + Claude
+> **Stand:** 2026-08-07 · **Fassung:** 0.5 · **Pflege:** JB + Claude
 
 ---
 
@@ -135,15 +135,41 @@ Novels oder Manga**. Genau dort ist SyncMangas Stärke.
 | E50 | GPU-Nutzung | **Nachgebend**: bei Ruhe nehmen, bei Bedarf sofort freigeben | ✅ |
 | E51 | Anmeldungen | Erneuern sich still; gefragt wird nur bei **echtem Entzug** | ✅ |
 | E52 | Kern | **Deterministisch** — kein `random`, kein `now()` in der Logik | 🔑✅ |
+| E53 | Suche | **Ein Feld, zwei Gruppen** (Regal / draußen) — keine Reiter | ✅ |
+| E54 | Suche | Dritter Zustand **◐ gekannt, nicht im Regal** — sortiert über ○ | 🔑✅ |
+| E55 | Filter | Dreistufig: neutral → **nur das** → **das nicht** | ✅ |
+| E56 | Suche | **Ein Werk, eine Zeile** — zusammengeführt, aber nie über Mediengrenzen | ✅ |
+| E57 | Zahlen | **Nichts erfinden**: unbekannte Gesamtzahl ist `?`, nie geschätzt | 🔑✅ |
+| E58 | Leser | **Leserichtung ist Eigenschaft der Ausgabe** (↤ ↦ ↧), nicht Einstellung | 🔑✅ |
+| E59 | Zeichen | **▶** für alles mit Laufzeit, **Lesezeichen-Pfeil** für alles Geblätterte | ✅ |
+| E60 | Schrift | Inter · Literata · Atkinson · JetBrains Mono — Oberflächenschrift **nicht wählbar** | ✅ |
+| E61 | Fortschritt | Balken nur bei bekanntem Nenner · **keine Restzeit beim Lesen** | ✅ |
+| E62 | Farbe | **Zwei Skalen**: Übersetzungs-Lebendigkeit ≠ Serien-Zustand | ✅ |
+| E63 | Güte | Wortabzeichen `MTL` `MTL+KI` `Fan` `Offiziell` — nie Emoji, nie Sterne | ✅ |
+| E64 | Anzeige | Kapitelzelle `gelesen / übersetzt / gesamt` in festem `ch`-Raster | ✅ |
+| E65 | Leser | **Ein Griff, zwei Gedächtnisse** — Zoom und Schriftgröße teilen nicht den Wert | ✅ |
+| E66 | Startseite | **Kein Selbstlauf** — Held wechselt auf Zuruf, nicht auf Uhr (außer TV) | ✅ |
+| E67 | Erweiterung | Spricht **nur** mit `127.0.0.1` · lädt nichts · max. 3 Eingriffe je Seite | 🔑✅ |
+| E68 | Erweiterung | Adapterliste kommt **lokal**, nicht aus dem Store-Paket | ✅ |
+| E69 | Archiv | Friedhof **mit Gedächtnis** — still, aber antwortet beim exakten Namen | ✅ |
+| E70 | Startseite | **Neu für dich ≠ neu erschienen** — zwei Reihen, nie eine | ✅ |
+| E71 | Bauen | **Prüfen vor dem Zeigen** — keine Oberflächendatei ungeprüft ausliefern | ✅ |
 
-### Die zehn unverhandelbaren
+### Die Unverhandelbaren
 
-Für eine schnelle Orientierung — wer eine dieser Regeln bricht, bricht das Programm:
+**Zehn Regeln der Bauart** — wer eine bricht, bricht das Programm:
 
 **E02** Kern kennt keine Medien · **E03** Fortschritt trennt Werke · **E11** kein fremdes
 Datenmodell im Kern · **E12** Quellenkatalog nur zur Laufzeit · **E16** niemals Zugangsdaten ·
 **E20** Fingerabdruck vor Dateiname · **E26** alles hinter einer HTTP-Schnittstelle ·
 **E34** nie zwei Fenster · **E48** genau ein Ausgang pro Datei · **E52** deterministischer Kern
+
+**Vier Regeln des Vertrauens** — wer eine bricht, verliert den Nutzer, nicht den Code:
+
+**E54** der Zustand *gekannt, nicht im Regal* ist unser Alleinstellungsmerkmal — er darf nie
+wegoptimiert werden · **E57** nie eine Zahl erfinden; Unbekanntes ist `?` ·
+**E58** Leserichtung gehört zur Ausgabe, nicht zur Einstellung ·
+**E67** die Erweiterung spricht nur mit dem eigenen Rechner
 
 ---
 
@@ -335,11 +361,26 @@ als Liste, dann bestätigen — danach läuft der Ordner still weiter) und **imm
 > Ein Start, der antwortet „Hier, mach weiter", kostet nichts.**
 
 Aufbau: **Held** (die wahrscheinlichste Fortsetzung, ein Knopf) → **Angefangen**
-(medienübergreifend) → **Neu für dich** → **Regale nach Medium** (nach Nutzung sortiert)
-→ **Entdecken**.
+(medienübergreifend) → **Neu erschienen** → **Neu für dich** → **Regale nach Medium**
+(nach Nutzung sortiert) → **Entdecken**.
 
 Belege: Auswahl-Überlastung (Schwartz) — zu viele gleichrangige Optionen erzeugen Zögern
 und Abbruch; Amazon zeigt bewusst 4–7. Unterbrochenes hat mehr Sog als Neues.
+
+**E70 — „Neu für dich" ist nicht „neu erschienen".** Zwei verschiedene Reihen, nie eine:
+*neu erschienen* ist ein Nachschub-Regal für Dinge, die du schon verfolgst (Kapitel 413 ist
+da); *neu für dich* ist ein Vorschlag für etwas Fremdes. In eine Reihe geworfen wird beides
+wertlos — man weiß nicht mehr, ob ein Klick Fortsetzung oder Risiko bedeutet.
+
+**E66 — vier Helden, aber kein Selbstlauf.** Oben kann man zwischen wenigen Titeln wechseln
+(Amazon-Prime-Prinzip), **aber nicht auf Uhr.** Automatisch weiterlaufende Karussells sind
+seit Jahren als schädlich belegt: die Notre-Dame-Auswertung fand ~1 % Klicks auf das
+gesamte Element, davon 84 % auf das erste Bild; NN/g nennt Selbstlauf ausdrücklich als
+Ärgernis, weil man das Gelesene verliert, bevor man es zu Ende gelesen hat.
+Also: **der Mensch wechselt**, die Auswahl der vier wird **einmal am Tag** neu bestimmt
+(deterministisch aus dem Datum — E52). **Ausnahme Fernsehmodus:** dort sitzt man weit weg,
+ohne Zeiger, und Bewegung ist der Zweck — dort läuft der Held weiter, mit Stopp beim
+ersten Tastendruck.
 
 **Sortiert nach Absicht, nicht nach Gattung.** Medium ist ein Filter, kein Reiter.
 
@@ -500,6 +541,134 @@ derselben Eingabe (möglich nur wegen E52). Jede Kette hat einen **Trockenlauf**
 6. 🔑 **Die Oberfläche wartet nie aufs Netz.** Lokal zuerst, das Netz aktualisiert nur den
    lokalen Stand. ⚠️ SyncMangas HTML-Datei fühlt sich instantan an, *weil* sie das tut —
    diese Eigenschaft darf beim Umstieg auf einen Server nicht verlorengehen.
+
+### 5.8 Die Suche (E53–E57)
+
+> **Ein Feld. Zwei Gruppen. Drei Zustände.**
+> Entwurf: `suche.html` (07.08.2026)
+
+**Warum keine zwei Reiter (E53):** ein Reiter zwingt zur Entscheidung *„Regal oder draußen?"*,
+bevor das Ergebnis bekannt ist — genau die Frage, wegen der man sucht. Zwei Gruppen
+untereinander beantworten sie, statt sie zu stellen. Die Regalgruppe steht **immer oben**.
+
+| Zeichen | Zustand | Herkunft | Aktion |
+|---|---|---|---|
+| **●** grün | im Regal | eigene Datenbank | *Weiterlesen* / *Weitersehen* — nie „Öffnen" |
+| **◐** gelb | **gekannt, nicht im Regal** | Browserverlauf + Erweiterung, lokal | *Ins Regal & ab Kapitel N holen* |
+| **○** grau | neu für dich | MangaBaka, AniList, TMDB, … | *Ins Regal* |
+
+**E54 — der mittlere Zustand ist das Alleinstellungsmerkmal.** Kein Konkurrenzprodukt kennt
+ihn: „63 Kapitel auf asuracomic.net gelesen, seit Februar nicht mehr, steht nirgends".
+Er lebt in der Gruppe *Draußen gefunden* (die zwei Gruppen bleiben zwei), sortiert aber
+**immer über ○** — eine halbe Erinnerung ist mehr wert als ein fremder Titel.
+
+**E55 — Filter dreistufig.** Ein Klick auf ein Medium heißt *nur das*, zwei Klicks heißen
+*das nicht*, drei sind wieder neutral. Kein Aufklappmenü, keine Kästchen. Dazu zwei
+gestrichelte Schalter: *Auch Archiv*, *Auch 18+*.
+
+**E56 — Zusammenführen.** Drei Kataloge, ein Werk, **eine Zeile**; die Herkunft erscheint nur
+als Kürzel, mit einem Aufklapper, der zeigt, was verborgen wurde.
+
+| zusammengeführt wenn | Prüfung |
+|---|---|
+| gleiche fremde ID | AniList/MAL/TMDB/ISBN/MangaUpdates — sofort sicher |
+| Titel + Urheber | normalisierter Titel **und** mindestens ein gleicher Urheber |
+| Nebentitel trifft | Synonymliste der Kataloge wird mitdurchsucht (*Only I Level Up* → *Solo Leveling*) |
+| Jahr ± 1 | nur als Zusatzbedingung, nie allein |
+| ⚠️ **nie über Mediengrenzen** | Manhwa, Anime und Novel sind drei Werke — **E03** gilt auch in der Suche |
+
+**Die Entnerv-Regeln** (sieben, still im Hintergrund):
+
+1. **E57 — nichts erfinden.** Unbekannte Gesamtzahl ist **`?`**, niemals die Nummer des
+   letzten bekannten Kapitels. `?` heißt: die Serie läuft, niemand weiß das Ende.
+2. Ein Werk, eine Zeile.
+3. Was im Regal steht, kommt nicht als Neuvorschlag — nie doppelt.
+4. **Archiv bleibt still** (E69) — es antwortet nur beim exakten Namen oder auf Zuruf.
+   Ein Friedhof, aber einer mit Gedächtnis.
+5. Erwachsenes bleibt aus, bis es einmal eingeschaltet wurde. Danach nie wieder fragen.
+6. **Keine leeren Kataloge.** Eine Quelle ohne Treffer wird nicht erwähnt — kein Reiter,
+   keine Zeile, keine Fehlermeldung.
+7. Tippfehler kosten nichts (Levenshtein ≤ 2 ab vier Zeichen) — aber **nur**, wenn die
+   exakte Suche leer bleibt, sonst verwässert es die guten Treffer.
+
+### 5.9 Der Leser (E58, E61, E65)
+
+**E58 — die Leserichtung hängt am Werk, nicht am Leser.** Wer eine japanische Seite von links
+nach rechts blättert, liest den Dialog rückwärts. Deshalb ist die Richtung eine **Eigenschaft
+der Ausgabe**, reist mit ihr mit und steht in jeder Trefferzeile.
+
+| Zeichen | Richtung | Standard bei |
+|---|---|---|
+| **↤** | rechts → links, rechte Doppelseite zuerst | japanische Manga (JP), Lizenzausgaben, die das Original spiegeln |
+| **↦** | links → rechts | westliche Comics, OEL-Manga, gespiegelte Altlizenzen, offizielle Manhua-Bände, alle Text-Novels |
+| **↧** | vertikal, endlos, kein Blättern | koreanische Manhwa/Webtoons (KR), Kuaikan-Ausgaben |
+
+**Bestimmt in dieser Reihenfolge:** (1) steht sie in der Datei? `ComicInfo.xml
+Manga=YesAndRightToLeft`, EPUB `page-progression-direction` → nehmen. (2) sagt der Katalog ein
+Format? AniList `MANHWA` → ↧, `MANGA` + Land JP → ↤ → nehmen. (3) sonst **messen**: Bilder im
+Schnitt dreimal höher als breit ⇒ Streifen. (4) Handkorrektur schlägt alles und gilt fürs
+**ganze Werk**, nicht fürs Kapitel.
+Mit der Richtung drehen sich **Pfeiltasten, Wischgeste, Fortschrittsbalken und
+Doppelseiten-Paarung** — nie halb.
+
+**E65 — ein Griff, zwei Gedächtnisse.** Bildzoom und Schriftgröße teilen den Regler, aber
+**nicht den Wert**. Wer die Seite auf −40 % stellt, will nicht plötzlich 12-px-Text lesen.
+⚠️ JB-Fund 07.08.2026 — war ein echter Fehler im Entwurf.
+
+**E61 — Fortschritt.** Ein Balken braucht einen bekannten Nenner; fehlt er, steht dort eine
+Zahl **ohne Balken**. Und: **keine geschätzte Restzeit beim Lesen.** Das setzt künstlich unter
+Druck und spoilert die Kapitellänge (JB, 07.08.2026). Bei allem mit Laufzeit — Anime, Film,
+Musik, Hörbuch — ist die Restzeit dagegen richtig, weil sie dort tatsächlich feststeht.
+
+### 5.10 Schrift und Zeichen (E59, E60, E62–E64)
+
+**E60 — vier Schnitte, alle SIL OFL, zusammen < 900 kB als variable Dateien.**
+
+| Rolle | Schrift | Warum |
+|---|---|---|
+| Oberfläche | **Inter** | große x-Höhe, echte Tabellenziffern; **nicht wählbar** — ein Knopf sieht überall gleich aus |
+| Leser | **Literata** | von Google für Play Books gezeichnet, auf E-Ink und LCD geprüft |
+| Barrierefrei | **Atkinson Hyperlegible** | Braille Institute; I/l/1 und O/0 unverwechselbar. Ersetzt das Verdana-Provisorium |
+| Zahlen, Zeit, Technik | **JetBrains Mono** | gleiche Breite ⇒ Zahlen springen beim Zählen nicht. Nie für Fließtext |
+
+> Schriftwahl **im Text** ist Komfort, Schriftwahl **in der Oberfläche** ist Chaos.
+
+**E59 — zwei Zeichen, klare Grenze.** **▶** für alles mit Laufzeit (Anime, Film, Serie, Musik,
+Hörbuch, DJ-Set), **Lesezeichen mit Pfeil** für alles Geblätterte (Manga, Manhwa, Novel,
+Comic) — der Pfeil dreht sich mit der Leserichtung (E58). Ein Symbol **ohne Wort** nur dort,
+wo der Titel danebensteht (Kachel, Ecke); in Listen und Knöpfen immer Symbol **und** Wort.
+
+**E62 — zwei Farbskalen, zwei Bedeutungen.** Die Zahl selbst trägt die Farbe, nicht ein
+Abzeichen daneben:
+
+| | Skala | Werte |
+|---|---|---|
+| **übersetzt** | Lebendigkeit der Übersetzung | aktiv · schläft · tot · abgeschlossen |
+| **gesamt** | Zustand der Serie | läuft · abgeschlossen · Hiatus · abgebrochen |
+
+**E63 — Übersetzungsgüte als Wortabzeichen:** `MTL` · `MTL+KI` · `Fan` · `Offiziell`.
+Nie Emoji, nie Sterne, nie Prozent. ⚠️ Das 🖐-Emoji im ersten Entwurf war unlesbar (JB).
+
+**E64 — die Kapitelzelle.** `gelesen / übersetzt / gesamt` in **einem** Raster mit fester
+`ch`-Breite. Die Spaltenköpfe dürfen den Abstand der Zahlen **nie** bestimmen — sonst
+zerreißt eine lange Überschrift die Zahlenreihe.
+⚠️ Vorher stand dort *„Kapitel 88 von 122 übersetzt"* — JB fragte zu Recht, warum sich
+Kapitel 89 dann weiterlesen lässt. Drei Zahlen, drei Bedeutungen, keine Prosa.
+
+### 5.11 Gelernte Fallen
+
+Fehler, die in dieser Sitzung tatsächlich passiert sind. Für die zweite KI wertvoller als
+jede Regel, die nie gebrochen wurde.
+
+| Falle | Symptom | Regel daraus |
+|---|---|---|
+| **`height:100%` im Flex-Kind** | Bild winzig oder unsichtbar — **dreimal passiert** | Höhe nie in Prozent, wenn der Elternteil sie nicht kennt: `flex:1` + `min-height`, oder in `calc()` rechnen |
+| **`::after`-Schleier über dem Text** | Titel im Schatten | jeder Text auf einem Bild bekommt eigenen `z-index` **über** dem Verlauf |
+| **Gerades `"` in einer `"`-Zeichenkette** | ganze Datei tot, kein Knopf reagiert | **E71** — jede Oberflächendatei wird syntaktisch geprüft, **bevor** sie jemand sieht |
+| **Messen vor jeder Bewegung** | geführte Ansicht „lud neu" statt zu gleiten | Geometrie **einmal** messen, zwischenspeichern, nur bei Modus-/Zoom-/Größenwechsel verwerfen |
+| **Zahlen ohne Abstand** | „3 in Arbeit68 %" | zusammengesetzte Angaben immer in eigene Elemente mit `&nbsp;` |
+| **Waagerechtes Scrollen im Handheld** | Leiste außerhalb des Bildschirms | `flex-wrap:wrap` statt `overflow-x:auto` — die Prioritätsleiter (§5.2) gilt auch für Leisten |
+| **Umbruch bei halber Laptop-Breite** | Regalkopf zweizeilig | Container-Abfragen statt Bildschirm-Abfragen; die Leiter greift am Bauteil, nicht am Fenster |
 
 ---
 
@@ -746,6 +915,54 @@ falsche Einträge in der Liste.
    markiert — bevor es hundert Einträge verdirbt.
 5. **Jede Erkennung merkt sich, welches Muster sie erzeugt hat.** Wird ein Muster als
    kaputt erkannt, lassen sich genau dessen Ergebnisse zurückrollen.
+
+### 8.4 Die Browser-Erweiterung (E67, E68)
+
+> **Sie markiert. Sie fragt nicht.**
+> Entwurf: `erweiterung.html` (07.08.2026)
+
+Sie ist das Auge im Browser — in **beide** Richtungen: sie meldet, was gelesen wird, und malt
+umgekehrt den Regalzustand auf die fremde Seite zurück. Das ist der Grund, warum JB überhaupt
+online sieht, was er schon liest.
+
+**Was sie tut:**
+
+| | Wie |
+|---|---|
+| **Lesen erkennen** | Kapitelseite offen **und** (> 60 % gescrollt **oder** > 25 s geblieben). Beides, weil Langstreifen nie scrollen und Doppelseiten nie dauern |
+| **Werk zuordnen** | Adapter liest Titel, Nebentitel, Urheber und — wenn vorhanden — die fremde ID aus der Seite; danach dieselbe Zusammenführung wie in der Suche (E56) |
+| **Zurückmalen** | grüner Streifen an gelesenen Kapiteln · orange Marke *Hier weiter* am nächsten · Ecken-Zeichen ● ◐ ○ im Raster · **eine** Leiste über der Liste |
+| **Übergeben** | ein Klick schickt die Kapitelliste an den lokalen Server; ab dort läuft die Warteschlange |
+
+**E67 — was sie nie tut:**
+
+| | Warum |
+|---|---|
+| auf allen Seiten laufen | keine `<all_urls>`-Erlaubnis; nur Domains aus der Adapterliste, einzeln freigegeben |
+| nach draußen funken | **ein** Ziel: `127.0.0.1` mit einem beim ersten Start erzeugten Token. Keine Telemetrie, kein Konto |
+| herunterladen | sie **meldet** nur. Ein Add-on, das Dateien zieht, fliegt aus jedem Store — und wäre das falsche Werkzeug |
+| Popups werfen | kein Toast, kein Ton, kein springender Zähler. Wer beim Lesen gestört wird, schaltet sie ab — dann war alles umsonst |
+
+**Der Knopf hat vier Zustände, mehr nicht:** grau (schläft) · orange (neu) · **gelbe Zahl**
+(gekannt — wie viele Kapitel hier schon offen waren) · **orange Zahl** (im Regal, Rückstand).
+Die Zahl ist immer der **Rückstand**, nie der Fortschritt.
+
+**Im Fenster am Knopf** steht neben Werk und Zustand auch die **Zuordnungssicherheit** und
+**der Beweis** („erkannt über Nebentitel 나 혼자 만렙 뉴비 → MangaBaka #34812"). Unter 70 %
+wird gefragt statt still das Falsche gezählt — das ist §5.6 (nichts entscheidet stumm),
+angewandt auf fremdem Grund. *Falsches Werk?* öffnet die Suche mit dem Seitentitel
+vorgetippt; die Korrektur gilt ab sofort für die ganze Domain-Serie.
+
+**E68 — die Adapterliste wohnt nicht in der Erweiterung**, sondern als kleine signierte
+JSON-Datei, die SyncFundus lokal ausliefert. Zwei Gründe: eine neue Seite ist dann eine Zeile
+Text statt zwei Wochen Store-Prüfung — und die Liste steht nirgends öffentlich im Paket
+(dieselbe Trennung wie **E12**).
+
+⚠️ **Der ehrliche Haken.** Firefox erlaubt das alles; Chrome baut seit 2024 schrittweise ab,
+was wir brauchen, und mag Add-ons nicht, die mit `localhost` reden. Also **Firefox zuerst und
+ordentlich**, Chrome als Beipack. Für beide gilt: die Erweiterung ist **Zubehör**. Fällt sie
+weg, läuft SyncFundus weiter — dann eben nur mit der `places.sqlite`-Auswertung, die es
+ohnehin schon gibt.
 
 ---
 
@@ -1264,6 +1481,7 @@ mitgeliefert, nur erkannt und angebunden.
 
 | Datum | Was |
 |---|---|
+| 2026-08-07 | Fassung 0.5 — **E53–E71.** Neu: **§5.8 Die Suche** (ein Feld, zwei Gruppen, drei Zustände, dreistufige Filter, Zusammenführungsregeln, die sieben Entnerv-Regeln) · **§5.9 Der Leser** (Leserichtung als Eigenschaft der Ausgabe, ein Griff mit zwei Gedächtnissen, keine Restzeit beim Lesen) · **§5.10 Schrift und Zeichen** (Inter/Literata/Atkinson/JetBrains Mono; ▶ vs. Lesezeichen-Pfeil; zwei Farbskalen; Wortabzeichen statt Emoji; die Kapitelzelle) · **§5.11 Gelernte Fallen** (sieben Fehler, die in dieser Sitzung wirklich passiert sind) · **§8.4 Die Browser-Erweiterung** (vier Knopfzustände, drei Eingriffe je Seite, nur `127.0.0.1`, Adapterliste lokal). Die „zehn unverhandelbaren" aufgeteilt in **zehn Regeln der Bauart** und **vier Regeln des Vertrauens** — die alte Zehnerliste bleibt unverändert. Entwürfe: `suche.html`, `erweiterung.html`; `leser.html` und `regal.html` überarbeitet. **JB-Funde:** geteilter Regler zwischen Zoom und Schriftgröße · „Kapitel 88 von 122" war zweideutig · 🖐-Emoji unlesbar · Restdauer beim Lesen setzt unter Druck. |
 | 2026-08-07 | Fassung 0.4 — **Name entschieden: SyncFundus** (der Fundus ist im Theater und Film der Bestand, aus dem man schöpft). Datei umbenannt. E46–E52: Meilensteine nur einmal · Blu-ray über externes Werkzeug einbinden statt selbst entschlüsseln · **genau ein Ausgang pro Datei** (JB-Einwand gegen kaskadierende Regeln — berechtigt, Modell vereinfacht) · Fehlerprotokoll lokal/verschlüsselt/opt-in · GPU nachgebend · Anmeldungen erneuern sich still · deterministischer Kern. Warteschlange um die drei Fehlerarten und vergiftete Aufträge erweitert. Qualitätsnetz um die extreme Stufe erweitert (JB: „machen"). **Neu: §16 Übergabe an eine zweite KI** mit verbindlicher Baureihenfolge. **Neu: die zehn unverhandelbaren.** Aufgeräumt: §12.6 war falsch eingerückt, §5.6/5.7 neu geordnet. |
 | 2026-08-06 | Fassung 0.3 — E34–E45: **kein zweites Fenster** (der Motor liefert Pixel, wir liefern die Bedienung) · Navigation mit Seitenleiste, vier Sichtbarkeits-Stufen, Tiefenregel Ebene-vs-Tafel · Container ersetzt Ordner · Regal „Eigenes" · Vorschlagen statt Verändern · Qualitätsnetz mit Layout- und Text-Wächter · Titel-Schema als Rollen · Live-TV ja / Live-Sport nein · die Suche ist die Anforderung. Blu-ray-Playlist-Verschleierung dokumentiert. F11–F12 eröffnet. **JB-Korrektur:** Big Picture ist *nicht* die Vorlage für den Fernsehmodus — die Steam-Deck-Oberfläche und EmulationStation sind es. |
 | 2026-08-06 | Fassung 0.2 — E25–E33 ergänzt: Spieler-Motor (libmpv/libVLC), Plattform-Offenheit über HTTP-Schnittstelle, Ordnerkonventionen und Pfadhaltung, Umbenennungsregeln, Mängel-Deklaration, Titel-Zuordnung mit gewichteten Zeugen, Export als Grundrecht, Spiele über Playnite. **F01 beantwortet** (§12.4). Zwiebel um DJ-Sets, Sportevents, Spiele/Emulatoren, physische Sammlung erweitert. **Korrektur:** winget verleiht kein Vertrauen (§12.1). |
@@ -1295,11 +1513,13 @@ werden; hier stehen die Bedingungen dafür.
 | 1 | **Register + Werk-Modell** (§4.2–4.4) | die vier Eigenschaften aus §12.6 grün sind |
 | 2 | **Warteschlange** (§4.5) | die drei Fehlerarten getrennt behandelt werden und „Steckengeblieben" sichtbar ist |
 | 3 | **Erkennung + Identität** (§8) | genau ein Ausgang pro Datei (E48), Postfach funktioniert |
-| 4 | **Oberfläche: Regal + Startseite** (§5) | Layout-Wächter bei 360/834/1280/3440 grün |
-| 5 | **Leser** | Papier/Nacht-Modi, Fortschritt zweistufig |
-| 6 | **Spieler** (libmpv in eigener Fläche, E34/E35) | kein zweites Fenster, Steuerung ist unsere |
-| 7 | **Beschaffung** (§9) | Echtheitsprüfung läuft vor jedem Einlagern |
-| 8 | **Veredelung** (§10) | Werk-Wissen trägt Übersetzung *und* Vertonung |
+| 4 | **Oberfläche: Regal + Startseite** (§5.1, §5.8–5.11) | Layout-Wächter bei 360/834/1280/3440 grün |
+| 5 | **Suche** (§5.8) | drei Zustände sichtbar, Zusammenführung greift, Filter dreistufig |
+| 6 | **Leser** (§5.9) | Papier/Nacht-Modi · Leserichtung dreht **alles** mit · Fortschritt zweistufig |
+| 7 | **Spieler** (libmpv in eigener Fläche, E34/E35) | kein zweites Fenster, Steuerung ist unsere |
+| 8 | **Erweiterung** (§8.4) | markiert zurück, spricht nur mit `127.0.0.1` |
+| 9 | **Beschaffung** (§9) | Echtheitsprüfung läuft vor jedem Einlagern |
+| 10 | **Veredelung** (§10) | Werk-Wissen trägt Übersetzung *und* Vertonung |
 
 **Nichts aus Stufe N+1 beginnen, solange N nicht fertig ist.** Der Grund steht in §14.
 
