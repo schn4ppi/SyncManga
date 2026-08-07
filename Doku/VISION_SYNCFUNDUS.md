@@ -2,9 +2,9 @@
 
 > **Arbeitstitel.** Der Nachfolger von SyncManga und SyncYouTube: **ein** Programm für
 > Anime, Manga, Novels, Musik, Hörbücher, Filme und Serien — mit eigener Bibliothek,
-> eigenem Leser, eigenem Spieler, eigener Veredelung.
+> eigenem Leser, eigener Bühne, eigener Veredelung.
 >
-> **Stand:** 2026-08-07 · **Fassung:** 0.5 · **Pflege:** JB + Claude
+> **Stand:** 2026-08-07 · **Fassung:** 0.6 · **Pflege:** JB + Claude
 
 ---
 
@@ -58,7 +58,7 @@ Recherchiert am 06.08.2026.
 |---|---|---|
 | Suwayomi | Manga-Server, Mihon-Extensions, CBZ, OPDS | keine Novels, kein Anime, keine Erkennung |
 | Seanime | Anime **und** Manga, HLS/Transcoding, AniList | keine Novels, braucht lokale Dateien |
-| Kavita | Manga **und** Light Novels, echter Textleser | kein Anime, kein Spieler |
+| Kavita | Manga **und** Light Novels, echter Textleser | kein Anime, keine Bühne |
 | Komga | Comics, top API, OPDS v2, Kobo | keine Novels, kein Anime |
 | Mihon / Aniyomi / LNReader | je eine App pro Medium | drei Apps, drei Bibliotheken |
 | *arr-Familie | Beschaffung automatisieren | keine Bibliothek, keine Erkennung, **Readarr tot** |
@@ -67,7 +67,7 @@ Recherchiert am 06.08.2026.
 
 1. 🔑 **Die Bibliothek entsteht aus dem eigenen Verhalten.** Alle anderen verlangen
    manuelles Eintragen oder vorhandene Dateien. Das gibt es kein zweites Mal.
-2. 🔑 **Alle Medien unter einer Oberfläche, mit eigenem Leser *und* Spieler.**
+2. 🔑 **Alle Medien unter einer Oberfläche, mit eigenem Leser *und* eigener Bühne.**
    Kavita kommt bei Manga+Novel am nächsten, Seanime bei Anime+Manga — die Kombination
    existiert nicht.
 3. 🔑 **Übersetzungs- und Verfügbarkeitsstand prominent.** „Wird das noch übersetzt?"
@@ -91,7 +91,7 @@ Novels oder Manga**. Genau dort ist SyncMangas Stärke.
 | E06 | Formate | **Standardformate** (CBZ/EPUB/MKV/M4B/FLAC), nie eigene | ✅ |
 | E07 | Startseite | **Fortsetzung statt Auswahl**, nach Absicht sortiert | ✅ |
 | E08 | Anordnung | **Selbstordnend + festnagelbar**, kein Einrichtungsdialog | ✅ |
-| E09 | Farben | Tinte (Nacht) · Papier (Tag) · Spieler **immer** schwarz | ✅ |
+| E09 | Farben | Tinte (Nacht) · Papier (Tag) · Bühne **immer** schwarz | ✅ |
 | E10 | Anpassung Geräte | **Eine Prioritätsleiter**, keine Geräte-Entwürfe | 🔑✅ |
 | E11 | Quellen-Kopplung | **Adapter-Schicht**, kein Fremdmodell im Kern | 🔑✅ |
 | E12 | Quellenkatalog | **Laufzeitdatei**, nie im Repo (DMCA) | 🔑✅ |
@@ -107,7 +107,7 @@ Novels oder Manga**. Genau dort ist SyncMangas Stärke.
 | E22 | Oberflächentechnik | Lokaler Server + Web-Oberfläche, **Video extern** (VLC/mpv) | 🟡 |
 | E23 | Signatur | OV-Zertifikat + **Zeitstempel**; Reputation hängt am Zertifikat | ✅ |
 | E24 | Medien-Umfang | Drei Schichten (§6); Grenze = Einheiten + Identität | ✅ |
-| E25 | Spieler-Motor | **libmpv** Standard, **libVLC** zweite Umsetzung hinter derselben Schnittstelle | ✅ |
+| E25 | Bühnen-Motor | **libmpv** Standard, **libVLC** zweite Umsetzung hinter derselben Schnittstelle | ✅ |
 | E26 | Plattform-Offenheit | **Alle Logik hinter einer HTTP-Schnittstelle** — jede Hülle bleibt möglich | 🔑✅ |
 | E27 | Ordnerstruktur | Etablierte Konventionen **übernehmen**, nie erfinden (§4.6) | ✅ |
 | E28 | Pfade | **Wurzel-Kennung + relativer Pfad**, nie absolute Pfade als Identität | 🔑✅ |
@@ -154,6 +154,12 @@ Novels oder Manga**. Genau dort ist SyncMangas Stärke.
 | E69 | Archiv | Friedhof **mit Gedächtnis** — still, aber antwortet beim exakten Namen | ✅ |
 | E70 | Startseite | **Neu für dich ≠ neu erschienen** — zwei Reihen, nie eine | ✅ |
 | E71 | Bauen | **Prüfen vor dem Zeigen** — keine Oberflächendatei ungeprüft ausliefern | ✅ |
+| E72 | Sprache | **„Spieler" ist verboten** — die Abspielfläche heißt **Bühne**; Spieler ist ein Mensch | ✅ |
+| E73 | Zahlen | Drei Zahlen, alle echt: `gelesen / übersetzt / **erschienen**` — `…` nur bei echtem Nichtwissen | 🔑✅ |
+| E74 | Leser | Im geführten Modus regelt der Griff die **Füllung**, nicht die Seitengröße | ✅ |
+| E75 | Bühne | Untertitel: `srt`/`vtt` zeichnen **wir**, `ass` zeichnet der Motor | ✅ |
+| E76 | Erweiterung | Fortschritt hängt am **Werk**, nicht an der Seite — Quellen sind austauschbar | 🔑✅ |
+| E77 | Bühne | Gamepad-Belegung ist **fest** — Muskelgedächtnis schlägt Anpassbarkeit | ✅ |
 
 ### Die Unverhandelbaren
 
@@ -164,12 +170,14 @@ Datenmodell im Kern · **E12** Quellenkatalog nur zur Laufzeit · **E16** niemal
 **E20** Fingerabdruck vor Dateiname · **E26** alles hinter einer HTTP-Schnittstelle ·
 **E34** nie zwei Fenster · **E48** genau ein Ausgang pro Datei · **E52** deterministischer Kern
 
-**Vier Regeln des Vertrauens** — wer eine bricht, verliert den Nutzer, nicht den Code:
+**Sechs Regeln des Vertrauens** — wer eine bricht, verliert den Nutzer, nicht den Code:
 
 **E54** der Zustand *gekannt, nicht im Regal* ist unser Alleinstellungsmerkmal — er darf nie
-wegoptimiert werden · **E57** nie eine Zahl erfinden; Unbekanntes ist `?` ·
+wegoptimiert werden · **E57** nie eine Zahl erfinden; Unbekanntes ist `…` ·
 **E58** Leserichtung gehört zur Ausgabe, nicht zur Einstellung ·
-**E67** die Erweiterung spricht nur mit dem eigenen Rechner
+**E67** die Erweiterung spricht nur mit dem eigenen Rechner ·
+**E73** die drei Zahlen bedeuten drei verschiedene Dinge und werden nie vermischt ·
+**E76** Fortschritt hängt am Werk, nie an der Quelle
 
 ---
 
@@ -429,11 +437,11 @@ fertig ist. Bricht es bei einer Breite, ist es nicht fertig — nicht „später
 |---|---|---|---|
 | Regal | Tinte `#0E1217` | Papier `#F1EAE0` | schaltet |
 | Leser | warm-dunkel `#1C1611` | Papier `#F6EFE3` | schaltet |
-| Spieler | Bühne `#0A0A0B` | Bühne `#0A0A0B` | **fest** |
+| Bühne | `#0A0A0B` | Bühne `#0A0A0B` | **fest** |
 | Akzent | `#F0873C` | `#B4551A` | gleicher Ton, andere Helligkeit |
 
 **Begründungen:**
-- Der **Spieler** schaltet nie: ein heller Rahmen um einen Film ist auch mittags falsch.
+- Die **Bühne** schaltet nie: ein heller Rahmen um einen Film ist auch mittags falsch.
   Spotify begründet seinen Dauer-Dunkelmodus wörtlich mit dem Kinosaal.
 - Der **Leser** folgt nachts *nicht* dem Regal: lange Wellenlängen (Bernstein) stören den
   Schlaf am wenigsten. Tinte ist ein guter Rahmen, ein schlechter Lesegrund um Mitternacht.
@@ -597,11 +605,25 @@ als Kürzel, mit einem Aufklapper, der zeigt, was verborgen wurde.
 nach rechts blättert, liest den Dialog rückwärts. Deshalb ist die Richtung eine **Eigenschaft
 der Ausgabe**, reist mit ihr mit und steht in jeder Trefferzeile.
 
-| Zeichen | Richtung | Standard bei |
+Sie hat **zwei Achsen**, nicht eine — das ist der Punkt, an dem die meisten Leser scheitern:
+
+| | **Fluss** — wie geht es weiter? | **Achse** — was steht nebeneinander zuerst? |
 |---|---|---|
-| **↤** | rechts → links, rechte Doppelseite zuerst | japanische Manga (JP), Lizenzausgaben, die das Original spiegeln |
-| **↦** | links → rechts | westliche Comics, OEL-Manga, gespiegelte Altlizenzen, offizielle Manhua-Bände, alle Text-Novels |
-| **↧** | vertikal, endlos, kein Blättern | koreanische Manhwa/Webtoons (KR), Kuaikan-Ausgaben |
+| | blättern waagerecht · scrollen senkrecht | links→rechts · rechts→links |
+
+| Zeichen | Fluss + Achse | Standard bei |
+|---|---|---|
+| **↤** | blättern, **rechts → links** | japanische Manga (JP), Lizenzausgaben, die das Original spiegeln |
+| **↦** | blättern, **links → rechts** | westliche Comics, OEL-Manga, gespiegelte Altlizenzen, gebundene Manhua-Ausgaben, alle Text-Novels |
+| **↧** | scrollen, Achse **links → rechts** | koreanische Manhwa/Webtoons (KR), Kuaikan-Manhua |
+
+**Warum die Achse auch bei ↧ gebraucht wird:** ein Webtoon ist meist eine Spalte, aber nicht
+immer — wo zwei Rahmen oder zwei Sprechblasen nebeneinanderstehen, muss die Reihenfolge
+feststehen. **Koreanisch und modernes Chinesisch werden waagerecht links→rechts geschrieben**,
+also ist ↧ praktisch immer LTR. Der Sonderfall ist **Chinesisch**: dieselbe Serie erscheint
+als Webtoon (↧ LTR) *und* als gebundener Band aus Taiwan oder Hongkong, der der
+japanischen Konvention folgt (**↤**). Deshalb ist die Richtung eine Eigenschaft der
+**Ausgabe**, nicht des Werks und schon gar nicht der Sprache.
 
 **Bestimmt in dieser Reihenfolge:** (1) steht sie in der Datei? `ComicInfo.xml
 Manga=YesAndRightToLeft`, EPUB `page-progression-direction` → nehmen. (2) sagt der Katalog ein
@@ -649,11 +671,30 @@ Abzeichen daneben:
 **E63 — Übersetzungsgüte als Wortabzeichen:** `MTL` · `MTL+KI` · `Fan` · `Offiziell`.
 Nie Emoji, nie Sterne, nie Prozent. ⚠️ Das 🖐-Emoji im ersten Entwurf war unlesbar (JB).
 
-**E64 — die Kapitelzelle.** `gelesen / übersetzt / gesamt` in **einem** Raster mit fester
+**E64 — die Kapitelzelle.** `gelesen / übersetzt / erschienen` in **einem** Raster mit fester
 `ch`-Breite. Die Spaltenköpfe dürfen den Abstand der Zahlen **nie** bestimmen — sonst
 zerreißt eine lange Überschrift die Zahlenreihe.
 ⚠️ Vorher stand dort *„Kapitel 88 von 122 übersetzt"* — JB fragte zu Recht, warum sich
 Kapitel 89 dann weiterlesen lässt. Drei Zahlen, drei Bedeutungen, keine Prosa.
+
+**E73 — die dritte Zahl heißt „erschienen", nicht „gesamt".** JB-Einwand 07.08.2026:
+*„Ist gesamt für dich nur verfügbar, wenn der Manga abgeschlossen ist?"* — Nein, und genau
+das war der Denkfehler in meiner Beschriftung.
+
+| Zahl | Bedeutung | immer bekannt? |
+|---|---|---|
+| **gelesen** | wo du stehst | ja |
+| **übersetzt** | wie viele Kapitel es **in deiner Sprache** gibt | ja |
+| **erschienen** | wie viele Kapitel es **im Original** gibt — jetzt, nicht am Ende | ja, außer keine Quelle zählt mit |
+| *(Farbe der dritten Zahl)* | ob die Serie läuft, ruht, abgebrochen oder fertig ist | ja |
+
+„Gesamt" klang nach *Endstand* und war deshalb bei jeder laufenden Serie unbeantwortbar.
+„Erschienen" ist eine Momentaufnahme und **immer** eine echte Zahl. Ob die Serie endet, ist
+eine **vierte** Information — und die trägt bereits die Farbe (E62), nicht die Ziffer.
+
+⚠️ **`…` statt `?`** (JB, 07.08.2026): ein Fragezeichen liest sich wie *„da stimmt etwas
+nicht"* oder wie Hiatus. Drei Punkte lesen sich wie *„geht weiter, wir wissen es nur nicht"*.
+Und weil „erschienen" fast immer bekannt ist, tauchen sie ohnehin selten auf.
 
 ### 5.11 Gelernte Fallen
 
@@ -669,6 +710,52 @@ jede Regel, die nie gebrochen wurde.
 | **Zahlen ohne Abstand** | „3 in Arbeit68 %" | zusammengesetzte Angaben immer in eigene Elemente mit `&nbsp;` |
 | **Waagerechtes Scrollen im Handheld** | Leiste außerhalb des Bildschirms | `flex-wrap:wrap` statt `overflow-x:auto` — die Prioritätsleiter (§5.2) gilt auch für Leisten |
 | **Umbruch bei halber Laptop-Breite** | Regalkopf zweizeilig | Container-Abfragen statt Bildschirm-Abfragen; die Leiter greift am Bauteil, nicht am Fenster |
+| **Eigene `display`-Regel schlägt `[hidden]`** | versteckte Bauteile bleiben sichtbar | einmal global `[hidden]{display:none!important}` — sonst ist jedes `hidden` bei Flex-Elementen wirkungslos |
+| **Einpassen macht Zoom wirkungslos** | Rahmen bleibt gleich groß, nur der Text schrumpft | wo etwas automatisch eingepasst wird, darf der Regler **nicht** die Quelle vergrößern, sondern muss die **Füllung** steuern (**E74**) |
+| **Feste `px` in einer skalierten Fläche** | Sprechblasen schrumpfen, während der Rahmen wächst | ein Maßstab `--sk` an der Fläche; **alles** darin rechnet damit — Schrift, Abstände, Rahmenbreiten |
+
+### 5.12 Die Bühne (E72, E75, E77)
+
+> **E72 — das Wort „Spieler" ist verboten.** Im Deutschen ist ein Spieler ein Mensch mit
+> Gamepad, und wir haben eine Spiele-Schicht in der Zwiebel. Die Abspielfläche heißt
+> **Bühne** — passend für Film, Musik und Hörbuch, und die Farbe hieß ohnehin schon so
+> (`#0A0A0B`, die einzige Fläche, die nie zwischen Tag und Nacht wechselt).
+> Der **Text-Wächter** (E42) bekommt „Spieler" auf die Verbotsliste.
+> Entwurf: `buehne.html` (07.08.2026)
+
+**Drei Gestalten, eine Bühne.** Video (Anime, Film, Serie) · Musik (Lied, Album, DJ-Set) ·
+Hörbuch. Verschieden ist nur die Mitte; Leiste, Zeiten, Lautstärke, Tempo, Tafel,
+Tastenbelegung und das Zurückschreiben des Fortschritts sind überall dieselben.
+
+**Die Leiste ist der eigentliche Entwurf** — dort wird alles sichtbar, was die Anreicherung
+weiß:
+
+| Element | Woher |
+|---|---|
+| **Vorspann-/Abspannband** (türkis/blau) | Kapitelmarken der Datei; fehlen sie, aus dem **Tonfingerabdruck** — ein Anime-Vorspann ist über eine Staffel akustisch identisch (dieselbe Technik wie Chromaprint, E20) |
+| **Kapitelstriche** | Container bei Filmen · Kapiteldateien bei Hörbüchern · **Tracklist** bei DJ-Sets |
+| **hellerer Teil** | was auf der Platte liegt — bei lokalen Dateien sofort voll, und **deshalb** aussagekräftig, wenn nicht |
+| **Vorschaubild beim Überfahren** | einmal beim Einlagern erzeugt, ein Kachelbild je Folge (~200 kB, ffmpeg, alle 10 s) — kein Netz, kein Warten |
+
+**E75 — wer die Untertitel zeichnet.** `srt` und `vtt` zeichnen **wir**: dann gelten
+Hausschrift, Kontrastsaum und deine Größeneinstellung. `ass`/`ssa` mit Karaoke, Schildern und
+Bewegung zeichnet der **Motor**, weil dort die Gestaltung Teil des Werks ist. Der Wechsel ist
+unsichtbar, aber die Regel muss stehen — sonst sieht das Programm an zwei Stellen anders aus.
+
+**E77 — die Gamepad-Belegung ist fest:** `A` Pause · `B` zurück · `X` Spuren ·
+`Y` Vorspann überspringen · `LB/RB` Kapitel · Stick spulen. Muskelgedächtnis ist wertvoller
+als Anpassbarkeit. Auf Distanz wachsen die Ziele auf **48 px**, und die Fokusmarke ist ein
+**heller Rahmen**, kein Farbwechsel — auf drei Metern sieht man Rahmen, keine Sättigung.
+
+**Der Übergang Hören ↔ Lesen** ist der Grund, warum das *eine* Bühne sein muss: weil wir die
+Stimmen selbst erzeugen, kennen wir zu jedem Satz die Zeitmarke (EPUB-3-Media-Overlays,
+geschenkt statt geschätzt). *Weiterlesen ab hier* öffnet den Leser beim **markierten Satz**,
+nicht beim Kapitelanfang — und umgekehrt genauso. Bei einem **gekauften** Hörbuch fehlen die
+Marken; dort bleibt es beim Kapitel, und das wird auch so gesagt.
+
+**Was die Bühne nie tut:** ein zweites Fenster öffnen (E34) · das Bild dehnen · ohne
+Abschaltmöglichkeit automatisch weiterlaufen · die Steuerung ausblenden, während die Maus sich
+bewegt · beim Pausieren Empfehlungen über das Bild legen.
 
 ---
 
@@ -707,7 +794,7 @@ jede Regel, die nie gebrochen wurde.
   EA, Ubisoft, Battle.net, Xbox, Amazon **und Emulatoren** (RetroArch, Dolphin, PCSX2,
   RPCS3, PPSSPP, MAME). **Nicht nachbauen, anbinden.**
   Aufnahmebedingung erfüllt, weil **Spielzeit der Fortschritt ist** (Steam liefert sie),
-  Errungenschaften als zweite Skala. ROM = Werk, Emulator = „Spieler" — dieselbe
+  Errungenschaften als zweite Skala. ROM = Werk, Emulator = Abspielweg — dieselbe
   Rollenverteilung wie Datei ↔ mpv.
   Von Steam übernehmen: **Big Picture ist die Vorlage für den Fernsehmodus** (nicht Netflix),
   und „Zuletzt gespielt" oben ist eine unabhängige Bestätigung unserer Startseite.
@@ -952,6 +1039,29 @@ Die Zahl ist immer der **Rückstand**, nie der Fortschritt.
 wird gefragt statt still das Falsche gezählt — das ist §5.6 (nichts entscheidet stumm),
 angewandt auf fremdem Grund. *Falsches Werk?* öffnet die Suche mit dem Seitentitel
 vorgetippt; die Korrektur gilt ab sofort für die ganze Domain-Serie.
+
+**E76 — der Fortschritt hängt am Werk, nie an der Seite.** JB-Frage 07.08.2026: *„Wie erkennt
+sie den korrekten Ort? Wenn ich denselben Manga woanders lese? Wenn eine andere Scanseite
+übersetzt? Wenn der Titel woanders anders ist?"* — Die Seite ist **nie** die Identität. Sie ist
+nur ein Weg zum Werk, und Wege sind austauschbar.
+
+```
+asuracomic.net/series/solo-max-level-newbie ─┐
+mangabuddy.com/manga/solo-max-level-newbie  ─┼─→  Werk #34812  ←── dein Fortschritt
+kunmanga.com/nahonja-manleb-nyubi           ─┘        (Kapitel 63)
+```
+
+| Fall | Wie er gelöst wird |
+|---|---|
+| **Dieselbe Serie auf einer anderen Seite** | Der Adapter löst *(Domain, Serienpfad) → Werk-ID* **einmal** auf und merkt sich das Paar. Ab dann kostet jede weitere Seite nichts. Kapitel 64 auf MangaBuddy zählt auf dasselbe Werk wie Kapitel 63 auf Asura. |
+| **Anderer Titel dort** | Erkennung läuft über die **Synonymliste** (E56), nicht über den sichtbaren Titel: koreanischer Originaltitel, Romanisierung, englischer Titel, fremde ID im Seitenquelltext. Trifft eines davon, ist es dasselbe Werk. |
+| **Andere Übersetzergruppe** | Die Gruppe ist eine Eigenschaft der **Ausgabe**, nicht des Werks — genau wie die Sprache. Zwei Gruppen sind zwei Ausgaben eines Werks, und der Lesefortschritt zählt am Werk. Die Güte (`Fan`, `MTL`, E63) hängt an der Ausgabe. |
+| ⚠️ **Andere Kapitelzählung** | Der gefährlichste Fall. Gruppen fassen zusammen, spalten auf, zählen den Prolog mit oder nicht. Wir vergleichen die Kapitelliste der Seite mit unserer **Bezugsliste** (MangaBaka/MangaUpdates) und suchen einen **konstanten Versatz**. Passt einer für ≥ 80 % der Einträge, wird er gespeichert und angezeigt (*„zählt +1 gegen deine Liste"*). Passt keiner, wandert es ins **Postfach** — lieber nachfragen als still danebenzählen. |
+| **Dezimalkapitel** (`88.5`, Omake) | Eigene Einheit, zählt aber nicht als Fortschrittssprung. |
+| **Zuordnung unter 70 %** | Wird gefragt, nicht geraten (§5.6). Deine Antwort gilt danach für die ganze Domain-Serie. |
+
+> Das ist derselbe Grundsatz wie **E20** (Fingerabdruck vor Dateiname) — nur im Browser:
+> **die Adresse ist ein Hinweis, nie ein Beweis.**
 
 **E68 — die Adapterliste wohnt nicht in der Erweiterung**, sondern als kleine signierte
 JSON-Datei, die SyncFundus lokal ausliefert. Zwei Gründe: eine neue Seite ist dann eine Zeile
@@ -1292,13 +1402,13 @@ daher die Blockade bei Testnutzern.
 **im Programm** kurz und knapp gezeigt — nicht nur in den GitHub-Notizen.
 Eine Zeile, ein Beispiel zum Anhören, ein Knopf „übernehmen" oder „später".
 
-### 12.4 Hülle und Spieler — F01 beantwortet
+### 12.4 Hülle und Bühne — F01 beantwortet
 
 **Hülle:** eigenes Fenster (**pywebview**, `huelle.py` existiert bereits) mit der
 Web-Oberfläche darin. Fühlt sich an wie ein Programm, ist innen weiter Web — also bleibt
 das Entwicklungstempo mit `importlib.reload` + F5 erhalten.
 
-**E25 — Spieler: libmpv als Motor, libVLC als zweite Umsetzung.**
+**E25 — Bühne: libmpv als Motor, libVLC als zweite Umsetzung.**
 
 | | libmpv | libVLC |
 |---|---|---|
@@ -1309,7 +1419,7 @@ das Entwicklungstempo mit `importlib.reload` + F5 erhalten.
 | **Wo VLC gewinnt** | — | DVD/Blu-ray-**Menüs**, DVB/TV-Karten, Streaming-Server, geht mit **kaputten Dateien** gnädiger um |
 
 Für Anime ist es nicht knapp: Fansub-Untertitel sind gestylt und positioniert, VLC macht
-sie kaputt. **Beide bleiben verfügbar** — Spieler ist eine Fähigkeit hinter einer
+sie kaputt. **Beide bleiben verfügbar** — die Bühne ist eine Fähigkeit hinter einer
 Schnittstelle (E11). ⚠️ **Kein eigenes VLC-Fenster mehr**: der Motor zeichnet ins eigene
 Fenster, die Steuerleiste liegt darüber, der Fernsehmodus sieht aus wie ein Streamingdienst.
 
@@ -1324,7 +1434,7 @@ Fenster, die Steuerleiste liegt darüber, der Fernsehmodus sieht aus wie ein Str
 
 Damit ist „beide müssen identisch aussehen" nicht schwer, sondern **konstruktiv unsichtbar**.
 So bauen IINA und Celluloid auf libmpv auf. Netflix, Disney+ und Amazon haben das Problem
-nie, weil ihr Spieler kein Programm ist, sondern ein Rechteck im selben Dokument.
+nie, weil ihre Bühne kein Programm ist, sondern ein Rechteck im selben Dokument.
 
 ⚠️ **Folge für F01:** ein Browser kann keine native Videofläche einbetten. Das **eigene
 Fenster (pywebview) ist damit technische Voraussetzung**, keine Vorliebe.
@@ -1347,7 +1457,7 @@ Ergebnis: **eine MKV, alle Spuren drin, Menü und Werbung weg.**
 | Browser | 0 | sofort |
 | **Eigenes Fenster** (pywebview) | fast 0, vorhanden | **gewählt** |
 | PWA am Handy | 0 | sofort — aber iOS räumt Speicher ab, kein Hintergrund-Download |
-| Hülle mit nativem Spieler (Tauri/Capacitor) | mittel | wenn Offline + Video am Handy ernst werden |
+| Hülle mit nativer Bühne (Tauri/Capacitor) | mittel | wenn Offline + Video am Handy ernst werden |
 | Voll nativ (Kotlin Multiplatform, Flutter) | groß | nur bei Bedarf |
 
 Stand 2026: Flutter ~46 % Anteil; **Kotlin Multiplatform wächst am schnellsten** (+120 %/Jahr)
@@ -1481,6 +1591,7 @@ mitgeliefert, nur erkannt und angebunden.
 
 | Datum | Was |
 |---|---|
+| 2026-08-07 | Fassung 0.6 — **E72–E77.** Neu: **§5.12 Die Bühne** (Video, Musik, Hörbuch auf einer Fläche; die Leiste als Landkarte der Folge; wer welche Untertitel zeichnet; feste Gamepad-Belegung; der Übergang Hören ↔ Lesen). **§8.4 um E76 erweitert:** wie die Erweiterung dasselbe Werk auf verschiedenen Seiten, unter anderen Titeln, von anderen Gruppen und mit anderer Kapitelzählung wiedererkennt — die Adresse ist ein Hinweis, nie ein Beweis. **E58 verschärft:** Leserichtung hat zwei Achsen (Fluss + Achse); Chinesisch ist der Sonderfall, weil Webtoon und gebundener Band verschieden laufen. **JB-Funde:** „Spieler" war zweideutig → **Bühne**, das Wort kommt auf die Verbotsliste des Text-Wächters (Dokument durchgesehen und umgestellt) · „gesamt" hieß fälschlich Endstand → **erschienen**, drei Zahlen, alle echt · `…` statt `?` · Geführt-Modus zoomte nicht, sondern verkleinerte den Text (Einpassen hebt Zoom auf). Drei neue Fallen in §5.11. |
 | 2026-08-07 | Fassung 0.5 — **E53–E71.** Neu: **§5.8 Die Suche** (ein Feld, zwei Gruppen, drei Zustände, dreistufige Filter, Zusammenführungsregeln, die sieben Entnerv-Regeln) · **§5.9 Der Leser** (Leserichtung als Eigenschaft der Ausgabe, ein Griff mit zwei Gedächtnissen, keine Restzeit beim Lesen) · **§5.10 Schrift und Zeichen** (Inter/Literata/Atkinson/JetBrains Mono; ▶ vs. Lesezeichen-Pfeil; zwei Farbskalen; Wortabzeichen statt Emoji; die Kapitelzelle) · **§5.11 Gelernte Fallen** (sieben Fehler, die in dieser Sitzung wirklich passiert sind) · **§8.4 Die Browser-Erweiterung** (vier Knopfzustände, drei Eingriffe je Seite, nur `127.0.0.1`, Adapterliste lokal). Die „zehn unverhandelbaren" aufgeteilt in **zehn Regeln der Bauart** und **vier Regeln des Vertrauens** — die alte Zehnerliste bleibt unverändert. Entwürfe: `suche.html`, `erweiterung.html`; `leser.html` und `regal.html` überarbeitet. **JB-Funde:** geteilter Regler zwischen Zoom und Schriftgröße · „Kapitel 88 von 122" war zweideutig · 🖐-Emoji unlesbar · Restdauer beim Lesen setzt unter Druck. |
 | 2026-08-07 | Fassung 0.4 — **Name entschieden: SyncFundus** (der Fundus ist im Theater und Film der Bestand, aus dem man schöpft). Datei umbenannt. E46–E52: Meilensteine nur einmal · Blu-ray über externes Werkzeug einbinden statt selbst entschlüsseln · **genau ein Ausgang pro Datei** (JB-Einwand gegen kaskadierende Regeln — berechtigt, Modell vereinfacht) · Fehlerprotokoll lokal/verschlüsselt/opt-in · GPU nachgebend · Anmeldungen erneuern sich still · deterministischer Kern. Warteschlange um die drei Fehlerarten und vergiftete Aufträge erweitert. Qualitätsnetz um die extreme Stufe erweitert (JB: „machen"). **Neu: §16 Übergabe an eine zweite KI** mit verbindlicher Baureihenfolge. **Neu: die zehn unverhandelbaren.** Aufgeräumt: §12.6 war falsch eingerückt, §5.6/5.7 neu geordnet. |
 | 2026-08-06 | Fassung 0.3 — E34–E45: **kein zweites Fenster** (der Motor liefert Pixel, wir liefern die Bedienung) · Navigation mit Seitenleiste, vier Sichtbarkeits-Stufen, Tiefenregel Ebene-vs-Tafel · Container ersetzt Ordner · Regal „Eigenes" · Vorschlagen statt Verändern · Qualitätsnetz mit Layout- und Text-Wächter · Titel-Schema als Rollen · Live-TV ja / Live-Sport nein · die Suche ist die Anforderung. Blu-ray-Playlist-Verschleierung dokumentiert. F11–F12 eröffnet. **JB-Korrektur:** Big Picture ist *nicht* die Vorlage für den Fernsehmodus — die Steam-Deck-Oberfläche und EmulationStation sind es. |
@@ -1516,7 +1627,7 @@ werden; hier stehen die Bedingungen dafür.
 | 4 | **Oberfläche: Regal + Startseite** (§5.1, §5.8–5.11) | Layout-Wächter bei 360/834/1280/3440 grün |
 | 5 | **Suche** (§5.8) | drei Zustände sichtbar, Zusammenführung greift, Filter dreistufig |
 | 6 | **Leser** (§5.9) | Papier/Nacht-Modi · Leserichtung dreht **alles** mit · Fortschritt zweistufig |
-| 7 | **Spieler** (libmpv in eigener Fläche, E34/E35) | kein zweites Fenster, Steuerung ist unsere |
+| 7 | **Bühne** (§5.12 · libmpv in eigener Fläche, E34/E35) | kein zweites Fenster, Steuerung ist unsere, drei Gestalten laufen |
 | 8 | **Erweiterung** (§8.4) | markiert zurück, spricht nur mit `127.0.0.1` |
 | 9 | **Beschaffung** (§9) | Echtheitsprüfung läuft vor jedem Einlagern |
 | 10 | **Veredelung** (§10) | Werk-Wissen trägt Übersetzung *und* Vertonung |
