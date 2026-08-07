@@ -21,7 +21,8 @@ Wer baut, baut gegen das Vision-Dokument; die Entwürfe zeigen, wie es aussehen 
 | 08 | **Der Leser** | fünf Modi · ein Griff zwei Gedächtnisse · geführte Ansicht | §5.9, E58, E65, E74 |
 | 09 | **Die Suche** | ein Feld, zwei Gruppen, drei Zustände · erweiterte Suche | §5.8, E53–E57, E78–E79 |
 | 10 | **Die Erweiterung** | Kapitelmarkierung · vier Knopfzustände · Werk-Identität | §8.4, E67–E68, E76 |
-| 11 | **Die Bühne** | drei Gestalten · Spulen · Ausblenden · Pausenkarte | §5.12, E72, E75, E80–E84 |
+| 11 | **Die Bühne** | drei Gestalten · Spulen · Ausblenden · Pausenkarte · Untertitel-Panel | §5.12, E72–E84 |
+| 12 | **Der Rahmen** | wer hat Bild, wer hat Ton · Klangleiste · schwebendes Bild · Tafeln | §5.11.2, E97–E101 |
 
 ## Noch nicht gezeichnet
 

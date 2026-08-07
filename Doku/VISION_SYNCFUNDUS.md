@@ -4,7 +4,7 @@
 > Anime, Manga, Novels, Musik, Hörbücher, Filme und Serien — mit eigener Bibliothek,
 > eigenem Leser, eigener Bühne, eigener Veredelung.
 >
-> **Stand:** 2026-08-07 · **Fassung:** 0.8 · **Pflege:** JB + Claude
+> **Stand:** 2026-08-07 · **Fassung:** 0.9 · **Pflege:** JB + Claude
 
 ---
 
@@ -179,6 +179,12 @@ Novels oder Manga**. Genau dort ist SyncMangas Stärke.
 | E94 | Bühne | Folgen: am PC **Raster**, am Fernseher **Reihe** mit sichtbarer Staffelwand | ✅ |
 | E95 | Leser | **Ein Ort für den Fortschritt** — dieselbe Leiste in jedem Modus | ✅ |
 | E96 | Musik | **Das Lied ist das Werk**, die Aufnahme die Ausgabe, das Album eine Gruppe | 🔑✅ |
+| E97 | Rahmen | **Eine Sache hat das Bild, eine den Ton** — und sie dürfen verschieden sein | 🔑✅ |
+| E98 | Rahmen | Die **Klangleiste** ist immer die Antwort auf „wo kommt der Ton her" | 🔑✅ |
+| E99 | Rahmen | **Genau ein** schwebendes Bildfenster · nie über Leser oder Musikfläche | ✅ |
+| E100 | Rahmen | **Genau eine Tafel** gleichzeitig · nichts darunter verrutscht · Esc schließt | ✅ |
+| E101 | Rahmen | Fläche, Leser und Bühne belegen **denselben Bereich** — nie ein zweites Fenster | 🔑✅ |
+| E102 | Übernahme | Der **Code-Übernahme-Pfad** steht im Dokument: was aus SyncYouTube kommt, kommt dokumentiert | ✅ |
 
 ### Die Unverhandelbaren
 
@@ -881,6 +887,46 @@ erfunden. Die Übernahmeliste:
 > (andockbar, herauslösbar, Layout-Editor). Bei SyncFundus ist die Bühne eine **Ebene** — man
 > geht hinein und wieder heraus (E38). Grund: hier wird auch gelesen, und ein Leser in einem
 > andockbaren Fensterchen ist kein Leser.
+
+### 5.11.2 Der Rahmen — was gleichzeitig läuft (E97–E101)
+
+> **JB-Frage 07.08.2026: „Wo kommt denn der Ton her? Ich will nicht fünf Tabs wechseln müssen."**
+> Entwurf: `rahmen.html`
+
+**E97 — die eine Regel:** *eine Sache hat das Bild, eine Sache hat den Ton, und beide dürfen
+verschieden sein.* Alles Weitere folgt daraus.
+
+| Du tust | Fläche | Ton |
+|---|---|---|
+| Stöbern | Regal | Klangleiste läuft weiter; lief nichts, ist sie **gar nicht da** |
+| Lesen | Leser | unverändert — **Musik beim Lesen ist der häufigste Fall überhaupt** |
+| Film starten | Bühne | Musik pausiert **sichtbar**: *„von Vinland Saga übernommen"*, ein Klick holt sie zurück |
+| Film läuft, du gehst ins Regal | Regal | Bild **schwebt** unten rechts, Ton bleibt beim Film |
+| Musik ganz ansehen | Musikfläche mit Warteschlange und Karaoke | gleicher Ton — die Klangleiste **verschwindet dort**, sie wäre doppelt |
+| Hörbuch **und** lesen | Leser | geht, aber wir **fragen einmal**. Zwei Sprachströme sind kein Komfort, sondern ein Versehen |
+
+**E98 — die Klangleiste, bewusst unscheinbar.** Spotify ist ein Abspielprogramm, wir sind es
+nicht. Deshalb: **46 px** statt 72–90 · Cover **30 px** statt 56–64 · Fortschritt als
+**2-px-Faden auf der Oberkante** statt als eigene Leiste (dasselbe Prinzip wie die Ladeanzeige
+im Browser) · **3 + 2 Knöpfe** statt neun · **wegklappbar** · und **wenn nichts läuft, ist sie
+nicht da** — kein reservierter Platz für Nichts.
+
+**E99 — genau ein schwebendes Bildfenster.** Vier Ecken zum Einrasten, drei Größen, kein freies
+Verschieben. **Im Leser und in der vollen Musikfläche wird es ausgeblendet, nicht verschoben** —
+wer liest, will nichts Bewegtes im Bild. Der Ton läuft weiter: **Bild zu ≠ Ton aus.**
+
+**E100 — genau eine Tafel.** Eine zweite ersetzt die erste; nie zwei übereinander. Die Fläche
+darunter **verrutscht nicht** — keine Spalte, die sich zusammenschiebt. Esc und Klick daneben
+schließen. Am Handy fährt sie von unten hoch statt in der Mitte zu schweben.
+
+**E101 — immer derselbe Bereich.** Regal, Leser, Bühne und Werk-Seite belegen **exakt** dieselbe
+Fläche; Seitenleiste und Klangleiste bleiben stehen. Nach drei Tagen weiß das Auge, wohin es
+schauen muss — das ist mehr wert als jede Animation. Übergang: **180 ms Überblendung**, kein
+Vollbildsprung, kein Ladebild.
+
+⚠️ **Was wir nicht bauen:** frei verschiebbare Fenster. SyncYouTube hat einen Layout-Editor mit
+andockbaren Panels — für einen **Downloader** richtig, weil man dort mehrere Listen gleichzeitig
+beobachtet. SyncFundus ist ein Ort zum **Lesen und Sehen**. Wer liest, will eine Fläche, nicht sechs.
 
 ### 5.12 Die Bühne (E72, E75, E77)
 
@@ -1844,6 +1890,7 @@ elf Entwürfe (siehe `ENTWUERFE.md`). Der Stand nach Bausteinen aus §16.2:
 
 | Datum | Was |
 |---|---|
+| 2026-08-07 | Fassung 0.9 — **E97–E102.** **Neu: §5.11.2 Der Rahmen** — die Antwort auf JBs wichtigste Frage („wo kommt denn der Ton her?"): *eine Sache hat das Bild, eine den Ton, und beide dürfen verschieden sein*. Klangleiste (46 px statt Spotifys 72–90, Fortschritt als 2-px-Faden, weg wenn nichts läuft), genau ein schwebendes Bildfenster (nie über Leser oder Musikfläche), genau eine Tafel, immer derselbe Bereich. Frei verschiebbare Fenster bauen wir bewusst nicht — der Layout-Editor bleibt im Downloader. **Neu: `Doku/UEBERNAHME_AUS_SYNCYOUTUBE.md` (E102)** mit Datei, Funktionsname und Regel für alles, was portiert wird: das Untertitel-Panel zeilengenau, die Ausschnitt-Favoritenregel, Karaoke, Transkript-Suche, Autotag, Umbenennung mit Probelauf, Geo-Stufen, VPN-Einbahnregel — und was ausdrücklich **nicht** übernommen wird. **Behoben:** Untertitel-Panel war „mau" und jetzt zeilengleich mit `subMenu()`; Ton-&-Text-Wahl schlug nicht auf Kopfzeile und Knopf durch; die Bedienung blendete beim Halten des Spulknopfes weg; Fußleiste lag bei Musik über der Warteschlange; Ausschnitt fehlte bei Musik; Endlosstreifen bekommt die Bildlaufschiene zurück, mit Fortschritt **je Kapitel**; drei Fernsehreihen ohne Bildlaufbalken zur Auswahl. |
 | 2026-08-07 | Fassung 0.8 — **E89–E96, F10 geschlossen.** **Musik im vorhandenen Modell:** das Lied ist das Werk, die Aufnahme die Ausgabe, das Album eine Gruppe (§4.2) — MusicBrainz' drei Ebenen fallen genau auf unsere vorhandenen, kein neuer Begriff nötig; Coverversion, Remix, Live-Fassung und DJ-Set lösen sich damit von selbst. **Neu: §5.11.1 Bestandsaufnahme SyncYouTube** (JB-Einwand: „du hast nicht genau hingeschaut, was wir bereits erschaffen haben") — Ausschnitt-Werkzeug, Karaoke mit Romaji, „Auf YouTube öffnen", Mini-Player und Transkript-Suche fehlten im Entwurf und sind jetzt E89–E93; das vorhandene Untertitel-Panel wird übernommen statt neu geschrieben; die Kompakt-Ansicht des Downloaders bestätigt E88 aus dem eigenen Bestand. **E94** Folgen am PC als Raster, am Fernseher als Reihe mit Staffelwand. **E95** ein Ort für den Fortschritt — die angedockte Schiene im Endlosstreifen ist gestrichen, sie war doppelt und liess unten eine halbleere Leiste stehen (JB: „der Bildschirm wird nicht magisch größer"). **Behoben:** Spulen sprang beim Loslassen nochmal 10 s, weil `mouseleave` und `mouseup` beide stoppten; Zahnrad sah aus wie eine Sonne; „Warteschlange" öffnete die Ton-Tafel; Pausenkarte gibt es jetzt für alle drei Gestalten. |
 | 2026-08-07 | Fassung 0.7 — **E78–E88.** Neu: **§5.8.1 Titel sind vielsprachig** (kein „richtiger" Titel; Englisch ist keine Leitwährung; Romanisierungen normalisiert vergleichen; Titelvorrat wächst nur) und **E87 nie früh verwerfen** — Falsch-Behalten schlägt Richtig-Wegwerfen. **§5.10.1 Kachelgrößen:** die Mini-Kachel ohne Titel ist gestrichen (JB: „dann sehe ich nicht, welchen Manga ich lese") — Titel ist Rang 1 der Prioritätsleiter und fällt nie; stattdessen „Dicht" mit einzeiligem Titel. **Bühne erweitert:** 10 s tippen / halten spult mit 4×–12×–30× (Vergleich Netflix, Plex, Jellyfin, Kodi, Prime, VLC, mpv) · Bedienung liegt im Bild und blendet weich weg (420 ms raus, 120 ms rein) · Pausenkarte nach 12 s mit Rollenzeile, nie Empfehlungen · „Ton & Text" statt „Spuren", Einstellen vom Auswählen getrennt (Zahnrad) · Folgen unter der Bühne. **Suche:** erweiterte Suche zugeklappt mit Zähler, dieselbe Dreistufigkeit, und **das kluge Regal** (gespeicherte Suche wird Regal). **E85 Zahlentypografie:** die Luft gehört dem Trenner, ausgerichtet mit Ziffernleerzeichen, Füllbreite aus der aktuellen Ansicht — damit hören vierstellige Kapitel auf, am Schrägstrich zu kleben. **Neu: §13.1 Wie weit wir sind** und **`Doku/ENTWUERFE.md`** als Index der elf Entwürfe. Drei weitere Fallen in §5.11 (`visibility` reserviert Platz · Maßstab am falschen Element · Zellbreite trägt den Abstand). |
 | 2026-08-07 | Fassung 0.6 — **E72–E77.** Neu: **§5.12 Die Bühne** (Video, Musik, Hörbuch auf einer Fläche; die Leiste als Landkarte der Folge; wer welche Untertitel zeichnet; feste Gamepad-Belegung; der Übergang Hören ↔ Lesen). **§8.4 um E76 erweitert:** wie die Erweiterung dasselbe Werk auf verschiedenen Seiten, unter anderen Titeln, von anderen Gruppen und mit anderer Kapitelzählung wiedererkennt — die Adresse ist ein Hinweis, nie ein Beweis. **E58 verschärft:** Leserichtung hat zwei Achsen (Fluss + Achse); Chinesisch ist der Sonderfall, weil Webtoon und gebundener Band verschieden laufen. **JB-Funde:** „Spieler" war zweideutig → **Bühne**, das Wort kommt auf die Verbotsliste des Text-Wächters (Dokument durchgesehen und umgestellt) · „gesamt" hieß fälschlich Endstand → **erschienen**, drei Zahlen, alle echt · `…` statt `?` · Geführt-Modus zoomte nicht, sondern verkleinerte den Text (Einpassen hebt Zoom auf). Drei neue Fallen in §5.11. |
@@ -1900,7 +1947,21 @@ werden; hier stehen die Bedingungen dafür.
 - **Standardformate ab der ersten Zeile** (E06) — ein eigenes Format zu ersetzen ist teurer
   als eines zu vermeiden.
 
-### 16.4 Wo die Wahrheit steht
+### 16.4 Code-Übernahme (E102)
+
+**JB-Vorgabe 07.08.2026:** *„Wenn wir Code übernehmen, muss der Code klar dokumentiert sein.
+Ich werde eine andere KI coden lassen, die wird Zugriff auf alle unsere Programme haben."*
+
+Deshalb: **`Doku/UEBERNAHME_AUS_SYNCYOUTUBE.md`** — mit Datei, Funktionsname und der Regel
+dahinter. Zwei Grundsätze:
+
+1. **Wo SyncYouTube etwas gelöst hat, wird portiert, nicht nachgebaut.** Nachbauen heißt,
+   dieselben Fehler zweimal zu machen.
+2. **Die Kommentare kommen mit.** Wo im Quellcode *„JB"* und ein Datum steht, steckt ein echter
+   Fehler aus dem Betrieb dahinter. Diese Kommentare werden **nicht wegoptimiert** — sie sind
+   der eigentliche Wert.
+
+### 16.5 Wo die Wahrheit steht
 
 | | |
 |---|---|
