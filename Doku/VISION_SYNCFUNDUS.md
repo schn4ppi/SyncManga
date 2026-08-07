@@ -4,7 +4,7 @@
 > Anime, Manga, Novels, Musik, Hörbücher, Filme und Serien — mit eigener Bibliothek,
 > eigenem Leser, eigener Bühne, eigener Veredelung.
 >
-> **Stand:** 2026-08-07 · **Fassung:** 1.2 · **Pflege:** JB + Claude
+> **Stand:** 2026-08-07 · **Fassung:** 1.3 · **Pflege:** JB + Claude
 
 ---
 
@@ -203,6 +203,10 @@ Novels oder Manga**. Genau dort ist SyncMangas Stärke.
 | E118 | Bühne | **Ton ohne Bild ⇒ Leiste gehört zum Raum**, Film ⇒ Leiste ist Überzug | 🔑✅ |
 | E119 | Bühne | Weiche: **30 s Grundzeit + 10 s je Wahl** — man muss die Fernbedienung erst finden | ✅ |
 | E120 | Werk | **Reihen und Universen** — kanonische Ordnung gilt auch für Filme | 🔑✅ |
+| E121 | Oberfläche | **Höhen werden gemessen, nie geraten** — keine magische Zahl für eine Leiste | 🔑✅ |
+| E122 | Oberfläche | **Gestuftes Aufgeben** — Inhalt fällt in fester Reihenfolge weg, statt überzulaufen | ✅ |
+| E123 | Sammlung | **Playlist ist eine Sicht, keine Kopie** — Sammlung wie jede andere, `.m3u` als Export | ✅ |
+| E124 | Bühne | **Besetzungskarte** rechts bei Pause — nie ins laufende Bild | ✅ |
 
 ### Die Unverhandelbaren
 
@@ -276,6 +280,20 @@ Sonderfolge (OVA/ONA/Special/Film) · Alternative Fassung · Sammlung.
 **Reihenfolge** (OVA-Problem): Erscheinung ≠ Chronologie ≠ empfohlene Reihenfolge.
 Graph speichern, Reihenfolge als **Wahl** anbieten, Community-Reihenfolgen importierbar.
 Nicht berechnen wollen.
+
+#### E123 — Wo Playlists leben
+
+Eine Playlist ist **kein Sonderfall**, sondern eine **Sammlung** — dieselbe Sprosse der Leiter
+(§4.3), auf der auch ein Regal steht. Deshalb braucht sie keine eigene Verwaltung.
+
+| | |
+|---|---|
+| **Gelistet** | in der Seitenleiste **unter „Musik"**, eingerückt — wie Staffeln unter einer Serie |
+| **Gespeichert** | je Profil eine Datei im Profilordner. Nichts in der Cloud, nichts in einer unlesbaren Datenbank |
+| **Angelegt** | drei Wege ohne Dialog: Titel in die Warteschlange ziehen · *Als Playlist* · oder eine gespeicherte Suche (**das kluge Regal**, E78) |
+| **Exportiert** | `.m3u` — jedes Programm der Welt liest es (E06). Import genauso |
+| **Abgeglichen** | auf Wunsch gegen eine echte Playlist beim Anbieter, wie `playlist_sync()` es im Downloader schon tut |
+| ⚠️ **Nicht** | kein zweiter Ort für „meine Musik". Eine Playlist ist eine **Sicht** auf die Bibliothek, keine Kopie |
 
 #### E108 — Hörbücher sind keine Musik
 
@@ -1219,10 +1237,45 @@ Damit gibt es **keine unsichtbare Grenze**: entweder die Leiste liegt sichtbar o
 das Darunter ändert seine Größe nie — oder sie ist Möbel und der Raum ist von vornherein kleiner.
 Was es nicht gibt: eine Leiste, die mal Platz nimmt und mal nicht.
 
+**E121 — Höhen werden gemessen, nie geraten.** JB-Fund 07.08.2026: *„Wenn ich das Fenster
+kleiner ziehe, verschwindet was vom Bild."* Ursache war eine feste Zahl (`bottom: 62px`) für
+eine Leiste, die je nach Breite umbricht und dann höher ist.
+
+> **Wo ein Bauteil einem anderen Platz macht, wird die Höhe zur Laufzeit gemessen**
+> (`ResizeObserver` → CSS-Variable), nicht im Stylesheet festgeschrieben.
+> Magische Zahlen stimmen genau bei der Breite, bei der man sie gemessen hat.
+
+Das gilt überall, wo etwas „darüber" oder „darunter" sitzt: Klangleiste, Bühnenleiste,
+Kopfzeilen, das schwebende Bildfenster.
+
+**E122 — gestuftes Aufgeben.** Wird es eng, fällt der Inhalt in einer **festgelegten
+Reihenfolge** weg, statt zu überlaufen oder zu stapeln. Für die Musikbühne:
+
+| Ab | fällt weg |
+|---|---|
+| 960 px | Romaji-Zeile |
+| 860 px | Karaoke ganz |
+| 760 px | Wellenform · Cover wird kleiner · Mitlesen |
+| 700 px | Warteschlange · dann erst stapelt es sich |
+
+Das ist die Prioritätsleiter (§5.2) am Bauteil statt am Fenster — und sie muss **geschrieben**
+sein, sonst entscheidet der Zufall des Umbruchs.
+
 **E119 — die Weiche braucht Zeit.** Autostart nach 9 s ist richtig, wenn es **eine** Fortsetzung
 gibt. Bei einer Wahl ist er falsch: *„manchmal muss ich die Fernbedienung finden."*
 **30 s Grundzeit + 10 s je zusätzlicher Wahlmöglichkeit** — bei zwei Wegen also 50 s.
 Jede Bewegung an Maus, Taste oder Gamepad hält den Zähler **ganz** an, nicht nur kurz.
+
+**E124 — die Besetzungskarte.** Spiegelbild der Pausenkarte: links steht, **was** läuft,
+rechts **wer** zu sehen ist. Vorbild ist Amazons X-Ray, aber mit zwei Unterschieden.
+
+| | |
+|---|---|
+| **Immer möglich** | die volle Besetzung mit Rolle, Name und Gesicht aus TMDB/AniList — haben wir ohnehin |
+| **„Gerade im Bild"** | ein **einmaliger Durchlauf beim Einlagern** vergleicht Gesichter mit den Besetzungsfotos und erzeugt eine Zeitliste. Amazon lässt das von Hand annotieren; wir rechnen es nachts auf der Grafikkarte (~2 Min je Film) |
+| **Bei Anime** | Figuren statt Schauspieler, Sprecher darunter — und die Erkennung funktioniert bei gezeichneten Figuren **besser** als bei Menschen. Nebenbei füttert sie das Werk-Wissen für die Vertonung (§10.1) |
+| ⚠️ **Nie behaupten** | ohne den Durchlauf steht dort *die Besetzung*, nicht *„gerade zu sehen"*. Erkanntes wird markiert, der Rest steht blass darunter (E57) |
+| ⚠️ **Nie im laufenden Bild** | X-Ray blendet Namen ins Bild — der schnellste Weg, eine Szene zu zerstören. Bei uns **nur bei Pause**, und es verschwindet mit ihr |
 
 **E116 — Nur-Ton.** Musikvideos sind Werke mit Bild, aber oft will man nur den Ton. Ein Schalter
 in der Musikleiste: Bild aus, Ton läuft, spart Strom und Aufmerksamkeit. Der Zustand hängt am
@@ -2117,6 +2170,7 @@ elf Entwürfe (siehe `ENTWUERFE.md`). Der Stand nach Bausteinen aus §16.2:
 
 | Datum | Was |
 |---|---|
+| 2026-08-07 | Fassung 1.3 — E121–E124. **E121 Höhen werden gemessen, nie geraten:** wo ein Bauteil einem anderen Platz macht, wird die Höhe zur Laufzeit gemessen (`ResizeObserver` → CSS-Variable). Die feste `62px` stimmte genau bei der Breite, bei der ich sie gemessen hatte — beim Schrumpfen brach die Leiste um und verdeckte das Bild. **E122 gestuftes Aufgeben:** wird es eng, fällt der Inhalt in einer festgeschriebenen Reihenfolge weg (Romaji → Karaoke → Wellenform → Warteschlange → stapeln), statt dass der Umbruch entscheidet. **E123 Playlists sind Sichten, keine Kopien** — Sammlung wie jede andere, in der Seitenleiste unter „Musik", je Profil als Datei, `.m3u` für Ex- und Import. **E124 Besetzungskarte** als Spiegelbild der Pausenkarte: links was läuft, rechts wer zu sehen ist; volle Besetzung immer, „gerade im Bild" aus einem einmaligen Gesichtsdurchlauf beim Einlagern — und **nie** ins laufende Bild, anders als Amazons X-Ray. |
 | 2026-08-07 | Fassung 1.2 — E118–E120. **E118:** bei Ton ohne Bild gehört die Leiste **zum Raum** (die Fläche endet darüber, nichts rutscht darunter, nichts blendet weg), bei Film bleibt sie **Überzug** — damit gibt es keine unsichtbare Barriere, die das Bild kleiner werden lässt. **E119:** die Weiche bekommt **30 s Grundzeit + 10 s je Wahl** statt 9 s Autostart — „manchmal muss ich die Fernbedienung finden"; jede Eingabe hält den Zähler ganz an. **E120 Reihen und Universen:** dieselbe Mechanik wie bei OVAs, eine Ebene höher — Werk → Reihe → Universum aus TMDB-Sammlungen, AniList-Ketten, AniDB und Wikidata; darüber **unsere** Ordnungsschicht mit drei umschaltbaren Reihenfolgen (Erscheinung · kanonisch · empfohlen). Nie automatisch quer durchs Universum starten. **Behoben:** Fernsehreihe verschmilzt jetzt Randverlauf **und** Zählwerk statt drei Varianten; Pausenkarte sitzt am linken Bildrand und ist durchsichtiger; Zusatzpunkt unter Schaltern entfernt (die Farbe reicht); die **1** beim Wiederholen sitzt zwischen den Pfeilen; Lieblingssong ist ein **Plus**, das zum gefüllten Haken wird; Karaoke ist ein **Mikrofon**; Radio ein **Sendemast** statt WLAN-Fächer; „Beschaffen" heißt **Holen** und zeigt Pfeil in Ablage; die 10-Sekunden-Ziffer berührt den Kreis nicht mehr; der Ausschnitt liegt jetzt oben auf statt dahinter. |
 | 2026-08-07 | Fassung 1.1 — E112–E117. **Neu: §5.3.1 Der Grund folgt dem Material** (E114): eigene Farbe darauf ⇒ neutral, nur Schrift ⇒ warm. Damit ist der Leser für **Bilder** von `#1C1611` auf `#0F1012` gewechselt — Braun ließ gescannte Graustufen vergilbt aussehen; für **Text** bleibt es warm, dort war es immer richtig. **E112 Farbe ist die Beschriftung** (grau aus, Akzent an; nie Zustand als Text; Grün bleibt für „läuft/aktiv" reserviert; zweiter Kanal für Farbenblinde). **E113 eigener Zeichensatz** — Spotifys Satz ist geschützt und wir wollen ein eigenes Gesicht; frei sind die Formen (IEC 60417), unsere ist die Strichführung: 24er-Raster, Gleichdick 1,5, gefüllt nur wo Distanz es verlangt, Prüfung bei 16 px und in Graustufen. Entwurf `zeichen.html` mit 28 Zeichen. **E115 kanonische Weiche** am Folgenende (OVA/Folge/Regal) statt blindem Autostart, gespeist aus AniList-Beziehungen, AniDB und TMDB-Staffel 0. **E116 Nur-Ton** für Musikvideos. **E117 Hörbuch „Wo war ich?"** — sekundengenauer Stand mit 30 s Rücksprung, Erkennung des Einschlafens und eine **spoilerfreie Zusammenfassung** bis exakt zur gelaufenen Stelle. **Behoben:** Fernsehknöpfe zu wuchtig; Staffelwahl klappt am PC nach unten aus statt als Vollbild; Musikschalter tragen jetzt Zustandsfarbe. |
 | 2026-08-07 | **Fassung 1.0** — E103–E111. **Neu: §5.10.2 Was fest sein muss und was atmen darf** (E103): alles, dessen Beschriftung sich beim Bedienen ändert, bekommt eine feste Breite — Faustregel „ändert sich der Text durch **meine** Handlung → fest, durch den **Inhalt** → frei", mit Tabelle für beide Seiten. **E104** Einstellen ≠ Wählen: Sprache und Fassung in „Ton & Text", Aussehen im Zahnrad — nie im selben Menü. **E105** Klick daneben schließt alles. **E106** bei Ton ohne Bild blendet nichts aus. **E107** Klangzeichen auf Distanz (Klick beim Fokuswechsel, Tock beim Bestätigen; am PC aus). **E108** Hörbücher sind keine Musik — eigenes Regal, Kapitel statt Lieder, kein Zufall, Erkennung über ASIN/M4B/Kapitelmarken. **E109** Herkunft und Güte sind Information, kein Menü — damit ist auch die halb gekaufte, halb gescannte Sammlung **ein** Werk. **E110** das Programm fragt nie, ob du etwas aufgibst; stattdessen ein selbstgesetzter Filter „über N Kapitel gelesen". **E111** Profilwechsel im Menü, nie beim Start. **Behoben:** Untertitel-Panel war gequetscht und überladen — Modus und Sprache sind raus (gehören nach nebenan), Farben in einer Reihe mit 15-px-Punkten, alle Zyklusknöpfe auf feste Breite; Klick daneben schließt jetzt; Musikleiste bleibt stehen und trägt die Aktionen als Symbolreihe; Hörbuch hat eine Kapitelliste; Staffelwechsel am Fernseher über eine Liste statt Scrollen; Endlosstreifen hat gar keine Fußleiste mehr. |
