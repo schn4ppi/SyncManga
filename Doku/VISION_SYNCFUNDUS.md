@@ -4,7 +4,7 @@
 > Anime, Manga, Novels, Musik, Hörbücher, Filme und Serien — mit eigener Bibliothek,
 > eigenem Leser, eigener Bühne, eigener Veredelung.
 >
-> **Stand:** 2026-08-07 · **Fassung:** 1.0 · **Pflege:** JB + Claude
+> **Stand:** 2026-08-07 · **Fassung:** 1.1 · **Pflege:** JB + Claude
 
 ---
 
@@ -194,6 +194,12 @@ Novels oder Manga**. Genau dort ist SyncMangas Stärke.
 | E109 | Qualität | **Herkunft und Güte sind Information, kein Menü** — wie 1080p neben 4K | ✅ |
 | E110 | Empfehlung | Das Programm fragt **nie**, ob du etwas aufgibst — du filterst selbst | 🔑✅ |
 | E111 | Profile | Profilwechsel wie bei Netflix: **im Menü, nie beim Start**, nie in der Bibliothek | ✅ |
+| E112 | Zeichen | **Farbe ist die Beschriftung** — grau aus, Akzent an; nie Zustand als Text | 🔑✅ |
+| E113 | Zeichen | **Eigener Satz** im Gleichdick — Formen frei, Zeichnung unsere, nichts kopiert | ✅ |
+| E114 | Farbe | **Der Grund folgt dem Material** — eigene Farbe darauf ⇒ neutral, nur Schrift ⇒ warm | 🔑✅ |
+| E115 | Bühne | **Kanonische Weiche** am Folgenende statt blindem Autostart | ✅ |
+| E116 | Bühne | **Nur-Ton** für Musikvideos — Bild aus, Ton läuft | ✅ |
+| E117 | Hörbuch | **Wo war ich?** — Rücksprung und Zusammenfassung, wenn man eingeschlafen ist | 🔑✅ |
 
 ### Die Unverhandelbaren
 
@@ -288,6 +294,19 @@ Die Trennung passiert bei der Erkennung, nicht beim Anzeigen: eine Datei mit
 `ASIN`/`Audible`-Kennung, mit Kapitelmarken über 10 Minuten oder mit einer M4B-Hülle ist ein
 Hörbuch — und wandert nie ins Musikregal, auch nicht versehentlich.
 Die **Spurnummer bleibt** (Kapitel 7 von 24), weil man sie zum Springen braucht.
+
+#### E117 — Hörbuch: „Wo war ich?"
+
+**JB, 07.08.2026:** *„Merken, wo man war, ist immens wichtig. Eventuell eine Zusammenfassung,
+wenn man eingeschlafen ist?"* — Beides, und das zweite ist etwas, das kein Hörbuchprogramm hat.
+
+| | |
+|---|---|
+| **Stand merken** | sekundengenau, **je Werk**, und beim Rückkommen automatisch **30 s zurück** — man erinnert sich nie an den letzten Satz, sondern an den davor. Audible macht das, und es ist die beste Kleinigkeit an dieser App |
+| **Eingeschlafen erkannt** | Einschlafzeit lief ab **oder** über 20 Minuten kein Eingriff bei laufender Wiedergabe ⇒ die Stelle wird gesondert gemerkt (*„vermutlich eingeschlafen bei 1:12:40"*) |
+| **Zusammenfassung** | beim nächsten Start: *„Du warst zuletzt bei Kapitel 7, Minute 12 — seitdem lief es bis 1:12:40 weiter. Kurz, was passiert ist: …"* Drei bis fünf Sätze, erzeugt aus dem **Werk-Wissen** (§10.1), das wir für Übersetzung und Vertonung ohnehin bauen |
+| ⚠️ **Spoilerregel** | die Zusammenfassung endet **exakt** an der Stelle, bis zu der es gelaufen ist. Nie einen Satz weiter |
+| **Zwei Knöpfe** | *„Da weitermachen"* oder *„Zurück zu Minute 12"*. Nie automatisch entscheiden |
 
 #### E109 — Herkunft und Güte sind Information, kein Menü
 
@@ -566,6 +585,22 @@ fertig ist. Bricht es bei einer Breite, ist es nicht fertig — nicht „später
 Kürzel kodieren Medium** · Zustandsfarben aus SyncManga bleiben (grün lese · gelb pausiert ·
 weiß Backlog · blaugrau aufgeholt · türkis abgeschlossen).
 
+### 5.3.1 Der Grund folgt dem Material (E114)
+
+**JB-Frage 07.08.2026:** *„Warum ist der Hintergrund beim Leser dieses Braun? Passt das zum Rest?"*
+— Teilweise. Ich hatte eine **Stimmung** gewählt, wo eine **Regel** hingehört:
+
+> **Liegt eigene Farbe darauf → neutral. Liegt nur Schrift darauf → warm.**
+
+| Fläche | Wert | Temperatur | Weil |
+|---|---|---|---|
+| Programm | `#0E1217` | kühl | Möbel treten zurück; kühl wirkt neutral neben jedem Cover |
+| Bühne | `#0A0A0B` | neutral | jeder Farbstich wäre eine Lüge — Referenzmonitore im Film sind neutral kalibriert |
+| **Leser · Bilder** | `#0F1012` ⚠️ **geändert** | neutral | war `#1C1611`. Braun ließ gescannte Graustufen **vergilbt** aussehen, weil das Auge den Rand mitrechnet |
+| Leser · Text (Tag) | `#F6EFE3` | **warm** | Papier ist warm, und es gibt keine fremde Farbe zu verfälschen |
+| Leser · Text (Nacht) | `#1C1611` | **warm** | bleibt — das ist die Nachtfassung des **Papiers**, nicht die des Programms |
+| Musik | aus dem Cover | wechselnd | die einzige Fläche, die sich ändert: zwei Hauptfarben des Covers, stark abgedunkelt |
+
 ### 5.4 Haltung zum Menschen
 
 > **Die Oberfläche fordert nie, sie bietet an. Nichts auf der Startseite ist eine Aufgabe.**
@@ -809,6 +844,33 @@ Druck und spoilert die Kapitellänge (JB, 07.08.2026). Bei allem mit Laufzeit �
 Musik, Hörbuch — ist die Restzeit dagegen richtig, weil sie dort tatsächlich feststeht.
 
 ### 5.10 Schrift und Zeichen (E59, E60, E62–E64)
+
+**E112 — die Farbe ist die Beschriftung.** Ein Knopf, der seinen Zustand als **Farbe** trägt,
+ändert seine Größe nie — und damit springt nichts (E103). Wer den Zustand als Text schreibt
+(*„Zufall: an"*), verliert beides. Grau = aus, **Akzent** = an. Bei drei Stufen (Wiederholen)
+kommt eine kleine **1** in die Ecke, keine zweite Zeichnung.
+
+⚠️ **Nicht Grün.** Grün ist im ganzen Programm reserviert für *läuft / aktiv / gelesen*
+(Zustandsampel, Kapitelstreifen, Tonpuls). Hieße es zusätzlich „Schalter an", hätte es zwei
+Bedeutungen. **Orange heißt überall: hier hat jemand etwas eingestellt.**
+Für Farbenblinde gibt es immer einen zweiten Kanal: ein Punkt unter dem Zeichen, oder
+Umriss ↔ Fläche (Herz, Lesezeichen).
+
+**E113 — eigener Zeichensatz.** *„Können wir die von Spotify übernehmen? Einfach copy."* —
+**Nein, und wir wollen es auch nicht.** Spotifys Satz ist Teil ihrer Marke und geschützt; ein
+Programm, das aussieht wie ein anderes, hat kein Gesicht. **Frei ist die Form**: Play, Pause,
+Zufall, Wiederholen sind seit den Kassettendecks dieselben Zeichen (IEC 60417), die gehören
+niemandem. Also dieselben Formen, unsere Strichführung:
+
+| Regel | Wert |
+|---|---|
+| Raster | 24 × 24 mit 2 px Luft |
+| Strich | **1,5 · Gleichdick** — kein Strich dicker als ein anderer, nirgends |
+| Enden, Ecken | rund |
+| Gefüllt | **nur** Wiedergabe, Pause, vor/zurück, aktives Herz — weil man sie auf drei Metern erkennen muss |
+| Prüfung | bei **16 px** noch erkennbar **und** in Graustufen noch unterscheidbar. Sonst neu zeichnen, nicht beschriften |
+
+Entwurf: `zeichen.html` (07.08.2026) — 28 Zeichen.
 
 **E60 — vier Schnitte, alle SIL OFL, zusammen < 900 kB als variable Dateien.**
 
@@ -1093,6 +1155,22 @@ Einrast-Punkten — dort gibt es nur vier Richtungstasten, und eine Reihe ist di
 die sich mit vier Tasten ohne Nachdenken bedienen lässt. **Der Staffelwechsel ist eine Wand**:
 ein senkrechter, beschrifteter Balken zwischen den Staffeln, damit niemand unbemerkt in
 Staffel 1 rutscht.
+
+**E115 — die kanonische Weiche.** Am Folgenende läuft **nicht** blind die nächste Folge an,
+wenn die Reihenfolge etwas anderes vorsieht. Dann erscheint eine Weiche mit zwei bis drei
+Wegen — **OVA · nächste Folge · zurück ins Regal** —, und der Zähler läuft nur auf dem
+empfohlenen.
+
+| | |
+|---|---|
+| **Woher die Reihenfolge kommt** | AniList-Beziehungen (`SIDE_STORY`, `SPECIAL`, `PREQUEL`) · AniDB-Episodennummern (OVAs tragen dort eine eigene Reihe) · TMDB-Staffel 0 · und Fan-Pflegelisten wie die bekannten „watch order"-Sammlungen |
+| **Wann gefragt wird** | nur, wenn zwischen dieser und der nächsten Folge tatsächlich etwas liegt. Sonst der normale Autostart |
+| **Umstellbar** | *kanonisch* ↔ *nach Erscheinungsdatum*. Beides ist bei Anime eine legitime Reihenfolge, und Streit darüber ist älter als das Internet |
+| **Filme** | Ein Film, der eine Staffel zusammenfasst (Rekap), wird **markiert, nicht empfohlen** — wer die Folgen gesehen hat, braucht ihn nicht |
+
+**E116 — Nur-Ton.** Musikvideos sind Werke mit Bild, aber oft will man nur den Ton. Ein Schalter
+in der Musikleiste: Bild aus, Ton läuft, spart Strom und Aufmerksamkeit. Der Zustand hängt am
+**Werk**, nicht an der Sitzung — was einmal Musik war, bleibt Musik.
 
 **E84 — Folgen wohnen unter der Bühne.** Als Kachelreihe mit Bild, Nummer, Dauer,
 Fortschrittsstreifen und Staffelwahl — nicht in einer Tafel. Eine Tafel ist für das, was das
@@ -1983,6 +2061,7 @@ elf Entwürfe (siehe `ENTWUERFE.md`). Der Stand nach Bausteinen aus §16.2:
 
 | Datum | Was |
 |---|---|
+| 2026-08-07 | Fassung 1.1 — E112–E117. **Neu: §5.3.1 Der Grund folgt dem Material** (E114): eigene Farbe darauf ⇒ neutral, nur Schrift ⇒ warm. Damit ist der Leser für **Bilder** von `#1C1611` auf `#0F1012` gewechselt — Braun ließ gescannte Graustufen vergilbt aussehen; für **Text** bleibt es warm, dort war es immer richtig. **E112 Farbe ist die Beschriftung** (grau aus, Akzent an; nie Zustand als Text; Grün bleibt für „läuft/aktiv" reserviert; zweiter Kanal für Farbenblinde). **E113 eigener Zeichensatz** — Spotifys Satz ist geschützt und wir wollen ein eigenes Gesicht; frei sind die Formen (IEC 60417), unsere ist die Strichführung: 24er-Raster, Gleichdick 1,5, gefüllt nur wo Distanz es verlangt, Prüfung bei 16 px und in Graustufen. Entwurf `zeichen.html` mit 28 Zeichen. **E115 kanonische Weiche** am Folgenende (OVA/Folge/Regal) statt blindem Autostart, gespeist aus AniList-Beziehungen, AniDB und TMDB-Staffel 0. **E116 Nur-Ton** für Musikvideos. **E117 Hörbuch „Wo war ich?"** — sekundengenauer Stand mit 30 s Rücksprung, Erkennung des Einschlafens und eine **spoilerfreie Zusammenfassung** bis exakt zur gelaufenen Stelle. **Behoben:** Fernsehknöpfe zu wuchtig; Staffelwahl klappt am PC nach unten aus statt als Vollbild; Musikschalter tragen jetzt Zustandsfarbe. |
 | 2026-08-07 | **Fassung 1.0** — E103–E111. **Neu: §5.10.2 Was fest sein muss und was atmen darf** (E103): alles, dessen Beschriftung sich beim Bedienen ändert, bekommt eine feste Breite — Faustregel „ändert sich der Text durch **meine** Handlung → fest, durch den **Inhalt** → frei", mit Tabelle für beide Seiten. **E104** Einstellen ≠ Wählen: Sprache und Fassung in „Ton & Text", Aussehen im Zahnrad — nie im selben Menü. **E105** Klick daneben schließt alles. **E106** bei Ton ohne Bild blendet nichts aus. **E107** Klangzeichen auf Distanz (Klick beim Fokuswechsel, Tock beim Bestätigen; am PC aus). **E108** Hörbücher sind keine Musik — eigenes Regal, Kapitel statt Lieder, kein Zufall, Erkennung über ASIN/M4B/Kapitelmarken. **E109** Herkunft und Güte sind Information, kein Menü — damit ist auch die halb gekaufte, halb gescannte Sammlung **ein** Werk. **E110** das Programm fragt nie, ob du etwas aufgibst; stattdessen ein selbstgesetzter Filter „über N Kapitel gelesen". **E111** Profilwechsel im Menü, nie beim Start. **Behoben:** Untertitel-Panel war gequetscht und überladen — Modus und Sprache sind raus (gehören nach nebenan), Farben in einer Reihe mit 15-px-Punkten, alle Zyklusknöpfe auf feste Breite; Klick daneben schließt jetzt; Musikleiste bleibt stehen und trägt die Aktionen als Symbolreihe; Hörbuch hat eine Kapitelliste; Staffelwechsel am Fernseher über eine Liste statt Scrollen; Endlosstreifen hat gar keine Fußleiste mehr. |
 | 2026-08-07 | Fassung 0.9 — **E97–E102.** **Neu: §5.11.2 Der Rahmen** — die Antwort auf JBs wichtigste Frage („wo kommt denn der Ton her?"): *eine Sache hat das Bild, eine den Ton, und beide dürfen verschieden sein*. Klangleiste (46 px statt Spotifys 72–90, Fortschritt als 2-px-Faden, weg wenn nichts läuft), genau ein schwebendes Bildfenster (nie über Leser oder Musikfläche), genau eine Tafel, immer derselbe Bereich. Frei verschiebbare Fenster bauen wir bewusst nicht — der Layout-Editor bleibt im Downloader. **Neu: `Doku/UEBERNAHME_AUS_SYNCYOUTUBE.md` (E102)** mit Datei, Funktionsname und Regel für alles, was portiert wird: das Untertitel-Panel zeilengenau, die Ausschnitt-Favoritenregel, Karaoke, Transkript-Suche, Autotag, Umbenennung mit Probelauf, Geo-Stufen, VPN-Einbahnregel — und was ausdrücklich **nicht** übernommen wird. **Behoben:** Untertitel-Panel war „mau" und jetzt zeilengleich mit `subMenu()`; Ton-&-Text-Wahl schlug nicht auf Kopfzeile und Knopf durch; die Bedienung blendete beim Halten des Spulknopfes weg; Fußleiste lag bei Musik über der Warteschlange; Ausschnitt fehlte bei Musik; Endlosstreifen bekommt die Bildlaufschiene zurück, mit Fortschritt **je Kapitel**; drei Fernsehreihen ohne Bildlaufbalken zur Auswahl. |
 | 2026-08-07 | Fassung 0.8 — **E89–E96, F10 geschlossen.** **Musik im vorhandenen Modell:** das Lied ist das Werk, die Aufnahme die Ausgabe, das Album eine Gruppe (§4.2) — MusicBrainz' drei Ebenen fallen genau auf unsere vorhandenen, kein neuer Begriff nötig; Coverversion, Remix, Live-Fassung und DJ-Set lösen sich damit von selbst. **Neu: §5.11.1 Bestandsaufnahme SyncYouTube** (JB-Einwand: „du hast nicht genau hingeschaut, was wir bereits erschaffen haben") — Ausschnitt-Werkzeug, Karaoke mit Romaji, „Auf YouTube öffnen", Mini-Player und Transkript-Suche fehlten im Entwurf und sind jetzt E89–E93; das vorhandene Untertitel-Panel wird übernommen statt neu geschrieben; die Kompakt-Ansicht des Downloaders bestätigt E88 aus dem eigenen Bestand. **E94** Folgen am PC als Raster, am Fernseher als Reihe mit Staffelwand. **E95** ein Ort für den Fortschritt — die angedockte Schiene im Endlosstreifen ist gestrichen, sie war doppelt und liess unten eine halbleere Leiste stehen (JB: „der Bildschirm wird nicht magisch größer"). **Behoben:** Spulen sprang beim Loslassen nochmal 10 s, weil `mouseleave` und `mouseup` beide stoppten; Zahnrad sah aus wie eine Sonne; „Warteschlange" öffnete die Ton-Tafel; Pausenkarte gibt es jetzt für alle drei Gestalten. |

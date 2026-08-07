@@ -23,6 +23,7 @@ Wer baut, baut gegen das Vision-Dokument; die Entwürfe zeigen, wie es aussehen 
 | 10 | **Die Erweiterung** | Kapitelmarkierung · vier Knopfzustände · Werk-Identität | §8.4, E67–E68, E76 |
 | 11 | **Die Bühne** | drei Gestalten · Spulen · Ausblenden · Pausenkarte · Untertitel-Panel | §5.12, E72–E84 |
 | 12 | **Der Rahmen** | wer hat Bild, wer hat Ton · Klangleiste · schwebendes Bild · Tafeln | §5.11.2, E97–E101 |
+| 13 | **Zeichen und Farben** | 28 eigene Zeichen · Farbe als Zustand · welcher Grund warm ist | §5.3.1, §5.10, E112–E114 |
 
 ## Noch nicht gezeichnet
 
