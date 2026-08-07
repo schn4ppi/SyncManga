@@ -4,7 +4,7 @@
 > Anime, Manga, Novels, Musik, Hörbücher, Filme und Serien — mit eigener Bibliothek,
 > eigenem Leser, eigener Bühne, eigener Veredelung.
 >
-> **Stand:** 2026-08-07 · **Fassung:** 1.5 · **Pflege:** JB + Claude
+> **Stand:** 2026-08-07 · **Fassung:** 1.6 · **Pflege:** JB + Claude
 
 ---
 
@@ -215,6 +215,11 @@ Novels oder Manga**. Genau dort ist SyncMangas Stärke.
 | E130 | Oberfläche | **Nichts scrollt, was eine Bühne ist** — es gibt nach, es rollt nicht | 🔑✅ |
 | E131 | Oberfläche | **Ein Knopf, eine Bedeutung** — kein Etikettwechsel auf gleicher Handlung | 🔑✅ |
 | E132 | Oberfläche | **Angebote schließen sich aus** — nie zwei Aufforderungen im selben Bild | ✅ |
+| E133 | Oberfläche | **Nichts steht zweimal im Bild** — trägt der Inhalt den Titel, trägt der Kopf die Herkunft | ✅ |
+| E134 | Übersetzung | **Englisch zuerst, Deutsch aus dem Englischen** — der zweite Lauf erbt das Glossar | 🔑✅ |
+| E135 | Übersetzung | **Das Glossar schlägt jedes Modell** — Beständigkeit vor Klugheit | 🔑✅ |
+| E136 | Übersetzung | **Blasenprüfung**: passt der Satz nicht, ist er falsch — Platz schlägt Schönheit | 🔑✅ |
+| E137 | Übersetzung | **Sprichwörter: drei Wege**, die Verortung entscheidet — nie stumm verpflanzen | ✅ |
 
 ### Die Unverhandelbaren
 
@@ -1327,6 +1332,16 @@ Kapitelliste, Regal) — dort ist es der Zweck.
 Konsequenz: alle Textzeilen einer Bühne sind **einzeilig mit Auslassung** oder auf eine feste
 Zeilenzahl geklammert, nie frei wachsend.
 
+**E133 — nichts steht zweimal im Bild.** JB-Fund 07.08.2026: *„Wieso steht bei Musik der Titel
+oben und unter dem Cover nochmal?"* — Weil ich zwei Bauteile unabhängig entworfen hatte.
+
+> **Trägt der Inhalt den Titel, trägt die Kopfzeile die Herkunft.** Und der Pfeil führt genau
+> dorthin zurück, was oben steht.
+
+In Anordnung **A** trägt das Cover den Titel ⇒ oben steht *Musik · Playlist „Ushio, alles"*.
+In **B** und **C** wird der Titel klein bzw. der Text regiert ⇒ er wandert nach oben, die
+Herkunft verschwindet. Dieselbe Regel gilt überall: Werk-Seite, Leser, Bühne.
+
 **E131 — ein Knopf, eine Bedeutung.** ⚠️ Ich hatte beim Hörbuch demselben Knopf ein anderes
 Etikett gegeben („Einschlafen 30 min") und ihn trotzdem die Ton-&-Text-Tafel öffnen lassen.
 Wer das Etikett ändert, **muss** auch die Handlung ändern — sonst lügt der Knopf.
@@ -1907,6 +1922,60 @@ Original vermerkt.
 **Marktlücke:** NovelUpdates hat **keinen zuverlässigen MTL-Marker** — seit Jahren im Forum
 gefordert, nicht sauber umgesetzt. Die Kennzeichnung ist echtes Neuland.
 
+### 10.2.1 Die Übersetzung im Bild (E134–E137)
+
+> Entwurf: `uebersetzung.html` (07.08.2026)
+
+**E135 — das Glossar schlägt jedes Modell.** Ein gutes Modell übersetzt eine einzelne Zeile heute
+schon sehr gut. Was es **nicht** kann, ist sich an Kapitel 41 zu erinnern — es sei denn, jemand
+schreibt die Entscheidung auf.
+
+| Woher ein Glossareintrag kommt | Rang |
+|---|---|
+| **deine Handkorrektur** | 1 — gewinnt immer |
+| die **offizielle** Ausgabe, wenn es eine gibt | 2 |
+| AniList/MangaUpdates-Namen | 3 |
+| die häufigste Fassung in den Fan-Übersetzungen | 4 |
+| Vorschlag des Modells | 5 |
+
+⚠️ **Nie stumm überschreiben.** Ändert eine Quelle ihre Meinung, wird daraus ein Eintrag im
+**Postfach**, keine automatische Korrektur (E41, E87).
+
+**Rückwirkend besser werden:** eine Glossarzeile ändern ⇒ alle betroffenen Stellen wandern in die
+Warteschlange. ⚠️ **Der Lesestand bleibt** — er hängt am Werk, nicht an der Ausgabe (E76).
+Kein Zurückspringen, kein Verlust.
+
+**E136 — Blasenprüfung.** Beim Manga ist nicht die Übersetzung das Problem, sondern der **Platz**.
+Nach jedem Satz wird gemessen: passt er in die Sprechblase, bei welcher Zeilenzahl, bei welcher
+Füllung? Passt er nicht, ist er **falsch** — auch wenn er schöner ist.
+Rangfolge: Bild behalten → kürzen → Weg 3 (E137). **Nie über den Rand.**
+
+**E134 — Englisch zuerst.** Zielsprache ist **Englisch**, weil dort die meisten Fan-Fassungen
+fehlen und die Vorlagen am besten sind. **Deutsch ist der zweite Lauf — und er läuft aus
+unserer englischen Fassung, nicht aus dem Original**, weil das Glossar dann schon steht.
+Zwei Sprünge klingen nach Verlust, sind aber besser: der zweite erbt jede Entscheidung des ersten.
+
+#### E137 — Sprichwörter (F03 beantwortet)
+
+Wörtlich übersetzt ergibt es Unsinn; ersetzt man es, klingt ein koreanischer Jäger plötzlich wie
+ein englischer Landwirt. **Es gibt keine Lösung, nur drei Wege.**
+
+| Weg | Was | Wann |
+|---|---|---|
+| **1 · Ersetzen** | echtes Sprichwort der Zielsprache mit gleicher Bedeutung | nur bei Werken **ohne Ortsbezug** (Isekai, reine Fantasy) |
+| **2 · Bild behalten, erklären** | wörtlich, mit punktierter Linie beim **ersten** Vorkommen je Kapitel; Erklärung auf Antippen | **Standard** bei allem, was in der Ursprungskultur spielt |
+| **3 · Sinn ohne Bild** | reine Bedeutung, kein Sprichwort | Rückfall, wenn Weg 2 nicht in die Blase passt (E136) |
+
+**Entschieden wird in dieser Reihenfolge:** spielt das Werk in der Ursprungskultur? → passt Weg 2
+in die Blase? → steht es überhaupt in einer Sprichwortsammlung (sonst normal übersetzen)? → gibt
+es eine offizielle Fassung (die gewinnt, auch gegen unseren Geschmack)? → **schon einmal
+entschieden? Dann steht es im Glossar und wird nie wieder neu entschieden.**
+
+> ⚠️ **Ehrlich:** Sprichwörter sind die Stelle, an der eine gute Fan-Gruppe uns weiterhin schlägt —
+> sie *kennt* die Serie und weiß, ob die Figur gerade ironisch ist. Unser Ausgleich ist nicht
+> Klugheit, sondern **Beständigkeit und Umkehrbarkeit**: jede Entscheidung steht im Glossar,
+> ist mit einem Klick änderbar, und die Änderung gilt rückwirkend.
+
 ### 10.3 Vertonung
 
 > **E14: Ein Ein-Sprecher-Modell, zeilenweise, mit gewechselter Stimme — dann zusammensetzen.**
@@ -2221,7 +2290,7 @@ mitgeliefert, nur erkannt und angebunden.
 |---|---|---|
 | ~~F01~~ | ~~Oberflächentechnik~~ → **beantwortet, siehe §12.4** | — |
 | F02 | Endgültiger **Name** | Alles Sichtbare |
-| F03 | Umgang mit **Sprichwörtern** beim Übersetzen | §10.2 |
+| ~~F03~~ | ~~Sprichwörter~~ → **beantwortet: E137** (drei Wege, die Verortung entscheidet) | — |
 | F04 | Wie stark **Namens-Verwestlichung** — Voreinstellung an oder aus? | §10.2 |
 | F05 | `data/sources.json` + `readers_pattern.json` aus dem öffentlichen Repo nehmen? | §9.2 |
 | F06 | **Quellen-Späher**: halbautomatisch mit Vorschlagsliste, oder nur Meldung? | §7.3 |
@@ -2286,6 +2355,7 @@ elf Entwürfe (siehe `ENTWUERFE.md`). Der Stand nach Bausteinen aus §16.2:
 
 | Datum | Was |
 |---|---|
+| 2026-08-07 | Fassung 1.6 — E133–E137, **F03 geschlossen**. **Neu: §10.2.1 Die Übersetzung im Bild.** **E135 das Glossar schlägt jedes Modell** — fünfstufige Herkunftsrangfolge, Handkorrektur gewinnt immer, nie stumm überschreiben; eine Glossarzeile ändern erneuert alle betroffenen Stellen rückwirkend, **der Lesestand bleibt** (E76). **E136 Blasenprüfung:** beim Manga ist nicht die Übersetzung das Problem, sondern der Platz — passt der Satz nicht in die Sprechblase, ist er falsch, auch wenn er schöner ist. **E134 Englisch zuerst**, Deutsch als zweiter Lauf **aus der englischen Fassung**, weil das Glossar dann schon steht. **E137 Sprichwörter (F03):** drei Wege — ersetzen nur ohne Ortsbezug, Bild behalten mit Antipp-Erklärung als Standard, Sinn ohne Bild als Rückfall; entschieden wird einmal und steht dann im Glossar. **E133 nichts steht zweimal im Bild:** trägt der Inhalt den Titel, trägt die Kopfzeile die Herkunft — und der Pfeil führt dorthin zurück. **Behoben:** Ausschnitt lag unter der Leiste (jetzt in der Bedienschicht); Warteschlangenfuß hatte Zufall/Wiederholen/Als Playlist doppelt zu den Leistenknöpfen — jetzt nur noch ein ⋯ mit warteschlangeneigenen Werkzeugen; Karaoke-Mikro mit versetzter Kapsel. |
 | 2026-08-07 | Fassung 1.5 — E130–E132, alle drei aus JB-Funden. **E130 nichts scrollt, was eine Bühne ist:** eine Bühne ist ein Bild, kein Dokument — `overflow:auto` dort ist immer die bequeme Ausrede dafür, die Prioritätsleiter nicht geschrieben zu haben. Gerollt wird nur in Listen. Alle Bühnentexte sind einzeilig mit Auslassung oder auf feste Zeilenzahl geklammert. **E131 ein Knopf, eine Bedeutung:** beim Hörbuch trug ein Knopf das Etikett „Einschlafen" und öffnete trotzdem Ton & Text — wer das Etikett ändert, muss die Handlung ändern, sonst lügt der Knopf. **E132 Angebote schließen sich aus:** die Weiche verlangt eine Entscheidung, die Besetzungskarte lädt zum Verweilen — höchstens eine Karte, die etwas will. **Behoben:** A/B/C lag unter der Bedienschicht und war nicht anklickbar (z-index innerhalb eines Stapelkontexts); Musik und Hörbuch scrollten bei kleinem Fenster; Karaoke-Zeichen war ein Standmikro und sah stummgeschaltet aus → **Handmikrofon**; Zufall war bei 17 px ein Kreuz → neu gezeichnet mit gebogenen Wegen. Die sieben Rechtsklick-Menüs sind jetzt im Entwurf **anklickbar** statt nur tabelliert. |
 | 2026-08-07 | Fassung 1.4 — E125–E129. **E125 freie Fläche ist kein Fehler:** Leerraum wird nicht gefüllt, sondern geordnet — vierstufige Rangfolge (was läuft · wo im Stück · was kommt · alles andere), und Rang 4 darf verschwinden. Zwei gleich schlimme Fehler: die tote Ecke, weil ein Bauteil zu früh aufhört, und das Hineingestopfte, damit es nicht leer aussieht. **E126 drei Musik-Anordnungen** (Bühne · Mitte · Text) nach den Vorbildern Apple Music, Spotify-Vollbild und Apple-Music-Lyrics — je Gerät gemerkt, weil die Ansicht an der Situation hängt, nicht am Lied. **E127 Rechtsklick:** max. 7 Zeilen, max. ein Trennstrich, nie doppelt zu einem sichtbaren Knopf; vollständige Menüs im Entwurf. **E128 Radio ≠ Zufall ≠ Entdecken** — Zufall ordnet um, Radio hängt an, Entdecken holt herein. **Neu: §7.0.1 (E129) Streaming-Konten sind Wissen, keine Quelle** — Spotify und SoundCloud liefern Bibliothek, Playlists und Verlauf, aber keinen Tonstrom; daraus werden Regal-Einträge im Zustand *gekannt*, und die Lücke zwischen Gehörtem und Besessenem ist unser Alleinstellungsmerkmal. **Behoben:** Fernseh-Pfeile flankieren jetzt die Reihe statt oben zu stehen; die tote Ecke rechts unten in der Musikbühne ist weg (nur der linke Teil macht der Leiste Platz). |
 | 2026-08-07 | Fassung 1.3 — E121–E124. **E121 Höhen werden gemessen, nie geraten:** wo ein Bauteil einem anderen Platz macht, wird die Höhe zur Laufzeit gemessen (`ResizeObserver` → CSS-Variable). Die feste `62px` stimmte genau bei der Breite, bei der ich sie gemessen hatte — beim Schrumpfen brach die Leiste um und verdeckte das Bild. **E122 gestuftes Aufgeben:** wird es eng, fällt der Inhalt in einer festgeschriebenen Reihenfolge weg (Romaji → Karaoke → Wellenform → Warteschlange → stapeln), statt dass der Umbruch entscheidet. **E123 Playlists sind Sichten, keine Kopien** — Sammlung wie jede andere, in der Seitenleiste unter „Musik", je Profil als Datei, `.m3u` für Ex- und Import. **E124 Besetzungskarte** als Spiegelbild der Pausenkarte: links was läuft, rechts wer zu sehen ist; volle Besetzung immer, „gerade im Bild" aus einem einmaligen Gesichtsdurchlauf beim Einlagern — und **nie** ins laufende Bild, anders als Amazons X-Ray. |
