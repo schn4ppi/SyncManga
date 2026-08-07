@@ -4,7 +4,7 @@
 > Anime, Manga, Novels, Musik, Hörbücher, Filme und Serien — mit eigener Bibliothek,
 > eigenem Leser, eigener Bühne, eigener Veredelung.
 >
-> **Stand:** 2026-08-07 · **Fassung:** 0.9 · **Pflege:** JB + Claude
+> **Stand:** 2026-08-07 · **Fassung:** 1.0 · **Pflege:** JB + Claude
 
 ---
 
@@ -185,6 +185,15 @@ Novels oder Manga**. Genau dort ist SyncMangas Stärke.
 | E100 | Rahmen | **Genau eine Tafel** gleichzeitig · nichts darunter verrutscht · Esc schließt | ✅ |
 | E101 | Rahmen | Fläche, Leser und Bühne belegen **denselben Bereich** — nie ein zweites Fenster | 🔑✅ |
 | E102 | Übernahme | Der **Code-Übernahme-Pfad** steht im Dokument: was aus SyncYouTube kommt, kommt dokumentiert | ✅ |
+| E103 | Oberfläche | **Nichts springt beim Wechseln** — wechselnde Beschriftungen bekommen feste Breiten | 🔑✅ |
+| E104 | Oberfläche | **Einstellen ≠ Wählen** — Aussehen und Auswahl liegen nie im selben Menü | ✅ |
+| E105 | Oberfläche | **Klick daneben schließt** jede Tafel, jedes Menü, überall | ✅ |
+| E106 | Bühne | Bei **Ton ohne Bild** blendet nichts aus — Ausblenden ist etwas für Bilder | ✅ |
+| E107 | Bühne | **Klangzeichen** (Klick) beim Bedienen auf Distanz — leise, kurz, abschaltbar | ✅ |
+| E108 | Hörbuch | Hörbücher haben **Kapitel, keine Lieder** — nie im Musikregal | 🔑✅ |
+| E109 | Qualität | **Herkunft und Güte sind Information, kein Menü** — wie 1080p neben 4K | ✅ |
+| E110 | Empfehlung | Das Programm fragt **nie**, ob du etwas aufgibst — du filterst selbst | 🔑✅ |
+| E111 | Profile | Profilwechsel wie bei Netflix: **im Menü, nie beim Start**, nie in der Bibliothek | ✅ |
 
 ### Die Unverhandelbaren
 
@@ -258,6 +267,42 @@ Sonderfolge (OVA/ONA/Special/Film) · Alternative Fassung · Sammlung.
 **Reihenfolge** (OVA-Problem): Erscheinung ≠ Chronologie ≠ empfohlene Reihenfolge.
 Graph speichern, Reihenfolge als **Wahl** anbieten, Community-Reihenfolgen importierbar.
 Nicht berechnen wollen.
+
+#### E108 — Hörbücher sind keine Musik
+
+**JB, 07.08.2026:** *„Will die halt nicht in der Bibliothek der Musik finden, das ist relevant."*
+
+Ein Hörbuch mit 340 Spuren würde jedes Musikregal fluten. Deshalb:
+
+| | Musik | Hörbuch |
+|---|---|---|
+| Werk | das **Lied** (E96) | das **Buch** |
+| Einheit | — | das **Kapitel** (nummeriert, benannt) |
+| Sammlung | Album = Gruppe | Reihe/Band |
+| Fortschritt | gehört / nicht gehört | **Zeitstand im Kapitel**, wie bei Video |
+| Regal | Musik | **Hörbuch** — eigenes Regal, eigene Zwiebelschicht |
+| Zufall, Radio, Mixer | ja | **nein** — ein Buch wird nicht gemischt |
+| Einschlafzeit | selten | **immer sichtbar** |
+
+Die Trennung passiert bei der Erkennung, nicht beim Anzeigen: eine Datei mit
+`ASIN`/`Audible`-Kennung, mit Kapitelmarken über 10 Minuten oder mit einer M4B-Hülle ist ein
+Hörbuch — und wandert nie ins Musikregal, auch nicht versehentlich.
+Die **Spurnummer bleibt** (Kapitel 7 von 24), weil man sie zum Springen braucht.
+
+#### E109 — Herkunft und Güte sind Information, kein Menü
+
+**JB, 07.08.2026:** *„Gekauft oder Scan, für mich identisch, nur die Qualität ist relevant.
+Nicht als Menü, sondern als Info — wie ein Film, der in 1080p oder 4K verfügbar ist."*
+
+Damit ist auch die halbe Sammlung geklärt: Band 1–8 gekauft, 9–14 als Scan ist **ein Werk**
+mit Ausgaben unterschiedlicher Güte. Kein „unvollständig", kein zweiter Eintrag.
+
+| So nicht | So |
+|---|---|
+| Auswahlmenü „Quelle wählen" bei jedem Öffnen | eine **Zeile Information** am Werk: `Kap. 1–214 · Fan DE · Kap. 1–8 zusätzlich Verlag` |
+| „Scan" als Makel | Güte wie eine Auflösung: `Verlag` · `Scan 1200 dpi` · `Fan` · `MTL+KI` |
+| stiller Austausch | **Angebot**, wenn etwas Besseres auftaucht: *„Band 9 gibt es jetzt vom Verlag — holen?"* (E41) |
+| alte Fassung löschen | bleibt liegen, bis du sie wegwirfst |
 
 #### E96 — Musik im vorhandenen Modell (F10 beantwortet)
 
@@ -427,6 +472,19 @@ Aufbau: **Held** (die wahrscheinlichste Fortsetzung, ein Knopf) → **Angefangen
 
 Belege: Auswahl-Überlastung (Schwartz) — zu viele gleichrangige Optionen erzeugen Zögern
 und Abbruch; Amazon zeigt bewusst 4–7. Unterbrochenes hat mehr Sog als Neues.
+
+**E110 — das Programm fragt nie, ob du etwas aufgibst.** JB, 07.08.2026: *„nein niemals."*
+Eine Serie liegt seit 14 Monaten bei Kapitel 30 — das ist **deine** Sache. Was es stattdessen
+gibt, ist ein **Filter, den du selbst setzt**: *zeig mir nur, wo ich über 2 / 5 / 10 Kapitel
+gelesen habe*. Damit räumst du deine Startseite auf, ohne dass dich jemand fragt, ob du
+aufgibst. Gilt genauso für Serien (*über 2 Folgen gesehen*).
+
+> Der Unterschied ist die Richtung: **du entscheidest, was du sehen willst.**
+> Das Programm entscheidet nie, was du fallen lassen sollst.
+
+**E111 — Profilwechsel wie bei Netflix.** Nicht beim Start (niemand will vor dem Lesen erst
+ein Konto wählen), nicht in der Bibliothek — sondern **im Menü**, oben rechts, mit den Gesichtern.
+Gestartet wird immer im zuletzt benutzten Profil.
 
 **E70 — „Neu für dich" ist nicht „neu erschienen".** Zwei verschiedene Reihen, nie eine:
 *neu erschienen* ist ein Nachschub-Regal für Dinge, die du schon verfolgst (Kapitel 413 ist
@@ -861,6 +919,41 @@ jede Regel, die nie gebrochen wurde.
 | **`--sk` am falschen Element** | in einem Geschwisterzweig (Endlosstreifen) ist die Variable undefiniert und die Rechnung ungültig | Maßstäbe gehören an den **gemeinsamen** Vorfahren, nicht an einen Zweig |
 | **`visibility:hidden` statt `display:none`** | unten bleibt ein leerer Streifen stehen | `visibility` reserviert den Platz weiter — wer Platz zurückgeben will, braucht `display:none` (JB-Fund: Endlosstreifen) |
 | **Zellbreite trägt den Abstand** | vierstellige Zahlen kleben, dreistellige schweben | die Luft gehört dem Trenner, nicht dem Zellrest (**E85**) |
+
+### 5.10.2 Was fest sein muss und was atmen darf (E103)
+
+**JB-Fund 07.08.2026:** *„Wenn ich von 100 % runtergehe, ist der Zeilenumbruch weg.
+Diese Sachen sollten fix sein."* — Richtig, und es ist eine allgemeine Regel:
+
+> **Alles, dessen Beschriftung sich beim Bedienen ändert, bekommt eine feste Breite.**
+> Sonst springt der Nachbar mit, und man verliert die Stelle, an der man gerade war.
+
+| **Fest** — weil sich der Text ändert, während man klickt | **Frei** — weil der Inhalt die Größe bestimmen darf |
+|---|---|
+| Zyklusknöpfe (`100 % → 75 % → 50 %`, `70 % → aus`) | Titelzeilen und Beschreibungen — sie kürzen mit `…` |
+| Zeit- und Zähleranzeigen (`08:12`, `+0,5 s`, `9 / 24`) | Kacheln im Regal (die Spaltenzahl passt sich der Breite an) |
+| Fortschrittsprozente, Kapitelzahlen (mit Ziffernleerzeichen, **E85**) | Tafelhöhe, wenn eine Liste länger wird |
+| Die Untertitel-Vorschau (feste Höhe, Text skaliert darin) | Untertitelzeilen im Bild selbst — sie sind der Inhalt |
+| Jede Werkzeugleiste, deren Knöpfe ihren Zustand als Text zeigen | Fließtext, Suchergebnisse, alles Gelesene |
+| Der Platz für Abzeichen (`MTL`, `Fan`) — auch wenn gerade keins da ist | Die Fläche selbst |
+
+**Die Faustregel:** *Ändert sich der Text durch **meine** Handlung → fest. Ändert er sich, weil
+sich der **Inhalt** ändert → frei.* Wer klickt, darf nie bestraft werden, indem sich die
+Oberfläche unter dem Zeiger verschiebt.
+
+**E104 — Einstellen ≠ Wählen.** *Welcher* Untertitel (Sprache, Fassung, aus) gehört in
+**Ton & Text**. *Wie er aussieht* (Größe, Schrift, Farbe, Kasten, Ort, Versatz) gehört ins
+**Zahnrad**. Beides im selben Menü macht es überladen und lässt einen zweimal dieselbe Sache
+an zwei Orten suchen.
+
+**E105 — Klick daneben schließt.** Jede Tafel, jedes Menü, jedes Fenster. Ohne Ausnahme,
+ohne Nachdenken. Zusätzlich Esc.
+
+**E107 — Klangzeichen auf Distanz.** Am Fernseher und am Handheld gibt es einen **kurzen,
+leisen Klick** beim Fokuswechsel und ein tieferes *Tock* beim Bestätigen — genau wie bei
+Netflix, Apple TV und der Steam-Deck-Oberfläche. Der Grund ist nicht Zierde: auf drei Metern
+sieht man den Fokusrahmen erst nach 100–200 ms, hört den Klick aber sofort. **Am PC ist er
+aus** (dort ist der Zeiger die Rückmeldung) und überall abschaltbar.
 
 ### 5.11.1 Was SyncYouTube schon kann (Bestandsaufnahme 07.08.2026)
 
@@ -1890,6 +1983,7 @@ elf Entwürfe (siehe `ENTWUERFE.md`). Der Stand nach Bausteinen aus §16.2:
 
 | Datum | Was |
 |---|---|
+| 2026-08-07 | **Fassung 1.0** — E103–E111. **Neu: §5.10.2 Was fest sein muss und was atmen darf** (E103): alles, dessen Beschriftung sich beim Bedienen ändert, bekommt eine feste Breite — Faustregel „ändert sich der Text durch **meine** Handlung → fest, durch den **Inhalt** → frei", mit Tabelle für beide Seiten. **E104** Einstellen ≠ Wählen: Sprache und Fassung in „Ton & Text", Aussehen im Zahnrad — nie im selben Menü. **E105** Klick daneben schließt alles. **E106** bei Ton ohne Bild blendet nichts aus. **E107** Klangzeichen auf Distanz (Klick beim Fokuswechsel, Tock beim Bestätigen; am PC aus). **E108** Hörbücher sind keine Musik — eigenes Regal, Kapitel statt Lieder, kein Zufall, Erkennung über ASIN/M4B/Kapitelmarken. **E109** Herkunft und Güte sind Information, kein Menü — damit ist auch die halb gekaufte, halb gescannte Sammlung **ein** Werk. **E110** das Programm fragt nie, ob du etwas aufgibst; stattdessen ein selbstgesetzter Filter „über N Kapitel gelesen". **E111** Profilwechsel im Menü, nie beim Start. **Behoben:** Untertitel-Panel war gequetscht und überladen — Modus und Sprache sind raus (gehören nach nebenan), Farben in einer Reihe mit 15-px-Punkten, alle Zyklusknöpfe auf feste Breite; Klick daneben schließt jetzt; Musikleiste bleibt stehen und trägt die Aktionen als Symbolreihe; Hörbuch hat eine Kapitelliste; Staffelwechsel am Fernseher über eine Liste statt Scrollen; Endlosstreifen hat gar keine Fußleiste mehr. |
 | 2026-08-07 | Fassung 0.9 — **E97–E102.** **Neu: §5.11.2 Der Rahmen** — die Antwort auf JBs wichtigste Frage („wo kommt denn der Ton her?"): *eine Sache hat das Bild, eine den Ton, und beide dürfen verschieden sein*. Klangleiste (46 px statt Spotifys 72–90, Fortschritt als 2-px-Faden, weg wenn nichts läuft), genau ein schwebendes Bildfenster (nie über Leser oder Musikfläche), genau eine Tafel, immer derselbe Bereich. Frei verschiebbare Fenster bauen wir bewusst nicht — der Layout-Editor bleibt im Downloader. **Neu: `Doku/UEBERNAHME_AUS_SYNCYOUTUBE.md` (E102)** mit Datei, Funktionsname und Regel für alles, was portiert wird: das Untertitel-Panel zeilengenau, die Ausschnitt-Favoritenregel, Karaoke, Transkript-Suche, Autotag, Umbenennung mit Probelauf, Geo-Stufen, VPN-Einbahnregel — und was ausdrücklich **nicht** übernommen wird. **Behoben:** Untertitel-Panel war „mau" und jetzt zeilengleich mit `subMenu()`; Ton-&-Text-Wahl schlug nicht auf Kopfzeile und Knopf durch; die Bedienung blendete beim Halten des Spulknopfes weg; Fußleiste lag bei Musik über der Warteschlange; Ausschnitt fehlte bei Musik; Endlosstreifen bekommt die Bildlaufschiene zurück, mit Fortschritt **je Kapitel**; drei Fernsehreihen ohne Bildlaufbalken zur Auswahl. |
 | 2026-08-07 | Fassung 0.8 — **E89–E96, F10 geschlossen.** **Musik im vorhandenen Modell:** das Lied ist das Werk, die Aufnahme die Ausgabe, das Album eine Gruppe (§4.2) — MusicBrainz' drei Ebenen fallen genau auf unsere vorhandenen, kein neuer Begriff nötig; Coverversion, Remix, Live-Fassung und DJ-Set lösen sich damit von selbst. **Neu: §5.11.1 Bestandsaufnahme SyncYouTube** (JB-Einwand: „du hast nicht genau hingeschaut, was wir bereits erschaffen haben") — Ausschnitt-Werkzeug, Karaoke mit Romaji, „Auf YouTube öffnen", Mini-Player und Transkript-Suche fehlten im Entwurf und sind jetzt E89–E93; das vorhandene Untertitel-Panel wird übernommen statt neu geschrieben; die Kompakt-Ansicht des Downloaders bestätigt E88 aus dem eigenen Bestand. **E94** Folgen am PC als Raster, am Fernseher als Reihe mit Staffelwand. **E95** ein Ort für den Fortschritt — die angedockte Schiene im Endlosstreifen ist gestrichen, sie war doppelt und liess unten eine halbleere Leiste stehen (JB: „der Bildschirm wird nicht magisch größer"). **Behoben:** Spulen sprang beim Loslassen nochmal 10 s, weil `mouseleave` und `mouseup` beide stoppten; Zahnrad sah aus wie eine Sonne; „Warteschlange" öffnete die Ton-Tafel; Pausenkarte gibt es jetzt für alle drei Gestalten. |
 | 2026-08-07 | Fassung 0.7 — **E78–E88.** Neu: **§5.8.1 Titel sind vielsprachig** (kein „richtiger" Titel; Englisch ist keine Leitwährung; Romanisierungen normalisiert vergleichen; Titelvorrat wächst nur) und **E87 nie früh verwerfen** — Falsch-Behalten schlägt Richtig-Wegwerfen. **§5.10.1 Kachelgrößen:** die Mini-Kachel ohne Titel ist gestrichen (JB: „dann sehe ich nicht, welchen Manga ich lese") — Titel ist Rang 1 der Prioritätsleiter und fällt nie; stattdessen „Dicht" mit einzeiligem Titel. **Bühne erweitert:** 10 s tippen / halten spult mit 4×–12×–30× (Vergleich Netflix, Plex, Jellyfin, Kodi, Prime, VLC, mpv) · Bedienung liegt im Bild und blendet weich weg (420 ms raus, 120 ms rein) · Pausenkarte nach 12 s mit Rollenzeile, nie Empfehlungen · „Ton & Text" statt „Spuren", Einstellen vom Auswählen getrennt (Zahnrad) · Folgen unter der Bühne. **Suche:** erweiterte Suche zugeklappt mit Zähler, dieselbe Dreistufigkeit, und **das kluge Regal** (gespeicherte Suche wird Regal). **E85 Zahlentypografie:** die Luft gehört dem Trenner, ausgerichtet mit Ziffernleerzeichen, Füllbreite aus der aktuellen Ansicht — damit hören vierstellige Kapitel auf, am Schrägstrich zu kleben. **Neu: §13.1 Wie weit wir sind** und **`Doku/ENTWUERFE.md`** als Index der elf Entwürfe. Drei weitere Fallen in §5.11 (`visibility` reserviert Platz · Maßstab am falschen Element · Zellbreite trägt den Abstand). |
