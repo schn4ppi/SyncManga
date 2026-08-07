@@ -4,7 +4,7 @@
 > Anime, Manga, Novels, Musik, Hörbücher, Filme und Serien — mit eigener Bibliothek,
 > eigenem Leser, eigener Bühne, eigener Veredelung.
 >
-> **Stand:** 2026-08-07 · **Fassung:** 1.3 · **Pflege:** JB + Claude
+> **Stand:** 2026-08-07 · **Fassung:** 1.4 · **Pflege:** JB + Claude
 
 ---
 
@@ -207,6 +207,11 @@ Novels oder Manga**. Genau dort ist SyncMangas Stärke.
 | E122 | Oberfläche | **Gestuftes Aufgeben** — Inhalt fällt in fester Reihenfolge weg, statt überzulaufen | ✅ |
 | E123 | Sammlung | **Playlist ist eine Sicht, keine Kopie** — Sammlung wie jede andere, `.m3u` als Export | ✅ |
 | E124 | Bühne | **Besetzungskarte** rechts bei Pause — nie ins laufende Bild | ✅ |
+| E125 | Oberfläche | **Freie Fläche ist kein Fehler** — sie wird nicht gefüllt, nur geordnet | 🔑✅ |
+| E126 | Musik | **Drei Anordnungen** (Bühne · Mitte · Text), je Gerät gemerkt | ✅ |
+| E127 | Oberfläche | **Rechtsklick: max. 7 Zeilen, ein Trennstrich**, nie doppelt zum Knopf | ✅ |
+| E128 | Empfehlung | **Radio ≠ Zufall** — drei getrennte Begriffe, drei getrennte Knöpfe | ✅ |
+| E129 | Quellen | **Kein Streaming-Konto als Quelle** — Spotify/SoundCloud nur als Wissen | 🔑✅ |
 
 ### Die Unverhandelbaren
 
@@ -280,6 +285,65 @@ Sonderfolge (OVA/ONA/Special/Film) · Alternative Fassung · Sammlung.
 **Reihenfolge** (OVA-Problem): Erscheinung ≠ Chronologie ≠ empfohlene Reihenfolge.
 Graph speichern, Reihenfolge als **Wahl** anbieten, Community-Reihenfolgen importierbar.
 Nicht berechnen wollen.
+
+#### E125 — Freie Fläche ist kein Fehler
+
+**JB, 07.08.2026:** *„Versuch nicht Sachen zu verdecken. Es muss doch freie Flächen erkennbar
+geben, oder?"* — Ja. Und das ist eine Regel, keine Geschmacksfrage.
+
+> **Leerraum wird nicht gefüllt, sondern geordnet.** Was in eine Ecke wandert, nur weil sie leer
+> ist, ist immer das Falsche — es steht dort ohne Grund und wird nie gesucht.
+
+Deshalb gilt in jeder Anordnung dieselbe Rangfolge, und **Rang 4 darf verschwinden** (E122):
+
+| Rang | Was |
+|---|---|
+| 1 | **Was läuft** — Titel, Cover, Werk |
+| 2 | **Wo im Stück** — Leiste, Zeit |
+| 3 | **Was kommt** — Warteschlange, nächste Folge |
+| 4 | alles andere — Karaoke, Abzeichen, Zusatzknöpfe |
+
+⚠️ Zwei Fehler, die dabei gleich schlimm sind: eine **tote Ecke**, weil ein Bauteil zu früh
+aufhört (die Warteschlange endete über der Leiste statt an der Unterkante) — und **etwas
+Hineingestopftes**, damit es nicht leer aussieht. Das erste ist Schlamperei, das zweite Absicht.
+
+#### E126 — Drei Anordnungen für Musik
+
+Spotify, Apple Music und YouTube Music haben **alle drei** — sie nennen sie nur nicht so und
+verstecken sie hinter verschiedenen Knöpfen. Der Fehler wäre, sich für eine zu entscheiden.
+
+| | Vorbild | Wofür |
+|---|---|---|
+| **A · Bühne** | Apple Music Vollbild, Tidal | der Alltag: Cover links, Warteschlange rechts — was läuft *und* was kommt, ohne Klick |
+| **B · Mitte** | Spotify Vollbild, YouTube Music | wenn das Cover das Erlebnis ist. Ruhiger, Warteschlange aufklappbar. Gut am Fernseher |
+| **C · Text** | Apple Music Lyrics | zum Mitsingen: Liedtext füllt die Fläche, bei Japanisch **mit Romaji darunter** — das kann sonst niemand |
+
+**Gemerkt wird je Gerät, nicht je Titel** — die Ansicht hängt an der Situation (Schreibtisch,
+Fernseher, Handy), nicht am Lied.
+
+#### E127 — Der Rechtsklick
+
+| Regel | |
+|---|---|
+| **Höchstens 7 Zeilen** | wird es mehr, fehlt eine Ebene, nicht eine Zeile |
+| **Höchstens ein Trennstrich** | braucht es zwei, sind es zwei Menüs |
+| **Nie doppelt zum Knopf** | was sichtbar geht, steht nicht im Menü — außer es ist der einzige Weg auf Distanz |
+| **Die obersten zwei Zeilen** | sind die 90-Prozent-Fälle; der Rest darf länger dauern |
+| **Überall dasselbe Muster** | Haupthandlung · Zustand ändern · ─ · Vertiefen · Weggeben |
+
+Vollständige Menüs: siehe Entwurf `buehne.html`.
+
+#### E128 — Radio ist nicht Zufall
+
+Drei verschiedene Dinge, drei getrennte Knöpfe, nie vermischt:
+
+| | Was es tut | Vorbild |
+|---|---|---|
+| **Zufall** | mischt **deine** Warteschlange — gestreut, nie zweimal derselbe Urheber hintereinander | Spotifys Shuffle (den sie 2014 bewusst *un*zufälliger gemacht haben, weil echte Zufälligkeit Häufungen erzeugt und sich falsch anfühlt) |
+| **Radio** | spielt endlos weiter mit **Ähnlichem aus deiner Bibliothek**, wenn die Warteschlange leer ist | Spotifys *Smart Shuffle* mit dem Stern — nur dass deren Vorschläge aus dem Katalog kommen und unsere aus dem Regal |
+| **Entdecken** | sucht **draußen**, filtert alles heraus, was du schon hast | SyncYouTubes ✨ Entdecken |
+
+Der Unterschied, der zählt: **Zufall ordnet um, Radio hängt an, Entdecken holt herein.**
 
 #### E123 — Wo Playlists leben
 
@@ -1368,6 +1432,33 @@ bewegt · beim Pausieren Empfehlungen über das Bild legen.
 | **Visual Novel** | **VNDB** | — | VNDB |
 | **Fanfiction** | AO3 (Tags!), RoyalRoad, ScribbleHub | RSS | AO3 Series |
 
+### 7.0.1 E129 — Streaming-Konten sind Wissen, keine Quelle
+
+**JB-Frage 07.08.2026:** *„Können wir Spotify mit einbinden? Oder SoundCloud? Oder alles
+irgendwie locked?"*
+
+| Dienst | Was geht | Was nicht |
+|---|---|---|
+| **Spotify** | Web-API mit OAuth: **Bibliothek, Playlists, Verlauf, Metadaten, Audio-Merkmale**. Wiedergabe **steuern** (Play/Pause/Skip) auf einem Gerät, auf dem Spotify schon läuft — Connect-Prinzip | **Kein Tonstrom.** Der Stream ist Widevine-verschlüsselt und die API gibt ihn nicht heraus. Auch die 30-Sekunden-Hörproben sind seit Ende 2024 für neue Anwendungen gesperrt |
+| **SoundCloud** | API mit OAuth: Likes, Playlists, Metadaten. **Freigegebene** Titel haben eine offene Stream-URL — viele Künstler erlauben den Download ausdrücklich | Für alles andere gilt dasselbe: kein Zugriff auf Geschütztes. Neue API-Zugänge werden seit Jahren nur zögerlich vergeben |
+| **Last.fm / ListenBrainz** | vollständiger Hörverlauf, offen, ohne Haken | — |
+| **Bandcamp** | gekaufte Titel gehören dir, als Datei | — |
+
+**Die Regel, die daraus folgt — und sie ist dieselbe wie bei Crunchyroll und Netflix:**
+
+> **Konten liefern Wissen, nicht Inhalt.** Deine Spotify-Bibliothek wird gelesen und wird zu
+> Regal-Einträgen im Zustand **◐ gekannt** (E54). SyncFundus sagt dir dann, was davon du
+> **wirklich** besitzt, was als Datei zu bekommen wäre, und wo eine Lücke ist.
+
+Das ist nicht der Trostpreis, sondern genau unser Alleinstellungsmerkmal: **kein anderes
+Programm zeigt dir die Lücke zwischen dem, was du hörst, und dem, was dir gehört.**
+Und wenn ein Abo endet, bleibt dein Regal — die Liste, was du gehört hast, ist dann mehr wert
+als das Abo es war.
+
+⚠️ **Was wir nie tun:** einen geschützten Stream mitschneiden oder entschlüsseln. Nicht aus
+Prüderie, sondern weil es (a) rechtlich eine andere Kategorie ist als die Privatkopie,
+(b) bei jedem Update kaputtgeht und (c) das ganze Vorhaben in Geiselhaft nimmt.
+
 ### 7.1 MangaBaka statt MangaDex — begründet
 
 **MangaBaka** sammelt und *säubert* AniList, Kitsu, MangaDex, MangaUpdates, MyAnimeList,
@@ -2170,6 +2261,7 @@ elf Entwürfe (siehe `ENTWUERFE.md`). Der Stand nach Bausteinen aus §16.2:
 
 | Datum | Was |
 |---|---|
+| 2026-08-07 | Fassung 1.4 — E125–E129. **E125 freie Fläche ist kein Fehler:** Leerraum wird nicht gefüllt, sondern geordnet — vierstufige Rangfolge (was läuft · wo im Stück · was kommt · alles andere), und Rang 4 darf verschwinden. Zwei gleich schlimme Fehler: die tote Ecke, weil ein Bauteil zu früh aufhört, und das Hineingestopfte, damit es nicht leer aussieht. **E126 drei Musik-Anordnungen** (Bühne · Mitte · Text) nach den Vorbildern Apple Music, Spotify-Vollbild und Apple-Music-Lyrics — je Gerät gemerkt, weil die Ansicht an der Situation hängt, nicht am Lied. **E127 Rechtsklick:** max. 7 Zeilen, max. ein Trennstrich, nie doppelt zu einem sichtbaren Knopf; vollständige Menüs im Entwurf. **E128 Radio ≠ Zufall ≠ Entdecken** — Zufall ordnet um, Radio hängt an, Entdecken holt herein. **Neu: §7.0.1 (E129) Streaming-Konten sind Wissen, keine Quelle** — Spotify und SoundCloud liefern Bibliothek, Playlists und Verlauf, aber keinen Tonstrom; daraus werden Regal-Einträge im Zustand *gekannt*, und die Lücke zwischen Gehörtem und Besessenem ist unser Alleinstellungsmerkmal. **Behoben:** Fernseh-Pfeile flankieren jetzt die Reihe statt oben zu stehen; die tote Ecke rechts unten in der Musikbühne ist weg (nur der linke Teil macht der Leiste Platz). |
 | 2026-08-07 | Fassung 1.3 — E121–E124. **E121 Höhen werden gemessen, nie geraten:** wo ein Bauteil einem anderen Platz macht, wird die Höhe zur Laufzeit gemessen (`ResizeObserver` → CSS-Variable). Die feste `62px` stimmte genau bei der Breite, bei der ich sie gemessen hatte — beim Schrumpfen brach die Leiste um und verdeckte das Bild. **E122 gestuftes Aufgeben:** wird es eng, fällt der Inhalt in einer festgeschriebenen Reihenfolge weg (Romaji → Karaoke → Wellenform → Warteschlange → stapeln), statt dass der Umbruch entscheidet. **E123 Playlists sind Sichten, keine Kopien** — Sammlung wie jede andere, in der Seitenleiste unter „Musik", je Profil als Datei, `.m3u` für Ex- und Import. **E124 Besetzungskarte** als Spiegelbild der Pausenkarte: links was läuft, rechts wer zu sehen ist; volle Besetzung immer, „gerade im Bild" aus einem einmaligen Gesichtsdurchlauf beim Einlagern — und **nie** ins laufende Bild, anders als Amazons X-Ray. |
 | 2026-08-07 | Fassung 1.2 — E118–E120. **E118:** bei Ton ohne Bild gehört die Leiste **zum Raum** (die Fläche endet darüber, nichts rutscht darunter, nichts blendet weg), bei Film bleibt sie **Überzug** — damit gibt es keine unsichtbare Barriere, die das Bild kleiner werden lässt. **E119:** die Weiche bekommt **30 s Grundzeit + 10 s je Wahl** statt 9 s Autostart — „manchmal muss ich die Fernbedienung finden"; jede Eingabe hält den Zähler ganz an. **E120 Reihen und Universen:** dieselbe Mechanik wie bei OVAs, eine Ebene höher — Werk → Reihe → Universum aus TMDB-Sammlungen, AniList-Ketten, AniDB und Wikidata; darüber **unsere** Ordnungsschicht mit drei umschaltbaren Reihenfolgen (Erscheinung · kanonisch · empfohlen). Nie automatisch quer durchs Universum starten. **Behoben:** Fernsehreihe verschmilzt jetzt Randverlauf **und** Zählwerk statt drei Varianten; Pausenkarte sitzt am linken Bildrand und ist durchsichtiger; Zusatzpunkt unter Schaltern entfernt (die Farbe reicht); die **1** beim Wiederholen sitzt zwischen den Pfeilen; Lieblingssong ist ein **Plus**, das zum gefüllten Haken wird; Karaoke ist ein **Mikrofon**; Radio ein **Sendemast** statt WLAN-Fächer; „Beschaffen" heißt **Holen** und zeigt Pfeil in Ablage; die 10-Sekunden-Ziffer berührt den Kreis nicht mehr; der Ausschnitt liegt jetzt oben auf statt dahinter. |
 | 2026-08-07 | Fassung 1.1 — E112–E117. **Neu: §5.3.1 Der Grund folgt dem Material** (E114): eigene Farbe darauf ⇒ neutral, nur Schrift ⇒ warm. Damit ist der Leser für **Bilder** von `#1C1611` auf `#0F1012` gewechselt — Braun ließ gescannte Graustufen vergilbt aussehen; für **Text** bleibt es warm, dort war es immer richtig. **E112 Farbe ist die Beschriftung** (grau aus, Akzent an; nie Zustand als Text; Grün bleibt für „läuft/aktiv" reserviert; zweiter Kanal für Farbenblinde). **E113 eigener Zeichensatz** — Spotifys Satz ist geschützt und wir wollen ein eigenes Gesicht; frei sind die Formen (IEC 60417), unsere ist die Strichführung: 24er-Raster, Gleichdick 1,5, gefüllt nur wo Distanz es verlangt, Prüfung bei 16 px und in Graustufen. Entwurf `zeichen.html` mit 28 Zeichen. **E115 kanonische Weiche** am Folgenende (OVA/Folge/Regal) statt blindem Autostart, gespeist aus AniList-Beziehungen, AniDB und TMDB-Staffel 0. **E116 Nur-Ton** für Musikvideos. **E117 Hörbuch „Wo war ich?"** — sekundengenauer Stand mit 30 s Rücksprung, Erkennung des Einschlafens und eine **spoilerfreie Zusammenfassung** bis exakt zur gelaufenen Stelle. **Behoben:** Fernsehknöpfe zu wuchtig; Staffelwahl klappt am PC nach unten aus statt als Vollbild; Musikschalter tragen jetzt Zustandsfarbe. |
