@@ -25,17 +25,19 @@ Wer baut, baut gegen das Vision-Dokument; die Entwürfe zeigen, wie es aussehen 
 | 12 | **Der Rahmen** | wer hat Bild, wer hat Ton · Klangleiste · schwebendes Bild · Tafeln | §5.11.2, E97–E101 |
 | 13 | **Zeichen und Farben** | 33 eigene Zeichen · Farbe als Zustand · welcher Grund warm ist | §5.3.1, §5.10, E112–E114 |
 | 14 | **Die Übersetzung** | drei Fassungen · Glossar · Blasenprüfung · Sprichwörter | §10.2.1, E134–E137 |
+| 15 | **Fahrplan** | Status der zehn Bausteine · fehlende Entwürfe · ungeschriebene Lücken | §13.1 |
 
 ## Noch nicht gezeichnet
 
 | Entwurf | Warum er fehlt | Blockiert |
 |---|---|---|
-| **Die Werk-Seite** | die Infoseite, die für Film, Anime *und* Manga dieselbe sein muss | Startseite → Werk → Einheit ist unvollständig |
+| **Die Werk-Seite** ⬅ als Nächstes | die Infoseite, die für Film, Anime *und* Manga dieselbe sein muss | Startseite → Werk → Einheit ist unvollständig; blockiert 3 weitere |
 | **Die Hover-Karte** | was beim Überfahren einer Kachel erscheint, ohne zu nerven | Regal |
 | **Musik & Hörbuch als Regal** | F10 ist beantwortet (E96) — jetzt zeichenbar | §4.2 |
 | **Das Postfach** | wo alles landet, was nicht eindeutig war (E48, E87) | Erkennung |
 | **Die Warteschlange** | die sichtbare Seite von §4.5 — was läuft, was hängt, warum | Beschaffung |
 | **Der Installer** | Häkchen für Fremdsoftware, erster Start | §12.2 |
+| **Übernahme aus SyncManga** | ⚠️ **echte Lücke** — 800 Werke mit Lesestand müssen am ersten Tag drin sein, sonst wird das Programm nicht benutzt | erste benutzbare Fassung |
 | **Spiele-Regal** | eigenständig genug, um zu warten | §6 |
 
 ## Regeln für neue Entwürfe

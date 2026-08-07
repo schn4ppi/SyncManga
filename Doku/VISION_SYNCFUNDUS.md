@@ -4,7 +4,7 @@
 > Anime, Manga, Novels, Musik, Hörbücher, Filme und Serien — mit eigener Bibliothek,
 > eigenem Leser, eigener Bühne, eigener Veredelung.
 >
-> **Stand:** 2026-08-07 · **Fassung:** 1.6 · **Pflege:** JB + Claude
+> **Stand:** 2026-08-07 · **Fassung:** 1.7 · **Pflege:** JB + Claude
 
 ---
 
@@ -220,6 +220,7 @@ Novels oder Manga**. Genau dort ist SyncMangas Stärke.
 | E135 | Übersetzung | **Das Glossar schlägt jedes Modell** — Beständigkeit vor Klugheit | 🔑✅ |
 | E136 | Übersetzung | **Blasenprüfung**: passt der Satz nicht, ist er falsch — Platz schlägt Schönheit | 🔑✅ |
 | E137 | Übersetzung | **Sprichwörter: drei Wege**, die Verortung entscheidet — nie stumm verpflanzen | ✅ |
+| E138 | Vertonung | **Stimmen sichtbar** — höchstens drei Marken, dann „+ N weitere" | ✅ |
 
 ### Die Unverhandelbaren
 
@@ -2023,6 +2024,18 @@ Zeitsprüngen, dort erwartet der Hörer die Veränderung ohnehin.
 **Vorrat** von N Einheiten über dem Lesestand, **Nachtfenster** für Masse,
 **Vordrängeln** für Aktuelles.
 
+#### E138 — Mehrere Stimmen sichtbar machen
+
+**JB-Frage 07.08.2026:** *„Was ist, wenn mehrere Stimmen sprechen?"*
+
+| | |
+|---|---|
+| **Über dem Text** | höchstens **drei** Stimmen als Marken mit Farbpunkt (`Thorfinn` · `Einar` · `Erzähler`), danach *„+ N weitere"*. Mehr als drei liest niemand im Vorbeigehen |
+| **Im Mitlesen** | jede Zeile bekommt links den **Punkt ihres Sprechers**. Damit sieht man beim Lesen, wer spricht, ohne dass Namen im Text stehen |
+| **Die Farbe** | kommt aus dem **Werk-Wissen** (§10.1) — dieselbe Figur hat im ganzen Werk dieselbe Farbe, auch in der Besetzungskarte (E124) und im Glossar |
+| ⚠️ **Nicht** | keine Namen im Fließtext, keine eingefärbten Wörter. Das war schon beim Leser die falsche Idee, und beim Hörbuch wäre es schlimmer |
+| **Ein-Stimmen-Fall** | steht nur der Name, ohne Punkt und ohne Marken im Text — die häufigste Form soll die ruhigste sein |
+
 ### 10.4 Erneuerung
 
 Jedes Erzeugnis trägt einen **Stempel**: Modell, Version, Stimmen-IDs, Glossar-Stand,
@@ -2324,6 +2337,29 @@ elf Entwürfe (siehe `ENTWUERFE.md`). Der Stand nach Bausteinen aus §16.2:
 **In Zahlen:** 88 Entscheidungen · 12 Regeln der Bauart und des Vertrauens · 11 offene Fragen ·
 10 gelernte Fallen · 11 Entwürfe.
 
+### Ungeschriebene Lücken (Bestandsaufnahme 07.08.2026)
+
+Dinge, die im Pflichtenheft **fehlen** und beim Bauen weh tun werden — nach Schmerz sortiert.
+Sie werden in Phase 2 zu E-Nummern (siehe `fahrplan.html`).
+
+| Lücke | Warum sie weh tut |
+|---|---|
+| ⚠️ **Übernahme aus SyncManga** | 800 Werke mit Lesestand. Sind die nicht am ersten Tag drin, wird SyncFundus nicht benutzt. Offen: automatisch oder mit Prüflauf? Was mit Overrides, Linkgesundheit, Reservequellen? |
+| **Sicherung & Wiederherstellung** | Dateien lassen sich neu holen — **der Lesestand seit 2019 nicht.** Die Bibliotheksdatenbank ist das einzige Unersetzliche an 64 TB |
+| **Wenn die Platte voll ist** | Was fliegt raus, wer entscheidet? Richtige Antwort wäre „Datei weg, **Werk bleibt**" — steht aber nirgends |
+| **Kein Internet** | §5.7 sagt „wartet nie aufs Netz". Was bei tagelangem Ausfall passiert (Anreicherung staut, RSS staut, Anmeldungen laufen ab), ist offen |
+| **Zwei Menschen gleichzeitig** | Ein Heimserver, zwei Profile. Wer bekommt die Grafikkarte? Was, wenn beide dasselbe Werk lesen? |
+| **Sprache der Oberfläche** | `i18n.py` existiert, der Text-Wächter auch — aber keine Entscheidung, welche Sprachen mitkommen |
+| **Benachrichtigungen** | „Nie nerven" ist zu wenig. Wann meldet sich das Programm von selbst, und wohin? |
+| **Ohne Maus bedienbar** | Gamepad und Fernbedienung sind durchdacht, die volle Tastaturbedienung am PC nie geprüft — Voraussetzung für Barrierefreiheit |
+| **Zeitzonen** | Kapitel erscheinen nach JST, Folgen nach KST. „Heute neu" ist eine Falle mit acht Stunden Versatz |
+| **Kinderprofil** | Profile sind entschieden, Alterssichtung nicht. FSK steht in den Metadaten und wird ignoriert |
+
+**Drei Ideen, die noch keine E-Nummer haben:** der **Jahresrückblick** (Wrapped aus eigenen
+Daten, alle Zahlen liegen schon vor) · die **Lücken-Liste** (aus ◐ *gekannt* eine eigene
+Ansicht — die Liste, die kein anderes Programm bauen kann) · der **Bruchtest beim Beenden**
+(bei jedem Schließen still **eine** Invariante prüfen, Widerspruch landet im Postfach).
+
 **Was als nächstes fehlt, in dieser Reihenfolge:**
 1. **Die Werk-Seite** — ohne sie ist die Kette Startseite → Werk → Einheit (E38) nicht belegt.
 2. **F10 entscheiden** (Album oder Lied?) — blockiert die gesamte Musikschicht.
@@ -2355,6 +2391,7 @@ elf Entwürfe (siehe `ENTWUERFE.md`). Der Stand nach Bausteinen aus §16.2:
 
 | Datum | Was |
 |---|---|
+| 2026-08-07 | Fassung 1.7 — **E138** Stimmen sichtbar machen (höchstens drei Marken, dann „+ N weitere"; Sprecherpunkte im Mitlesen; Farben aus dem Werk-Wissen; nie Namen im Fließtext). **Neu: §13.1 Ungeschriebene Lücken** — zehn Dinge, die im Pflichtenheft fehlen und beim Bauen weh tun, nach Schmerz sortiert; obenan die **Übernahme aus SyncManga** (800 Werke mit Lesestand müssen am ersten Tag drin sein). Dazu drei Ideen ohne E-Nummer: Jahresrückblick, Lücken-Liste, Bruchtest beim Beenden. **Neu: Entwurf `fahrplan.html`** mit dem Status aller zehn Bausteine, den acht fehlenden Entwürfen und vier Phasen. **Behoben:** Hörbuch zeigte Titel, Band und Kapitel doppelt — E133 gilt jetzt auch dort, der Platz gehört dem Mitlesen. |
 | 2026-08-07 | Fassung 1.6 — E133–E137, **F03 geschlossen**. **Neu: §10.2.1 Die Übersetzung im Bild.** **E135 das Glossar schlägt jedes Modell** — fünfstufige Herkunftsrangfolge, Handkorrektur gewinnt immer, nie stumm überschreiben; eine Glossarzeile ändern erneuert alle betroffenen Stellen rückwirkend, **der Lesestand bleibt** (E76). **E136 Blasenprüfung:** beim Manga ist nicht die Übersetzung das Problem, sondern der Platz — passt der Satz nicht in die Sprechblase, ist er falsch, auch wenn er schöner ist. **E134 Englisch zuerst**, Deutsch als zweiter Lauf **aus der englischen Fassung**, weil das Glossar dann schon steht. **E137 Sprichwörter (F03):** drei Wege — ersetzen nur ohne Ortsbezug, Bild behalten mit Antipp-Erklärung als Standard, Sinn ohne Bild als Rückfall; entschieden wird einmal und steht dann im Glossar. **E133 nichts steht zweimal im Bild:** trägt der Inhalt den Titel, trägt die Kopfzeile die Herkunft — und der Pfeil führt dorthin zurück. **Behoben:** Ausschnitt lag unter der Leiste (jetzt in der Bedienschicht); Warteschlangenfuß hatte Zufall/Wiederholen/Als Playlist doppelt zu den Leistenknöpfen — jetzt nur noch ein ⋯ mit warteschlangeneigenen Werkzeugen; Karaoke-Mikro mit versetzter Kapsel. |
 | 2026-08-07 | Fassung 1.5 — E130–E132, alle drei aus JB-Funden. **E130 nichts scrollt, was eine Bühne ist:** eine Bühne ist ein Bild, kein Dokument — `overflow:auto` dort ist immer die bequeme Ausrede dafür, die Prioritätsleiter nicht geschrieben zu haben. Gerollt wird nur in Listen. Alle Bühnentexte sind einzeilig mit Auslassung oder auf feste Zeilenzahl geklammert. **E131 ein Knopf, eine Bedeutung:** beim Hörbuch trug ein Knopf das Etikett „Einschlafen" und öffnete trotzdem Ton & Text — wer das Etikett ändert, muss die Handlung ändern, sonst lügt der Knopf. **E132 Angebote schließen sich aus:** die Weiche verlangt eine Entscheidung, die Besetzungskarte lädt zum Verweilen — höchstens eine Karte, die etwas will. **Behoben:** A/B/C lag unter der Bedienschicht und war nicht anklickbar (z-index innerhalb eines Stapelkontexts); Musik und Hörbuch scrollten bei kleinem Fenster; Karaoke-Zeichen war ein Standmikro und sah stummgeschaltet aus → **Handmikrofon**; Zufall war bei 17 px ein Kreuz → neu gezeichnet mit gebogenen Wegen. Die sieben Rechtsklick-Menüs sind jetzt im Entwurf **anklickbar** statt nur tabelliert. |
 | 2026-08-07 | Fassung 1.4 — E125–E129. **E125 freie Fläche ist kein Fehler:** Leerraum wird nicht gefüllt, sondern geordnet — vierstufige Rangfolge (was läuft · wo im Stück · was kommt · alles andere), und Rang 4 darf verschwinden. Zwei gleich schlimme Fehler: die tote Ecke, weil ein Bauteil zu früh aufhört, und das Hineingestopfte, damit es nicht leer aussieht. **E126 drei Musik-Anordnungen** (Bühne · Mitte · Text) nach den Vorbildern Apple Music, Spotify-Vollbild und Apple-Music-Lyrics — je Gerät gemerkt, weil die Ansicht an der Situation hängt, nicht am Lied. **E127 Rechtsklick:** max. 7 Zeilen, max. ein Trennstrich, nie doppelt zu einem sichtbaren Knopf; vollständige Menüs im Entwurf. **E128 Radio ≠ Zufall ≠ Entdecken** — Zufall ordnet um, Radio hängt an, Entdecken holt herein. **Neu: §7.0.1 (E129) Streaming-Konten sind Wissen, keine Quelle** — Spotify und SoundCloud liefern Bibliothek, Playlists und Verlauf, aber keinen Tonstrom; daraus werden Regal-Einträge im Zustand *gekannt*, und die Lücke zwischen Gehörtem und Besessenem ist unser Alleinstellungsmerkmal. **Behoben:** Fernseh-Pfeile flankieren jetzt die Reihe statt oben zu stehen; die tote Ecke rechts unten in der Musikbühne ist weg (nur der linke Teil macht der Leiste Platz). |
