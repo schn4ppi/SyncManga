@@ -4,7 +4,7 @@
 > Anime, Manga, Novels, Musik, Hörbücher, Filme und Serien — mit eigener Bibliothek,
 > eigenem Leser, eigener Bühne, eigener Veredelung.
 >
-> **Stand:** 2026-08-07 · **Fassung:** 1.1 · **Pflege:** JB + Claude
+> **Stand:** 2026-08-07 · **Fassung:** 1.2 · **Pflege:** JB + Claude
 
 ---
 
@@ -200,6 +200,9 @@ Novels oder Manga**. Genau dort ist SyncMangas Stärke.
 | E115 | Bühne | **Kanonische Weiche** am Folgenende statt blindem Autostart | ✅ |
 | E116 | Bühne | **Nur-Ton** für Musikvideos — Bild aus, Ton läuft | ✅ |
 | E117 | Hörbuch | **Wo war ich?** — Rücksprung und Zusammenfassung, wenn man eingeschlafen ist | 🔑✅ |
+| E118 | Bühne | **Ton ohne Bild ⇒ Leiste gehört zum Raum**, Film ⇒ Leiste ist Überzug | 🔑✅ |
+| E119 | Bühne | Weiche: **30 s Grundzeit + 10 s je Wahl** — man muss die Fernbedienung erst finden | ✅ |
+| E120 | Werk | **Reihen und Universen** — kanonische Ordnung gilt auch für Filme | 🔑✅ |
 
 ### Die Unverhandelbaren
 
@@ -294,6 +297,40 @@ Die Trennung passiert bei der Erkennung, nicht beim Anzeigen: eine Datei mit
 `ASIN`/`Audible`-Kennung, mit Kapitelmarken über 10 Minuten oder mit einer M4B-Hülle ist ein
 Hörbuch — und wandert nie ins Musikregal, auch nicht versehentlich.
 Die **Spurnummer bleibt** (Kapitel 7 von 24), weil man sie zum Springen braucht.
+
+#### E120 — Reihen und Universen
+
+**JB, 07.08.2026:** *„Gilt das auch für Filme? Marvel, Herr der Ringe? Was ist mit
+übergreifenden Universen?"* — Ja, und es ist dieselbe Mechanik wie bei OVAs, nur eine Ebene höher.
+
+Wir bauen **keinen** eigenen Beziehungsgraphen (§14, Todesursache 2) — wir nutzen die
+vorhandenen und legen **eine** eigene Schicht darüber: die **Ordnung**.
+
+| Ebene | Was | Woher |
+|---|---|---|
+| **Werk** | *Iron Man*, *Die Gefährten*, *Vinland Saga S2* | vorhanden |
+| **Reihe** | *Der Herr der Ringe*, *Vinland Saga* | TMDB `collection`, AniList `PARENT/SEQUEL` |
+| **Universum** | MCU, Mittelerde, Star Wars, das Nasuverse | TMDB-Sammlungen + Wikidata; für Anime **AniDB** und die AniList-Beziehungsketten |
+| **Ordnung** | *in welcher Folge man das ansieht* | **unsere Schicht** — eine kleine Liste je Universum |
+
+**Drei Ordnungen, umschaltbar** — und das ist der eigentliche Nutzen, weil bei genau diesen
+Reihen seit Jahrzehnten gestritten wird:
+
+| Ordnung | Beispiel |
+|---|---|
+| **Erscheinung** | wie es herauskam. MCU: *Iron Man* zuerst. Star Wars: Episode IV zuerst |
+| **Kanonisch/Chronologisch** | wie die Geschichte spielt. MCU: *Captain America* zuerst. Herr der Ringe: *Der Hobbit* zuerst |
+| **Empfohlen** | die gepflegte Mischform (bei Star Wars die „Machete-Reihenfolge", bei Anime die Fan-Watch-Order) |
+
+**Regeln:**
+1. Die Ordnung ist eine **Eigenschaft des Universums**, nicht des Werks — ein Film kann in
+   mehreren Universen stehen (Crossover) und dort verschiedene Plätze haben.
+2. Am Ende eines Films greift dieselbe **Weiche** (E115/E119) wie am Folgenende: *„Als Nächstes
+   nach kanonischer Ordnung: …"* mit den Alternativen daneben.
+3. ⚠️ **Nie automatisch quer durchs Universum starten.** Nach *Iron Man* kommt nicht ungefragt
+   *Der unglaubliche Hulk*. Innerhalb einer **Reihe** ja, über die Reihe hinaus nur auf Nachfrage —
+   sonst sitzt man um drei Uhr nachts in einem Film, den man nie ausgewählt hat.
+4. Die Ordnung ist **von Hand korrigierbar** und die Korrektur überlebt jede Neuanreicherung (E41).
 
 #### E117 — Hörbuch: „Wo war ich?"
 
@@ -1167,6 +1204,25 @@ empfohlenen.
 | **Wann gefragt wird** | nur, wenn zwischen dieser und der nächsten Folge tatsächlich etwas liegt. Sonst der normale Autostart |
 | **Umstellbar** | *kanonisch* ↔ *nach Erscheinungsdatum*. Beides ist bei Anime eine legitime Reihenfolge, und Streit darüber ist älter als das Internet |
 | **Filme** | Ein Film, der eine Staffel zusammenfasst (Rekap), wird **markiert, nicht empfohlen** — wer die Folgen gesehen hat, braucht ihn nicht |
+
+**E118 — die Leiste gehört mal zum Raum, mal darüber.** JB-Fund 07.08.2026:
+*„Es darf keine unsichtbare Barriere sein, die das Bild plötzlich kleiner werden lässt."*
+
+| | Bühne bei **Film/Anime** | Bühne bei **Musik/Hörbuch** |
+|---|---|---|
+| Leiste | **Überzug** über dem Bild | **Teil des Raums** — die Fläche endet darüber |
+| Blendet aus | ja, nach 2,5 s (E81) | **nie** (E106) |
+| Grund | ein Bild darf nicht beschnitten werden, nur verdeckt | es gibt kein Bild zu beschneiden, und Ton braucht dauernd Bedienung |
+| Folge | nichts verschiebt sich, wenn sie kommt und geht | nichts rutscht je darunter |
+
+Damit gibt es **keine unsichtbare Grenze**: entweder die Leiste liegt sichtbar oben drauf und
+das Darunter ändert seine Größe nie — oder sie ist Möbel und der Raum ist von vornherein kleiner.
+Was es nicht gibt: eine Leiste, die mal Platz nimmt und mal nicht.
+
+**E119 — die Weiche braucht Zeit.** Autostart nach 9 s ist richtig, wenn es **eine** Fortsetzung
+gibt. Bei einer Wahl ist er falsch: *„manchmal muss ich die Fernbedienung finden."*
+**30 s Grundzeit + 10 s je zusätzlicher Wahlmöglichkeit** — bei zwei Wegen also 50 s.
+Jede Bewegung an Maus, Taste oder Gamepad hält den Zähler **ganz** an, nicht nur kurz.
 
 **E116 — Nur-Ton.** Musikvideos sind Werke mit Bild, aber oft will man nur den Ton. Ein Schalter
 in der Musikleiste: Bild aus, Ton läuft, spart Strom und Aufmerksamkeit. Der Zustand hängt am
@@ -2061,6 +2117,7 @@ elf Entwürfe (siehe `ENTWUERFE.md`). Der Stand nach Bausteinen aus §16.2:
 
 | Datum | Was |
 |---|---|
+| 2026-08-07 | Fassung 1.2 — E118–E120. **E118:** bei Ton ohne Bild gehört die Leiste **zum Raum** (die Fläche endet darüber, nichts rutscht darunter, nichts blendet weg), bei Film bleibt sie **Überzug** — damit gibt es keine unsichtbare Barriere, die das Bild kleiner werden lässt. **E119:** die Weiche bekommt **30 s Grundzeit + 10 s je Wahl** statt 9 s Autostart — „manchmal muss ich die Fernbedienung finden"; jede Eingabe hält den Zähler ganz an. **E120 Reihen und Universen:** dieselbe Mechanik wie bei OVAs, eine Ebene höher — Werk → Reihe → Universum aus TMDB-Sammlungen, AniList-Ketten, AniDB und Wikidata; darüber **unsere** Ordnungsschicht mit drei umschaltbaren Reihenfolgen (Erscheinung · kanonisch · empfohlen). Nie automatisch quer durchs Universum starten. **Behoben:** Fernsehreihe verschmilzt jetzt Randverlauf **und** Zählwerk statt drei Varianten; Pausenkarte sitzt am linken Bildrand und ist durchsichtiger; Zusatzpunkt unter Schaltern entfernt (die Farbe reicht); die **1** beim Wiederholen sitzt zwischen den Pfeilen; Lieblingssong ist ein **Plus**, das zum gefüllten Haken wird; Karaoke ist ein **Mikrofon**; Radio ein **Sendemast** statt WLAN-Fächer; „Beschaffen" heißt **Holen** und zeigt Pfeil in Ablage; die 10-Sekunden-Ziffer berührt den Kreis nicht mehr; der Ausschnitt liegt jetzt oben auf statt dahinter. |
 | 2026-08-07 | Fassung 1.1 — E112–E117. **Neu: §5.3.1 Der Grund folgt dem Material** (E114): eigene Farbe darauf ⇒ neutral, nur Schrift ⇒ warm. Damit ist der Leser für **Bilder** von `#1C1611` auf `#0F1012` gewechselt — Braun ließ gescannte Graustufen vergilbt aussehen; für **Text** bleibt es warm, dort war es immer richtig. **E112 Farbe ist die Beschriftung** (grau aus, Akzent an; nie Zustand als Text; Grün bleibt für „läuft/aktiv" reserviert; zweiter Kanal für Farbenblinde). **E113 eigener Zeichensatz** — Spotifys Satz ist geschützt und wir wollen ein eigenes Gesicht; frei sind die Formen (IEC 60417), unsere ist die Strichführung: 24er-Raster, Gleichdick 1,5, gefüllt nur wo Distanz es verlangt, Prüfung bei 16 px und in Graustufen. Entwurf `zeichen.html` mit 28 Zeichen. **E115 kanonische Weiche** am Folgenende (OVA/Folge/Regal) statt blindem Autostart, gespeist aus AniList-Beziehungen, AniDB und TMDB-Staffel 0. **E116 Nur-Ton** für Musikvideos. **E117 Hörbuch „Wo war ich?"** — sekundengenauer Stand mit 30 s Rücksprung, Erkennung des Einschlafens und eine **spoilerfreie Zusammenfassung** bis exakt zur gelaufenen Stelle. **Behoben:** Fernsehknöpfe zu wuchtig; Staffelwahl klappt am PC nach unten aus statt als Vollbild; Musikschalter tragen jetzt Zustandsfarbe. |
 | 2026-08-07 | **Fassung 1.0** — E103–E111. **Neu: §5.10.2 Was fest sein muss und was atmen darf** (E103): alles, dessen Beschriftung sich beim Bedienen ändert, bekommt eine feste Breite — Faustregel „ändert sich der Text durch **meine** Handlung → fest, durch den **Inhalt** → frei", mit Tabelle für beide Seiten. **E104** Einstellen ≠ Wählen: Sprache und Fassung in „Ton & Text", Aussehen im Zahnrad — nie im selben Menü. **E105** Klick daneben schließt alles. **E106** bei Ton ohne Bild blendet nichts aus. **E107** Klangzeichen auf Distanz (Klick beim Fokuswechsel, Tock beim Bestätigen; am PC aus). **E108** Hörbücher sind keine Musik — eigenes Regal, Kapitel statt Lieder, kein Zufall, Erkennung über ASIN/M4B/Kapitelmarken. **E109** Herkunft und Güte sind Information, kein Menü — damit ist auch die halb gekaufte, halb gescannte Sammlung **ein** Werk. **E110** das Programm fragt nie, ob du etwas aufgibst; stattdessen ein selbstgesetzter Filter „über N Kapitel gelesen". **E111** Profilwechsel im Menü, nie beim Start. **Behoben:** Untertitel-Panel war gequetscht und überladen — Modus und Sprache sind raus (gehören nach nebenan), Farben in einer Reihe mit 15-px-Punkten, alle Zyklusknöpfe auf feste Breite; Klick daneben schließt jetzt; Musikleiste bleibt stehen und trägt die Aktionen als Symbolreihe; Hörbuch hat eine Kapitelliste; Staffelwechsel am Fernseher über eine Liste statt Scrollen; Endlosstreifen hat gar keine Fußleiste mehr. |
 | 2026-08-07 | Fassung 0.9 — **E97–E102.** **Neu: §5.11.2 Der Rahmen** — die Antwort auf JBs wichtigste Frage („wo kommt denn der Ton her?"): *eine Sache hat das Bild, eine den Ton, und beide dürfen verschieden sein*. Klangleiste (46 px statt Spotifys 72–90, Fortschritt als 2-px-Faden, weg wenn nichts läuft), genau ein schwebendes Bildfenster (nie über Leser oder Musikfläche), genau eine Tafel, immer derselbe Bereich. Frei verschiebbare Fenster bauen wir bewusst nicht — der Layout-Editor bleibt im Downloader. **Neu: `Doku/UEBERNAHME_AUS_SYNCYOUTUBE.md` (E102)** mit Datei, Funktionsname und Regel für alles, was portiert wird: das Untertitel-Panel zeilengenau, die Ausschnitt-Favoritenregel, Karaoke, Transkript-Suche, Autotag, Umbenennung mit Probelauf, Geo-Stufen, VPN-Einbahnregel — und was ausdrücklich **nicht** übernommen wird. **Behoben:** Untertitel-Panel war „mau" und jetzt zeilengleich mit `subMenu()`; Ton-&-Text-Wahl schlug nicht auf Kopfzeile und Knopf durch; die Bedienung blendete beim Halten des Spulknopfes weg; Fußleiste lag bei Musik über der Warteschlange; Ausschnitt fehlte bei Musik; Endlosstreifen bekommt die Bildlaufschiene zurück, mit Fortschritt **je Kapitel**; drei Fernsehreihen ohne Bildlaufbalken zur Auswahl. |
