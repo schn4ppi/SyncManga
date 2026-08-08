@@ -4,7 +4,7 @@
 > Anime, Manga, Novels, Musik, Hörbücher, Filme und Serien — mit eigener Bibliothek,
 > eigenem Leser, eigener Bühne, eigener Veredelung.
 >
-> **Stand:** 2026-08-08 · **Fassung:** 1.12 · **Pflege:** JB + Claude
+> **Stand:** 2026-08-08 · **Fassung:** 1.14 · **Pflege:** JB + Claude
 
 ---
 
@@ -261,9 +261,20 @@ Novels oder Manga**. Genau dort ist SyncMangas Stärke.
 | E163 | Quellen | **Der Katalog verlässt das öffentliche Repo** — F05 entschieden | 🔑✅ |
 | E164 | Meldung | **Es meldet sich nur, wenn du sonst etwas verlierst** — drei Anlässe, mehr nicht | ✅ |
 | E165 | Oberfläche | **Sofort der Rand, nach 400 ms das Band** — Hover hilft, drängt nicht | ✅ |
-| E166 | Sicherung | **Drei Ringe — und nur die Wiederherstellung zählt** (Rückspiel-Test) | 🔑✅ |
+| E166 | Sicherung | **Zwei Ringe: gegen unsere Fehler, gegen den Verlust des NAS** ⟳ | 🔑✅ |
 | E167 | Sprache | **Zwei gepflegte Sprachen, alle anderen sind eine Datei** | ✅ |
 | E168 | Ablage | **Löschen geht in den Papierkorb** — nie endgültig, nie ohne Rückweg | 🔑✅ |
+| E169 | Fundament | **Ein Werk kann fern liegen** — ein Medienserver ist ein Ort, keine Quelle | 🔑✅ |
+| E170 | Fortschritt | **Er fließt in beide Richtungen** — und was nicht ankam, wird nachgereicht | 🔑✅ |
+| E171 | Register | **Eine Registerdatei, ein Programm** — Einzelinstanz ist Pflicht, nicht Komfort | 🔑✅ |
+| E172 | Auslieferung | **Prüfen vor dem Tausch** — `.bak`, atomar, nie löschen | 🔑✅ |
+| E173 | Qualität | **Heilen ist die zweite Hälfte des Bruchtests** — jeder Fund kennt seinen Vorschlag | 🔑✅ |
+| E174 | Ablage | **Der Wachordner** — was hineinfällt, wird ein Werk, ohne dass jemand klickt | ✅ |
+| E175 | Oberfläche | **Das Programm zeigt sich im Infobereich** — Zustand ohne Öffnen | ✅ |
+| E176 | Profile | **Inhaltsfilter für Erwachsene** — nicht dasselbe wie ein Kinderprofil | ✅ |
+| E177 | Erkennung | **Was der Mensch bestätigt, wiegt schwerer als was wir messen** | 🔑✅ |
+| E178 | Werk | **Sechs Lesezustände** — „lange pausiert" ist die wichtigste Erfindung darunter | ✅ |
+| E179 | Fundament | **LANoMAT: fremde Bibliotheken sind Orte, keine Konten** — Fortschritt bleibt daheim | 🔑✅ |
 
 ### Die Unverhandelbaren
 
@@ -796,6 +807,125 @@ DJ-Sets/   Künstler @ Event-Ort (2026-07-14)/…            (MixesDB-Konvention
 Zwei Regeln machen aus „übergriffig" „hilfreich": **immer erst Probelauf** (vorher/nachher
 als Liste, dann bestätigen — danach läuft der Ordner still weiter) und **immer rückgängig**
 (Umbenennungs-Tagebuch). Wenn Irrtum nichts kostet, ist Eingriff nicht schlimm.
+
+**E174 — Der Wachordner.** Ein Ordner, in den man etwas legt, und **es erscheint**. Aus
+SyncYouTube übernommen (`ordner_importieren`, `downloads_einsortieren`,
+`_auto_import_anstossen`). Das ist die bequemste Art, eine Bibliothek zu füllen, und die
+einzige, die ganz ohne Bedienung auskommt — man zieht etwas hinein und geht weg.
+
+> **Er nimmt nur an, er räumt nicht auf.** Was hineinfällt, geht durch dieselbe Erkennung wie
+> alles andere (§8.2) und hat dieselben drei Ausgänge: **Werk · Eigenes · Postfach**. Nichts
+> wird umbenannt, nichts verschoben, nichts gelöscht — die Datei bleibt liegen, wo sie liegt,
+> bis der Nutzer etwas anderes sagt (E29).
+
+**E168 — Löschen geht in den Papierkorb.** Aus SyncYouTube geerbt (`_in_papierkorb`) und bisher
+nirgends aufgeschrieben: **das Programm löscht nie endgültig.** Alles Entfernte geht in den
+Papierkorb des Betriebssystems — sichtbar, zurückholbar, mit einem Werkzeug, das jeder kennt.
+Billiger als jede eigene Rücknahme-Logik. **Auch nicht für Zwischenspeicher, auch nicht beim
+Aufräumen, auch nicht auf ausdrücklichen Wunsch.**
+
+### 4.7 Ein Werk kann fern liegen (E169, E170)
+
+> ⚠️ **Der größte Fund der Bestandsaufnahme.** `SyncYouTube/System/filme.py` (878 Zeilen)
+> spricht seit Langem als **Klient** mit einem Jellyfin/Emby-Server: Anmeldung, Katalogabzug,
+> Folgen, Reihen, Merkliste, Abspieladresse, Fortschritt-Rückmeldung, Jellyseerr-Anfragen.
+> Im Pflichtenheft kam Jellyfin bis heute nur als **Ziel** vor („kann unsere Dateien lesen"),
+> nie als Gegenüber. Siehe `NICHT_UEBERNOMMEN.md` §1.
+
+> 🔑 **E169 — ein Medienserver ist ein Ort, keine Quelle und kein Motor.**
+> §4.6 sagt *„Ort ≠ Werk"* — das galt bisher nur für Platten. Es gilt genauso für Server.
+
+**Vier Sorten Ort, und der Unterschied ist keine Feinheit:**
+
+| Ort | Beispiel | Was wir dürfen |
+|---|---|---|
+| **Lokal** | NAS, interne Platte | alles — lesen, holen, veredeln, umbenennen |
+| **Fern und eigen** | dein Jellyfin/Emby zu Hause | **lesen und abspielen**, Fortschritt in beide Richtungen, Merkliste teilen. Nicht umbenennen, nicht veredeln — es ist nicht unser Ordner |
+| **Fern und geliehen** | die Bibliothek von jemandem im selben Netz (**LANoMAT**, E179) | **sehen, anfragen, mit Zustimmung holen.** Nie Fortschritt, nie Veredelung |
+| **Fern und fremd** | Netflix, Crunchyroll | **nur Wissen** (E129). Kein Bild, kein Ton, keine Datei |
+
+**Was daraus folgt, konkret:**
+
+1. **Ein Werk kann gleichzeitig an mehreren Orten liegen** — lokal *und* auf dem Server. Das
+   ist kein Konflikt, sondern **zwei Ausgaben** desselben Werks (E03), jede mit eigener
+   Güteangabe (E140). Beim Abspielen entscheidet das Profil, nicht der Zufall.
+2. **Der Serverkatalog ist kein zweites Register.** Er wird über einen **Adapter** in
+   Werk-Sprache übersetzt (E11) und mit unserem Register **verschmolzen** — nicht daneben
+   gehängt. Die Server-ID ist ein Fremdschlüssel wie AniList-ID oder ISBN, mehr nicht.
+3. **Die Merkliste ist eine Sammlung** (§4.3), keine neue Sorte Ding. Sie wird beidseitig
+   abgeglichen wie eine Playlist.
+4. **Jellyseerr ist ein Kandidat im Rennen** (E149), kein Sonderweg. Ein Wunsch, den der
+   Medienserver erfüllen kann, geht dorthin — genau wie er sonst an einen Indexer ginge.
+5. **Ein ferner Ort darf ausfallen, ohne dass etwas verlorengeht.** Ist der Server weg, ist das
+   Werk immer noch da — mit Fortschritt, Merkliste und allem. Es fehlt nur eine Ausgabe.
+
+#### E170 — Fortschritt fließt in beide Richtungen
+
+Bisher stand im Heft nur die Richtung **hinein**: sechs Zeugen liefern uns, wo der Nutzer
+steht (§8.5). Die Gegenrichtung fehlte — obwohl `filme.py` sie längst kann
+(`_fortschritt_senden`, `fortschritt_nachreichen`, `_queue_lesen`).
+
+> 🔑 **Was wir wissen, geben wir zurück.** Wer in SyncFindus eine Folge zu Ende sieht, findet
+> sie auf dem Jellyfin-Handy als gesehen vor. Alles andere wäre ein Programm, das Daten
+> aufsaugt und nichts zurückgibt.
+
+⚠️ **Und die zwei Regeln, ohne die beidseitiger Abgleich immer schiefgeht:**
+
+| Fall | Regel |
+|---|---|
+| **Beide Seiten haben sich geändert** | Es gewinnt **nicht der neuere Zeitstempel, sondern die weitere Position.** Ein alter Eintrag „Folge 12" schlägt einen frischen „Folge 3" — denn Fortschritt geht nie rückwärts (§8.5), und ein Zeitstempel sagt nur, wann ein Gerät zuletzt online war |
+| **Die Meldung kommt nicht an** | Sie wandert in eine **Nachreich-Schlange** und wird beim nächsten Mal geschickt. Das ist **E156 in klein** — und `fortschritt_nachreichen` ist der fertige Code dafür |
+
+**Ausnahme, die man ausdrücklich sagen muss:** Ein Zurücksetzen von Hand („ich fange neu an")
+ist **kein** Rückschritt, sondern eine Ansage. Sie schlägt jede Position und wird als solche
+gekennzeichnet, damit die Regel oben sie nicht wieder überschreibt.
+
+**Live-TV** (`live_tv.py`, `m3u_parsen`, `kanaele`, `programm`): **E44** hat es längst
+zugelassen — dass der Code dafür schon existiert, stand nirgends. Ein Sender ist ein
+**Ort ohne Vorrat**: man kann hinschauen, aber nichts holen und nichts fortsetzen.
+
+#### E179 — LANoMAT: fremde Bibliotheken sind Orte, keine Konten (F09 beantwortet)
+
+**JB fragte am 08.08.2026 nach LANoMAT — und die Antwort fällt jetzt zusammen mit E169**, denn
+es ist **dasselbe Problem**: ein Werk liegt irgendwo, das nicht mir gehört. Damit braucht
+LANoMAT keine eigene Maschinerie, sondern nur eine vierte Zeile in der Tabelle oben.
+`familie.py` (193 Z.: `familie`, `nachbar`, `status_schreiben/lesen`) ist der Ausgangspunkt.
+
+> 🔑 **Kein Konto, kein Server, keine Anmeldung. Wer im selben Netz ist, ist da — und wer geht,
+> ist weg.** Erkennung über Zeroconf/mDNS, wie ein Drucker sich meldet. Ein LAN-Abend braucht
+> keine Registrierung.
+
+**Warum es das überhaupt wert ist**, und es ist ein einziger Satz: **die Lücken-Liste (E160)
+trifft auf sechs andere Bibliotheken.** Deine 163 fehlenden Werke werden gegen alle Anwesenden
+gehalten, und was zusammenpasst, steht da: *„Kevin hat 4 davon, Ann hat 11."* Das ist etwas,
+das kein Streaming-Dienst und kein Verzeichnis leisten kann — und es ist genau der Moment, in
+dem eine LAN-Party besser ist als das Internet.
+
+**Die Rechte sind gestuft, und der Standard ist die unterste Stufe:**
+
+| Stufe | Der andere sieht | Standard |
+|---|---|---|
+| **Aus** | nichts. Du bist unsichtbar | ✅ **so beginnt jede Sitzung** |
+| **Sehen** | *dass* du ein Werk hast — Titel und Güte, sonst nichts | auf Zuruf |
+| **Anfragen** | er darf fragen; du bekommst eine Karte mit *„Kevin fragt nach One Piece 1–1140"* und einem Ja/Nein | auf Zuruf |
+| **Holen** | er darf ohne Rückfrage ziehen, was du freigegeben hast | nur ausdrücklich, nur für benannte Personen |
+
+⚠️ **Was niemals geteilt wird, auf keiner Stufe:** dein **Fortschritt**. Was du gelesen hast,
+wie weit, wann und wie oft — das ist das Persönlichste im ganzen Programm (§8.5) und verlässt
+den Rechner nie. Auch nicht als Zahl, auch nicht anonym. *Man teilt seine Bibliothek, nicht
+sein Tagebuch.*
+
+**Drei weitere Regeln, ohne die es kippt:**
+
+1. **Nichts wird geschoben, alles wird gezogen.** Niemand kann dir etwas in die Bibliothek
+   legen. Was du holst, geht durch dieselbe Erkennung wie jede Datei (§8.2) und landet
+   notfalls im Postfach.
+2. **Der Ort verschwindet, das Wissen darf bleiben.** Ist die LAN-Party vorbei, ist die
+   Bibliothek weg — aber *„Kevin hatte Vinland Saga vollständig"* darf als Notiz stehen
+   bleiben, **wenn Kevin das erlaubt hat**. Sonst ist auch das weg.
+3. **Es ist eine Sitzung, kein Zustand.** LANoMAT ist beim Start immer aus. Es gibt keinen
+   Dauerbetrieb, keine Freundesliste, kein „online seit". Ein Programm, das dauerhaft im Netz
+   nach anderen sucht, ist etwas anderes als eines, das man für einen Abend einschaltet.
 
 ---
 
@@ -2049,6 +2179,36 @@ Praktisch: **Slug-Geschichte führen** — jede URL und jeder Slug, den wir je g
 wird behalten. Benennt eine Seite um, stirbt der alte Link → ⚠-Ablauf → der neue wird
 angehängt.
 
+**E177 — was der Mensch bestätigt, wiegt schwerer als was wir messen.** Aus SyncManga
+übernommen (`cfm`, `cfmSrc`, `cfmSrcOwn` zum Bestätigen, `rep` zum Meldung eines Defekts →
+`data/broken_links.json` → `_consume_broken` in `enrich.py:687`). Ein geschlossener Kreis, der
+nirgends im Heft stand:
+
+> **Bestätigt der Nutzer eine Quelle als brauchbar, steigt sie in der Rangliste — dauerhaft und
+> über jede automatische Messung hinweg.** Meldet er sie als defekt, fällt sie, auch wenn
+> unsere Prüfung sie für erreichbar hält. *Wir messen HTTP-Antworten; ein Mensch sieht, ob
+> tatsächlich das Kapitel dasteht, das dastehen soll.*
+
+Das ist die Fortsetzung von E41 („vorschlagen statt verändern") in die andere Richtung: der
+Mensch korrigiert nicht nur Titel, sondern auch **unser Urteil über eine Quelle** — und diese
+Korrektur überlebt jede Neuanreicherung (E135, Herkunft „Hand").
+
+**E178 — sechs Lesezustände, nicht drei.** SyncMangas `i18n.py` unterscheidet
+`st_tip_reading` · `_backlog` · `_caught` · `_finished` · `_paused` · `_paused_long`.
+Die wichtigste Erfindung darunter ist **„lange pausiert"**:
+
+| Zustand | Heißt |
+|---|---|
+| **liest** | in den letzten Wochen weitergekommen |
+| **Rückstand** | es gibt mehr, als du gelesen hast |
+| **aufgeholt** | du bist am Ende des Erschienenen — es liegt nicht an dir |
+| **fertig** | das Werk ist abgeschlossen und du bist durch |
+| **pausiert** | eine Weile nichts, aber das kommt vor |
+| ⚠️ **lange pausiert** | Monate nichts. **Kein Vorwurf, sondern eine Einladung:** *„Kapitel 63 von 178 — soll ich dich erinnern, wo du warst?"* |
+
+*„Aufgeholt" und „Rückstand" auseinanderzuhalten ist der Unterschied zwischen einem Programm,
+das dich hetzt, und einem, das dich informiert.*
+
 **Drei Ausgänge, nie zwei:** sicher → übernehmen · unsicher → **Postfach mit 3 Kandidaten
 + Cover** · sehr unsicher → gar nichts. Lieber eine Lücke als ein falscher Eintrag.
 
@@ -2931,65 +3091,157 @@ für Verbesserungen.
 
 ### 12.7 Sicherung und Wiederherstellung (E166)
 
-> **Entwurf:** `sicherung.html` — die letzte Lücke.
+> **Entwurf:** `sicherung.html`.
+> ⚠️ **Am 08.08.2026 überarbeitet, nachdem JB einen echten Fehler gefunden hat.** Die erste
+> Fassung hatte drei Ringe und setzte stillschweigend voraus, dass das Register auf dem PC
+> liegt. Es liegt aber auf dem NAS. Siehe „Der Einwand" unten.
 
-64 TB Dateien lassen sich neu holen. **Der Lesestand nicht.** Und seit **E151** trägt eine
-einzige Datenbankdatei alles: Werke, Fortschritt, Handkorrekturen, Glossar, Wünsche,
-Spielstände. Das ist die richtige Bauform — und der eine Punkt, an dem alles hängt.
-
-> 🔑 **E166 — drei Ringe, und der einzige, der zählt, ist die Wiederherstellung.**
-> Eine Sicherung, die nie zurückgespielt wurde, ist keine Sicherung, sondern eine Hoffnung.
-
-**Was gesichert wird — und was ausdrücklich nicht:**
+64 TB Dateien lassen sich neu holen. **Der Lesestand nicht.** JB, 08.08.2026: *„Mir sind die
+Infos, was ich bereits gelesen und gesehen habe, wichtiger als die Daten selbst. Die kann ich
+mir immer wieder ansammeln."* — Genau so ist es gebaut:
 
 | Unersetzlich → wird gesichert | Ersetzbar → wird nicht gesichert |
 |---|---|
 | Register · Fortschritt · **Handkorrekturen** · Glossar · Wünsche (auch lauernde) · Einstellungen bis zum Untertitel-Versatz je Titel · Spielstände | Mediendateien (64 TB) · Titelbilder · angereicherte Metadaten · erzeugte Übersetzungen und Vertonungen · Quellenkatalog · Protokolle |
 | **zusammen unter 500 MB bei 800 Werken** | |
 
-⚠️ **Die Trennung ist keine Sparmaßnahme, sondern die Voraussetzung.** Wer alles sichert,
-sichert 64 TB — also nie. Wer nur das Unersetzliche sichert, sichert stündlich, ohne es zu
-merken. **Die Sicherung muss so billig sein, dass sie nie ausfällt.**
+#### Der Einwand — und warum er richtig ist
 
-| Ring | Takt | Fängt ab |
+**JB:** *„Erklär mir, was eine Kopie auf dem NAS bringt, wenn die Daten eh auf dem NAS sind.
+Ich werde keine Daten auf meinem PC speichern."*
+
+⚠️ **Gar nichts, und das war ein Fehler im ersten Entwurf.** Ich hatte die 3-2-1-Regel
+übernommen, ohne sie auf **diese** Anlage anzuwenden. Sie stammt aus Serverräumen: *drei
+Kopien, zwei Datenträger, eine außer Haus.* Bei einem Menschen mit **einem** NAS heißt „zwei
+Datenträger" nichts, solange beide im selben Gehäuse stecken — eine Kopie von der NAS-Platte
+auf die NAS-Platte ist **Theater**.
+
+> 🔑 **E166, überarbeitet: zwei Ringe. Einer gegen unsere Fehler, einer gegen den Verlust des
+> NAS. Was dazwischen lag, waren nie zwei Ringe, sondern einer mit zwei Qualitätsstufen.**
+
+| | Wo | Takt | Fängt ab |
+|---|---|---|---|
+| **1 · Der Schnappschuss** | **auf dem NAS**, neben dem Register | stündlich · beim Beenden · vor jeder Änderung am Aufbau | **Unseren eigenen Fehler.** Eine kaputte Umstellung, ein Import, der überschrieben hat, ein versehentliches „alles als gelesen". Kostet Sekunden (`VACUUM INTO`, sperrt nicht) und ein paar hundert MB |
+| **2 · Die Kopie, die nicht das NAS ist** | irgendwo sonst | täglich | **Alles andere.** Controller stirbt, Netzteil stirbt, zwei Platten gleichzeitig, Trojaner, Diebstahl, Feuer, ein falsches `rm` |
+
+**Und hier ist der Punkt, der deinen Einwand auflöst:** Das Register ist **unter 500 MB**.
+Das ist kein „Daten auf dem PC speichern" — das ist die Größe von zwei Filmen im Handygepäck.
+Es passt auf **alles**:
+
+| Ziel | Taugt gegen | Aufwand |
 |---|---|---|
-| **1 · Der Schnappschuss** | stündlich · beim Beenden · vor jeder Änderung am Aufbau | **unseren eigenen Fehler** — kaputte Umstellung, Import der etwas überschrieben hat. `VACUUM INTO` läuft im Betrieb, ohne zu sperren. Letzte 48, dann 7 Tage täglich, 12 Monate monatlich |
-| **2 · Die Kopie** | täglich, auf **anderen Datenträger** | **den Plattenausfall.** Dazu eine **Klartext-Ausgabe** (CSV + JSON) — größer, langsamer, unschöner, und sie überlebt SyncFindus selbst (E14) |
-| **3 · Das Auswärtige** | wöchentlich, verschlüsselt, außer Haus | **Feuer, Diebstahl, Trojaner.** ⚠️ **Versioniert und nur anfügend** — ein Ziel, auf das der Rechner löschen darf, ist gegen Verschlüsselungstrojaner wertlos |
+| **USB-Stick in der Schublade** | Ausfall, Trojaner, Diebstahl des NAS | einmal einstecken |
+| **Ein Ordner auf dem PC** | dasselbe | 500 MB — das ist keine Datenhaltung, das ist eine Datei |
+| **Dein eigener Server** (nicht das NAS) | dasselbe + Feuer, wenn er woanders steht | einmal einrichten |
+| **Verschlüsselter Speicherdienst** | alles, auch Wohnungsbrand | einmal einrichten, ⚠️ **versioniert und nur anfügend**, sonst nützt er gegen Trojaner nichts |
 
-Das ist die **3-2-1-Regel** (drei Kopien, zwei Datenträger, eine außer Haus) — seit
-Jahrzehnten Standard, weil sie die drei *unabhängigen* Ausfallarten trennt. Wir erfinden nichts;
-wir schreiben auf, welcher Ring welche Sorte Unglück abfängt.
+**Was RAID nicht ist.** Ein NAS mit Plattenspiegelung überlebt den Ausfall **einer Platte** —
+und sonst nichts. Es schützt nicht gegen Löschen, nicht gegen Verschlüsselung, nicht gegen
+einen kaputten Schreibvorgang, und schon gar nicht gegen Diebstahl. *RAID ist
+Verfügbarkeit, keine Sicherung.* **Deshalb bleibt Ring 2 nötig, so klein er auch ist.**
 
-#### Der Rückspiel-Test — der eigentliche Entwurf
+#### Der Rückspiel-Test — die einzige Zeremonie, die bleibt
 
-Alles darüber ist Handwerk. **Das hier ist der Teil, den fast niemand macht** — und der Grund,
-warum Sicherungen im Ernstfall so oft nutzlos sind: nicht weil nicht gesichert wurde, sondern
-weil die Sicherung defekt war und **es niemand wusste**.
+Alles oben ist Handwerk. Das hier ist der Teil, den fast niemand macht — und der Grund, warum
+Sicherungen im Ernstfall so oft nutzlos sind: nicht weil nicht gesichert wurde, sondern weil
+die Sicherung defekt war und **es niemand wusste**.
 
-| Schritt | Was passiert |
+> **Einmal im Monat, automatisch, ohne Nachfrage:** die **älteste** Kopie aus Ring 2 in einen
+> Temp-Ordner zurückspielen, Werke und Fortschrittseinträge zählen, den **Bruchtest (E147)
+> gegen die Kopie** laufen lassen. Bei Erfolg still. Bei Misserfolg ist es einer der drei
+> Anlässe aus **E164** — *„etwas ist kaputt und du merkst es sonst nicht."*
+
+Die älteste, nicht die neueste: wer die neueste testet, testet den einfachsten Fall.
+
+#### Die Wiederherstellung
+
+| Regel | Warum |
 |---|---|
-| **1 · Nehmen** | Die **älteste** Sicherung aus Ring 3 — nicht die neueste. Wer die neueste testet, testet den einfachsten Fall |
-| **2 · Zurückspielen** | In einen Temp-Ordner, **nie über die laufende Datenbank** |
-| **3 · Zählen** | Werke, Fortschrittseinträge, Handkorrekturen, Glossarzeilen gegen die erwarteten Zahlen |
-| **4 · Prüfen** | **Der Bruchtest (E147) läuft gegen die Kopie** — hier alle Invarianten auf einmal, denn hier darf es dauern |
-| **5 · Sagen** | Bei Erfolg still. Bei Misserfolg ist es einer der drei Anlässe aus **E164** |
+| **Nie überschreiben, immer daneben** | Die laufende Datenbank wird vor jeder Wiederherstellung selbst zum Schnappschuss. Wer sich vergreift, hat sonst zwei Katastrophen |
+| **Vorher zeigen, was drin ist** | *„Diese Sicherung ist vom 12.07. mit 812 Werken — deine jetzige hat 819."* **Die Differenz steht da, bevor man klickt** |
+| **Teilweise geht auch** | Nur das Glossar. Nur ein Werk. Der häufigste Ernstfall ist nicht „alles weg", sondern **„ich habe eine Sache kaputtgemacht"** |
+| **Ohne das Programm lesbar** | Neben der Datenbank liegt der Export aus **E14** — CSV und JSON, derselbe Stand. Falls SyncFindus selbst das Problem ist, oder es in zehn Jahren nicht mehr gibt |
 
-**Die Wiederherstellung selbst:** nie überschreiben (die laufende Datenbank wird vorher selbst
-zum Schnappschuss) · **vorher zeigen, was drin ist** samt Differenz zum jetzigen Stand ·
-**teilweise geht auch** (nur das Glossar, nur ein Werk — der häufigste Ernstfall ist nicht
-„alles weg", sondern *„ich habe eine Sache kaputtgemacht"*) · und die Klartext-Ausgabe ist
-**ohne SyncFindus lesbar**, falls das Programm selbst das Problem ist.
+#### Der dritte Ring, den wir nicht bauen müssen
+
+⚠️ **Das Wichtigste liegt ohnehin doppelt** — und zwar ohne dass wir dafür etwas tun:
+
+Sobald **E170** steht (Fortschritt fließt in beide Richtungen), lebt *„was habe ich gesehen"*
+in **zwei unabhängigen Systemen**: bei uns im Register und auf dem Jellyfin-Server. Dasselbe
+gilt für AniList und MyAnimeList, sobald ein Konto verbunden ist. **Das ist keine Sicherung,
+die wir gebaut haben — es ist eine Redundanz, die wir geschenkt bekommen**, weil wir
+zurückschreiben statt nur zu lesen.
+
+> **Die Folge, und sie ist beruhigend:** Selbst im vollständigen Katastrophenfall — NAS weg,
+> Ring 2 weg — wäre der Lesestand nicht verloren, sondern **rekonstruierbar**: aus Jellyfin,
+> aus AniList, aus dem Browserverlauf (§8.5). Es wäre mühsam und lückenhaft, aber es wäre
+> nicht null. *Ein System, das seine wichtigsten Daten zurückgibt statt sie zu horten, sichert
+> sich nebenbei selbst.*
 
 #### E168 — Löschen geht in den Papierkorb
 
 Aus SyncYouTube geerbt (`_in_papierkorb`, `_datei_loeschen`) und bisher nirgends
 aufgeschrieben: **das Programm löscht nie endgültig.** Alles Entfernte geht in den Papierkorb
-des Betriebssystems, wo der Nutzer es sieht und zurückholen kann.
+des Betriebssystems, wo der Nutzer es sieht und zurückholen kann — billiger als jede eigene
+Rücknahme-Logik und von jedem Menschen sofort verstanden. **Auch nicht für Zwischenspeicher,
+auch nicht beim Aufräumen, auch nicht auf ausdrücklichen Wunsch.**
 
-> Das ist billiger als jede eigene Rücknahme-Logik und wird von jedem Menschen sofort
-> verstanden. **Eine Löschung ohne Rückweg gibt es in SyncFindus nicht** — auch nicht für
-> Zwischenspeicher, auch nicht beim Aufräumen, auch nicht auf ausdrücklichen Wunsch.
+#### E171 — Eine Registerdatei, ein Programm
+
+Aus SyncManga übernommen (`single_instance`, `_is_own_process`, `_kill_if_ours`) — und **nach
+E151 keine Bequemlichkeit mehr, sondern Pflicht.** Solange der Zustand in einer HTML-Datei
+wohnte, waren zwei laufende Kopien lästig. Auf **einer** SQLite-Registerdatei sind sie eine
+Katastrophe mit Ansage — und **auf einem NAS gilt das doppelt**, weil dort auch zwei
+*verschiedene Rechner* zugreifen können.
+
+> **Beim Start wird eine Sperrdatei genommen.** Läuft schon eine Kopie, wird **die vorhandene
+> nach vorn geholt** statt einer zweiten gestartet — das ist die Antwort, die der Nutzer
+> erwartet, wenn er zweimal aufs Symbol klickt. Eine tote Sperrdatei (Absturz) wird erkannt und
+> nur dann geräumt, wenn der eingetragene Prozess **nachweislich unserer war**. Über Netz
+> gilt zusätzlich: die Sperre trägt Rechnernamen und Zeitstempel, damit man sieht, **wer**
+> gerade dran ist (E161 — wer davorsitzt, gewinnt).
+
+#### E172 — Prüfen vor dem Tausch
+
+Aus SyncMangas `update.py` (419 Z.) — vier Regeln, die alle bezahlt wurden:
+
+> **1.** Nichts löschen, keine System- oder Rechteänderungen. **2.** Vor jedem Tausch ein
+> `.bak` des Alten. **3.** Heruntergeladene Daten **vor** dem Tausch prüfen — ungültig heißt:
+> die alte Datei bleibt. **4.** Immer atomar schreiben (`tmp` + `os.replace`).
+
+⚠️ **Was ausdrücklich nicht mitkommt: der Selbstneustart bei Codeänderung im Leerlauf**
+(`_quell_signatur`, `_code_leerlauf`, `_selbst_neustart`). Das war klug für ein Skript, das man
+selbst bearbeitet. Für ein **signiertes Programm** ist ein Prozess, der seinen eigenen
+Quelltext beobachtet und sich selbst austauscht, genau das Verhalten, das Virenscanner und
+Smart App Control als Schadsoftware werten — und dann ist die Signatur wertlos, für die wir
+gerade Wochen aufwenden (§12.1). **Erneuert wird beim Start, nicht im Betrieb.**
+
+#### E173 — Heilen ist die zweite Hälfte des Bruchtests
+
+§12.6 beschreibt bisher nur das **Finden**. SyncYouTube hat längst acht Reparaturen —
+`queue_heilen`, `pfade_heilen`, `_abo_heilen`, `dubletten_heilen` mit `_dubletten_score`,
+`untertitel_aufraeumen`, `_vtt_verwaist`, `wiedergabe_sub_altlast_raeumen`,
+`_fehler_aufraeumen`.
+
+> 🔑 **Jeder Fund kennt seinen Reparaturvorschlag — und führt ihn nie selbst aus.**
+> Der Bruchtest schreibt ins Postfach: *„Regel verletzt: jede Datei im Register existiert auf
+> der Platte. 14 Einträge betroffen."* Daneben steht der Vorschlag: *„Die 14 als **vermisst**
+> markieren (E28)."* **Ein Griff, umkehrbar, mit Namen.**
+
+Das ist derselbe Bau wie E141 im Postfach: **jeder Fall hat einen Standard-Ausgang, aber
+niemand nimmt ihn ungefragt.** Einzige Ausnahme bleibt die **Dublettenbewertung** — sie darf
+vorschlagen, welche Ausgabe die bessere ist, weil das eine Messung ist (E140) und keine
+Meinung.
+
+#### E175 — Das Programm zeigt sich im Infobereich
+
+Aus SyncMangas `tray.py` (619 Z.): Symbol mit **Zustandsemblem** — Farbpunkt nach Zahl toter
+Quellen, Betriebsanzeige während eines Laufs, Abzeichen bei verfügbarer Neuerung, Kurzhinweis
+mit Namen. **So weiß man, dass das Programm lebt, ohne es zu öffnen.**
+
+> Es gilt dieselbe Sparsamkeit wie bei den Meldungen (E164): **das Symbol informiert, es ruft
+> nicht.** Rot heißt „etwas hängt", nicht „komm sofort her". Und ein Klick öffnet das Fenster —
+> er startet nie eine Handlung.
 
 ### 12.8 Sprache der Oberfläche (E167)
 
@@ -3051,7 +3303,7 @@ mitgeliefert, nur erkannt und angebunden.
 | F06 | **Quellen-Späher**: halbautomatisch mit Vorschlagsliste, oder nur Meldung? | §7.3 |
 | F07 | **Text-Korrektur** schlecht lektorierter Verlagstexte — wie weit darf die KI eingreifen? | §10.2 |
 | F08 | **Eigene Werk-IDs** zusätzlich zu ASIN/ISBN/AniList — sinnvoll oder Ballast? | §4.4 |
-| F09 | **LANoMAT**: Bibliotheken auf LAN-Partys einsehen und tauschen | später |
+| ~~F09~~ | ~~LANoMAT~~ → **beantwortet: E179** (dieselbe Bauform wie E169 — eine vierte Sorte Ort, kein eigenes System) | — |
 | ~~F10~~ | ~~Remixe und Coverversionen~~ → **beantwortet: E96** (JB 07.08.2026 — „Das Lied ist das Werk, dann kommt das Album") | — |
 | F11 | **Geräteprofile** für Handhelds (Steam Deck, ROG Ally, …) — selbst pflegen oder von EmuDeck übernehmen? | §6 |
 | F12 | **Übergabe an eine zweite KI** — welches Werkzeug für die Abarbeitung (DeepSeek günstig/1M-Kontext, Cursor im Editor, Codex parallel)? Entscheidend ist ohnehin das Pflichtenheft, nicht das Modell | Umsetzung |
@@ -3080,13 +3332,14 @@ mitgeliefert, nur erkannt und angebunden.
 > beim letzten Stand noch *ein* Bild hatte, ist jetzt vollständig belegt. Damit ist die Phase
 > „zeichnen" im Wesentlichen vorbei — was bleibt, sind **Lücken schließen** und **übergeben**.
 
-**In Zahlen:** 168 Entscheidungen · 16 Regeln der Bauart und des Vertrauens · **7 offene
+**In Zahlen:** 179 Entscheidungen · 16 Regeln der Bauart und des Vertrauens · **6 offene
 Fragen** · 20 gelernte Fallen · 19 Entwürfe + 1 Beiblatt.
 
-⚠️ **Und eine neue Lücke, die alles andere überholt:** `NICHT_UEBERNOMMEN.md` listet **18
-Funktionen** aus SyncManga und SyncYouTube, die im Pflichtenheft fehlen — darunter
-`filme.py` (878 Z., Jellyfin-Anbindung mit Merkliste und Fortschritt-Rückmeldung), von
-Bausteingröße.
+✅ **Die Übernahme-Lücke ist geschlossen.** `NICHT_UEBERNOMMEN.md` listete 18 Funktionen aus
+SyncManga und SyncYouTube, die im Pflichtenheft fehlten. Alle 18 sind entschieden: zehn wurden
+zu Regeln (E169–E178), zehn zu einem Ja ohne eigene Nummer, **vier zu einem Nein mit
+Begründung**, eine vertagt (F09). **Offen bleibt genau ein Entwurf:** ein Werk, das
+gleichzeitig lokal und auf einem Medienserver liegt (§4.7).
 
 ### Die Lücken — Stand 08.08.2026
 
@@ -3152,6 +3405,16 @@ dir, dass etwas kaputt ist. **Die Antwort ist keine Einstellung, sondern eine ku
 > Alles andere — neue Kapitel, fertige Downloads, abgeschlossene Übersetzungen — steht im
 > Regal und **wartet dort**. ⚠️ Nie eine Meldung, die nur „gute Nachrichten" transportiert.
 
+**E176 — Inhaltsfilter für Erwachsene.** Aus SyncManga übernommen (`nsfw_hide_both`,
+`_sexual`, `_gore`) und **nicht dasselbe wie E158**. Ein erwachsener Mensch darf
+Gewaltdarstellung ausblenden wollen, ohne dafür ein Kinderprofil anzulegen — und die beiden
+Achsen sind getrennt: manche wollen Blut nicht sehen, aber Erotik schon, und umgekehrt.
+
+> **Zwei Schalter, nicht einer:** *sexuelle Darstellung* und *Gewaltdarstellung*, je einzeln.
+> Grundlage ist `content_rating`, das SyncManga schon führt. Und es gilt dieselbe Regel wie
+> überall: **was ausgeblendet ist, ist unsichtbar, nicht durchgestrichen** — ein Regal voller
+> grauer Kacheln wäre schlimmer als ein kürzeres Regal.
+
 **E158 — das Alter entscheidet.** JB: *„Wenn Kinderprofil, dann Alter eingeben, das entscheidet
 was angezeigt wird."*
 
@@ -3202,6 +3465,8 @@ Ansicht — die Liste, die kein anderes Programm bauen kann) wartet weiter auf e
 
 | Datum | Was |
 |---|---|
+| 2026-08-08 | Fassung 1.14 — **E166 korrigiert (JB-Einwand), E179 LANoMAT, F09 geschlossen.** ⚠️ **Korrektur an E166:** JB fragte *„Erklär mir, was eine Kopie auf dem NAS bringt, wenn die Daten eh auf dem NAS sind. Ich werde keine Daten auf meinem PC speichern."* — **Gar nichts, und das war ein Fehler.** Ich hatte die 3-2-1-Regel übernommen, ohne sie auf **diese** Anlage anzuwenden: sie stammt aus Serverräumen, und bei einem Menschen mit **einem** NAS heißt „zwei Datenträger" nichts, solange beide im selben Gehäuse stecken. **Aus drei Ringen werden zwei** — einer auf dem NAS gegen unsere eigenen Fehler, einer außerhalb gegen alles andere; was dazwischenlag, waren nie zwei Ringe, sondern einer mit zwei Qualitätsstufen. Dazu der Punkt, der den Einwand auflöst: **das Register ist unter 500 MB** — das ist keine Datenhaltung auf dem PC, das ist eine Datei, und sie passt auf einen USB-Stick in der Schublade. Neu benannt: **RAID ist Verfügbarkeit, keine Sicherung** (überlebt eine Platte, sonst nichts — nicht Löschen, nicht Verschlüsselung, nicht Diebstahl). Und **der dritte Ring, den wir nicht bauen müssen**: sobald E170 steht, lebt *„was habe ich gesehen"* in zwei unabhängigen Systemen — bei uns und auf dem Jellyfin-Server, dazu AniList. Das ist keine Sicherung, die wir gebaut haben, sondern eine **Redundanz, die wir geschenkt bekommen, weil wir zurückschreiben statt nur zu lesen**; selbst bei totalem Verlust wäre der Lesestand rekonstruierbar statt null. **🔑 E179 — LANoMAT: fremde Bibliotheken sind Orte, keine Konten** (F09 beantwortet). JB fragte danach, und die Antwort fällt mit **E169** zusammen, weil es dasselbe Problem ist: ein Werk liegt irgendwo, das mir nicht gehört. Also **eine vierte Sorte Ort**, kein eigenes System — `familie.py` ist der Ausgangspunkt. Kein Konto, kein Server, keine Anmeldung: Erkennung über Zeroconf, wer im Netz ist, ist da. Der Grund, warum es das wert ist, ist ein Satz: **die Lücken-Liste (E160) trifft auf sechs andere Bibliotheken** — *„Kevin hat 4 davon, Ann hat 11"*, und das kann kein Streaming-Dienst leisten. Vier Rechtestufen mit **aus als Standard jeder Sitzung**; ⚠️ **der Fortschritt wird auf keiner Stufe geteilt** — auch nicht als Zahl, auch nicht anonym: *man teilt seine Bibliothek, nicht sein Tagebuch*. Dazu: nichts wird geschoben, alles wird gezogen · der Ort verschwindet, das Wissen darf mit Erlaubnis bleiben · es ist eine **Sitzung, kein Zustand** (kein Dauerbetrieb, keine Freundesliste, kein „online seit"). **E171 erweitert:** die Sperrdatei trägt Rechnernamen und Zeitstempel, weil auf einem NAS auch zwei verschiedene Rechner zugreifen können (E161). |
+| 2026-08-08 | Fassung 1.13 — **Alle 18 Funde entschieden** (JB: *„ok lass uns entscheiden"*). Zehn wurden zu Regeln, zehn zu einem Ja ohne Nummer, **vier zu einem Nein mit Begründung**, eine vertagt. **🔑 Neu: §4.7 Ein Werk kann fern liegen (E169).** Der größte Fund kommt ins Fundament, nicht in die Beschaffung: ein Medienserver ist ein **Ort**, keine Quelle und kein Motor — §4.6 sagte *„Ort ≠ Werk"* und meinte bisher nur Platten. Drei Sorten Ort mit klaren Rechten (lokal · fern-eigen · fern-fremd = nur Wissen, E129); der Serverkatalog wird über einen Adapter **verschmolzen statt danebengehängt** (E11); die Merkliste ist eine **Sammlung**, keine neue Sorte Ding; Jellyseerr ist ein **Kandidat im Rennen** (E149), kein Sonderweg; und ein ferner Ort darf ausfallen, ohne dass etwas verlorengeht — es fehlt dann nur eine Ausgabe. Dazu **Live-TV als Ort ohne Vorrat** (E44 hatte es zugelassen, `live_tv.py` existiert). **🔑 E170 Fortschritt fließt in beide Richtungen** — bisher stand nur die Richtung hinein im Heft. Was wir wissen, geben wir zurück; alles andere wäre ein Programm, das Daten aufsaugt und nichts zurückgibt. Mit den zwei Regeln, ohne die beidseitiger Abgleich immer schiefgeht: **es gewinnt die weitere Position, nicht der neuere Zeitstempel** (ein Zeitstempel sagt nur, wann ein Gerät zuletzt online war) — und was nicht ankam, wandert in eine **Nachreich-Schlange**, E156 in klein. Ausdrücklich ausgenommen: ein Zurücksetzen von Hand ist keine Regression, sondern eine Ansage. **E171 eine Registerdatei, ein Programm** — nach E151 Pflicht statt Komfort; zweimal aufs Symbol geklickt holt die vorhandene Kopie nach vorn, und eine tote Sperrdatei wird nur geräumt, wenn der Prozess nachweislich unserer war. **E172 prüfen vor dem Tausch** — vier bezahlte Regeln aus `update.py`: nichts löschen, `.bak` vor jedem Tausch, **Daten vor dem Tausch validieren** (ungültig → alte Datei bleibt), atomar schreiben. **🔑 E173 Heilen ist die zweite Hälfte des Bruchtests** — §12.6 kannte nur das Finden; acht vorhandene Reparaturen werden zu einer Regel: **jeder Fund kennt seinen Vorschlag und führt ihn nie selbst aus**, genau wie im Postfach (E141). Einzige Ausnahme bleibt die Dublettenbewertung, weil sie eine Messung ist (E140) und keine Meinung. **E174 der Wachordner nimmt an, er räumt nicht auf** — dieselben drei Ausgänge wie jede andere Quelle. **E175 das Programm zeigt sich im Infobereich** — Zustandsemblem statt Öffnen, und es informiert, es ruft nicht (E164). **E176 Inhaltsfilter für Erwachsene** — **zwei getrennte Achsen** (sexuelle Darstellung, Gewaltdarstellung), nicht dasselbe wie das Kinderprofil E158; was ausgeblendet ist, ist unsichtbar, nicht durchgestrichen. **🔑 E177 was der Mensch bestätigt, wiegt schwerer als was wir messen** — die Rückmeldeschleife aus SyncManga wird zur Regel: wir messen HTTP-Antworten, ein Mensch sieht, ob tatsächlich das Kapitel dasteht; seine Korrektur überlebt jede Neuanreicherung. **E178 sechs Lesezustände statt drei** — *„aufgeholt"* ≠ *„Rückstand"* ist der Unterschied zwischen einem Programm, das hetzt, und einem, das informiert; *„lange pausiert"* ist eine Einladung, kein Vorwurf. **Neu: §16.6 Die Kleinen** mit zehn Ja und **vier Nein** — Selbstneustart bei Codeänderung (macht die Signatur wertlos, für die wir Wochen aufwenden), **Spaltenwahl** (meist die Ausrede dafür, die Prioritätsleiter nicht geschrieben zu haben — wir haben sie geschrieben), Tonspurwahl beim externen Abspielen (E34), Cloud-Slot (ersetzt durch Gerätekopplung — die **Datensparsamkeit** wird übernommen). *Eine Übernahmeliste, die nur aus Ja besteht, ist keine Liste, sondern ein Umzug.* **`NICHT_UEBERNOMMEN.md` schrumpft** von einer Fundliste zu einem Nachweis; offen bleibt eine Zeile: `filme.py` ist entschieden, aber nicht gezeichnet. |
 | 2026-08-08 | Fassung 1.12 — **Die letzten zwei Lücken geschlossen — und eine große neue gefunden.** **🔑 E166 Sicherung: drei Ringe, und nur die Wiederherstellung zählt.** Getrennt wird nach **Katastrophenart**, nicht nach Häufigkeit: Schnappschuss (unser eigener Fehler, stündlich, `VACUUM INTO` im Betrieb) · Kopie (Plattenausfall, täglich, anderer Datenträger, plus Klartext-Ausgabe die SyncFindus überlebt) · Auswärtiges (Feuer/Diebstahl/Trojaner, wöchentlich, verschlüsselt, **versioniert und nur anfügend**). Gesichert wird nur das Unersetzliche — **unter 500 MB bei 800 Werken**, weil eine Sicherung, die 64 TB kopiert, nach drei Wochen abgestellt wird. Kernstück ist der **Rückspiel-Test**: monatlich, automatisch, mit der **ältesten** Sicherung (nicht der neuesten), zurückgespielt in einen Temp-Ordner, gezählt und mit dem **Bruchtest (E147) gegen die Kopie** geprüft. Eine Sicherung, die nie zurückgespielt wurde, ist keine Sicherung, sondern eine Hoffnung. Dazu die Wiederherstellungsregeln: nie überschreiben, vorher die Differenz zeigen, **teilweise wiederherstellen** (der häufigste Ernstfall ist nicht „alles weg", sondern „ich habe eine Sache kaputtgemacht"). **E167 Sprache: zwei gepflegte, alle weiteren eine Datei.** Deutsch und Englisch kommen mit; eine dritte, die niemand korrekturlesen kann, ist schlechter als keine. Gemeinschaftssprachen werden geladen, wenn der Text-Wächter sie durchlässt, und tragen sichtbar „ungeprüft". Dazu die Unterscheidung, die bisher fehlte: **Sprache der Oberfläche und Sprache des Inhalts sind zwei Einstellungen und dürfen sich nie gegenseitig setzen.** **🔑 E168 Löschen geht in den Papierkorb** — aus SyncYouTube geerbt und nie aufgeschrieben: keine endgültige Löschung, auch nicht für Zwischenspeicher, auch nicht auf Wunsch. **Neu: `Doku/NICHT_UEBERNOMMEN.md`.** JB fragte, was aus den verwandten Programmen nicht mitgenommen wurde; beide Repos wurden dafür **gelesen, nicht erinnert** (SyncYouTube frisch geklont, Stand `558d183`, 18.446 Zeilen). Ergebnis: **18 übersehene Funktionen** — und ein Fund von Bausteingröße: **`filme.py` (878 Zeilen)**, eine vollständige Jellyfin/Emby-Anbindung mit Katalogabzug, Merkliste, **Fortschritt-Rückmeldung samt Nachreichen nach Offline** (E156, zwei Jahre früher und schon gebaut) und **Jellyseerr** als fertigem Beschaffungsweg. Im Pflichtenheft kam Jellyfin bis heute nur als *Ziel* vor, nie als *Klient*. Dazu `live_tv.py` (E44 hat Live-TV zugelassen, der Code dafür existiert), die **Heilungsfamilie** (acht Reparaturfunktionen — §12.6 kennt nur das Finden), **Wachordner**, **Selbstneustart bei Codeänderung im Leerlauf**, **Einzelinstanz-Sperre** (nach E151 gefährlicher als vorher), **Selbst-Aktualisierung** mit vier erkauften Regeln, **Tray-Symbol mit Zustandsemblem**, **Statistik-Tafel**, **Inhaltsfilter** (nicht dasselbe wie E158), **Kapitelkorrektur von Hand**, die **Rückmeldeschleife** Quelle-bestätigen/defekt-melden, und sechs statt drei Lesezuständen. Mit der ehrlichen Ursache: ich habe zweimal nach **Architektur** gesucht und nie nach **Funktionen** — und der Alltag eines Programms steht in den kleinen Funktionen. **Neu: Entwurf `sicherung.html`.** |
 | 2026-08-08 | Fassung 1.11 — **Der Name steht, die Fessel fällt, neun Lücken schließen sich.** **F02 beantwortet: SyncFindus** (JB: *„Mein Kater heißt so, als Findus."*) — Dokument, Dateiname und alle Entwürfe umbenannt. **F05 beantwortet: E163, ja.** JB delegierte die Entscheidung; §9.2 wägt beide Seiten ab und entscheidet nach **Schadenshöhe statt Wahrscheinlichkeit** — bleiben die Dateien liegen und nichts passiert, gewinnen wir null; passiert etwas, ist das Repo weg. Dazu der ehrliche Hinweis, dass `git rm` nicht reicht (Historie) und ein Umschreiben JBs ausdrückliche Zustimmung braucht. **🔑 E162 — SyncManga ist Lehrer, nicht Vorgänger.** JB: *„Die Library ist egal, die sollten wir uns selber aufbauen … wir sind noch nicht so etabliert, dass wir nichts wagen können."* Damit fällt die größte Fessel des Vorhabens: die erste Fassung heißt nicht mehr *800 Werke drin*, sondern **ein Werk richtig**. Festgehalten bleibt die eine Asymmetrie — Dateien sind ersetzbar, **Lesestand nicht**; deshalb ein winziger Import von drei Feldern (Titel · letztes Kapitel · Datum) durch dieselbe Erkennung wie jede andere Quelle, als **Angebot ohne Zeitdruck**. **🔑 E154 — zwei Regale für Ton:** in der Musik ist eine Lücke eine **Zahl**, im Hörbuch ein **Defekt**. Neun Unterschiede tabellarisch, Vollständigkeitsbalken **segmentiert statt prozentual** (ein Prozentwert verschweigt, *wo* das Loch sitzt), und ein Hörbuch ist **ein** Wunsch, Musik viele. **🔑 E155 — Pflicht wird gezeigt, nicht versteckt:** Haken gesetzt und ausgegraut, drei Klassen mit je einem festen Satz, Größe/Lizenz/Zweck bei jedem Bestandteil, nie ein vorausgewähltes Extra. Dazu **der erste Start** als vier gleichwertige Wege ohne Reihenfolge. **🔑 E159 — die Einstellung gehört zum Spiel, nicht zum Emulator:** drei Ebenen mit sichtbarer Herkunft je Zeile, plus der Knopf *„als Systemstandard übernehmen"*, ohne den man dieselbe Sache 41-mal einstellt. **🔑 E160 — die Lücken-Liste ist der Eingang zur Beschaffung**, kein Bericht: eine Tat je Zeile, sie beschämt nicht, und sie hat bewusst **kein Abzeichen** — anders als das Postfach, das rufen muss. **E165 — sofort der Rand, nach 400 ms das Band** (vier Hover-Varianten verglichen, C gewinnt mit D als Sofortantwort). **Sieben Lücken geschlossen:** **E156** ohne Netz steht die Uhr, bei Rückkehr läuft alles seit dem Bruch als Nachtrag (JBs Antwort war besser als meine Frage) · **E157** eine Uhr, deine — alles nach Berliner Zeit, Herkunftszeit nur auf Nachfrage · **E158** das Alter entscheidet, und was nicht bewertet ist, gilt als nicht freigegeben; das Kind sieht keine Schlösser · **E161** ein Rechner hat Vorrang, wer davorsitzt gewinnt · **E164** es meldet sich nur bei drei Anlässen — kaputt, läuft weg, ausdrücklich gewünscht; nie eine reine Erfolgsmeldung · *Platte voll* („dann erweitere ich" — keine Verdrängungslogik, das ist die richtige Antwort) · *ohne Maus* (keine Funktion, sondern eine **Bauvorgabe**: fehlende Fokussierbarkeit ist eine neue Säule und darf nie entstehen). **Offen bleiben zwei:** Sicherung & Wiederherstellung — nach E151 trägt **eine** Datei alles — und die Sprache der Oberfläche. **Neu: Entwürfe `regale.html` und `erststart.html`.** |
 | 2026-08-08 | Fassung 1.10 — **Die wöchentliche Pflege wird dauerhaft.** JB-Vorgabe: *„Wir müssen ab und an immer wieder prüfen, was es Neues gibt, was Altes ersetzt und was gestorben ist — egal in welchem Chat ich bin."* → **Neu: `Doku/PFLEGE.md`** mit acht Prüfungen, jede mit einem **Fund-Auslöser** (nur wenn der eintritt, gibt es Arbeit): die vier Protokolle leben · Wissensketten antworten unverändert · Werkzeuge werden gepflegt · **der Friedhof** — wer ist gestorben, die Prüfung, die man am liebsten vergisst, weil nichts kaputtgeht, sondern nur etwas fehlt · Recht und Schlösser · neue Vorbilder · Browser-Änderungen · die eigene Baustelle. Dazu die **Halbwertszeit-Tabelle**, die begründet, warum ausgerechnet das nachgeprüft werden muss: Werk-Modell hält **Jahre**, Gestaltungsregeln **Jahre**, Werkzeuge **Monate**, Quellen **Wochen**. Neu in §0: **Pflegeregel 6** und die Tabelle der drei Begleitdateien. Ein Fund gehört in eine Datei, nie in ein Gespräch — *ein Chat endet, die Datei nicht*; auch „kein Fund" wird protokolliert, sonst weiß niemand, ob geprüft oder vergessen wurde. **§13.1 auf den echten Stand gebracht:** alle zehn Bausteine entschieden, neun von zehn gezeichnet, **kein fehlender Entwurf blockiert mehr einen Baustein**. Die Lücke *Übernahme aus SyncManga* ist geschlossen (§16.5), neun bleiben — mit dem Hinweis, dass **E151** die Sicherungsfrage und **E150** die Offline-Frage verschärft haben. Die nächsten Schritte sind neu sortiert, obenan die **drei Dinge, die auf JB warten**: **F05** (die zwei Dateien aus dem öffentlichen Repo — die einzige Frage, bei der Zögern selbst das Risiko ist), die **Token-Wahl bei Sectigo** (Vorlauf Wochen, nicht Tage) und **F02 der Name** (blockiert alles Sichtbare, steht auch im Zertifikat). **Entwurf 15 überarbeitet** zu *Was noch offen ist*. |
@@ -3446,7 +3711,34 @@ Ob du ihn ausführst, entscheidest du am Tag der ersten Fassung. **Es blockiert 
 5. **Der Bruchtest läuft ab Tag eins** (E147) — gerade weil migrierte Daten die Sorte
    Widerspruch tragen, die niemand vorhergesehen hat.
 
-### 16.6 Wo die Wahrheit steht
+### 16.6 Die Kleinen — mit Ja oder Nein entschieden (08.08.2026)
+
+Aus `NICHT_UEBERNOMMEN.md`. Alles hier braucht **keinen Entwurf**, nur eine Entscheidung —
+und die steht jetzt. Vier davon sind ein **Nein**, und das ist der wertvollere Teil der Liste.
+
+| Aus | Urteil | Warum |
+|---|---|---|
+| **Abos mit Regeln** (8 Funktionen, `_abo_regel_ok`, `_abo_baseline`, `abo_erneuern`, `abo_aufraeumen`) | ✅ **ja** — wird eine **Auftragsart** in §4.5 | Eine Grundlinie („was zählt ab wann als neu") ist genau die Frage, die man beim ersten Abo vergisst und danach nie wieder löst. Der Code hat sie beantwortet |
+| **Zugangsprüfung vor dem Holen** (`_zugang_ok`, `geo_test_lauf`, `_geo_download`) | ✅ **ja** — ist **E149** | „Vorprüfung kostet keine Bytes" hat schon eine Umsetzung. Sie wird portiert, nicht nachgebaut |
+| **Nachträgliche Anreicherung** (`metadaten_backfill`, `technik_backfill`, `biblio_enrich_alle`) | ✅ **ja** — ist **E151/4** | Feldalter je Feld *braucht* einen Nachziehlauf, sonst holt nichts die alten Einträge ein |
+| **Erweiterungs-Nachschub** (`addon_nachschub`, `addon_hab_liste`, `addon_update_info`) | ✅ **ja** — gehört zu §8.4 | §8.4 sagt, was die Erweiterung tut, nicht **wie sie zum Nutzer kommt und sich erneuert** |
+| **`huelle.py`** (216 Z.) | ✅ **ja** — Ausgangspunkt für §12.4 | F01 ist beantwortet, der vorhandene Code war nur nie als Startpunkt benannt |
+| **Statistik-Tafel** (9 Auswertungen) | ✅ **ja** — als Teil des **lesbaren Profils** (E19) | „Das denkt SyncFindus über dich" ist genau der Ort dafür. Keine eigene Ansicht, kein eigener Menüpunkt |
+| **Kapitelkorrektur von Hand** (`chapfix`) | ✅ **ja** — als **Standard-Ausgang** im Postfach | §8 hat den automatischen Versatz ab 80 %. Passt keiner, ist die Handeingabe der Ausgang aus Grund 3 (E141) |
+| **MAL-XML hinein und hinaus** | ✅ **ja** | Der De-facto-Austauschstandard. Hinein beim ersten Start (§12.2, Weg 3), hinaus als Grundrecht (E14) |
+| **Zufallspick 🎲** (`luckyPick`) | ✅ **ja**, klein | Nicht dasselbe wie der Joker in §11: der Joker empfiehlt **Fremdes**, der Würfel zeigt **Eigenes**. Zwei Bedürfnisse, zwei Knöpfe (E128 gilt sinngemäß) |
+| **Familie / Nachbarschaft** (`familie.py`, 193 Z.) | ✅ **ja** — wurde **E179** (LANoMAT) | JB fragte am selben Tag danach. Es ist dasselbe Problem wie E169: ein Werk liegt irgendwo, das mir nicht gehört — also eine vierte Sorte **Ort**, kein eigenes System |
+| ❌ **Selbstneustart bei Codeänderung** | **nein** | Siehe E172: ein signiertes Programm, das seinen Quelltext beobachtet und sich selbst austauscht, ist für jeden Virenscanner Schadsoftware |
+| ❌ **Spaltenwahl** (`cols_menu`) | **nein** | Eine Spaltenwahl ist meistens die Ausrede dafür, die **Prioritätsleiter** (E39) nicht geschrieben zu haben. Wir haben sie geschrieben. Wer trotzdem etwas vermisst, hat einen Fehler in der Leiter gefunden — und der gehört behoben, nicht umgangen |
+| ❌ **Tonspurwahl beim externen Abspielen** (`_ton_spur_waehlen`, `extern_abspielen`) | **nein** | **E34**: nie ein zweites Fenster. Die Tonspurwahl selbst lebt längst in „Ton & Text" (E83). *Öffne das in VLC* bleibt als reiner Systemaufruf möglich — aber ohne dass wir dort etwas steuern |
+| ❌ **Cloud-Slot** `manga.j-bk.org` (`cloud.py`, 175 Z.) | **nein** — ersetzt durch Gerätekopplung (§12) | Kein fremder Server für den eigenen Lesestand. ✅ **Aber die Haltung wird übernommen:** kein Konto, keine E-Mail, nur das Nötige — das war vorbildlich und gilt für die Kopplung genauso |
+
+> **Was ein Nein hier wert ist:** Vier Funktionen, die es gibt und die funktionieren, kommen
+> trotzdem nicht mit — jede mit einem Grund, der aus einer bestehenden Entscheidung folgt
+> (E172, E39, E34, §12). *Eine Übernahmeliste, die nur aus Ja besteht, ist keine Liste, sondern
+> ein Umzug.*
+
+### 16.7 Wo die Wahrheit steht
 
 | | |
 |---|---|
