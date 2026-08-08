@@ -1494,7 +1494,7 @@ eine **vierte** Information — und die trägt bereits die Farbe (E62), nicht di
 nicht"* oder wie Hiatus. Drei Punkte lesen sich wie *„geht weiter, wir wissen es nur nicht"*.
 Und weil „erschienen" fast immer bekannt ist, tauchen sie ohnehin selten auf.
 
-### 5.9.1 Die Hover-Karte (E165)
+### 5.10.3 Die Hover-Karte (E165)
 
 > **Entwurf:** `regale.html`, Reiter *Die Hover-Karte* — vier Möglichkeiten zum Anklicken.
 
@@ -1517,7 +1517,7 @@ Und weil „erschienen" fast immer bekannt ist, tauchen sie ohnehin selten auf.
    Hover-Karte, die auf Berührung reagiert, kostet jedem Handynutzer einen zusätzlichen Griff —
    für immer.*
 
-### 5.10.1 Die Kachelgrößen — und warum keine ohne Namen (E88)
+### 5.10.4 Die Kachelgrößen — und warum keine ohne Namen (E88)
 
 ⚠️ **Korrektur 07.08.2026.** Im ersten Entwurf gab es eine *Mini-Kachel*: nur Bild, kein Text,
 möglichst viele auf einmal. JB fragte zu Recht: *„Dann sehe ich nicht, welchen Manga ich lese —
@@ -1561,7 +1561,7 @@ jede Regel, die nie gebrochen wurde.
 | **`visibility:hidden` statt `display:none`** | unten bleibt ein leerer Streifen stehen | `visibility` reserviert den Platz weiter — wer Platz zurückgeben will, braucht `display:none` (JB-Fund: Endlosstreifen) |
 | **Zellbreite trägt den Abstand** | vierstellige Zahlen kleben, dreistellige schweben | die Luft gehört dem Trenner, nicht dem Zellrest (**E85**) |
 
-### 5.10.2 Was fest sein muss und was atmen darf (E103)
+### 5.11.3 Was fest sein muss und was atmen darf (E103)
 
 **JB-Fund 07.08.2026:** *„Wenn ich von 100 % runtergehe, ist der Zeilenumbruch weg.
 Diese Sachen sollten fix sein."* — Richtig, und es ist eine allgemeine Regel:
@@ -3447,23 +3447,25 @@ Begründung**, eine vertagt (F09). ✅ **Und der letzte Entwurf steht** (`orte.h
 Fortschritt in beide Richtungen, Anfragen. **Es ist kein Entwurf mehr offen, der etwas
 beweisen müsste.**
 
-### Die Lücken — Stand 08.08.2026
+### Die Lücken — Stand 08.08.2026, abends
 
-**Neun von zehn sind geschlossen.** JB hat sie am 08.08. in einem Zug beantwortet; hier stehen
-die Antworten mit ihren E-Nummern.
+**Die zehn Lücken vom 07.08. sind alle geschlossen.** Am selben Tag sind bei einer
+strukturierten Nachsuche **drei neue** aufgetaucht — und sie sind von einer anderen Art als
+die alten: es sind keine vergessenen Themen, sondern **Orte, auf die andere Entscheidungen
+zeigen und die es nicht gibt**.
 
-| Lücke | Antwort |
-|---|---|
-| ~~Übernahme aus SyncManga~~ | ✅ **E151 + E162** — §16.5. Und der Umzug ist gar keine Pflicht mehr, siehe unten |
-| ~~Wenn die Platte voll ist~~ | ✅ **JB: *„Wenn die Platte voll wird, dann erweitere ich."*** Keine Verdrängungslogik, kein Aufräum-Assistent, keine Regel, welche Datei fliegt. **Die einfachste denkbare Antwort, und sie ist richtig** — jede automatische Löschung wäre ein Risiko für Null Gewinn. Was bleibt: eine ehrliche Anzeige („noch 2,1 TB") und eine Warnung ab 95 %, sonst nichts |
-| ~~Kein Internet~~ | ✅ **E156** |
-| ~~Zwei Menschen gleichzeitig~~ | ✅ **E161** |
-| ~~Benachrichtigungen~~ | ✅ **E164** |
-| ~~Zeitzonen~~ | ✅ **E157** |
-| ~~Ohne Maus bedienbar~~ | ✅ **JB: *„Es wird bestimmt Bugs geben, doch das Grundgerüst muss stabil sein. Ich will reparieren, keine neuen Säulen ziehen."*** → Damit ist es keine Funktion, sondern eine **Bauvorgabe**: jedes Bedienelement ist von Anfang an ein echtes fokussierbares Element mit sichtbarem Fokusring und Beschriftung. Einzelne Tastenwege dürfen fehlen und werden repariert; **fehlende Fokussierbarkeit ist eine neue Säule und darf nie entstehen** |
-| ~~Kinderprofil~~ | ✅ **E158** |
-| **Sicherung & Wiederherstellung** | ⬜ **die letzte offene.** Dateien lassen sich neu holen — **der Lesestand nicht.** ⚠️ Nach E151 trägt **eine** Datei alles. JB: *„klingt vernünftig"* — aber vernünftig ist noch keine Regel. Braucht eine E-Nummer |
-| **Sprache der Oberfläche** | ⬜ `i18n.py` existiert, der Text-Wächter auch — aber keine Entscheidung, welche Sprachen mitkommen. Kleinste der offenen, blockiert nichts |
+| Neue Lücke | Warum sie wehtut | Gefunden durch |
+|---|---|---|
+| ⚠️ **Die Werkstatt** | Sie wird im Heft **neunmal namentlich genannt** — als der Ort, an dem Regeln landen (E141), Handkorrekturen leben (E135), Heilungsvorschläge angeboten werden (E173) und Vorschläge zurückgenommen werden (E41). **Sie ist nie definiert und nie gezeichnet.** Vier tragende Entscheidungen zeigen auf einen leeren Raum | Suche nach Begriffen, die oft *verwendet*, aber nie *erklärt* werden |
+| **Die Einstellungen** | Zwölf verstreute Erwähnungen, kein Ort. Inzwischen gibt es Güteprofil · zwei Sprachachsen · Sicherung · Profile · Inhaltsfilter · Quellenlisten · Geräte · Emulator-Grundlage · Schwellen (E183) · Meldungen (E164) · Wachordner · LANoMAT. **Ohne Entwurf wird das eine Abladefläche** — genau das, wovor E39 warnt | dasselbe |
+| **Leere und kaputte Zustände** | Nahezu **null** Treffer. Was steht da, wenn die Suche nichts findet, das Regal nach einem Filter leer ist, eine Quelle nicht antwortet, das NAS weg ist? **Jeder Bildschirm hat diesen Zustand, und keiner ist entworfen.** Er entscheidet, ob sich ein Programm kaputt oder ruhig anfühlt | Suche nach dem, was *nie* vorkommt |
+| **Werke von Hand teilen und zusammenführen** | Das Postfach kennt *doppelt* (E141, Grund 4). Aber: *„ich merke nach drei Monaten, dass das zwei Werke sind"* — oder eines — hat **keinen Weg**. Bei 800 Werken passiert das sicher | Durchspielen einer Handlung, die kein Entwurf zeigt |
+
+> **Was diese vier gemeinsam haben und was daraus zu lernen ist:** Keine davon wurde durch
+> *Lesen* gefunden. Sie kamen aus drei mechanischen Suchen — nach **oft genannten, nie
+> definierten Begriffen**, nach **Wörtern, die gar nicht vorkommen**, und nach **Handlungen,
+> die kein Entwurf zeigt**. *Das Wiederlesen eines Dokuments findet die Fehler nicht, die man
+> beim Schreiben gemacht hat.* Diese drei Suchen gehören deshalb in `PFLEGE.md`.
 
 #### Die sieben Antworten im Klartext
 
@@ -3537,18 +3539,25 @@ durch **E148** ersetzt — der Kalender empfiehlt ganzjährig, statt einmal Bila
 **Bruchtest** ist jetzt **E147** (§12.6). Die **Lücken-Liste** (aus ◐ *gekannt* eine eigene
 Ansicht — die Liste, die kein anderes Programm bauen kann) wartet weiter auf einen Entwurf.
 
-**Was als nächstes fehlt, in dieser Reihenfolge** *(Stand 08.08.2026)*:
+**Was als nächstes fehlt, in dieser Reihenfolge** *(Stand 08.08.2026, abends)*:
 
-| | Was | Warum jetzt | Wer entscheidet |
+| | Was | Art | Wer |
 |---|---|---|---|
-| **1** | **Der Prüflauf-Bericht** | Die riskanteste ungezeichnete Seite. §16.5 sagt *was* migriert wird — nicht, was JB **liest, bevor er 800 Werke umschaltet** | zeichnen |
-| **2** | **F05 beantworten**: `sources.json` + `readers_pattern.json` aus dem öffentlichen Repo? | Blockiert §9.2 und ist die einzige Frage, bei der **Zögern selbst das Risiko ist** (E12) | ⚠️ **JB, ein Wort** |
-| **3** | **Zertifikat abschließen** (§12.1) | Sectigo wartet auf die **Token-Wahl**. Braucht Wochen Vorlauf vor der ersten ausführbaren Fassung | ⚠️ **JB** |
-| **4** | **Die sieben restlichen Lücken** zu E-Nummern machen | Sicherung · Platte voll · offline · zwei Menschen · Sprache · Benachrichtigungen · Tastatur · Zeitzonen · Kinderprofil | entscheiden |
-| **5** | **Hover-Karte** · **Musik-Regal** · **Lücken-Liste** · **Installer** | angenehm, aber nichts davon blockiert etwas | zeichnen |
-| **6** | **F02: der Name** | blockiert alles Sichtbare — Logo, Installer, Zertifikat, Domain | ⚠️ **JB** |
+| **1** | **Die Werkstatt** — definieren und zeichnen | ⚠️ **Loch, auf das vier Entscheidungen zeigen** | zeichnen |
+| **2** | **Die Einstellungen** — ein Ort statt zwölf Erwähnungen | Entwurf | zeichnen |
+| **3** | **Leere und kaputte Zustände** — für jeden Bildschirm einer | Entwurf | zeichnen |
+| **4** | **Werke teilen und zusammenführen** | Entscheidung + kleiner Entwurf | entscheiden |
+| **5** | **F04 · F07** — Verwestlichung und Text-Korrektur | zwei Voreinstellungen in §10.2 | ⚠️ **JB** |
+| **6** | **F06 · F08 · F11** — Quellen-Späher, eigene IDs, Geräteprofile | drei kleine, keine blockiert etwas | entscheiden |
+| **7** | **F12** — welches Werkzeug die zweite KI benutzt | ⚠️ **JB**, aber erst kurz vor der Übergabe | ⚠️ **JB** |
+
+**Was ausdrücklich *nicht* mehr auf dieser Liste steht:** der Prüflauf-Bericht (seit E162
+optional), die Spiele-Regalansicht (blockiert nichts), das Zertifikat (JB hat Zeit), F02 und
+F05 und F09 und F10 (beantwortet).
 
 ---
+
+## 14.---
 
 ## 14. Was das Vorhaben töten kann
 

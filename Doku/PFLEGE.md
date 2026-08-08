@@ -29,7 +29,7 @@ verschieden:
 
 ---
 
-## Der wöchentliche Lauf — acht Prüfungen
+## Der wöchentliche Lauf — neun Prüfungen
 
 Reihenfolge nach Schadenshöhe. Jede Prüfung hat einen **Fund-Auslöser**: nur wenn der eintritt,
 gibt es Arbeit.
@@ -104,7 +104,21 @@ kommen Monate vorher, und wer sie verpasst, steht plötzlich ohne Zustandsquelle
 
 - **Zertifikat** (§12.1): Bestellstand, Token-Wahl, Ablaufdatum.
 - **Offene Fragen** (§13): ist eine durch die Außenwelt beantwortet worden?
-- **Ungeschriebene Lücken** (§13.1): kann eine jetzt geschlossen werden?
+- **Lücken** (§13.1): kann eine jetzt geschlossen werden?
+
+### 9 · Die drei Suchen im eigenen Dokument
+
+⚠️ **Am 08.08.2026 hinzugefügt, nachdem sie drei Lücken auf einmal fanden.** Wiederlesen
+findet die Fehler nicht, die man beim Schreiben gemacht hat — diese drei mechanischen Suchen
+schon:
+
+| Suche | Was sie findet | Fundbeispiel |
+|---|---|---|
+| **Oft genannt, nie erklärt** | Zähle die Nennungen jedes Eigennamens im Dokument. Steht einer ≥ 5-mal da, ohne je einen eigenen Abschnitt zu haben, ist er ein **leerer Raum, auf den Entscheidungen zeigen** | **„Werkstatt"** — 9 Nennungen als Zielort für vier tragende Entscheidungen, nie definiert |
+| **Kommt gar nicht vor** | Suche nach Wörtern, die in *jedem* Programm vorkommen müssen: *kein Treffer · leer · antwortet nicht · abgebrochen · Zeitüberschreitung* | **Leere und kaputte Zustände** — nahezu null Treffer |
+| **Handlung ohne Weg** | Spiele eine gewöhnliche Handlung durch und suche den Entwurf dazu. Findest du keinen, fehlt er | **Werke von Hand teilen** — bei 800 Werken sicher nötig, nirgends beschrieben |
+
+**Auslöser:** monatlich, oder immer wenn zehn neue Entscheidungen dazugekommen sind.
 
 ---
 
