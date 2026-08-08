@@ -30,18 +30,20 @@ Wer baut, baut gegen das Vision-Dokument; die Entwürfe zeigen, wie es aussehen 
 | 17 | **Zwei Regale, eine Karte, eine Liste** | Musik ≠ Hörbuch · vier Hover-Varianten · die Lücken-Liste | §4.2.1, §5.9.1, §11, E154, E160, E165 |
 | 18 | **Der erste Start** | Installer mit drei Klassen · das leere Programm · Emulator-Ebenen | §12.2, §6, E155, E159 |
 | 19 | **Die Sicherung** | drei Ringe · was gesichert wird und was nicht · der Rückspiel-Test | §12.7, E166, E168 |
+| 20 | **Ein Werk liegt woanders** | vier Orte · Fortschritt beidseitig (5 Fälle) · Anfragen | §4.7, E169, E170, E179, E180 |
 | — | **Woher es kommt** *(Beiblatt)* | Wissensketten · Inhaltsquellen · sechs Zeugen · vier Protokolle · das Rennen | §7.4–7.6, §8.5, §9.6 |
 
 ## Noch nicht gezeichnet
 
 | Entwurf | Warum er fehlt | Blockiert |
 |---|---|---|
-| **Ein Werk liegt fern** ⬅ als Nächstes | ⚠️ neuer Fund: `filme.py` (878 Z.) spricht längst mit einem Jellyfin-Server — Katalog, Merkliste, Fortschritt-Rückmeldung, Jellyseerr. Das ist **Fundament, nicht Beschaffung**, und es fehlt (siehe `NICHT_UEBERNOMMEN.md`) | §4.6 |
 | **Der Prüflauf-Bericht** | seit **E162** kein Risiko mehr — der Umzug ist ein Angebot, keine Pflicht | nichts |
 | **Spiele-Regal (die Liste)** | die Einstellungen sind gezeichnet, die Regalansicht davor nicht | nichts |
 
-> **Stand 08.08.2026: alle zehn Bausteine entschieden und gezeichnet, alle Lücken geschlossen.**
-> Was jetzt aufhält, ist kein Entwurf mehr, sondern die Liste in `NICHT_UEBERNOMMEN.md`.
+> **Stand 08.08.2026: alle zehn Bausteine entschieden und gezeichnet, alle Lücken geschlossen,
+> alle 18 Übernahme-Funde entschieden.**
+> Die zwei hier blockieren nichts. **Es gibt keinen Entwurf mehr, der etwas beweisen müsste** —
+> was jetzt fehlt, ist der erste Commit.
 
 ## Regeln für neue Entwürfe
 

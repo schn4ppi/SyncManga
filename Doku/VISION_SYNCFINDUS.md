@@ -4,7 +4,7 @@
 > Anime, Manga, Novels, Musik, Hörbücher, Filme und Serien — mit eigener Bibliothek,
 > eigenem Leser, eigener Bühne, eigener Veredelung.
 >
-> **Stand:** 2026-08-08 · **Fassung:** 1.14 · **Pflege:** JB + Claude
+> **Stand:** 2026-08-08 · **Fassung:** 1.15 · **Pflege:** JB + Claude
 
 ---
 
@@ -275,6 +275,7 @@ Novels oder Manga**. Genau dort ist SyncMangas Stärke.
 | E177 | Erkennung | **Was der Mensch bestätigt, wiegt schwerer als was wir messen** | 🔑✅ |
 | E178 | Werk | **Sechs Lesezustände** — „lange pausiert" ist die wichtigste Erfindung darunter | ✅ |
 | E179 | Fundament | **LANoMAT: fremde Bibliotheken sind Orte, keine Konten** — Fortschritt bleibt daheim | 🔑✅ |
+| E180 | Beschaffung | **Eine Anfrage ist ein Wunsch über eine Grenze** — drei Kontexte, ein Mechanismus | 🔑✅ |
 
 ### Die Unverhandelbaren
 
@@ -926,6 +927,50 @@ sein Tagebuch.*
 3. **Es ist eine Sitzung, kein Zustand.** LANoMAT ist beim Start immer aus. Es gibt keinen
    Dauerbetrieb, keine Freundesliste, kein „online seit". Ein Programm, das dauerhaft im Netz
    nach anderen sucht, ist etwas anderes als eines, das man für einen Abend einschaltet.
+
+#### E180 — Eine Anfrage ist ein Wunsch, der über eine Grenze geht
+
+> **Entwurf:** `orte.html`, Reiter *Anfragen*.
+
+**JB, 08.08.2026:** *„Also sind Anfragen nun auch ein Thema durch seerr, oder?"* — **Ja.** Und
+das Beste daran: es ist **kein neues System**. Jellyseerr, LANoMAT und der Haushalt sind
+dreimal dieselbe Sache.
+
+> 🔑 Ein **Wunsch** (E150) ist an mich selbst gerichtet: *ich will das, und mein Programm
+> versucht es.* Eine **Anfrage** ist an jemand anderen gerichtet: *ich will das, und ein Mensch
+> muss zustimmen.* **Gleiche Form, andere Grenze** — deshalb hängt der Zustand am Wunsch, der
+> Weg ist die Warteschlange, und die Zustimmung ist eine Karte. Nichts davon ist neu gebaut.
+
+| Wohin | Wer sagt Ja | Was danach passiert |
+|---|---|---|
+| **An den eigenen Server** (Jellyseerr) | meistens **du selbst** — deshalb fühlt es sich wie ein Wunsch an | Der Server ist **ein Kandidat im Rennen** (E149), kein Sonderweg: er tritt gegen Indexer und Direktlinks an und gewinnt, wenn er schneller ist |
+| **An eine fremde Bibliothek** (E179) | **ein anderer Mensch**, mit einer Karte und drei Knöpfen | Bei Ja wird **gezogen, nie geschoben**. Die Datei geht durch dieselbe Erkennung wie jede andere (§8.2) |
+| **An jemanden im Haushalt** (`familie.py`) | der **Profilinhaber** — z. B. ein Elternteil bei einem Kinderprofil (E158) | Dasselbe. **Ein Kind fragt, statt heimlich zu suchen** — die freundlichere Form von Jugendschutz |
+
+**Drei Antworten, nicht zwei:** *Ja* · *Nein* · **„Nur ansehen"**. Die Zwischenstufe ist das,
+was man beim LAN-Abend fast immer meint — *lies es bei mir, nimm es nicht mit* — und sie
+existiert in keinem Programm. Sie kostet nichts und löst die meisten Fälle.
+
+**Vier Regeln, damit aus Anfragen keine Bettelei wird:**
+
+1. **Eine Ablehnung ist ein Ergebnis, kein Fehler.** Sie ist nicht rot. Der Wunsch bleibt bei
+   dir und **lauert weiter** (E150). ⚠️ **Man fragt denselben Menschen nicht zweimal nach
+   derselben Sache** — ein zweiter Versuch braucht deine ausdrückliche Handlung, das Programm
+   wiederholt ihn **nie** von selbst. *Das ist der einzige Ort im ganzen Entwurf, an dem E150
+   ausdrücklich nicht gilt.*
+2. **Der Anfragende sieht nur „gestellt".** Nicht, ob der andere sie gelesen, geöffnet oder
+   ignoriert hat. Kein Lesebestätigungs-Elend.
+3. **Eine Anfrage trägt nie deinen Fortschritt.** Sie sagt *„ich hätte gern X"* — nicht *„ich
+   bin bei Kapitel 63 und mir fehlen die davor"*. Das wäre eine Auskunft über dich, die niemand
+   angefordert hat (E179).
+4. **Anfragen sind Post, kein Postfach.** Sie kommen **nicht** ins Postfach (E141) — das ist
+   für **Unklarheit**, und eine Anfrage ist das Gegenteil: völlig klar, sie braucht nur eine
+   Antwort. Sie stehen bei der Warteschlange, weil dort das Ergebnis landet.
+
+⚠️ **Und das Neue daran, das man sich bewusst machen muss:** Mit den Anfragen taucht zum ersten
+Mal **ein anderer Mensch auf deinem Bildschirm** auf. Bis hierhin war SyncFindus ein Programm
+für genau eine Person. Deshalb die vier Regeln — jede einzelne verhindert eine Sorte
+sozialen Druck, die ein Werkzeug nicht erzeugen sollte.
 
 ---
 
@@ -3332,14 +3377,15 @@ mitgeliefert, nur erkannt und angebunden.
 > beim letzten Stand noch *ein* Bild hatte, ist jetzt vollständig belegt. Damit ist die Phase
 > „zeichnen" im Wesentlichen vorbei — was bleibt, sind **Lücken schließen** und **übergeben**.
 
-**In Zahlen:** 179 Entscheidungen · 16 Regeln der Bauart und des Vertrauens · **6 offene
-Fragen** · 20 gelernte Fallen · 19 Entwürfe + 1 Beiblatt.
+**In Zahlen:** 180 Entscheidungen · 16 Regeln der Bauart und des Vertrauens · **6 offene
+Fragen** · 20 gelernte Fallen · 20 Entwürfe + 1 Beiblatt.
 
 ✅ **Die Übernahme-Lücke ist geschlossen.** `NICHT_UEBERNOMMEN.md` listete 18 Funktionen aus
 SyncManga und SyncYouTube, die im Pflichtenheft fehlten. Alle 18 sind entschieden: zehn wurden
 zu Regeln (E169–E178), zehn zu einem Ja ohne eigene Nummer, **vier zu einem Nein mit
-Begründung**, eine vertagt (F09). **Offen bleibt genau ein Entwurf:** ein Werk, das
-gleichzeitig lokal und auf einem Medienserver liegt (§4.7).
+Begründung**, eine vertagt (F09). ✅ **Und der letzte Entwurf steht** (`orte.html`): ein Werk an vier Orten,
+Fortschritt in beide Richtungen, Anfragen. **Es ist kein Entwurf mehr offen, der etwas
+beweisen müsste.**
 
 ### Die Lücken — Stand 08.08.2026
 
@@ -3465,6 +3511,7 @@ Ansicht — die Liste, die kein anderes Programm bauen kann) wartet weiter auf e
 
 | Datum | Was |
 |---|---|
+| 2026-08-08 | Fassung 1.15 — **E180 Anfragen, und der letzte Entwurf ist gezeichnet.** JB: *„Also sind Anfragen nun auch ein Thema durch seerr, oder?"* — **Ja, und es ist kein neues System.** **🔑 E180 — eine Anfrage ist ein Wunsch, der über eine Grenze geht.** Ein Wunsch (E150) ist an mich selbst gerichtet: ich will das, mein Programm versucht es. Eine Anfrage ist an **jemand anderen** gerichtet: ich will das, ein Mensch muss zustimmen. **Gleiche Form, andere Grenze** — deshalb hängt der Zustand am Wunsch, der Weg ist die Warteschlange, die Zustimmung ist eine Karte; nichts davon wird neu gebaut. Damit sind **Jellyseerr, LANoMAT und der Haushalt dreimal dieselbe Sache**: beim eigenen Server sagt meistens **du selbst** Ja (deshalb fühlt es sich wie ein Wunsch an), im LAN ein anderer Mensch, im Haushalt der Profilinhaber — *ein Kind fragt, statt heimlich zu suchen, und das ist die freundlichere Form von Jugendschutz*. **Drei Antworten, nicht zwei:** Ja · Nein · **„nur ansehen"** — die Zwischenstufe, die man beim LAN-Abend fast immer meint (*lies es bei mir, nimm es nicht mit*) und die in keinem Programm existiert. **Vier Regeln, damit aus Anfragen keine Bettelei wird:** eine Ablehnung ist ein **Ergebnis, kein Fehler** und nicht rot — ⚠️ **man fragt denselben Menschen nicht zweimal nach derselben Sache**, ein zweiter Versuch braucht eine ausdrückliche Handlung, und das ist **der einzige Ort im ganzen Entwurf, an dem E150 nicht gilt** · der Anfragende sieht nur *„gestellt"*, nie ob der andere sie gelesen hat (kein Lesebestätigungs-Elend) · eine Anfrage trägt **nie deinen Fortschritt** (E179) · **Anfragen sind Post, kein Postfach** — das ist für Unklarheit, eine Anfrage ist das Gegenteil davon. Dazu der Punkt, den man sich bewusst machen muss: mit den Anfragen taucht **zum ersten Mal ein anderer Mensch auf dem Bildschirm** auf — bis hierhin war SyncFindus ein Programm für genau eine Person, und jede der vier Regeln verhindert eine Sorte sozialen Druck, die ein Werkzeug nicht erzeugen sollte. **Neu: Entwurf `orte.html` (Nr. 20)** — vier Orte an einem Werk mit vollständiger Rechtematrix, **fünf durchspielbare Abgleichsfälle** (Normalfall · Gegenrichtung · Konflikt · offline · Zurücksetzen von Hand) und die Anfragen in beide Richtungen. Damit ist `NICHT_UEBERNOMMEN.md` **vollständig abgearbeitet** und **kein Entwurf mehr offen, der etwas beweisen müsste**. |
 | 2026-08-08 | Fassung 1.14 — **E166 korrigiert (JB-Einwand), E179 LANoMAT, F09 geschlossen.** ⚠️ **Korrektur an E166:** JB fragte *„Erklär mir, was eine Kopie auf dem NAS bringt, wenn die Daten eh auf dem NAS sind. Ich werde keine Daten auf meinem PC speichern."* — **Gar nichts, und das war ein Fehler.** Ich hatte die 3-2-1-Regel übernommen, ohne sie auf **diese** Anlage anzuwenden: sie stammt aus Serverräumen, und bei einem Menschen mit **einem** NAS heißt „zwei Datenträger" nichts, solange beide im selben Gehäuse stecken. **Aus drei Ringen werden zwei** — einer auf dem NAS gegen unsere eigenen Fehler, einer außerhalb gegen alles andere; was dazwischenlag, waren nie zwei Ringe, sondern einer mit zwei Qualitätsstufen. Dazu der Punkt, der den Einwand auflöst: **das Register ist unter 500 MB** — das ist keine Datenhaltung auf dem PC, das ist eine Datei, und sie passt auf einen USB-Stick in der Schublade. Neu benannt: **RAID ist Verfügbarkeit, keine Sicherung** (überlebt eine Platte, sonst nichts — nicht Löschen, nicht Verschlüsselung, nicht Diebstahl). Und **der dritte Ring, den wir nicht bauen müssen**: sobald E170 steht, lebt *„was habe ich gesehen"* in zwei unabhängigen Systemen — bei uns und auf dem Jellyfin-Server, dazu AniList. Das ist keine Sicherung, die wir gebaut haben, sondern eine **Redundanz, die wir geschenkt bekommen, weil wir zurückschreiben statt nur zu lesen**; selbst bei totalem Verlust wäre der Lesestand rekonstruierbar statt null. **🔑 E179 — LANoMAT: fremde Bibliotheken sind Orte, keine Konten** (F09 beantwortet). JB fragte danach, und die Antwort fällt mit **E169** zusammen, weil es dasselbe Problem ist: ein Werk liegt irgendwo, das mir nicht gehört. Also **eine vierte Sorte Ort**, kein eigenes System — `familie.py` ist der Ausgangspunkt. Kein Konto, kein Server, keine Anmeldung: Erkennung über Zeroconf, wer im Netz ist, ist da. Der Grund, warum es das wert ist, ist ein Satz: **die Lücken-Liste (E160) trifft auf sechs andere Bibliotheken** — *„Kevin hat 4 davon, Ann hat 11"*, und das kann kein Streaming-Dienst leisten. Vier Rechtestufen mit **aus als Standard jeder Sitzung**; ⚠️ **der Fortschritt wird auf keiner Stufe geteilt** — auch nicht als Zahl, auch nicht anonym: *man teilt seine Bibliothek, nicht sein Tagebuch*. Dazu: nichts wird geschoben, alles wird gezogen · der Ort verschwindet, das Wissen darf mit Erlaubnis bleiben · es ist eine **Sitzung, kein Zustand** (kein Dauerbetrieb, keine Freundesliste, kein „online seit"). **E171 erweitert:** die Sperrdatei trägt Rechnernamen und Zeitstempel, weil auf einem NAS auch zwei verschiedene Rechner zugreifen können (E161). |
 | 2026-08-08 | Fassung 1.13 — **Alle 18 Funde entschieden** (JB: *„ok lass uns entscheiden"*). Zehn wurden zu Regeln, zehn zu einem Ja ohne Nummer, **vier zu einem Nein mit Begründung**, eine vertagt. **🔑 Neu: §4.7 Ein Werk kann fern liegen (E169).** Der größte Fund kommt ins Fundament, nicht in die Beschaffung: ein Medienserver ist ein **Ort**, keine Quelle und kein Motor — §4.6 sagte *„Ort ≠ Werk"* und meinte bisher nur Platten. Drei Sorten Ort mit klaren Rechten (lokal · fern-eigen · fern-fremd = nur Wissen, E129); der Serverkatalog wird über einen Adapter **verschmolzen statt danebengehängt** (E11); die Merkliste ist eine **Sammlung**, keine neue Sorte Ding; Jellyseerr ist ein **Kandidat im Rennen** (E149), kein Sonderweg; und ein ferner Ort darf ausfallen, ohne dass etwas verlorengeht — es fehlt dann nur eine Ausgabe. Dazu **Live-TV als Ort ohne Vorrat** (E44 hatte es zugelassen, `live_tv.py` existiert). **🔑 E170 Fortschritt fließt in beide Richtungen** — bisher stand nur die Richtung hinein im Heft. Was wir wissen, geben wir zurück; alles andere wäre ein Programm, das Daten aufsaugt und nichts zurückgibt. Mit den zwei Regeln, ohne die beidseitiger Abgleich immer schiefgeht: **es gewinnt die weitere Position, nicht der neuere Zeitstempel** (ein Zeitstempel sagt nur, wann ein Gerät zuletzt online war) — und was nicht ankam, wandert in eine **Nachreich-Schlange**, E156 in klein. Ausdrücklich ausgenommen: ein Zurücksetzen von Hand ist keine Regression, sondern eine Ansage. **E171 eine Registerdatei, ein Programm** — nach E151 Pflicht statt Komfort; zweimal aufs Symbol geklickt holt die vorhandene Kopie nach vorn, und eine tote Sperrdatei wird nur geräumt, wenn der Prozess nachweislich unserer war. **E172 prüfen vor dem Tausch** — vier bezahlte Regeln aus `update.py`: nichts löschen, `.bak` vor jedem Tausch, **Daten vor dem Tausch validieren** (ungültig → alte Datei bleibt), atomar schreiben. **🔑 E173 Heilen ist die zweite Hälfte des Bruchtests** — §12.6 kannte nur das Finden; acht vorhandene Reparaturen werden zu einer Regel: **jeder Fund kennt seinen Vorschlag und führt ihn nie selbst aus**, genau wie im Postfach (E141). Einzige Ausnahme bleibt die Dublettenbewertung, weil sie eine Messung ist (E140) und keine Meinung. **E174 der Wachordner nimmt an, er räumt nicht auf** — dieselben drei Ausgänge wie jede andere Quelle. **E175 das Programm zeigt sich im Infobereich** — Zustandsemblem statt Öffnen, und es informiert, es ruft nicht (E164). **E176 Inhaltsfilter für Erwachsene** — **zwei getrennte Achsen** (sexuelle Darstellung, Gewaltdarstellung), nicht dasselbe wie das Kinderprofil E158; was ausgeblendet ist, ist unsichtbar, nicht durchgestrichen. **🔑 E177 was der Mensch bestätigt, wiegt schwerer als was wir messen** — die Rückmeldeschleife aus SyncManga wird zur Regel: wir messen HTTP-Antworten, ein Mensch sieht, ob tatsächlich das Kapitel dasteht; seine Korrektur überlebt jede Neuanreicherung. **E178 sechs Lesezustände statt drei** — *„aufgeholt"* ≠ *„Rückstand"* ist der Unterschied zwischen einem Programm, das hetzt, und einem, das informiert; *„lange pausiert"* ist eine Einladung, kein Vorwurf. **Neu: §16.6 Die Kleinen** mit zehn Ja und **vier Nein** — Selbstneustart bei Codeänderung (macht die Signatur wertlos, für die wir Wochen aufwenden), **Spaltenwahl** (meist die Ausrede dafür, die Prioritätsleiter nicht geschrieben zu haben — wir haben sie geschrieben), Tonspurwahl beim externen Abspielen (E34), Cloud-Slot (ersetzt durch Gerätekopplung — die **Datensparsamkeit** wird übernommen). *Eine Übernahmeliste, die nur aus Ja besteht, ist keine Liste, sondern ein Umzug.* **`NICHT_UEBERNOMMEN.md` schrumpft** von einer Fundliste zu einem Nachweis; offen bleibt eine Zeile: `filme.py` ist entschieden, aber nicht gezeichnet. |
 | 2026-08-08 | Fassung 1.12 — **Die letzten zwei Lücken geschlossen — und eine große neue gefunden.** **🔑 E166 Sicherung: drei Ringe, und nur die Wiederherstellung zählt.** Getrennt wird nach **Katastrophenart**, nicht nach Häufigkeit: Schnappschuss (unser eigener Fehler, stündlich, `VACUUM INTO` im Betrieb) · Kopie (Plattenausfall, täglich, anderer Datenträger, plus Klartext-Ausgabe die SyncFindus überlebt) · Auswärtiges (Feuer/Diebstahl/Trojaner, wöchentlich, verschlüsselt, **versioniert und nur anfügend**). Gesichert wird nur das Unersetzliche — **unter 500 MB bei 800 Werken**, weil eine Sicherung, die 64 TB kopiert, nach drei Wochen abgestellt wird. Kernstück ist der **Rückspiel-Test**: monatlich, automatisch, mit der **ältesten** Sicherung (nicht der neuesten), zurückgespielt in einen Temp-Ordner, gezählt und mit dem **Bruchtest (E147) gegen die Kopie** geprüft. Eine Sicherung, die nie zurückgespielt wurde, ist keine Sicherung, sondern eine Hoffnung. Dazu die Wiederherstellungsregeln: nie überschreiben, vorher die Differenz zeigen, **teilweise wiederherstellen** (der häufigste Ernstfall ist nicht „alles weg", sondern „ich habe eine Sache kaputtgemacht"). **E167 Sprache: zwei gepflegte, alle weiteren eine Datei.** Deutsch und Englisch kommen mit; eine dritte, die niemand korrekturlesen kann, ist schlechter als keine. Gemeinschaftssprachen werden geladen, wenn der Text-Wächter sie durchlässt, und tragen sichtbar „ungeprüft". Dazu die Unterscheidung, die bisher fehlte: **Sprache der Oberfläche und Sprache des Inhalts sind zwei Einstellungen und dürfen sich nie gegenseitig setzen.** **🔑 E168 Löschen geht in den Papierkorb** — aus SyncYouTube geerbt und nie aufgeschrieben: keine endgültige Löschung, auch nicht für Zwischenspeicher, auch nicht auf Wunsch. **Neu: `Doku/NICHT_UEBERNOMMEN.md`.** JB fragte, was aus den verwandten Programmen nicht mitgenommen wurde; beide Repos wurden dafür **gelesen, nicht erinnert** (SyncYouTube frisch geklont, Stand `558d183`, 18.446 Zeilen). Ergebnis: **18 übersehene Funktionen** — und ein Fund von Bausteingröße: **`filme.py` (878 Zeilen)**, eine vollständige Jellyfin/Emby-Anbindung mit Katalogabzug, Merkliste, **Fortschritt-Rückmeldung samt Nachreichen nach Offline** (E156, zwei Jahre früher und schon gebaut) und **Jellyseerr** als fertigem Beschaffungsweg. Im Pflichtenheft kam Jellyfin bis heute nur als *Ziel* vor, nie als *Klient*. Dazu `live_tv.py` (E44 hat Live-TV zugelassen, der Code dafür existiert), die **Heilungsfamilie** (acht Reparaturfunktionen — §12.6 kennt nur das Finden), **Wachordner**, **Selbstneustart bei Codeänderung im Leerlauf**, **Einzelinstanz-Sperre** (nach E151 gefährlicher als vorher), **Selbst-Aktualisierung** mit vier erkauften Regeln, **Tray-Symbol mit Zustandsemblem**, **Statistik-Tafel**, **Inhaltsfilter** (nicht dasselbe wie E158), **Kapitelkorrektur von Hand**, die **Rückmeldeschleife** Quelle-bestätigen/defekt-melden, und sechs statt drei Lesezuständen. Mit der ehrlichen Ursache: ich habe zweimal nach **Architektur** gesucht und nie nach **Funktionen** — und der Alltag eines Programms steht in den kleinen Funktionen. **Neu: Entwurf `sicherung.html`.** |

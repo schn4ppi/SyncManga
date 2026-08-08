@@ -10,7 +10,7 @@
 
 > ✅ **Stand 08.08.2026, abends: alle 18 sind entschieden.** JB: *„ok lass uns entscheiden."*
 > Diese Datei hat damit ihren Zweck erfüllt und schrumpft von einer Fundliste zu einem
-> **Nachweis**. Was offen bleibt, steht ganz unten — es ist eine einzige Zeile.
+> **Nachweis**. Es ist nichts mehr offen.
 
 ---
 
@@ -23,7 +23,7 @@ immer hinten runter, weil sie in keiner Vision vorkommen.
 
 | | Anzahl | Wohin |
 |---|---|---|
-| **Zu Entscheidungen geworden** | **10** | E169–E178 |
+| **Zu Entscheidungen geworden** | **12** | E169–E180 |
 | **Als „ja" eingeordnet, ohne eigene Nummer** | 10 | §16.6 |
 | **Als „nein" abgelehnt, mit Begründung** | **4** | §16.6 |
 | **Vertagt** | 1 | F09 |
@@ -52,7 +52,7 @@ nirgends.
 
 ---
 
-## 2. Die zehn, die zu Regeln wurden
+## 2. Die zwölf, die zu Regeln wurden
 
 | Fund | Wurde |
 |---|---|
@@ -67,6 +67,8 @@ nirgends.
 | `nsfw_hide_both`, `_sexual`, `_gore` | **E176** — Inhaltsfilter für Erwachsene, **zwei getrennte Achsen**, nicht dasselbe wie E158 |
 | `cfm`, `cfmSrc`, `cfmSrcOwn`, `rep` → `broken_links.json` → `_consume_broken` | **E177** — was der Mensch bestätigt, wiegt schwerer als was wir messen |
 | `st_tip_reading/_backlog/_caught/_finished/_paused/_paused_long` | **E178** — sechs Lesezustände; „aufgeholt" ≠ „Rückstand", und „lange pausiert" ist eine Einladung, kein Vorwurf |
+| `familie.py`: `familie`, `nachbar`, `status_schreiben/lesen` | **E179** — LANoMAT: fremde Bibliotheken sind **Orte**, keine Konten. Vier Rechtestufen, „aus“ als Standard, und der **Fortschritt wird auf keiner Stufe geteilt** |
+| `seerr_suche`, `seerr_anfragen`, `seerr_meine` | **E180** — eine Anfrage ist ein **Wunsch über eine Grenze**. Drei Kontexte (eigener Server · LAN · Haushalt), ein Mechanismus, drei Antworten (Ja · Nein · **nur ansehen**) |
 
 ---
 
@@ -104,11 +106,12 @@ Zufallspick 🎲 · Familie/Nachbarschaft (vertagt auf **F09**).
 
 ## 5. Was noch offen ist
 
-> **Eine Zeile:** `filme.py` ist **entschieden** (§4.7, E169/E170), aber **nicht gezeichnet**.
-> Ein Werk, das gleichzeitig lokal und auf einem Server liegt, mit beidseitigem Fortschritt und
-> geteilter Merkliste — das ist der letzte Entwurf, der noch etwas beweisen muss.
+> ✅ **Nichts mehr.** `filme.py` ist entschieden (§4.7, E169/E170) **und gezeichnet**
+> (`orte.html`, Entwurf 20) — vier Orte, Fortschritt in beide Richtungen mit fünf
+> durchspielbaren Fällen, und **E180**: eine Anfrage ist ein Wunsch über eine Grenze.
 
-Alles andere aus dieser Liste ist im Pflichtenheft angekommen.
+Diese Datei ist damit abgearbeitet. Sie bleibt als **Nachweis** stehen — und als Vorlage für
+die Prüfung, die vor dem ersten Commit noch einmal fällig ist (Abschnitt 6).
 
 ---
 
