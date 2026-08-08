@@ -4,7 +4,7 @@
 > Anime, Manga, Novels, Musik, Hörbücher, Filme und Serien — mit eigener Bibliothek,
 > eigenem Leser, eigener Bühne, eigener Veredelung.
 >
-> **Stand:** 2026-08-08 · **Fassung:** 1.9 · **Pflege:** JB + Claude
+> **Stand:** 2026-08-08 · **Fassung:** 1.10 · **Pflege:** JB + Claude
 
 ---
 
@@ -25,6 +25,18 @@ durch **Überarbeiten**. Wer etwas hinzufügt, räumt gleichzeitig auf.
    widersprechen, sind ein Fehler im Dokument.
 5. **Ziel ist minimale Frustration beim Bauen.** Was hier ungeklärt bleibt, wird später
    dreimal umgebaut.
+6. **Die Außenwelt wird wöchentlich nachgeprüft** (JB, 08.08.2026). Quellen haben eine
+   Halbwertszeit von Wochen, Werkzeuge von Monaten — dieses Dokument von Jahren. Die
+   Prüfliste steht in **`PFLEGE.md`** und wird dort protokolliert, **nicht in einem Chat**.
+   *Ein Chat endet, die Datei nicht.*
+
+**Die Begleitdateien:**
+
+| Datei | Wofür |
+|---|---|
+| `ENTWUERFE.md` | welche Entwürfe es gibt und was noch fehlt |
+| `PFLEGE.md` | **die wöchentliche Prüfung** — was neu ist, was ersetzt wurde, was gestorben ist |
+| `UEBERNAHME_AUS_SYNCYOUTUBE.md` | welcher Code wörtlich übernommen wird, mit Datei und Funktion |
 
 **Statuszeichen:**
 
@@ -2753,23 +2765,27 @@ mitgeliefert, nur erkannt und angebunden.
 ## 13.1 Wie weit wir sind
 
 **Noch keine Zeile Code — und das ist Absicht.** Was bisher entstand, ist das Pflichtenheft und
-elf Entwürfe (siehe `ENTWUERFE.md`). Der Stand nach Bausteinen aus §16.2:
+16 Entwürfe (siehe `ENTWUERFE.md`). Der Stand nach Bausteinen aus §16.2:
 
 | # | Baustein | Entschieden | Gezeichnet | Gebaut |
 |---|---|---|---|---|
-| 1 | Register + Werk-Modell | ✅ vollständig | — | ⬜ |
-| 2 | Warteschlange | ✅ vollständig | ⬜ | ⬜ |
-| 3 | Erkennung + Identität | ✅ vollständig (E48, E76, E87) | teilweise (Erweiterung) | ⬜ |
+| 1 | Register + Werk-Modell | ✅ vollständig (**E151**) | ✅ (Werk-Seite belegt das Modell) | ⬜ |
+| 2 | Warteschlange | ✅ vollständig | ✅ | ⬜ |
+| 3 | Erkennung + Identität | ✅ vollständig (E48, E76, E87, E141) | ✅ (Erweiterung + Postfach) | ⬜ |
 | 4 | Regal + Startseite | ✅ vollständig | ✅ | ⬜ |
 | 5 | Suche | ✅ vollständig | ✅ | ⬜ |
 | 6 | Leser | ✅ vollständig | ✅ | ⬜ |
 | 7 | Bühne | ✅ vollständig | ✅ | ⬜ |
 | 8 | Erweiterung | ✅ vollständig | ✅ | ⬜ |
-| 9 | Beschaffung | ✅ Grundsätze, offen: F05, F06 | ⬜ | ⬜ |
-| 10 | Veredelung | ✅ Grundsätze, offen: F03, F04, F07 | ⬜ | ⬜ |
+| 9 | Beschaffung | ✅ vollständig (E140, E149, E150, §7.5) | ✅ (das Rennen) | ⬜ |
+| 10 | Veredelung | ✅ Grundsätze, offen: **F04, F07** | teilweise (Übersetzung ✅, Vertonung ⬜) | ⬜ |
 
-**In Zahlen:** 88 Entscheidungen · 12 Regeln der Bauart und des Vertrauens · 11 offene Fragen ·
-10 gelernte Fallen · 11 Entwürfe.
+> **Alle zehn Bausteine sind entschieden, neun von zehn gezeichnet.** Der Unterbau (1–3), der
+> beim letzten Stand noch *ein* Bild hatte, ist jetzt vollständig belegt. Damit ist die Phase
+> „zeichnen" im Wesentlichen vorbei — was bleibt, sind **Lücken schließen** und **übergeben**.
+
+**In Zahlen:** 153 Entscheidungen · 16 Regeln der Bauart und des Vertrauens · **9 offene
+Fragen** · 17 gelernte Fallen · 16 Entwürfe + 1 Beiblatt.
 
 ### Ungeschriebene Lücken (Bestandsaufnahme 07.08.2026)
 
@@ -2778,8 +2794,8 @@ Sie werden in Phase 2 zu E-Nummern (siehe `fahrplan.html`).
 
 | Lücke | Warum sie weh tut |
 |---|---|
-| ⚠️ **Übernahme aus SyncManga** | 800 Werke mit Lesestand. Sind die nicht am ersten Tag drin, wird SyncFundus nicht benutzt. Offen: automatisch oder mit Prüflauf? Was mit Overrides, Linkgesundheit, Reservequellen? |
-| **Sicherung & Wiederherstellung** | Dateien lassen sich neu holen — **der Lesestand seit 2019 nicht.** Die Bibliotheksdatenbank ist das einzige Unersetzliche an 64 TB |
+| ~~Übernahme aus SyncManga~~ | ✅ **geschlossen 08.08.2026** — §16.5: drei Macken benannt, acht Beschlüsse gefasst, E151. Offen bleibt nur der **Entwurf des Prüflauf-Berichts** |
+| **Sicherung & Wiederherstellung** | Dateien lassen sich neu holen — **der Lesestand seit 2019 nicht.** Die Bibliotheksdatenbank ist das einzige Unersetzliche an 64 TB. ⚠️ Nach E151 ist das noch schärfer: **eine** Datei trägt alles |
 | **Wenn die Platte voll ist** | Was fliegt raus, wer entscheidet? Richtige Antwort wäre „Datei weg, **Werk bleibt**" — steht aber nirgends |
 | **Kein Internet** | §5.7 sagt „wartet nie aufs Netz". Was bei tagelangem Ausfall passiert (Anreicherung staut, RSS staut, Anmeldungen laufen ab), ist offen |
 | **Zwei Menschen gleichzeitig** | Ein Heimserver, zwei Profile. Wer bekommt die Grafikkarte? Was, wenn beide dasselbe Werk lesen? |
@@ -2794,15 +2810,16 @@ durch **E148** ersetzt — der Kalender empfiehlt ganzjährig, statt einmal Bila
 **Bruchtest** ist jetzt **E147** (§12.6). Die **Lücken-Liste** (aus ◐ *gekannt* eine eigene
 Ansicht — die Liste, die kein anderes Programm bauen kann) wartet weiter auf einen Entwurf.
 
-**Was als nächstes fehlt, in dieser Reihenfolge:**
-1. ~~Die Werk-Seite~~ · ~~F10~~ · ~~Das Postfach~~ · ~~Die Warteschlange~~ — **alle vier
-   erledigt** (`werkseite.html`, E96, E139–E144).
-2. **Die Hover-Karte** — was beim Überfahren einer Kachel erscheint, ohne zu nerven.
-3. **Musik & Hörbuch als Regal** — E96 steht, die Ansicht fehlt.
-4. **Übernahme aus SyncManga** — analysiert (§16.5), aber der **Prüflauf-Bericht** hat noch
-   kein Gesicht. Das ist die riskanteste ungezeichnete Seite im Vorhaben.
-5. **Zertifikat abschließen** (§12.1) — läuft, siehe Bestellung; braucht Vorlauf vor der
-   ersten ausführbaren Fassung.
+**Was als nächstes fehlt, in dieser Reihenfolge** *(Stand 08.08.2026)*:
+
+| | Was | Warum jetzt | Wer entscheidet |
+|---|---|---|---|
+| **1** | **Der Prüflauf-Bericht** | Die riskanteste ungezeichnete Seite. §16.5 sagt *was* migriert wird — nicht, was JB **liest, bevor er 800 Werke umschaltet** | zeichnen |
+| **2** | **F05 beantworten**: `sources.json` + `readers_pattern.json` aus dem öffentlichen Repo? | Blockiert §9.2 und ist die einzige Frage, bei der **Zögern selbst das Risiko ist** (E12) | ⚠️ **JB, ein Wort** |
+| **3** | **Zertifikat abschließen** (§12.1) | Sectigo wartet auf die **Token-Wahl**. Braucht Wochen Vorlauf vor der ersten ausführbaren Fassung | ⚠️ **JB** |
+| **4** | **Die sieben restlichen Lücken** zu E-Nummern machen | Sicherung · Platte voll · offline · zwei Menschen · Sprache · Benachrichtigungen · Tastatur · Zeitzonen · Kinderprofil | entscheiden |
+| **5** | **Hover-Karte** · **Musik-Regal** · **Lücken-Liste** · **Installer** | angenehm, aber nichts davon blockiert etwas | zeichnen |
+| **6** | **F02: der Name** | blockiert alles Sichtbare — Logo, Installer, Zertifikat, Domain | ⚠️ **JB** |
 
 ---
 
@@ -2827,6 +2844,7 @@ Ansicht — die Liste, die kein anderes Programm bauen kann) wartet weiter auf e
 
 | Datum | Was |
 |---|---|
+| 2026-08-08 | Fassung 1.10 — **Die wöchentliche Pflege wird dauerhaft.** JB-Vorgabe: *„Wir müssen ab und an immer wieder prüfen, was es Neues gibt, was Altes ersetzt und was gestorben ist — egal in welchem Chat ich bin."* → **Neu: `Doku/PFLEGE.md`** mit acht Prüfungen, jede mit einem **Fund-Auslöser** (nur wenn der eintritt, gibt es Arbeit): die vier Protokolle leben · Wissensketten antworten unverändert · Werkzeuge werden gepflegt · **der Friedhof** — wer ist gestorben, die Prüfung, die man am liebsten vergisst, weil nichts kaputtgeht, sondern nur etwas fehlt · Recht und Schlösser · neue Vorbilder · Browser-Änderungen · die eigene Baustelle. Dazu die **Halbwertszeit-Tabelle**, die begründet, warum ausgerechnet das nachgeprüft werden muss: Werk-Modell hält **Jahre**, Gestaltungsregeln **Jahre**, Werkzeuge **Monate**, Quellen **Wochen**. Neu in §0: **Pflegeregel 6** und die Tabelle der drei Begleitdateien. Ein Fund gehört in eine Datei, nie in ein Gespräch — *ein Chat endet, die Datei nicht*; auch „kein Fund" wird protokolliert, sonst weiß niemand, ob geprüft oder vergessen wurde. **§13.1 auf den echten Stand gebracht:** alle zehn Bausteine entschieden, neun von zehn gezeichnet, **kein fehlender Entwurf blockiert mehr einen Baustein**. Die Lücke *Übernahme aus SyncManga* ist geschlossen (§16.5), neun bleiben — mit dem Hinweis, dass **E151** die Sicherungsfrage und **E150** die Offline-Frage verschärft haben. Die nächsten Schritte sind neu sortiert, obenan die **drei Dinge, die auf JB warten**: **F05** (die zwei Dateien aus dem öffentlichen Repo — die einzige Frage, bei der Zögern selbst das Risiko ist), die **Token-Wahl bei Sectigo** (Vorlauf Wochen, nicht Tage) und **F02 der Name** (blockiert alles Sichtbare, steht auch im Zertifikat). **Entwurf 15 überarbeitet** zu *Was noch offen ist*. |
 | 2026-08-08 | Fassung 1.9 — **E149–E153, E139 überarbeitet, der SyncManga-Damm gebrochen.** **JB entschied drei Anordnungen:** Werk-Seite **A**, Postfach **C**, Warteschlange **A** — und überstimmte mich zweimal zu Recht. **E139 überarbeitet:** JBs Einwand *„wenn du sagst, wir sollen die gleiche Oberfläche haben, dann widersprichst du dir doch"* sitzt. *Dieselben Kästen über alle Medien* ist eine Aussage über das **Datenmodell** und kostet nichts; *verschiedene Anordnungen je Zustand* ist eine über das **Verhalten** und kostet Lernbarkeit — ich hatte die zweite mit der Autorität der ersten begründet. Jetzt: **eine Anordnung, ein Band das seinen Inhalt wechselt** — der Aufmacher bleibt immer stehen, nur eine Zeile darin wird vom Herkunftssatz zum Faden; beim Film trägt dieselbe Zeile die Zeitmarke. **§4.5.1 überarbeitet:** die Bahn gewinnt, weil die Warteschlange eine **Tafel zum Danebenschauen** ist und keine Arbeitsfläche (JB: *„es ist halt ein Progress"*) — mit farbiger **Umkreisung** statt Rahmenfarbe; die Zeilen werden ihre Notlage unter 640 px, die Bündelung nach Werk wird das Aufklappen. **Neu: §9.6 Das Rennen** — **E149 Beschaffung ist ein Rennen, kein Auftrag** (Vorprüfung kostet keine Bytes: Seederzahl aus dem DHT, `HEAD` auf `Accept-Ranges`; Ablösung statt Abbruch; Teildaten bleiben liegen; Geo-Sperre ist ein Schritt, kein Fehler) und **E150 der Wunsch stirbt nie** — ein Auftrag scheitert, ein Wunsch lauert und schlägt zu, sobald eine neue Quelle auftaucht. **Neu: §7.5 Vier Protokolle statt einer Liste** (Cardigann-YAML mit 500+ Indexern, `index.min.json` der Erweiterungsläden, ~1.800 yt-dlp-Extraktoren, MediathekView-Filmliste, BitTorrent als Protokoll ohne Anbieter) und **§7.6 Das Werkzeugfeld** — 14 quelloffene Werkzeuge mit ihrer Rolle, eingebunden statt nachgebaut, dazu MakeMKV für die eigene Scheibe mit der ehrlichen § 95a-Fußnote. Ausdrücklich **nicht** enthalten: eine kuratierte Seitenliste — genau das Artefakt, an dem Tachiyomi starb. **E151 Das Register ist die Wahrheit, die Anzeige eine Sicht** — acht konkrete Beschlüsse in §16.5 schließen alle drei ineinandergreifenden SyncManga-Macken auf einmal; `CACHE_VER` entfällt, jedes Feld trägt eigenes Alter und eigene Herkunft. **Behoben (JB-Funde 08.08.):** **E152** die Kopfzeile lief über den Kapitelstreifen — die untere Leiste kannte die Regel längst, die obere nicht (*ein reparierter Fehler mit einem unreparierten Zwilling*); **E122 gilt auch senkrecht** — Sprechermarken und der Weiterlesen-Knopf wuchsen aus der zentrierten Mitte heraus und waren unsichtbar, der Knopf steht jetzt nie in der Verzichtsreihe; **E153 eine Tafel ist eine Tabelle** — die Untertitel-Werkstatt war links bündig und rechts fransig, „Größe" und „Schrift" standen wegen 1 px Innenabstand nicht übereinander, vier Bedienelement-Gewichte in 32-px-Zeilen, dazu ein Pixel Randversatz gegen die eigene Tafel; **E82** die Pausenkarte hing mittig und ragte in die Bedienleiste — jetzt oben angeschlagen, höhenbegrenzt und gestuft nachgebend. |
 | 2026-08-07 | Fassung 1.8 — **E139–E148, vier blockierende Entwürfe erledigt.** **Neu: §4.2.1 Die Werk-Seite** mit dem Vier-Medien-Nachweis (dieselben Kästen für Manga, Anime, Film, Album — nur die Wörter wechseln) und **E139: zwei Gesichter, der Fortschritt entscheidet** — kein Fortschritt → Bild-Anordnung, Fortschritt → Faden-Anordnung, unter 700 px → Akte; **keine Einstellung**, eine Folge des Zustands. **E144** Beziehungen sind gerichtet und benannt. **Neu: §4.5.1** die Warteschlange sichtbar — **E142** bündeln nach Werk statt nach Auftrag, **E143** jede Zeile beantwortet drei Fragen (was tut sie, worauf wartet sie, was bei Fehlschlag), vier Zustände und **gelb ist kein Fehler**. **Neu: §8.6 Das Postfach** — der Trichter als Rahmen, der Stapel als Arbeitsmodus, **E141** (sichtbar · Standardausgang · Regel aus Wiederholung) und die **sechs geschlossenen Gründe**. **Neu: §7.4 Die Güteleiter** — **E140**, eine Stufenleiter S–D für alle Medien, **gemessen statt geglaubt**; dazu die recherchierte Liste legal beschaffbarer Quellen je Medium (Standard Ebooks, Baen, DTA, ARD Audiothek, Bandcamp, **Live Music Archive**, **MediathekView** als stärkster Einzelfund, Digital Comic Museum) und die ehrliche Grenze bei Widevine, AACS und § 95a UrhG. **Neu: §8.5 Sechs Zeugen** mit Gewichten und Sicherungen — **E145 der Browser ist ein Zeuge, kein Gedächtnis**, **E146 der Zustand hängt nie an der Identität**. **Neu: §16.5 Übernahme aus SyncManga** — alle 18 Module gelesen, **drei ineinandergreifende Macken** benannt (Zustand im localStorage · Titel als Schlüssel · Cache = Bibliothek) samt der einen Entscheidung, die alle drei auflöst, plus was durch Leser und Herunterladen jetzt möglich wird. **E147 Der Bruchtest** (§12.6) mit sechs Beispielregeln, **E148 der Kalender empfiehlt, die Bilanz nicht** (Jahresrückblick verworfen). **Neu: Entwürfe `werkseite.html` und `quellen.html`.** **Behoben:** fehlendes `</div>` in `.hlinks` (verschluckte die Bedienschicht — der Spieler verschwand bei Hörbüchern); Vorschaubild auf der Tonspur-Zeitleiste, wo es kein Video gibt; vierte Spulstufe 60× ab 3,4 s. |
 | 2026-08-07 | Fassung 1.7 — **E138** Stimmen sichtbar machen (höchstens drei Marken, dann „+ N weitere"; Sprecherpunkte im Mitlesen; Farben aus dem Werk-Wissen; nie Namen im Fließtext). **Neu: §13.1 Ungeschriebene Lücken** — zehn Dinge, die im Pflichtenheft fehlen und beim Bauen weh tun, nach Schmerz sortiert; obenan die **Übernahme aus SyncManga** (800 Werke mit Lesestand müssen am ersten Tag drin sein). Dazu drei Ideen ohne E-Nummer: Jahresrückblick, Lücken-Liste, Bruchtest beim Beenden. **Neu: Entwurf `fahrplan.html`** mit dem Status aller zehn Bausteine, den acht fehlenden Entwürfen und vier Phasen. **Behoben:** Hörbuch zeigte Titel, Band und Kapitel doppelt — E133 gilt jetzt auch dort, der Platz gehört dem Mitlesen. |

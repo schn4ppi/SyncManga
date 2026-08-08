@@ -2,7 +2,7 @@
 
 > Begleitmaterial zu `VISION_SYNCFUNDUS.md`. Jeder Entwurf ist eine eigenständige Seite,
 > die eine Frage vollständig beantwortet — anklickbar, in Tag und Nacht, bei 360 bis 3440 px.
-> **Stand:** 2026-08-07
+> **Stand:** 2026-08-08
 
 Die Entwürfe sind **keine Umsetzung**, sondern der Beweis, dass eine Entscheidung trägt.
 Wer baut, baut gegen das Vision-Dokument; die Entwürfe zeigen, wie es aussehen soll.
@@ -25,7 +25,7 @@ Wer baut, baut gegen das Vision-Dokument; die Entwürfe zeigen, wie es aussehen 
 | 12 | **Der Rahmen** | wer hat Bild, wer hat Ton · Klangleiste · schwebendes Bild · Tafeln | §5.11.2, E97–E101 |
 | 13 | **Zeichen und Farben** | 33 eigene Zeichen · Farbe als Zustand · welcher Grund warm ist | §5.3.1, §5.10, E112–E114 |
 | 14 | **Die Übersetzung** | drei Fassungen · Glossar · Blasenprüfung · Sprichwörter | §10.2.1, E134–E137 |
-| 15 | **Fahrplan** | Status der zehn Bausteine · fehlende Entwürfe · ungeschriebene Lücken | §13.1 |
+| 15 | **Was noch offen ist** | drei Dinge, die auf JB warten · zehn Bausteine · neun Lücken · die Pflege | §13.1, `PFLEGE.md` |
 | 16 | **Werk · Postfach · Warteschlange** | **entschieden: A · C · A** · vier Medien, ein Rahmen · Güteleiter | §4.2.1, §4.5.1, §8.6 |
 | — | **Woher es kommt** *(Beiblatt)* | Wissensketten · Inhaltsquellen · sechs Zeugen · vier Protokolle · das Rennen | §7.4–7.6, §8.5, §9.6 |
 
@@ -33,12 +33,16 @@ Wer baut, baut gegen das Vision-Dokument; die Entwürfe zeigen, wie es aussehen 
 
 | Entwurf | Warum er fehlt | Blockiert |
 |---|---|---|
-| **Der Prüflauf-Bericht** ⬅ als Nächstes | ⚠️ **echte Lücke** — 800 Werke mit Lesestand müssen am ersten Tag drin sein. §16.5 sagt *was* migriert wird, aber nicht, wie der Bericht aussieht, den JB vor dem Umschalten liest | erste benutzbare Fassung |
-| **Die Hover-Karte** | was beim Überfahren einer Kachel erscheint, ohne zu nerven | Regal |
-| **Musik & Hörbuch als Regal** | E96 steht, die Ansicht fehlt | §4.2 |
-| **Die Lücken-Liste** | aus ◐ *gekannt* eine eigene Ansicht — die Liste, die kein anderes Programm bauen kann | §11 |
-| **Der Installer** | Häkchen für Fremdsoftware, erster Start | §12.2 |
-| **Spiele-Regal** | eigenständig genug, um zu warten | §6 |
+| **Der Prüflauf-Bericht** ⬅ als Nächstes | ⚠️ **einziger Entwurf mit echtem Risiko** — §16.5 sagt *was* migriert wird, aber nicht, was JB **liest, bevor er 800 Werke umschaltet**. Er muss in dreißig Sekunden entscheiden können, ob es sicher ist | erste benutzbare Fassung |
+| **Musik & Hörbuch als Regal** | E96 steht, die Ansicht fehlt | nichts |
+| **Die Hover-Karte** | was beim Überfahren einer Kachel erscheint, ohne zu nerven | nichts |
+| **Die Lücken-Liste** | aus ◐ *gekannt* eine eigene Ansicht — die Liste, die kein anderes Programm bauen kann | nichts |
+| **Der Installer** | Häkchen für Fremdsoftware, erster Start — der einzige Bildschirm, den *jeder* Nutzer sieht | erste Fassung |
+| **Spiele-Regal** | eigenständig genug, um zu warten | nichts |
+
+> **Seit 08.08.2026 blockiert kein fehlender Entwurf mehr einen Baustein.** Alle zehn sind
+> entschieden, neun von zehn gezeichnet. Was hier steht, ist angenehm zu haben — außer dem
+> ersten.
 
 ## Regeln für neue Entwürfe
 
