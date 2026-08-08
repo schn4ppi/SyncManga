@@ -43,7 +43,7 @@ nirgends.
 | `detail`, `episoden`, `reihen` | deckt sich mit Werk / Gruppe / Einheit (E03) |
 | `merkliste_lesen`, `merkliste_toggle` | **die Merkliste ist eine Sammlung** (§4.3), keine neue Sorte Ding |
 | `stream_url` | **E169** — ein Werk kann fern liegen; lokal *und* fern sind zwei Ausgaben |
-| `fortschritt`, `_fortschritt_senden`, `fortschritt_nachreichen`, `_queue_lesen` | **E170** — Fortschritt fließt in beide Richtungen, mit Nachreich-Schlange **und der Konfliktregel: die weitere Position gewinnt, nicht der neuere Zeitstempel** |
+| `fortschritt`, `_fortschritt_senden`, `fortschritt_nachreichen`, `_queue_lesen` | **E170** — Fortschritt fließt in beide Richtungen, mit Nachreich-Schlange. ⚠️ Die ursprüngliche Konfliktregel ist am selben Tag **zurückgenommen** worden: **E182** modelliert Fortschritt als **Menge je Einheit**, und dann gibt es keinen Konflikt mehr. Dazu **E181** (gehört einem Profil) und **E183** (geöffnet ≠ gesehen) |
 | `seerr_suche`, `seerr_anfragen`, `seerr_meine` | **ein Kandidat im Rennen** (E149), kein Sonderweg |
 | `mehr_wie` | zweite Empfehlungsquelle neben §11 |
 | `snippet_backen`, `snippet_lesen`, `bild_holen` | Bildzwischenspeicher — wird nicht neu erfunden |

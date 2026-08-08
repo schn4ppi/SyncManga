@@ -30,7 +30,7 @@ Wer baut, baut gegen das Vision-Dokument; die Entwürfe zeigen, wie es aussehen 
 | 17 | **Zwei Regale, eine Karte, eine Liste** | Musik ≠ Hörbuch · vier Hover-Varianten · die Lücken-Liste | §4.2.1, §5.9.1, §11, E154, E160, E165 |
 | 18 | **Der erste Start** | Installer mit drei Klassen · das leere Programm · Emulator-Ebenen | §12.2, §6, E155, E159 |
 | 19 | **Die Sicherung** | drei Ringe · was gesichert wird und was nicht · der Rückspiel-Test | §12.7, E166, E168 |
-| 20 | **Ein Werk liegt woanders** | vier Orte · Fortschritt beidseitig (5 Fälle) · Anfragen | §4.7, E169, E170, E179, E180 |
+| 20 | **Ein Werk liegt woanders** | vier Orte · Fortschritt als **Menge** (7 Fälle) · Anfragen | §4.7, E169–E183 |
 | — | **Woher es kommt** *(Beiblatt)* | Wissensketten · Inhaltsquellen · sechs Zeugen · vier Protokolle · das Rennen | §7.4–7.6, §8.5, §9.6 |
 
 ## Noch nicht gezeichnet
