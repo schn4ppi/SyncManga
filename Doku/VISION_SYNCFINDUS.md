@@ -4,7 +4,7 @@
 > Anime, Manga, Novels, Musik, Hörbücher, Filme und Serien — mit eigener Bibliothek,
 > eigenem Leser, eigener Bühne, eigener Veredelung.
 >
-> **Stand:** 2026-08-08 · **Fassung:** 1.11 · **Pflege:** JB + Claude
+> **Stand:** 2026-08-08 · **Fassung:** 1.12 · **Pflege:** JB + Claude
 
 ---
 
@@ -35,6 +35,7 @@ durch **Überarbeiten**. Wer etwas hinzufügt, räumt gleichzeitig auf.
 | Datei | Wofür |
 |---|---|
 | `ENTWUERFE.md` | welche Entwürfe es gibt und was noch fehlt |
+| `NICHT_UEBERNOMMEN.md` | ⚠️ **was aus SyncManga und SyncYouTube noch fehlt** — wird abgearbeitet, bis sie leer ist |
 | `PFLEGE.md` | **die wöchentliche Prüfung** — was neu ist, was ersetzt wurde, was gestorben ist |
 | `UEBERNAHME_AUS_SYNCYOUTUBE.md` | welcher Code wörtlich übernommen wird, mit Datei und Funktion |
 
@@ -260,6 +261,9 @@ Novels oder Manga**. Genau dort ist SyncMangas Stärke.
 | E163 | Quellen | **Der Katalog verlässt das öffentliche Repo** — F05 entschieden | 🔑✅ |
 | E164 | Meldung | **Es meldet sich nur, wenn du sonst etwas verlierst** — drei Anlässe, mehr nicht | ✅ |
 | E165 | Oberfläche | **Sofort der Rand, nach 400 ms das Band** — Hover hilft, drängt nicht | ✅ |
+| E166 | Sicherung | **Drei Ringe — und nur die Wiederherstellung zählt** (Rückspiel-Test) | 🔑✅ |
+| E167 | Sprache | **Zwei gepflegte Sprachen, alle anderen sind eine Datei** | ✅ |
+| E168 | Ablage | **Löschen geht in den Papierkorb** — nie endgültig, nie ohne Rückweg | 🔑✅ |
 
 ### Die Unverhandelbaren
 
@@ -2925,7 +2929,90 @@ für Verbesserungen.
 | **Wohin** | **eigener Server** — GlitchTip (Sentry-kompatibel, 4 Container statt 40+, läuft auf 2 GB) |
 | **Abstürze** | derselbe Weg, mit Stapelspur |
 
-### 12.7 Datenträger einlesen (E47)
+### 12.7 Sicherung und Wiederherstellung (E166)
+
+> **Entwurf:** `sicherung.html` — die letzte Lücke.
+
+64 TB Dateien lassen sich neu holen. **Der Lesestand nicht.** Und seit **E151** trägt eine
+einzige Datenbankdatei alles: Werke, Fortschritt, Handkorrekturen, Glossar, Wünsche,
+Spielstände. Das ist die richtige Bauform — und der eine Punkt, an dem alles hängt.
+
+> 🔑 **E166 — drei Ringe, und der einzige, der zählt, ist die Wiederherstellung.**
+> Eine Sicherung, die nie zurückgespielt wurde, ist keine Sicherung, sondern eine Hoffnung.
+
+**Was gesichert wird — und was ausdrücklich nicht:**
+
+| Unersetzlich → wird gesichert | Ersetzbar → wird nicht gesichert |
+|---|---|
+| Register · Fortschritt · **Handkorrekturen** · Glossar · Wünsche (auch lauernde) · Einstellungen bis zum Untertitel-Versatz je Titel · Spielstände | Mediendateien (64 TB) · Titelbilder · angereicherte Metadaten · erzeugte Übersetzungen und Vertonungen · Quellenkatalog · Protokolle |
+| **zusammen unter 500 MB bei 800 Werken** | |
+
+⚠️ **Die Trennung ist keine Sparmaßnahme, sondern die Voraussetzung.** Wer alles sichert,
+sichert 64 TB — also nie. Wer nur das Unersetzliche sichert, sichert stündlich, ohne es zu
+merken. **Die Sicherung muss so billig sein, dass sie nie ausfällt.**
+
+| Ring | Takt | Fängt ab |
+|---|---|---|
+| **1 · Der Schnappschuss** | stündlich · beim Beenden · vor jeder Änderung am Aufbau | **unseren eigenen Fehler** — kaputte Umstellung, Import der etwas überschrieben hat. `VACUUM INTO` läuft im Betrieb, ohne zu sperren. Letzte 48, dann 7 Tage täglich, 12 Monate monatlich |
+| **2 · Die Kopie** | täglich, auf **anderen Datenträger** | **den Plattenausfall.** Dazu eine **Klartext-Ausgabe** (CSV + JSON) — größer, langsamer, unschöner, und sie überlebt SyncFindus selbst (E14) |
+| **3 · Das Auswärtige** | wöchentlich, verschlüsselt, außer Haus | **Feuer, Diebstahl, Trojaner.** ⚠️ **Versioniert und nur anfügend** — ein Ziel, auf das der Rechner löschen darf, ist gegen Verschlüsselungstrojaner wertlos |
+
+Das ist die **3-2-1-Regel** (drei Kopien, zwei Datenträger, eine außer Haus) — seit
+Jahrzehnten Standard, weil sie die drei *unabhängigen* Ausfallarten trennt. Wir erfinden nichts;
+wir schreiben auf, welcher Ring welche Sorte Unglück abfängt.
+
+#### Der Rückspiel-Test — der eigentliche Entwurf
+
+Alles darüber ist Handwerk. **Das hier ist der Teil, den fast niemand macht** — und der Grund,
+warum Sicherungen im Ernstfall so oft nutzlos sind: nicht weil nicht gesichert wurde, sondern
+weil die Sicherung defekt war und **es niemand wusste**.
+
+| Schritt | Was passiert |
+|---|---|
+| **1 · Nehmen** | Die **älteste** Sicherung aus Ring 3 — nicht die neueste. Wer die neueste testet, testet den einfachsten Fall |
+| **2 · Zurückspielen** | In einen Temp-Ordner, **nie über die laufende Datenbank** |
+| **3 · Zählen** | Werke, Fortschrittseinträge, Handkorrekturen, Glossarzeilen gegen die erwarteten Zahlen |
+| **4 · Prüfen** | **Der Bruchtest (E147) läuft gegen die Kopie** — hier alle Invarianten auf einmal, denn hier darf es dauern |
+| **5 · Sagen** | Bei Erfolg still. Bei Misserfolg ist es einer der drei Anlässe aus **E164** |
+
+**Die Wiederherstellung selbst:** nie überschreiben (die laufende Datenbank wird vorher selbst
+zum Schnappschuss) · **vorher zeigen, was drin ist** samt Differenz zum jetzigen Stand ·
+**teilweise geht auch** (nur das Glossar, nur ein Werk — der häufigste Ernstfall ist nicht
+„alles weg", sondern *„ich habe eine Sache kaputtgemacht"*) · und die Klartext-Ausgabe ist
+**ohne SyncFindus lesbar**, falls das Programm selbst das Problem ist.
+
+#### E168 — Löschen geht in den Papierkorb
+
+Aus SyncYouTube geerbt (`_in_papierkorb`, `_datei_loeschen`) und bisher nirgends
+aufgeschrieben: **das Programm löscht nie endgültig.** Alles Entfernte geht in den Papierkorb
+des Betriebssystems, wo der Nutzer es sieht und zurückholen kann.
+
+> Das ist billiger als jede eigene Rücknahme-Logik und wird von jedem Menschen sofort
+> verstanden. **Eine Löschung ohne Rückweg gibt es in SyncFindus nicht** — auch nicht für
+> Zwischenspeicher, auch nicht beim Aufräumen, auch nicht auf ausdrücklichen Wunsch.
+
+### 12.8 Sprache der Oberfläche (E167)
+
+> 🔑 **Zwei Sprachen kommen mit, gepflegt: Deutsch und Englisch. Alle weiteren sind eine
+> Datei, die jemand danebenlegt.**
+
+**Warum genau zwei.** Eine dritte Sprache, die niemand korrekturlesen kann, ist **schlechter
+als keine**: sie sieht fertig aus, ist es nicht, und der Nutzer merkt es erst an der Stelle,
+an der es weh tut. Deutsch, weil JB darin denkt. Englisch, weil ohne Englisch niemand außerhalb
+das Programm ausprobiert — und weil die Übersetzung ohnehin nach Englisch zuerst geht (E134).
+
+⚠️ **Die wichtigere Unterscheidung, die bisher fehlte:** Die Sprache der **Oberfläche** und die
+Sprache des **Inhalts** sind zwei verschiedene Einstellungen. Wer die Oberfläche auf Englisch
+stellt, will nicht automatisch englische Untertitel — und umgekehrt. `i18n.py` regelt das
+Erste, §10.2 das Zweite; **sie dürfen sich nie gegenseitig setzen.**
+
+**Weitere Sprachen:** eine JSON-Datei mit denselben Schlüsseln, in einen Ordner gelegt,
+erscheint in der Auswahl — mit dem sichtbaren Vermerk **„von der Gemeinschaft, ungeprüft"**
+und dem Namen dessen, der sie beigesteuert hat. Der **Text-Wächter** (§12.6) prüft sie beim
+Laden: fehlende Schlüssel, Überlängen in fester Breite, CJK-Zeichen in einer lateinischen
+Sprache. Fällt sie durch, wird sie **nicht geladen** und der Grund steht dabei.
+
+### 12.9 Datenträger einlesen (E47)
 
 ⚠️ **Rechtslage Deutschland:** § 95a UrhG verbietet das Umgehen wirksamer technischer
 Schutzmaßnahmen (AACS, BD+, Cinavia). § 53 UrhG erlaubt die Privatkopie, aber nicht das
@@ -2993,8 +3080,13 @@ mitgeliefert, nur erkannt und angebunden.
 > beim letzten Stand noch *ein* Bild hatte, ist jetzt vollständig belegt. Damit ist die Phase
 > „zeichnen" im Wesentlichen vorbei — was bleibt, sind **Lücken schließen** und **übergeben**.
 
-**In Zahlen:** 153 Entscheidungen · 16 Regeln der Bauart und des Vertrauens · **9 offene
-Fragen** · 17 gelernte Fallen · 16 Entwürfe + 1 Beiblatt.
+**In Zahlen:** 168 Entscheidungen · 16 Regeln der Bauart und des Vertrauens · **7 offene
+Fragen** · 20 gelernte Fallen · 19 Entwürfe + 1 Beiblatt.
+
+⚠️ **Und eine neue Lücke, die alles andere überholt:** `NICHT_UEBERNOMMEN.md` listet **18
+Funktionen** aus SyncManga und SyncYouTube, die im Pflichtenheft fehlen — darunter
+`filme.py` (878 Z., Jellyfin-Anbindung mit Merkliste und Fortschritt-Rückmeldung), von
+Bausteingröße.
 
 ### Die Lücken — Stand 08.08.2026
 
@@ -3110,6 +3202,7 @@ Ansicht — die Liste, die kein anderes Programm bauen kann) wartet weiter auf e
 
 | Datum | Was |
 |---|---|
+| 2026-08-08 | Fassung 1.12 — **Die letzten zwei Lücken geschlossen — und eine große neue gefunden.** **🔑 E166 Sicherung: drei Ringe, und nur die Wiederherstellung zählt.** Getrennt wird nach **Katastrophenart**, nicht nach Häufigkeit: Schnappschuss (unser eigener Fehler, stündlich, `VACUUM INTO` im Betrieb) · Kopie (Plattenausfall, täglich, anderer Datenträger, plus Klartext-Ausgabe die SyncFindus überlebt) · Auswärtiges (Feuer/Diebstahl/Trojaner, wöchentlich, verschlüsselt, **versioniert und nur anfügend**). Gesichert wird nur das Unersetzliche — **unter 500 MB bei 800 Werken**, weil eine Sicherung, die 64 TB kopiert, nach drei Wochen abgestellt wird. Kernstück ist der **Rückspiel-Test**: monatlich, automatisch, mit der **ältesten** Sicherung (nicht der neuesten), zurückgespielt in einen Temp-Ordner, gezählt und mit dem **Bruchtest (E147) gegen die Kopie** geprüft. Eine Sicherung, die nie zurückgespielt wurde, ist keine Sicherung, sondern eine Hoffnung. Dazu die Wiederherstellungsregeln: nie überschreiben, vorher die Differenz zeigen, **teilweise wiederherstellen** (der häufigste Ernstfall ist nicht „alles weg", sondern „ich habe eine Sache kaputtgemacht"). **E167 Sprache: zwei gepflegte, alle weiteren eine Datei.** Deutsch und Englisch kommen mit; eine dritte, die niemand korrekturlesen kann, ist schlechter als keine. Gemeinschaftssprachen werden geladen, wenn der Text-Wächter sie durchlässt, und tragen sichtbar „ungeprüft". Dazu die Unterscheidung, die bisher fehlte: **Sprache der Oberfläche und Sprache des Inhalts sind zwei Einstellungen und dürfen sich nie gegenseitig setzen.** **🔑 E168 Löschen geht in den Papierkorb** — aus SyncYouTube geerbt und nie aufgeschrieben: keine endgültige Löschung, auch nicht für Zwischenspeicher, auch nicht auf Wunsch. **Neu: `Doku/NICHT_UEBERNOMMEN.md`.** JB fragte, was aus den verwandten Programmen nicht mitgenommen wurde; beide Repos wurden dafür **gelesen, nicht erinnert** (SyncYouTube frisch geklont, Stand `558d183`, 18.446 Zeilen). Ergebnis: **18 übersehene Funktionen** — und ein Fund von Bausteingröße: **`filme.py` (878 Zeilen)**, eine vollständige Jellyfin/Emby-Anbindung mit Katalogabzug, Merkliste, **Fortschritt-Rückmeldung samt Nachreichen nach Offline** (E156, zwei Jahre früher und schon gebaut) und **Jellyseerr** als fertigem Beschaffungsweg. Im Pflichtenheft kam Jellyfin bis heute nur als *Ziel* vor, nie als *Klient*. Dazu `live_tv.py` (E44 hat Live-TV zugelassen, der Code dafür existiert), die **Heilungsfamilie** (acht Reparaturfunktionen — §12.6 kennt nur das Finden), **Wachordner**, **Selbstneustart bei Codeänderung im Leerlauf**, **Einzelinstanz-Sperre** (nach E151 gefährlicher als vorher), **Selbst-Aktualisierung** mit vier erkauften Regeln, **Tray-Symbol mit Zustandsemblem**, **Statistik-Tafel**, **Inhaltsfilter** (nicht dasselbe wie E158), **Kapitelkorrektur von Hand**, die **Rückmeldeschleife** Quelle-bestätigen/defekt-melden, und sechs statt drei Lesezuständen. Mit der ehrlichen Ursache: ich habe zweimal nach **Architektur** gesucht und nie nach **Funktionen** — und der Alltag eines Programms steht in den kleinen Funktionen. **Neu: Entwurf `sicherung.html`.** |
 | 2026-08-08 | Fassung 1.11 — **Der Name steht, die Fessel fällt, neun Lücken schließen sich.** **F02 beantwortet: SyncFindus** (JB: *„Mein Kater heißt so, als Findus."*) — Dokument, Dateiname und alle Entwürfe umbenannt. **F05 beantwortet: E163, ja.** JB delegierte die Entscheidung; §9.2 wägt beide Seiten ab und entscheidet nach **Schadenshöhe statt Wahrscheinlichkeit** — bleiben die Dateien liegen und nichts passiert, gewinnen wir null; passiert etwas, ist das Repo weg. Dazu der ehrliche Hinweis, dass `git rm` nicht reicht (Historie) und ein Umschreiben JBs ausdrückliche Zustimmung braucht. **🔑 E162 — SyncManga ist Lehrer, nicht Vorgänger.** JB: *„Die Library ist egal, die sollten wir uns selber aufbauen … wir sind noch nicht so etabliert, dass wir nichts wagen können."* Damit fällt die größte Fessel des Vorhabens: die erste Fassung heißt nicht mehr *800 Werke drin*, sondern **ein Werk richtig**. Festgehalten bleibt die eine Asymmetrie — Dateien sind ersetzbar, **Lesestand nicht**; deshalb ein winziger Import von drei Feldern (Titel · letztes Kapitel · Datum) durch dieselbe Erkennung wie jede andere Quelle, als **Angebot ohne Zeitdruck**. **🔑 E154 — zwei Regale für Ton:** in der Musik ist eine Lücke eine **Zahl**, im Hörbuch ein **Defekt**. Neun Unterschiede tabellarisch, Vollständigkeitsbalken **segmentiert statt prozentual** (ein Prozentwert verschweigt, *wo* das Loch sitzt), und ein Hörbuch ist **ein** Wunsch, Musik viele. **🔑 E155 — Pflicht wird gezeigt, nicht versteckt:** Haken gesetzt und ausgegraut, drei Klassen mit je einem festen Satz, Größe/Lizenz/Zweck bei jedem Bestandteil, nie ein vorausgewähltes Extra. Dazu **der erste Start** als vier gleichwertige Wege ohne Reihenfolge. **🔑 E159 — die Einstellung gehört zum Spiel, nicht zum Emulator:** drei Ebenen mit sichtbarer Herkunft je Zeile, plus der Knopf *„als Systemstandard übernehmen"*, ohne den man dieselbe Sache 41-mal einstellt. **🔑 E160 — die Lücken-Liste ist der Eingang zur Beschaffung**, kein Bericht: eine Tat je Zeile, sie beschämt nicht, und sie hat bewusst **kein Abzeichen** — anders als das Postfach, das rufen muss. **E165 — sofort der Rand, nach 400 ms das Band** (vier Hover-Varianten verglichen, C gewinnt mit D als Sofortantwort). **Sieben Lücken geschlossen:** **E156** ohne Netz steht die Uhr, bei Rückkehr läuft alles seit dem Bruch als Nachtrag (JBs Antwort war besser als meine Frage) · **E157** eine Uhr, deine — alles nach Berliner Zeit, Herkunftszeit nur auf Nachfrage · **E158** das Alter entscheidet, und was nicht bewertet ist, gilt als nicht freigegeben; das Kind sieht keine Schlösser · **E161** ein Rechner hat Vorrang, wer davorsitzt gewinnt · **E164** es meldet sich nur bei drei Anlässen — kaputt, läuft weg, ausdrücklich gewünscht; nie eine reine Erfolgsmeldung · *Platte voll* („dann erweitere ich" — keine Verdrängungslogik, das ist die richtige Antwort) · *ohne Maus* (keine Funktion, sondern eine **Bauvorgabe**: fehlende Fokussierbarkeit ist eine neue Säule und darf nie entstehen). **Offen bleiben zwei:** Sicherung & Wiederherstellung — nach E151 trägt **eine** Datei alles — und die Sprache der Oberfläche. **Neu: Entwürfe `regale.html` und `erststart.html`.** |
 | 2026-08-08 | Fassung 1.10 — **Die wöchentliche Pflege wird dauerhaft.** JB-Vorgabe: *„Wir müssen ab und an immer wieder prüfen, was es Neues gibt, was Altes ersetzt und was gestorben ist — egal in welchem Chat ich bin."* → **Neu: `Doku/PFLEGE.md`** mit acht Prüfungen, jede mit einem **Fund-Auslöser** (nur wenn der eintritt, gibt es Arbeit): die vier Protokolle leben · Wissensketten antworten unverändert · Werkzeuge werden gepflegt · **der Friedhof** — wer ist gestorben, die Prüfung, die man am liebsten vergisst, weil nichts kaputtgeht, sondern nur etwas fehlt · Recht und Schlösser · neue Vorbilder · Browser-Änderungen · die eigene Baustelle. Dazu die **Halbwertszeit-Tabelle**, die begründet, warum ausgerechnet das nachgeprüft werden muss: Werk-Modell hält **Jahre**, Gestaltungsregeln **Jahre**, Werkzeuge **Monate**, Quellen **Wochen**. Neu in §0: **Pflegeregel 6** und die Tabelle der drei Begleitdateien. Ein Fund gehört in eine Datei, nie in ein Gespräch — *ein Chat endet, die Datei nicht*; auch „kein Fund" wird protokolliert, sonst weiß niemand, ob geprüft oder vergessen wurde. **§13.1 auf den echten Stand gebracht:** alle zehn Bausteine entschieden, neun von zehn gezeichnet, **kein fehlender Entwurf blockiert mehr einen Baustein**. Die Lücke *Übernahme aus SyncManga* ist geschlossen (§16.5), neun bleiben — mit dem Hinweis, dass **E151** die Sicherungsfrage und **E150** die Offline-Frage verschärft haben. Die nächsten Schritte sind neu sortiert, obenan die **drei Dinge, die auf JB warten**: **F05** (die zwei Dateien aus dem öffentlichen Repo — die einzige Frage, bei der Zögern selbst das Risiko ist), die **Token-Wahl bei Sectigo** (Vorlauf Wochen, nicht Tage) und **F02 der Name** (blockiert alles Sichtbare, steht auch im Zertifikat). **Entwurf 15 überarbeitet** zu *Was noch offen ist*. |
 | 2026-08-08 | Fassung 1.9 — **E149–E153, E139 überarbeitet, der SyncManga-Damm gebrochen.** **JB entschied drei Anordnungen:** Werk-Seite **A**, Postfach **C**, Warteschlange **A** — und überstimmte mich zweimal zu Recht. **E139 überarbeitet:** JBs Einwand *„wenn du sagst, wir sollen die gleiche Oberfläche haben, dann widersprichst du dir doch"* sitzt. *Dieselben Kästen über alle Medien* ist eine Aussage über das **Datenmodell** und kostet nichts; *verschiedene Anordnungen je Zustand* ist eine über das **Verhalten** und kostet Lernbarkeit — ich hatte die zweite mit der Autorität der ersten begründet. Jetzt: **eine Anordnung, ein Band das seinen Inhalt wechselt** — der Aufmacher bleibt immer stehen, nur eine Zeile darin wird vom Herkunftssatz zum Faden; beim Film trägt dieselbe Zeile die Zeitmarke. **§4.5.1 überarbeitet:** die Bahn gewinnt, weil die Warteschlange eine **Tafel zum Danebenschauen** ist und keine Arbeitsfläche (JB: *„es ist halt ein Progress"*) — mit farbiger **Umkreisung** statt Rahmenfarbe; die Zeilen werden ihre Notlage unter 640 px, die Bündelung nach Werk wird das Aufklappen. **Neu: §9.6 Das Rennen** — **E149 Beschaffung ist ein Rennen, kein Auftrag** (Vorprüfung kostet keine Bytes: Seederzahl aus dem DHT, `HEAD` auf `Accept-Ranges`; Ablösung statt Abbruch; Teildaten bleiben liegen; Geo-Sperre ist ein Schritt, kein Fehler) und **E150 der Wunsch stirbt nie** — ein Auftrag scheitert, ein Wunsch lauert und schlägt zu, sobald eine neue Quelle auftaucht. **Neu: §7.5 Vier Protokolle statt einer Liste** (Cardigann-YAML mit 500+ Indexern, `index.min.json` der Erweiterungsläden, ~1.800 yt-dlp-Extraktoren, MediathekView-Filmliste, BitTorrent als Protokoll ohne Anbieter) und **§7.6 Das Werkzeugfeld** — 14 quelloffene Werkzeuge mit ihrer Rolle, eingebunden statt nachgebaut, dazu MakeMKV für die eigene Scheibe mit der ehrlichen § 95a-Fußnote. Ausdrücklich **nicht** enthalten: eine kuratierte Seitenliste — genau das Artefakt, an dem Tachiyomi starb. **E151 Das Register ist die Wahrheit, die Anzeige eine Sicht** — acht konkrete Beschlüsse in §16.5 schließen alle drei ineinandergreifenden SyncManga-Macken auf einmal; `CACHE_VER` entfällt, jedes Feld trägt eigenes Alter und eigene Herkunft. **Behoben (JB-Funde 08.08.):** **E152** die Kopfzeile lief über den Kapitelstreifen — die untere Leiste kannte die Regel längst, die obere nicht (*ein reparierter Fehler mit einem unreparierten Zwilling*); **E122 gilt auch senkrecht** — Sprechermarken und der Weiterlesen-Knopf wuchsen aus der zentrierten Mitte heraus und waren unsichtbar, der Knopf steht jetzt nie in der Verzichtsreihe; **E153 eine Tafel ist eine Tabelle** — die Untertitel-Werkstatt war links bündig und rechts fransig, „Größe" und „Schrift" standen wegen 1 px Innenabstand nicht übereinander, vier Bedienelement-Gewichte in 32-px-Zeilen, dazu ein Pixel Randversatz gegen die eigene Tafel; **E82** die Pausenkarte hing mittig und ragte in die Bedienleiste — jetzt oben angeschlagen, höhenbegrenzt und gestuft nachgebend. |

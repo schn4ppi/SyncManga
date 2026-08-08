@@ -29,18 +29,19 @@ Wer baut, baut gegen das Vision-Dokument; die Entwürfe zeigen, wie es aussehen 
 | 16 | **Werk · Postfach · Warteschlange** | **entschieden: A · C · A** · vier Medien, ein Rahmen · Güteleiter | §4.2.1, §4.5.1, §8.6 |
 | 17 | **Zwei Regale, eine Karte, eine Liste** | Musik ≠ Hörbuch · vier Hover-Varianten · die Lücken-Liste | §4.2.1, §5.9.1, §11, E154, E160, E165 |
 | 18 | **Der erste Start** | Installer mit drei Klassen · das leere Programm · Emulator-Ebenen | §12.2, §6, E155, E159 |
+| 19 | **Die Sicherung** | drei Ringe · was gesichert wird und was nicht · der Rückspiel-Test | §12.7, E166, E168 |
 | — | **Woher es kommt** *(Beiblatt)* | Wissensketten · Inhaltsquellen · sechs Zeugen · vier Protokolle · das Rennen | §7.4–7.6, §8.5, §9.6 |
 
 ## Noch nicht gezeichnet
 
 | Entwurf | Warum er fehlt | Blockiert |
 |---|---|---|
-| **Der Prüflauf-Bericht** | seit **E162** kein Risiko mehr — der Umzug aus SyncManga ist ein Angebot, keine Pflicht. Bleibt nett zu haben | nichts |
-| **Sicherung & Wiederherstellung** ⬅ als Nächstes | die **letzte offene Lücke**, und nach E151 die wichtigste: eine Datei trägt alles | nichts, aber es tut weh, wenn es fehlt |
+| **Ein Werk liegt fern** ⬅ als Nächstes | ⚠️ neuer Fund: `filme.py` (878 Z.) spricht längst mit einem Jellyfin-Server — Katalog, Merkliste, Fortschritt-Rückmeldung, Jellyseerr. Das ist **Fundament, nicht Beschaffung**, und es fehlt (siehe `NICHT_UEBERNOMMEN.md`) | §4.6 |
+| **Der Prüflauf-Bericht** | seit **E162** kein Risiko mehr — der Umzug ist ein Angebot, keine Pflicht | nichts |
+| **Spiele-Regal (die Liste)** | die Einstellungen sind gezeichnet, die Regalansicht davor nicht | nichts |
 
-> **Stand 08.08.2026: alle zehn Bausteine entschieden, alle gezeichnet.**
-> Von acht fehlenden Entwürfen sind sechs erledigt und die letzten zwei blockieren nichts.
-> Was jetzt fehlt, sind **Entscheidungen** (Sicherung, Sprache) und dann das Bauen.
+> **Stand 08.08.2026: alle zehn Bausteine entschieden und gezeichnet, alle Lücken geschlossen.**
+> Was jetzt aufhält, ist kein Entwurf mehr, sondern die Liste in `NICHT_UEBERNOMMEN.md`.
 
 ## Regeln für neue Entwürfe
 
