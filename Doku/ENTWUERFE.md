@@ -26,8 +26,8 @@ Wer baut, baut gegen das Vision-Dokument; die Entwürfe zeigen, wie es aussehen 
 | 13 | **Zeichen und Farben** | 33 eigene Zeichen · Farbe als Zustand · welcher Grund warm ist | §5.3.1, §5.10, E112–E114 |
 | 14 | **Die Übersetzung** | drei Fassungen · Glossar · Blasenprüfung · Sprichwörter | §10.2.1, E134–E137 |
 | 15 | **Fahrplan** | Status der zehn Bausteine · fehlende Entwürfe · ungeschriebene Lücken | §13.1 |
-| 16 | **Werk · Postfach · Warteschlange** | drei Anordnungen je Seite · vier Medien, ein Rahmen · Güteleiter | §4.2.1, §4.5.1, §8.6 |
-| — | **Woher es kommt** *(Beiblatt)* | Wissensketten mit Fallbacks · legale Inhaltsquellen je Medium · sechs Zeugen | §7.4, §8.5 |
+| 16 | **Werk · Postfach · Warteschlange** | **entschieden: A · C · A** · vier Medien, ein Rahmen · Güteleiter | §4.2.1, §4.5.1, §8.6 |
+| — | **Woher es kommt** *(Beiblatt)* | Wissensketten · Inhaltsquellen · sechs Zeugen · vier Protokolle · das Rennen | §7.4–7.6, §8.5, §9.6 |
 
 ## Noch nicht gezeichnet
 

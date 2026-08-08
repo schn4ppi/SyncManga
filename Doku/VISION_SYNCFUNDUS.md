@@ -4,7 +4,7 @@
 > Anime, Manga, Novels, Musik, Hörbücher, Filme und Serien — mit eigener Bibliothek,
 > eigenem Leser, eigener Bühne, eigener Veredelung.
 >
-> **Stand:** 2026-08-07 · **Fassung:** 1.8 · **Pflege:** JB + Claude
+> **Stand:** 2026-08-08 · **Fassung:** 1.9 · **Pflege:** JB + Claude
 
 ---
 
@@ -221,7 +221,7 @@ Novels oder Manga**. Genau dort ist SyncMangas Stärke.
 | E136 | Übersetzung | **Blasenprüfung**: passt der Satz nicht, ist er falsch — Platz schlägt Schönheit | 🔑✅ |
 | E137 | Übersetzung | **Sprichwörter: drei Wege**, die Verortung entscheidet — nie stumm verpflanzen | ✅ |
 | E138 | Vertonung | **Stimmen sichtbar** — höchstens drei Marken, dann „+ N weitere" | ✅ |
-| E139 | Werk | **Zwei Gesichter, der Fortschritt entscheidet** — Entdecken oder Fortsetzen, keine Einstellung | 🔑✅ |
+| E139 | Werk | **Eine Anordnung, ein Band das wechselt** — der Aufmacher bleibt, nur eine Zeile darin ändert sich ⟳ | 🔑✅ |
 | E140 | Quellen | **Die Güte wird gemessen, nicht geglaubt** — eine Stufenleiter S–D für alle Medien | 🔑✅ |
 | E141 | Erkennung | **Das Postfach wächst nie stumm** — sichtbar, Standardausgang, Regel aus Wiederholung | 🔑✅ |
 | E142 | Warteschlange | **Bündeln nach Werk, nicht nach Auftrag** — der Auftrag ist die Einheit des Systems | ✅ |
@@ -231,6 +231,11 @@ Novels oder Manga**. Genau dort ist SyncMangas Stärke.
 | E146 | Zustand | **Der Zustand hängt nie an der Identität** — Schlüssel ist die ID, nie der Titel | 🔑✅ |
 | E147 | Qualität | **Der Bruchtest** — bei jedem Beenden still eine Invariante prüfen | ✅ |
 | E148 | Empfehlung | **Der Kalender empfiehlt, die Bilanz nicht** — Jahreszeit statt Jahresrückblick | ✅ |
+| E149 | Beschaffung | **Ein Rennen, kein Auftrag** — alle Kandidaten treten an, Vorprüfung kostet keine Bytes | 🔑✅ |
+| E150 | Beschaffung | **Der Wunsch stirbt nie** — ein Auftrag scheitert, ein Wunsch lauert | 🔑✅ |
+| E151 | Zustand | **Das Register ist die Wahrheit, die Anzeige eine Sicht** — nie ein Speicher | 🔑✅ |
+| E152 | Oberfläche | **Eine Leiste endet vor dem Streifen** — oben wie unten, nie darüber | ✅ |
+| E153 | Oberfläche | **Eine Tafel ist eine Tabelle** — beide Kanten stimmen, gleiche Zellen je Zeile | ✅ |
 
 ### Die Unverhandelbaren
 
@@ -330,19 +335,38 @@ Werk-Seite keinen Sonderfall — sie blendet die leere Sprosse aus, wie sie beim
 Bände die Bandzeile ausblendet. *Sonderfälle im Modell werden zu Sonderfällen in jeder
 Ansicht, für immer.*
 
-**E139 — zwei Gesichter, der Fortschritt entscheidet.** Drei Anordnungen wurden gezeichnet,
-und keine gewinnt allein:
+**E139 — eine Anordnung, ein Band das wechselt** *(überarbeitet 08.08.2026 nach JB-Einwand)*.
+Drei Anordnungen wurden gezeichnet. **JB wählte A** und stellte dabei die Frage, die meinen
+ersten Entwurf umgeworfen hat: *„Wenn du sagst, wir sollen die gleiche Oberfläche haben, dann
+widersprichst du dir doch, oder?"*
 
-| | Was oben steht | Stark | Schwach |
-|---|---|---|---|
-| **A · Das Bild** | Aufmacher 21:8, Titel im Bild | verkauft ein unbekanntes Werk | verkauft dir bei Kapitel 1142 etwas, das du längst gekauft hast |
-| **B · Die Akte** | Titelbild 104 px, sofort Zahlen | einzige Anordnung, die bei 360 px ohne Rollen auskommt | sieht aus wie eine Datenbank |
-| **C · Der Faden** | wo du warst, was seitdem kam | ein Griff, kein Suchen | ohne Fortschritt hat er nichts zu sagen |
+| | Was oben steht | Urteil |
+|---|---|---|
+| **A · Das Bild** | Aufmacher 21:8, Titel im Bild | ✅ **die Anordnung** |
+| **B · Die Akte** | Titelbild 104 px, sofort Zahlen | keine eigene Anordnung — **A unter 700 px** (E39) |
+| **C · Der Faden** | wo du warst, was seitdem kam | ❌ verworfen; sein guter Gedanke lebt **in A** weiter |
 
-> 🔑 **Kein Fortschritt → A. Fortschritt → C. Unter 700 px → B.**
-> Die Umschaltung ist **keine Einstellung**, sondern eine Folge des Zustands — so wie das
-> Regal seine Zahlen aus dem Zustand nimmt. Wer eine Einstellung dafür baut, hat die Frage
-> nicht beantwortet, sondern weitergereicht.
+**Der Einwand sitzt, und hier ist der ehrliche Unterschied.** *Dieselben Kästen über alle
+Medien* ist eine Aussage über das **Datenmodell** — sie kostet nichts und ist immer richtig.
+*Verschiedene Anordnungen je nach Zustand* ist eine Aussage über das **Verhalten** — und die
+kostet Lernbarkeit. Ich hatte die zweite mit der Autorität der ersten begründet. Das war
+falsch: **eine Seite, die sich umbaut, ist eine Seite, die man nicht lernen kann.**
+
+> 🔑 **Der Aufmacher bleibt immer stehen. Der Fortschritt entscheidet nur, was in einer
+> einzigen Zeile darin steht** — Herkunft oder Faden. Gleicher Ort, gleiche Höhe, anderer
+> Inhalt. Nichts springt, nichts baut sich um, und die Seite ist nach dem zweiten Besuch
+> auswendig gelernt.
+
+| Medium | Zeile ohne Fortschritt | Zeile mit Fortschritt |
+|---|---|---|
+| Manga | *Manga · JP · 1997 – läuft · Eiichiro Oda* | *Du warst hier · Kapitel 1141 „Der Wille des D." · 7 neu* |
+| Anime | *Anime · JP · 2023 · Madhouse* | *Du warst hier · Folge 8 · Folge 9 ist seit 2 Tagen da* |
+| **Film** | *Film · US · 2024 · Villeneuve · 166 min* | *Du warst hier · bei 0:47:12 — Die Reiterprüfung · noch 1 h 59* |
+| Album | *Album · FR · 2013 · Daft Punk · Columbia* | *Zuletzt gehört · Titel 7 „Touch" · 6 nie gehört* |
+
+Ein Film hat kein „nächstes Kapitel" — also trägt das Band dort die **Zeitmarke**. Dieselbe
+Zeile, dieselbe Höhe, eine andere Sorte Auskunft. Das ist der Unterschied zwischen *dieselbe
+Seite* und *dasselbe Bild*.
 
 **E144 — Beziehungen sind gerichtet und benannt.** *Vorlage · Adaption · Vorgänger ·
 Nachfolger · Ableger · Neuauflage · Reihe · Universum.* Ein ungerichtetes „ähnlich" wäre
@@ -620,15 +644,33 @@ Nachtfenster sind einstellbar, nicht fest verdrahtet.
 
 Drei wurden gezeichnet: **Die Bahn** (fünf Spuren, ein Auftrag wandert nach rechts) · **Die
 Zeilen** (eine Zeile je Auftrag, der Weg als fünf Punkte) · **Nach Werk** (aufklappbare
-Bündel). Die Bahn zeigt das System und ist schön beim Zusehen — aber „wo ist One Piece 1142?"
-heißt: in fünf Spalten suchen, und unter 640 px bleiben zwei Spuren übrig. Die Zeilen
-skalieren bis 360 px, zeigen bei 31 Aufträgen aber 14-mal denselben Manga.
+Bündel).
 
-> 🔑 **E142 — bündeln nach Werk, nicht nach Auftrag.** Der Auftrag ist die Einheit des
-> Systems, das **Werk** ist die Einheit des Menschen. Die Frage lautet nie „welcher Auftrag
-> läuft", sondern „was passiert mit meinem Kram". Fünf aufklappbare Zeilen statt 31 — und
-> alles ohne Werkbezug (Titelbilder, Prüfungen, Aufräumen) in **einer** Sammelzeile, wo es
-> hunderte sein dürfen, ohne zu stören.
+**JB wählte die Bahn** — und begründete es mit einem Satz, der meine Empfehlung schlägt:
+*„Ich glaube, die Warteschlange wird eh etwas überbewertet, es ist halt ein Progress."*
+
+> 🔑 **Das entscheidet die Frage: die Warteschlange ist eine Tafel zum Danebenschauen, keine
+> Arbeitsfläche.** Mein Einwand gegen die Bahn war „wo ist One Piece 1142? — fünf Spalten
+> absuchen". Der Einwand zählt nur, wenn man sie **durchsucht**. Wenn man sie nur **ansieht**,
+> gewinnt die Bahn, weil sie als einzige auf einen Blick zeigt, **wo es klemmt** — vier rote
+> Karten in der Spur *Beschaffen* sagen mehr als vierzehn rote Zeilen in einer Liste.
+
+**Farbige Umkreisung statt Rahmenfarbe** (JB): Der Zustand ist ein **Schein um die Karte**,
+kein Rahmen — er verschiebt nichts und ist im Augenwinkel sichtbar, was bei einer Tafel zum
+Danebenschauen genau der Punkt ist. Laufendes pulst langsam (2,4 s); bei
+`prefers-reduced-motion` steht es still.
+
+**Die anderen zwei sind nicht verworfen, sondern verschoben:**
+
+| | wohin |
+|---|---|
+| **B · Die Zeilen** | wird die Bahn unter 640 px — dort ist kein Platz für fünf Spuren (E122) |
+| **C · Nach Werk** | wird das **Aufklappen**: ein Klick auf eine Karte zeigt alles, was zu diesem Werk läuft |
+
+> 🔑 **E142 — bündeln nach Werk, nicht nach Auftrag** — gilt weiter, aber **in der Tiefe**.
+> Der Auftrag ist die Einheit des Systems, das **Werk** ist die Einheit des Menschen. Wer
+> nachsieht, fragt „was passiert mit meinem Kram" — und bekommt es beim Aufklappen. Alles ohne
+> Werkbezug (Titelbilder, Prüfungen, Aufräumen) bleibt in **einer** Sammelkarte.
 
 > 🔑 **E143 — jede Zeile beantwortet drei Fragen, ohne dass man klickt.**
 > **Was tut sie gerade** („lädt von Cosmic Scans, 4,1 MB") · **worauf wartet sie**
@@ -1355,6 +1397,13 @@ wie bei VLC (`Shift`/`Alt`/`Strg` + Pfeil).
 Bild bleibt sichtbar) eine Karte: Folgentitel, Jahr, Studio, drei Sätze Inhalt, und eine
 **Rollenzeile** — wer gerade zu sehen ist, mit Gesicht. Das beantwortet die einzige Frage, für
 die man überhaupt pausiert: *„Moment, wer ist das nochmal?"*
+⚠️ **Sie hängt oben, nicht in der Mitte** (JB-Fund 08.08.2026: *„Die Pausenkarte sollte nicht
+über dem Player-Menü sein. Weiter oben links und etwas kleiner, je nachdem wie klein der Player
+gezogen ist."*). Bei `top:50 %` ragte sie in die Bedienleiste, sobald die Bühne kurz wurde.
+Jetzt hängt sie **unter der Kopfzeile** und ihre Höhe ist auf den freien Raum geklammert —
+beide Höhen **gemessen**, nicht geraten (E121). Wird es eng, gibt sie gestuft nach (E122):
+erst der Inhaltstext auf zwei Zeilen, dann ganz weg, dann die Nebenangabe — der **Titel bleibt
+immer**.
 ⚠️ **Nie Empfehlungen in der Pause.** Netflix zeigt dort „Ähnliche Titel" — das ist Werbung im
 eigenen Wohnzimmer. Die Rollen kommen aus dem Werk-Wissen (§10.1), das für Übersetzung und
 Vertonung ohnehin gebaut wird.
@@ -1431,6 +1480,45 @@ oben und unter dem Cover nochmal?"* — Weil ich zwei Bauteile unabhängig entwo
 In Anordnung **A** trägt das Cover den Titel ⇒ oben steht *Musik · Playlist „Ushio, alles"*.
 In **B** und **C** wird der Titel klein bzw. der Text regiert ⇒ er wandert nach oben, die
 Herkunft verschwindet. Dieselbe Regel gilt überall: Werk-Seite, Leser, Bühne.
+
+**E152 — eine Leiste endet vor dem Streifen.** JB-Fund 08.08.2026: *„Kapitel usw. sind verdeckt
+von ‚von uns vertont' und ‚Mitlesen an'."* — Die **untere** Leiste hatte bei Musik und Hörbuch
+längst gelernt, vor dem Seitenstreifen zu enden (`right: 262px`). Die **obere** nicht: sie lief
+über die volle Breite, und ihre rechten Marken landeten genau auf der Kopfzeile des
+Kapitelstreifens.
+
+> **Wer eine Regel für die eine Kante schreibt, schreibt sie für beide.** Eine Leiste, die
+> einen Streifen hat, endet vor dem Streifen — oben wie unten, links wie rechts. Ich hatte den
+> Fehler unten bemerkt, behoben und **nicht nachgesehen, ob er oben genauso steckt**. Das ist
+> die häufigste Sorte Fehler überhaupt: ein reparierter Fehler mit einem unreparierten Zwilling.
+
+**E122 gilt auch senkrecht.** JB-Fund 08.08.2026: *„Die Namen der Sprecher sind ausserhalb des
+Bildes"* und *„Ich seh weiterlesen statt hören nicht, wenn es zu klein gezogen ist."* — Ursache:
+der Textblock war **inhaltshoch** in einem zentrierenden Kasten. Wurde er höher als die Bühne,
+wuchs er **nach oben und unten** aus der Mitte heraus: oben fielen die Sprechermarken hinaus,
+unten der Knopf. Beides unsichtbar, beides ohne Hinweis.
+
+> **Gestuftes Aufgeben ist keine Breitenregel, sondern eine Regel über knappen Raum.**
+> Der Block wird auf die Bühnenhöhe geklammert und lässt in fester Reihenfolge weg:
+> Textabsätze 3 → 2 → 1, dann die Stimmenzeile einreihig, dann das Mitlesen ganz.
+> **Der Knopf steht nie in der Verzichtsreihe** — er ist das Angebot, nicht die Zier.
+
+**E153 — eine Tafel ist eine Tabelle.** JB-Fund 08.08.2026: *„Untertitel-Einstellungen sehen
+gut aus, doch das Fenster sieht irgendwie falsch aus."* — Es gab nichts Kaputtes zu sehen, und
+genau das macht diese Sorte Fehler gefährlich. Drei Ursachen, alle drei unterhalb der
+Benennbarkeitsschwelle:
+
+| Ursache | Was das Auge merkt |
+|---|---|
+| **Links bündig, rechts fransig** | Die Beschriftungen standen in fester Spalte, die Knopfgruppen daneben waren jede anders breit → sieben Zeilen, **sieben verschiedene rechte Kanten**. Links liest man eine Tabelle und erwartet rechts auch eine |
+| **Gleich aussehende Zeilen, anderer Takt** | „Größe" und „Schrift" sind beide *Aa*-Knöpfe, hatten aber 7 px bzw. 6 px Innenabstand → sie standen **nicht übereinander**, obwohl sie es sollten |
+| **Vier Gewichte in einer 32-px-Zeile** | 24-px-Knöpfe neben 15-px-Punkten neben 46-px-Feldern neben 26-px-Pfeilen |
+| *(dazu)* **ein Pixel** | Die Tafel hat überall 15 px Rand, die Zeilen hatten 14 px |
+
+> **Die Wertespalte ist fest breit, und jede Gruppe teilt sie in gleiche Zellen.** Damit stimmen
+> **beide** Kanten in jeder Zeile, jede Zelle einer Zeile ist gleich groß, und wechselnde
+> Beschriftungen („100 %" → „75 %") springen nicht mehr (E103 — die Zelle *ist* die feste
+> Breite). Farbpunkte wachsen auf 22 px und wiegen damit so viel wie ein Knopf.
 
 **E131 — ein Knopf, eine Bedeutung.** ⚠️ Ich hatte beim Hörbuch demselben Knopf ein anderes
 Etikett gegeben („Einschlafen 30 min") und ihn trotzdem die Ton-&-Text-Tafel öffnen lassen.
@@ -1678,6 +1766,62 @@ seit Jahren stabil, samt Untertiteln und teils Audiodeskription.
 
 ❌ **Was nicht geht und nie gehen wird:** Widevine (Netflix, Disney+, Crunchyroll), Adobe ACSM
 (Bibliotheksleihe), Audible-DRM. Das Konto liefert **Wissen**, nie Inhalt (E129).
+
+### 7.5 Vier Protokolle statt einer Liste
+
+**JB, 08.08.2026:** *„Das sieht mir alles zu legal aus. Ich will alle Anbieter haben. Gibt es
+Torrentseiten mit jedem erdenklichen Kram? … Lets look deep, far and wide."*
+
+**Die Antwort ist kein Verzeichnis, sondern eine Bauform** — und sie ist stärker als jedes
+Verzeichnis. Eine Liste von 200 Adressen ist in drei Monaten zu einem Drittel tot. Ein Adapter
+auf ein gepflegtes Protokoll ist in drei Monaten **mehr** wert, weil in der Zwischenzeit
+hunderte Leute nachgezogen haben. SyncFundus spricht deshalb die vier Sprachen, in denen
+Quellenlisten überhaupt veröffentlicht werden:
+
+| Protokoll | Wer pflegt | Umfang | Was wir bauen |
+|---|---|---|---|
+| **Cardigann-YAML** (Prowlarr · Jackett) | Gemeinschaft, **täglich** per GitHub-Action zwischen beiden Projekten abgeglichen | **500+** Indexer | **Ein** Adapter zu deinem Prowlarr. Jeder Indexer, den du dort einträgst, ist bei uns sofort eine Quelle |
+| **`index.min.json`** (Mihon · Aniyomi · Keiyoushi) | Gemeinschaft, Abgleich alle paar Stunden | hunderte Lesequellen | Ein **Abonnent** für Erweiterungslisten — genau die Bauform aus E12 |
+| **yt-dlp-Extraktoren** | hunderte Mitwirkende, fast wöchentlich | **~1.800 Seiten** | yt-dlp **ist** unser universeller HTTP-Adapter |
+| **MediathekView-Filmliste** | Verein, seit 2011 | 13 Sender | eine komprimierte JSON-Datei lesen |
+| **BitTorrent / Magnet** | niemand — es ist ein **Protokoll**, kein Anbieter | — | Magnetlink erkennen, an deinen Client übergeben, Fortschritt zurücklesen |
+
+> 🔑 **Der Nutzer bekommt nicht unsere Liste — er bekommt jede Liste, die es gibt, und die von
+> morgen dazu.** Und weil nichts davon im Paket steht, gibt es nichts, was man dem Projekt
+> wegnehmen könnte (E12).
+
+### 7.6 Das Werkzeugfeld — was schon gelöst ist
+
+Alles hier ist quelloffen, aktiv gepflegt und wird **eingebunden statt nachgebaut** (E11).
+
+| Werkzeug | Rolle | Wofür |
+|---|---|---|
+| **yt-dlp** | Motor | alles über HTTP; läuft in SyncYouTube bereits |
+| **streamlink** | Motor | Live-Ströme, die yt-dlp schlechter kann |
+| **gallery-dl** | Motor | Bildstrecken **und Manga-Kapitel** — genau die Lücke, die SyncManga heute hat |
+| **Prowlarr** · **Jackett** | Klempnerei | 500+ Indexer hinter einer Suchschnittstelle |
+| **qBittorrent** · **Transmission** · libtorrent | Klempnerei | Magnet hinein, Fortschritt heraus. Wir bauen keinen Torrent-Motor |
+| **Bazarr** | Klempnerei | Untertitel — bis unsere eigene Übersetzung besser ist (§10.2) |
+| **beets** | **Vorbild** | Goldstandard für Musikbibliotheken; sein Autotagger ist §8.2 in Code |
+| **MusicBrainz Picard** | Motor | Tonabdruck → Etiketten, von Hand korrigierbar |
+| **spotDL** | **Vorbild** | E129 in Code: das Konto liefert die **Liste**, nicht den Ton |
+| **MakeMKV** | eigene Scheibe | Blu-ray/DVD → MKV, alle Spuren unangetastet (**Stufe S**) |
+| **ffmpeg** / `ffprobe` · HandBrake | Motor | umwandeln — und `ffprobe` ist unser **Messgerät** für E140 |
+| **Calibre** | Vorbild | die beste Metadatenkette, die es für Bücher gibt |
+| **Kavita** · **Komga** · Kapowarr | Vorbild + Ziel | wir exportieren so, dass sie unsere Bibliothek lesen (E06) |
+| **Nicotine+** | Klempnerei | Soulseek — das älteste noch lebende Musiktauschnetz, stark bei Seltenem |
+
+⚠️ **Zur eigenen Blu-ray ohne Abspieler** (JB-Fall): Das Werkzeug ist **MakeMKV**. Und die
+ehrliche Fußnote gehört dazu: § 95a UrhG verbietet in Deutschland das Umgehen wirksamer
+technischer Maßnahmen, AACS gilt als eine — **ohne Ausnahme für die Privatkopie**. Andere
+Länder sehen das anders. Das Werkzeug und die Rechtslage stehen hier; die Entscheidung liegt
+beim Nutzer.
+
+⚠️ **Was dieses Dokument nicht enthält und nie enthalten wird:** eine kuratierte Liste von
+Piraterieseiten. Nicht aus Zimperlichkeit — sondern weil eine solche Liste **exakt das
+Artefakt** ist, wegen dem Tachiyomi eingestellt wurde und 200 Aniyomi-Erweiterungen mit einer
+einzigen Meldung verschwanden (E12). Das Programm kann jede Quelle beschreiben, suchen, prüfen
+und holen. Welche Quellen es sind, trägt der Nutzer ein.
 
 ---
 
@@ -2087,6 +2231,46 @@ Alles vom Nutzer Hinzugefügte braucht ihn standardmäßig.
 5. **Windows Defender ist da** — die heruntergeladene Datei einmal prüfen lassen (MpCmdRun),
    statt einen eigenen Scanner zu bauen.
 6. **Quellen mit Fundmeldung werden abgewertet** — Sicherheit fließt in die Rangliste ein.
+
+### 9.6 Das Rennen (E149, E150)
+
+**JB, 08.08.2026:** *„Was wichtig an der Warteschlange ist, dass nichts aufgehalten wird. Wenn
+z. B. YouTube blockiert durch Länderzonen, oder wenn ein Torrent keine Seeder mehr hat, oder
+alle Seeder seit Stunden offline sind. Oder ein Direktdownload fehlerhaft ist. Wie garantieren
+wir Sicherheit und Erfolg?"*
+
+**Garantieren kann man nichts.** Man kann nur dafür sorgen, dass ein Fehlschlag **nichts kostet
+außer Zeit, die ohnehin parallel läuft**. Der ganze Trick steckt darin, den Auftrag anders zu
+formulieren:
+
+| | Auftrag ❌ | Wunsch ✅ |
+|---|---|---|
+| **lautet** | „lade Frieren 09 von dort" | „beschaffe Frieren 09, mind. Stufe B, JP + Sub DE" |
+| **Quelle tot** | scheitert | Kandidat 2 von 5 übernimmt — **ohne dass jemand etwas merkt** |
+| **Geo-Sperre** | rot | ein **Ablöseschritt**, kein Fehler |
+| **alles gescheitert** | stirbt, du erfährst es nie | **lauert** und schlägt zu, wenn eine neue Quelle auftaucht |
+
+> 🔑 **E149 — Beschaffung ist ein Rennen, kein Auftrag.**
+
+| Regel | Warum |
+|---|---|
+| **Vorprüfung kostet keine Bytes** | Seederzahl aus DHT/Tracker **vor** dem Start. Direktlink per `HEAD`: Größe plausibel? `Accept-Ranges` da? Inhaltstyp richtig? **Ein Kandidat, der sich nicht fortsetzen lässt, ist ein schlechter Kandidat — und das weiß man vorher, nicht nach 4 GB.** |
+| **Ablösung statt Abbruch** | Fällt die Rate über 3 Minuten unter ein Viertel des Erwarteten, startet Kandidat 2 **parallel**. Wer zuerst fertig ist, gewinnt; der Langsame wird **überholt**, nicht abgebrochen |
+| **Teildaten bleiben** | Bei Torrents zählen sie ohnehin weiter, bei HTTP mit `Range` setzt der nächste Versuch dort an. **Nichts wird zweimal geladen** |
+| **Geo ist ein Schritt** | `geo.py` und `vpn.py` aus SyncYouTube **existieren bereits**. „In DE gesperrt" heißt: nächster Ausgang, nicht rot |
+| **Spuren sind getrennt** | Ein hängender Torrent belegt **keinen** Platz beim Prüfen, Veredeln oder Anreichern. Deshalb hält nie etwas etwas anderes auf |
+
+> 🔑 **E150 — der Wunsch stirbt nie.** Scheitern alle Kandidaten, bleibt der Wunsch stehen und
+> **lauert**: er wird bei jeder neuen Quelle, jedem RSS-Treffer, jeder neu abonnierten Liste
+> automatisch neu bewertet. **Ein Auftrag scheitert. Ein Wunsch wartet.** *Berserk 374 gibt es
+> heute nicht über Stufe C — in vier Wochen schon, und dann passiert es von selbst.*
+
+**Die drei Sicherheiten, die nichts mit Erfolg zu tun haben, aber alles mit Ruhe:**
+1. Was hereinkommt, wird geprüft, **bevor** es die Bibliothek berührt — Dateityp gegen Inhalt
+   (nicht gegen Endung), `ffprobe` muss die Datei verstehen, Archive nie entpackt-und-ausgeführt.
+2. Alles Netzwerkige schreibt **nur in einen Eingangsordner**, nie in die Bibliothek.
+3. **Kein Beschaffungsweg darf je den Leser oder die Bühne blockieren.** Was gerade angesehen
+   wird, hat immer Vorrang (§4.5).
 
 ---
 
@@ -2643,6 +2827,7 @@ Ansicht — die Liste, die kein anderes Programm bauen kann) wartet weiter auf e
 
 | Datum | Was |
 |---|---|
+| 2026-08-08 | Fassung 1.9 — **E149–E153, E139 überarbeitet, der SyncManga-Damm gebrochen.** **JB entschied drei Anordnungen:** Werk-Seite **A**, Postfach **C**, Warteschlange **A** — und überstimmte mich zweimal zu Recht. **E139 überarbeitet:** JBs Einwand *„wenn du sagst, wir sollen die gleiche Oberfläche haben, dann widersprichst du dir doch"* sitzt. *Dieselben Kästen über alle Medien* ist eine Aussage über das **Datenmodell** und kostet nichts; *verschiedene Anordnungen je Zustand* ist eine über das **Verhalten** und kostet Lernbarkeit — ich hatte die zweite mit der Autorität der ersten begründet. Jetzt: **eine Anordnung, ein Band das seinen Inhalt wechselt** — der Aufmacher bleibt immer stehen, nur eine Zeile darin wird vom Herkunftssatz zum Faden; beim Film trägt dieselbe Zeile die Zeitmarke. **§4.5.1 überarbeitet:** die Bahn gewinnt, weil die Warteschlange eine **Tafel zum Danebenschauen** ist und keine Arbeitsfläche (JB: *„es ist halt ein Progress"*) — mit farbiger **Umkreisung** statt Rahmenfarbe; die Zeilen werden ihre Notlage unter 640 px, die Bündelung nach Werk wird das Aufklappen. **Neu: §9.6 Das Rennen** — **E149 Beschaffung ist ein Rennen, kein Auftrag** (Vorprüfung kostet keine Bytes: Seederzahl aus dem DHT, `HEAD` auf `Accept-Ranges`; Ablösung statt Abbruch; Teildaten bleiben liegen; Geo-Sperre ist ein Schritt, kein Fehler) und **E150 der Wunsch stirbt nie** — ein Auftrag scheitert, ein Wunsch lauert und schlägt zu, sobald eine neue Quelle auftaucht. **Neu: §7.5 Vier Protokolle statt einer Liste** (Cardigann-YAML mit 500+ Indexern, `index.min.json` der Erweiterungsläden, ~1.800 yt-dlp-Extraktoren, MediathekView-Filmliste, BitTorrent als Protokoll ohne Anbieter) und **§7.6 Das Werkzeugfeld** — 14 quelloffene Werkzeuge mit ihrer Rolle, eingebunden statt nachgebaut, dazu MakeMKV für die eigene Scheibe mit der ehrlichen § 95a-Fußnote. Ausdrücklich **nicht** enthalten: eine kuratierte Seitenliste — genau das Artefakt, an dem Tachiyomi starb. **E151 Das Register ist die Wahrheit, die Anzeige eine Sicht** — acht konkrete Beschlüsse in §16.5 schließen alle drei ineinandergreifenden SyncManga-Macken auf einmal; `CACHE_VER` entfällt, jedes Feld trägt eigenes Alter und eigene Herkunft. **Behoben (JB-Funde 08.08.):** **E152** die Kopfzeile lief über den Kapitelstreifen — die untere Leiste kannte die Regel längst, die obere nicht (*ein reparierter Fehler mit einem unreparierten Zwilling*); **E122 gilt auch senkrecht** — Sprechermarken und der Weiterlesen-Knopf wuchsen aus der zentrierten Mitte heraus und waren unsichtbar, der Knopf steht jetzt nie in der Verzichtsreihe; **E153 eine Tafel ist eine Tabelle** — die Untertitel-Werkstatt war links bündig und rechts fransig, „Größe" und „Schrift" standen wegen 1 px Innenabstand nicht übereinander, vier Bedienelement-Gewichte in 32-px-Zeilen, dazu ein Pixel Randversatz gegen die eigene Tafel; **E82** die Pausenkarte hing mittig und ragte in die Bedienleiste — jetzt oben angeschlagen, höhenbegrenzt und gestuft nachgebend. |
 | 2026-08-07 | Fassung 1.8 — **E139–E148, vier blockierende Entwürfe erledigt.** **Neu: §4.2.1 Die Werk-Seite** mit dem Vier-Medien-Nachweis (dieselben Kästen für Manga, Anime, Film, Album — nur die Wörter wechseln) und **E139: zwei Gesichter, der Fortschritt entscheidet** — kein Fortschritt → Bild-Anordnung, Fortschritt → Faden-Anordnung, unter 700 px → Akte; **keine Einstellung**, eine Folge des Zustands. **E144** Beziehungen sind gerichtet und benannt. **Neu: §4.5.1** die Warteschlange sichtbar — **E142** bündeln nach Werk statt nach Auftrag, **E143** jede Zeile beantwortet drei Fragen (was tut sie, worauf wartet sie, was bei Fehlschlag), vier Zustände und **gelb ist kein Fehler**. **Neu: §8.6 Das Postfach** — der Trichter als Rahmen, der Stapel als Arbeitsmodus, **E141** (sichtbar · Standardausgang · Regel aus Wiederholung) und die **sechs geschlossenen Gründe**. **Neu: §7.4 Die Güteleiter** — **E140**, eine Stufenleiter S–D für alle Medien, **gemessen statt geglaubt**; dazu die recherchierte Liste legal beschaffbarer Quellen je Medium (Standard Ebooks, Baen, DTA, ARD Audiothek, Bandcamp, **Live Music Archive**, **MediathekView** als stärkster Einzelfund, Digital Comic Museum) und die ehrliche Grenze bei Widevine, AACS und § 95a UrhG. **Neu: §8.5 Sechs Zeugen** mit Gewichten und Sicherungen — **E145 der Browser ist ein Zeuge, kein Gedächtnis**, **E146 der Zustand hängt nie an der Identität**. **Neu: §16.5 Übernahme aus SyncManga** — alle 18 Module gelesen, **drei ineinandergreifende Macken** benannt (Zustand im localStorage · Titel als Schlüssel · Cache = Bibliothek) samt der einen Entscheidung, die alle drei auflöst, plus was durch Leser und Herunterladen jetzt möglich wird. **E147 Der Bruchtest** (§12.6) mit sechs Beispielregeln, **E148 der Kalender empfiehlt, die Bilanz nicht** (Jahresrückblick verworfen). **Neu: Entwürfe `werkseite.html` und `quellen.html`.** **Behoben:** fehlendes `</div>` in `.hlinks` (verschluckte die Bedienschicht — der Spieler verschwand bei Hörbüchern); Vorschaubild auf der Tonspur-Zeitleiste, wo es kein Video gibt; vierte Spulstufe 60× ab 3,4 s. |
 | 2026-08-07 | Fassung 1.7 — **E138** Stimmen sichtbar machen (höchstens drei Marken, dann „+ N weitere"; Sprecherpunkte im Mitlesen; Farben aus dem Werk-Wissen; nie Namen im Fließtext). **Neu: §13.1 Ungeschriebene Lücken** — zehn Dinge, die im Pflichtenheft fehlen und beim Bauen weh tun, nach Schmerz sortiert; obenan die **Übernahme aus SyncManga** (800 Werke mit Lesestand müssen am ersten Tag drin sein). Dazu drei Ideen ohne E-Nummer: Jahresrückblick, Lücken-Liste, Bruchtest beim Beenden. **Neu: Entwurf `fahrplan.html`** mit dem Status aller zehn Bausteine, den acht fehlenden Entwürfen und vier Phasen. **Behoben:** Hörbuch zeigte Titel, Band und Kapitel doppelt — E133 gilt jetzt auch dort, der Platz gehört dem Mitlesen. |
 | 2026-08-07 | Fassung 1.6 — E133–E137, **F03 geschlossen**. **Neu: §10.2.1 Die Übersetzung im Bild.** **E135 das Glossar schlägt jedes Modell** — fünfstufige Herkunftsrangfolge, Handkorrektur gewinnt immer, nie stumm überschreiben; eine Glossarzeile ändern erneuert alle betroffenen Stellen rückwirkend, **der Lesestand bleibt** (E76). **E136 Blasenprüfung:** beim Manga ist nicht die Übersetzung das Problem, sondern der Platz — passt der Satz nicht in die Sprechblase, ist er falsch, auch wenn er schöner ist. **E134 Englisch zuerst**, Deutsch als zweiter Lauf **aus der englischen Fassung**, weil das Glossar dann schon steht. **E137 Sprichwörter (F03):** drei Wege — ersetzen nur ohne Ortsbezug, Bild behalten mit Antipp-Erklärung als Standard, Sinn ohne Bild als Rückfall; entschieden wird einmal und steht dann im Glossar. **E133 nichts steht zweimal im Bild:** trägt der Inhalt den Titel, trägt die Kopfzeile die Herkunft — und der Pfeil führt dorthin zurück. **Behoben:** Ausschnitt lag unter der Leiste (jetzt in der Bedienschicht); Warteschlangenfuß hatte Zufall/Wiederholen/Als Playlist doppelt zu den Leistenknöpfen — jetzt nur noch ein ⋯ mit warteschlangeneigenen Werkzeugen; Karaoke-Mikro mit versetzter Kapsel. |
@@ -2772,11 +2957,30 @@ Erweiterung kostet damit einen Volllauf gegen fünf gedrosselte Fremdquellen.
 > Jede Macke für sich ist verkraftbar. Zusammen ergeben sie: *„mein Archiv hat sich
 > resetted."*
 
-**Die Kur in SyncFundus** — alle drei verschwinden durch **eine** Entscheidung:
+**Die Kur** *(JB 08.08.2026: „Schließe die Probleme und brech den Damm.")* — alle drei
+verschwinden durch **eine** Entscheidung, und die ist hiermit getroffen:
 
-> **Register (SQLite) ist die Wahrheit. Die Anzeige ist eine Sicht darauf, nie ein Speicher.
-> Der Zustand hängt an einer stabilen ID, nie am Titel. Anreicherung ist ein Auftrag je Feld
-> mit eigenem Alter, nie ein Volllauf.**
+> 🔑 **E151 — Das Register ist die Wahrheit. Die Anzeige ist eine Sicht darauf, nie ein
+> Speicher.**
+
+Was daraus konkret folgt — das ist der Damm, und er ist gebrochen:
+
+| Nr. | Beschluss | Erledigt Macke |
+|---|---|---|
+| **1** | **SQLite** ist der einzige Ort, an dem Zustand lebt. Kein `localStorage`, keine erzeugte HTML-Datei, **kein 💾-Knopf**, den ein Mensch drücken muss | ① |
+| **2** | **Schlüssel ist die stabile Werk-ID**, nie `norm(Titel)` und nie ein Titel-Hash. Titel sind Anzeigedaten und dürfen sich jederzeit ändern | ② (E146) |
+| **3** | **Cache ≠ Bibliothek.** Zwei getrennte Ablagen: die Bibliothek ist dauerhaft, der Cache ist wegwerfbar. Ein gelöschter Cache kostet Zeit, nie Daten | ③ |
+| **4** | **Kein `CACHE_VER` mehr.** Jedes Feld trägt sein **eigenes Alter** und seine **eigene Herkunft**. Ein neues Feld holt genau dieses Feld nach — für die 800 Serien, nicht *alles* für alle | ③ |
+| **5** | **Anreicherung ist ein Auftrag je Feld**, nicht ein Volllauf. Damit gibt es keinen Moment mehr, in dem das Programm alle Identitäten gleichzeitig neu bestimmt | ①②③ |
+| **6** | **Pfade kommen von außen herein.** Kein Modul sucht je selbst nach `../../../SyncDashTray/System/` (`readers.py:181`) | Streufund |
+| **7** | **Mitgelieferte Regeln und Nutzerdatei vereinen sich, sie ersetzen sich nicht.** Die Sperrliste aus `config.py:159` ist die Blaupause dafür, wie es *nicht* geht | Streufund |
+| **8** | **Die HTML-Ausgabe bleibt — als Export** (E14, Grundrecht), nicht als Anwendung. Sie darf gelesen werden, sie speichert nichts | ① |
+
+**Warum das der Damm ist und nicht bloß eine Aufräumaktion:** Solange der Zustand in der
+Anzeige wohnt, muss *jede* neue Ansicht ihren eigenen Speicher mitbringen — Leser, Bühne,
+Regal, Postfach, Warteschlange, Handy. Sechs Speicher, die sich widersprechen können. Mit
+E151 gibt es genau einen, und alle sechs sind **Fenster darauf**. Das ist die Entscheidung,
+die den Rest des Programms überhaupt erst baubar macht.
 
 #### Kleinere Baustellen, benannt
 
