@@ -1,0 +1,596 @@
+<title>SyncFindus — Der erste Start</title>
+<style>
+:root{
+  --bg:#0E1217; --panel:#161C23; --panel2:#1c242d; --line:#232C36; --line2:#33404e;
+  --tx:#E4E9EF; --tx2:#8B97A5; --tx3:#5f6b78; --akz:#F0873C; --onA:#150a02;
+  --grün:#5fd07a; --gelb:#d8b64a; --rot:#e06a5a; --türkis:#5fd0c4; --lila:#a98fe0;
+  --disp:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --data:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+}
+@media (prefers-color-scheme:light){
+  :root:not([data-theme="dark"]){--bg:#eff1f4;--panel:#fff;--panel2:#f4f6f8;--line:#dde2e8;--line2:#c3ccd6;
+    --tx:#1a1f26;--tx2:#5a6672;--tx3:#8592a0;--akz:#b8551c;--onA:#fff;
+    --grün:#237a42;--gelb:#8a6410;--rot:#b13a28;--türkis:#1a7f74;--lila:#6b4fa8}
+}
+:root[data-theme="light"]{--bg:#eff1f4;--panel:#fff;--panel2:#f4f6f8;--line:#dde2e8;--line2:#c3ccd6;
+  --tx:#1a1f26;--tx2:#5a6672;--tx3:#8592a0;--akz:#b8551c;--onA:#fff;
+  --grün:#237a42;--gelb:#8a6410;--rot:#b13a28;--türkis:#1a7f74;--lila:#6b4fa8}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:var(--disp);font-size:16px;
+  line-height:1.6;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1120px;margin:0 auto;padding:34px 18px 90px}
+.eyebrow{font-family:var(--data);font-size:11px;letter-spacing:.17em;text-transform:uppercase;
+  color:var(--akz);margin:0 0 11px}
+h1{font-size:clamp(27px,4.2vw,42px);line-height:1.06;letter-spacing:-.028em;font-weight:800;
+  margin:0 0 13px;text-wrap:balance}
+.lede{font-size:17px;color:var(--tx2);max-width:68ch;margin:0}
+h2{font-size:23px;font-weight:800;letter-spacing:-.022em;margin:0 0 6px}
+h3{font-size:16px;font-weight:800;letter-spacing:-.012em;margin:26px 0 6px}
+.sub{color:var(--tx2);margin:0 0 16px;max-width:74ch;font-size:14.5px}
+hr.rule{height:1px;background:var(--line);border:0;margin:40px 0}
+b.a{color:var(--akz)}
+code{font-family:var(--data);font-size:.86em;background:var(--panel2);border:1px solid var(--line);
+  border-radius:4px;padding:1px 5px}
+svg{display:block}
+
+.reiter{display:flex;gap:6px;margin:26px 0 16px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.reiter button{appearance:none;background:none;border:0;border-bottom:2px solid transparent;
+  color:var(--tx2);font:inherit;font-weight:700;font-size:14px;padding:9px 14px;cursor:pointer;
+  min-height:24px;margin-bottom:-1px}
+.reiter button.on{color:var(--akz);border-bottom-color:var(--akz)}
+.reiter button:hover{color:var(--tx)}
+
+.bild{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--panel);
+  container-type:inline-size}
+.bildkopf{display:flex;align-items:center;gap:9px;padding:8px 13px;border-bottom:1px solid var(--line);
+  background:var(--panel2);font-family:var(--data);font-size:10px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--tx3)}
+.bildkopf .pkt{width:8px;height:8px;border-radius:50%;background:var(--akz)}
+.bildkopf .re{margin-left:auto;text-transform:none;letter-spacing:0;font-size:11px}
+.inn{background:var(--bg);padding:17px 18px 19px}
+
+.knopf{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line2);border-radius:8px;
+  background:var(--panel);color:var(--tx);font:inherit;font-size:13px;font-weight:600;
+  padding:7px 14px;cursor:pointer;min-height:32px}
+.knopf.haupt{background:var(--akz);border-color:var(--akz);color:var(--onA);font-weight:700}
+.knopf.klein{font-size:11.5px;padding:4px 9px;min-height:26px}
+.knopf:disabled{opacity:.45;cursor:not-allowed}
+.marke{display:inline-flex;align-items:center;gap:5px;font-family:var(--data);font-size:9.5px;
+  letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--line2);border-radius:5px;
+  padding:2px 6px;color:var(--tx2);white-space:nowrap}
+.marke.g{border-color:var(--grün);color:var(--grün)}
+.marke.ge{border-color:var(--gelb);color:var(--gelb)}
+.marke.r{border-color:var(--rot);color:var(--rot)}
+.marke.a{border-color:var(--akz);color:var(--akz)}
+.marke.pflicht{background:var(--line2);border-color:var(--line2);color:var(--tx2)}
+
+/* ── Installer-Liste ── */
+.instkopf{margin-bottom:15px}
+.instkopf h4{margin:0 0 4px;font-size:20px;font-weight:800;letter-spacing:-.022em}
+.instkopf p{margin:0;font-size:13.5px;color:var(--tx2);max-width:64ch}
+.grp{font-family:var(--data);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--tx3);margin:16px 0 7px;display:flex;align-items:center;gap:9px}
+.grp::after{content:"";flex:1;height:1px;background:var(--line)}
+.grp:first-child{margin-top:0}
+
+.komp{display:grid;grid-template-columns:26px 1fr auto;gap:12px;align-items:start;
+  padding:11px 13px;border:1px solid var(--line);border-radius:10px;background:var(--panel);
+  margin-bottom:8px}
+.komp.pflicht{background:var(--panel2);border-color:var(--line2)}
+.komp.an{border-color:var(--akz)}
+/* Der Haken bei Pflichtbestandteilen: GESETZT und AUSGEGRAUT.
+   Nicht versteckt, nicht weggelassen — man sieht, dass es da ist, und
+   man sieht, dass man es nicht abwählen kann. (JB 08.08.2026) */
+.hk{width:20px;height:20px;border-radius:5px;border:1.5px solid var(--line2);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;margin-top:2px;
+  flex:0 0 auto;background:transparent}
+.hk svg{width:13px;height:13px;opacity:0;color:var(--onA)}
+.hk.an{background:var(--akz);border-color:var(--akz)}
+.hk.an svg{opacity:1}
+.hk.fest{background:var(--line2);border-color:var(--line2);cursor:not-allowed}
+.hk.fest svg{opacity:1;color:var(--tx2)}
+.ktx{min-width:0}
+.ktx b{display:block;font-size:14px;font-weight:700;letter-spacing:-.012em;line-height:1.25}
+.ktx .wo{font-size:12.5px;color:var(--tx2);margin-top:2px}
+.ktx .warum{font-size:12px;margin-top:6px;padding-left:9px;border-left:2px solid var(--line2);
+  color:var(--tx3)}
+.komp.pflicht .ktx .warum{border-left-color:var(--akz);color:var(--tx2)}
+.kre{text-align:right;flex:0 0 auto;display:flex;flex-direction:column;gap:5px;align-items:flex-end}
+.kre .gr{font-family:var(--data);font-size:10.5px;color:var(--tx3)}
+
+.fuss{display:flex;align-items:center;gap:11px;flex-wrap:wrap;margin-top:16px;
+  padding-top:14px;border-top:1px solid var(--line)}
+.fuss .sum{font-family:var(--data);font-size:11.5px;color:var(--tx2)}
+.fuss .re{margin-left:auto;display:flex;gap:8px}
+
+/* ── Erster Start: das leere Programm ── */
+.leer{min-height:330px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:30px 20px;position:relative;
+  background:radial-gradient(120% 90% at 50% 0%,rgba(240,135,60,.10),transparent 62%)}
+.leer .logo{width:56px;height:56px;border-radius:16px;background:var(--akz);
+  display:flex;align-items:center;justify-content:center;margin-bottom:16px}
+.leer .logo svg{width:32px;height:32px;color:var(--onA)}
+.leer h4{margin:0 0 6px;font-size:clamp(19px,3.4cqw,27px);font-weight:800;letter-spacing:-.026em}
+.leer p{margin:0 0 18px;font-size:14px;color:var(--tx2);max-width:46ch}
+.wege{display:grid;grid-template-columns:repeat(auto-fit,minmax(184px,1fr));gap:11px;
+  max-width:620px;width:100%;text-align:left}
+.weg{border:1px solid var(--line2);border-radius:11px;background:var(--panel);padding:13px 14px;
+  cursor:pointer}
+.weg:hover{border-color:var(--akz)}
+.weg.haupt{border-color:var(--akz);background:linear-gradient(160deg,rgba(240,135,60,.12),var(--panel))}
+.weg .ik{width:26px;height:26px;border-radius:8px;background:var(--panel2);
+  display:flex;align-items:center;justify-content:center;margin-bottom:8px;color:var(--akz)}
+.weg .ik svg{width:16px;height:16px}
+.weg b{display:block;font-size:13.5px;font-weight:700;letter-spacing:-.012em}
+.weg span{display:block;font-size:12px;color:var(--tx2);margin-top:3px}
+.leer .spaeter{margin-top:15px;font-size:12.5px;color:var(--tx3)}
+
+/* ── Emulator ── */
+.emkopf{display:flex;gap:15px;align-items:center;margin-bottom:16px;flex-wrap:wrap}
+.emcov{width:66px;flex:0 0 66px;aspect-ratio:1;border-radius:10px;
+  background:linear-gradient(150deg,#2a2118,#8f6b3a)}
+.emtx b{display:block;font-size:19px;font-weight:800;letter-spacing:-.022em;line-height:1.15}
+.emtx span{font-size:12.5px;color:var(--tx2)}
+.emtx .zei{margin-top:6px;display:flex;gap:6px;flex-wrap:wrap}
+.emre{margin-left:auto;display:flex;gap:7px}
+
+.ebene{display:flex;gap:0;margin-bottom:14px;border:1px solid var(--line2);border-radius:9px;
+  overflow:hidden}
+.ebene button{flex:1;appearance:none;background:var(--panel);border:0;border-right:1px solid var(--line);
+  color:var(--tx2);font:inherit;font-size:12px;font-weight:600;padding:8px 6px;cursor:pointer;
+  min-height:34px;text-align:center}
+.ebene button:last-child{border-right:0}
+.ebene button.on{background:var(--akz);color:var(--onA);font-weight:700}
+.ebene button small{display:block;font-family:var(--data);font-size:9px;opacity:.75;
+  text-transform:uppercase;letter-spacing:.1em}
+
+.ez{display:grid;grid-template-columns:150px 1fr auto;gap:12px;align-items:center;
+  padding:9px 11px;border-bottom:1px solid var(--line);font-size:13px}
+.ez:last-child{border-bottom:0}
+.ez.geerbt{opacity:.66}
+.ez .en{font-weight:600}
+.ez .en small{display:block;font-weight:400;font-size:11px;color:var(--tx3)}
+.ez .ew{min-width:0}
+.seg{display:inline-grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:3px;
+  border:1px solid var(--line2);border-radius:7px;padding:2px;background:var(--panel)}
+.seg button{appearance:none;background:transparent;border:0;border-radius:5px;color:var(--tx2);
+  font:inherit;font-size:11.5px;padding:4px 10px;cursor:pointer;min-height:26px;white-space:nowrap}
+.seg button.on{background:var(--akz);color:var(--onA);font-weight:700}
+.herk{font-family:var(--data);font-size:9px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--tx3);white-space:nowrap}
+.herk.eig{color:var(--akz)}
+
+table.t{width:100%;border-collapse:collapse;font-size:13.5px;margin:14px 0}
+table.t th{text-align:left;font-size:10.5px;font-family:var(--data);letter-spacing:.1em;
+  text-transform:uppercase;color:var(--tx3);font-weight:400;padding:7px 9px;
+  border-bottom:1px solid var(--line2)}
+table.t td{padding:8px 9px;border-bottom:1px solid var(--line);vertical-align:top}
+table.t tr:last-child td{border-bottom:0}
+table.t td.nw{white-space:nowrap}
+
+.merk{border-left:3px solid var(--akz);background:var(--panel);border-radius:0 10px 10px 0;
+  padding:12px 15px;margin:16px 0;font-size:14px}
+.merk b{color:var(--akz)}
+.merk p{margin:0}
+.merk p+p{margin-top:7px}
+.merk.warn{border-left-color:var(--gelb)}
+.merk.warn b{color:var(--gelb)}
+
+.erkl{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:13px;margin-top:15px}
+.ek{border:1px solid var(--line);border-radius:11px;padding:12px 14px;background:var(--panel)}
+.ek.gut{border-color:var(--akz)}
+.ek h4{margin:0 0 5px;font-size:13.5px;font-weight:800}
+.ek p{margin:0;font-size:12.5px;color:var(--tx2)}
+.ek .ab{font-family:var(--data);font-size:9px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--tx3);display:block;margin-bottom:4px}
+.ek.gut .ab{color:var(--akz)}
+.ek em{font-style:normal;color:var(--rot)}
+.ek b{color:var(--tx)}
+
+@container (max-width:540px){
+  .ez{grid-template-columns:1fr;gap:6px}
+  .ez .herk{justify-self:start}
+  .komp{grid-template-columns:26px 1fr}
+  .kre{grid-column:2;align-items:flex-start;text-align:left;flex-direction:row}
+}
+@media (max-width:600px){
+  .wrap{padding:26px 13px 70px}
+  .erkl{grid-template-columns:1fr}
+}
+</style>
+
+<div class="wrap">
+<p class="eyebrow">Entwurf 18 · §12.2 / §6</p>
+<h1>Der erste Start</h1>
+<p class="lede">Zwei Bildschirme, die jeder Nutzer sieht und die trotzdem meistens niemand
+entwirft: <b class="a">was mitinstalliert wird</b> und <b class="a">das leere Programm</b>.
+Dazu die Emulator-Einstellungen — denn beim Spiele-Regal ist genau das die Frage, um die es
+wirklich geht.</p>
+
+<div class="reiter" id="rt">
+  <button class="on" data-t="ins">Der Installer</button>
+  <button data-t="ers">Das leere Programm</button>
+  <button data-t="emu">Emulator-Einstellungen</button>
+</div>
+
+<!-- ══════════ INSTALLER ══════════ -->
+<section id="t-ins">
+  <div class="merk">
+    <p>🔑 <b>E155 — Pflicht wird gezeigt, nicht versteckt.</b> Deine Regel, wörtlich:
+    <em>„Wenn etwas Pflicht ist, dann sollte der Haken auf einem ausgegrauten Feld sein. Der
+    User muss informiert sein, aber wissen, dass ohne das Programm nicht geht."</em></p>
+    <p><b>Das ist genau richtig, und die meisten machen es falsch.</b> Die zwei üblichen Fehler:
+    Pflichtbestandteile <b>gar nicht zeigen</b> (dann installiert das Programm heimlich etwas —
+    Vertrauensbruch) oder sie <b>abwählbar aussehen lassen</b> und dann meckern (dann hat man den
+    Nutzer verarscht). Gesetzt und ausgegraut ist die einzige ehrliche Form: <b>man sieht es, man
+    versteht warum, und man merkt sofort, dass es nicht zur Debatte steht.</b></p>
+  </div>
+
+  <div class="bild">
+    <div class="bildkopf"><span class="pkt"></span><span>Einrichtung · Schritt 2 von 3</span>
+      <span class="re" id="sumkopf">4 Pflicht · 3 gewählt</span></div>
+    <div class="inn">
+      <div class="instkopf"><h4>Was mitkommt</h4>
+        <p>SyncFindus baut nichts nach, was es schon gibt. Diese Programme machen die Arbeit —
+        du siehst hier <b>jedes einzelne</b>, was es tut und warum.</p></div>
+
+      <div class="grp">Ohne das läuft nichts</div>
+
+      <div class="komp pflicht"><span class="hk fest">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
+          stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></span>
+        <div class="ktx"><b>mpv <span class="marke pflicht">Pflicht</span></b>
+          <div class="wo">Spielt Video und Ton ab — die Bühne selbst.</div>
+          <div class="warum">Ohne mpv gibt es kein Bild und keinen Ton. SyncFindus <b>ist</b>
+          zu großen Teilen die Oberfläche um diesen Motor herum (E34).</div></div>
+        <div class="kre"><span class="gr">38 MB</span><span class="marke">GPL-2</span></div></div>
+
+      <div class="komp pflicht"><span class="hk fest">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
+          stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></span>
+        <div class="ktx"><b>ffmpeg <span class="marke pflicht">Pflicht</span></b>
+          <div class="wo">Misst, prüft und wandelt Dateien um.</div>
+          <div class="warum">Die Güteleiter (E140) ist <b>gemessen, nicht geglaubt</b> — und
+          gemessen wird mit <code>ffprobe</code>. Ohne das gäbe es nur Dateinamen, also
+          Behauptungen.</div></div>
+        <div class="kre"><span class="gr">92 MB</span><span class="marke">LGPL</span></div></div>
+
+      <div class="komp pflicht"><span class="hk fest">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
+          stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></span>
+        <div class="ktx"><b>yt-dlp <span class="marke pflicht">Pflicht</span></b>
+          <div class="wo">Holt alles, was über das Netz kommt — rund 1.800 Seiten.</div>
+          <div class="warum">Die Beschaffung ist ein Rennen mit mehreren Kandidaten (E149).
+          Ohne yt-dlp bliebe genau <b>ein</b> Kandidat übrig: Dateien, die schon auf der Platte
+          liegen.</div></div>
+        <div class="kre"><span class="gr">14 MB</span><span class="marke">Unlicense</span></div></div>
+
+      <div class="komp pflicht"><span class="hk fest">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
+          stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></span>
+        <div class="ktx"><b>SQLite <span class="marke pflicht">Pflicht</span></b>
+          <div class="wo">Das Register — dein Lesestand, deine Werke, deine Wünsche.</div>
+          <div class="warum">Das Register <b>ist</b> die Wahrheit (E151). Es ist eine einzige
+          Datei, die du kopieren, sichern und mitnehmen kannst.</div></div>
+        <div class="kre"><span class="gr">1,4 MB</span><span class="marke">gemeinfrei</span></div></div>
+
+      <div class="grp">Empfohlen — abwählbar, aber du verlierst etwas</div>
+
+      <div class="komp an" data-w="1"><span class="hk an">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
+          stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></span>
+        <div class="ktx"><b>gallery-dl</b>
+          <div class="wo">Holt Kapitelbilder von Lese-Seiten.</div>
+          <div class="warum"><b>Ohne das:</b> Manga-Kapitel lassen sich anzeigen, aber nicht
+          herunterladen. Der Leser funktioniert nur online.</div></div>
+        <div class="kre"><span class="gr">8 MB</span><span class="marke">GPL-2</span></div></div>
+
+      <div class="komp an" data-w="1"><span class="hk an">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
+          stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></span>
+        <div class="ktx"><b>Die Browser-Erweiterung</b>
+          <div class="wo">Meldet beim Lesen im Browser, wo du stehst.</div>
+          <div class="warum"><b>Ohne das:</b> der Lesestand kommt nur aus Verlauf und
+          Lesezeichen — ungenauer, aber es geht (§8.5, Zeuge 3 statt 2).</div></div>
+        <div class="kre"><span class="gr">240 kB</span><span class="marke ge">Firefox</span></div></div>
+
+      <div class="komp an" data-w="1"><span class="hk an">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
+          stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></span>
+        <div class="ktx"><b>Chromaprint</b>
+          <div class="wo">Erkennt Musik am Klang, nicht am Dateinamen.</div>
+          <div class="warum"><b>Ohne das:</b> <code>01 - Unbenannt.flac</code> bleibt
+          unbenannt und landet im Postfach.</div></div>
+        <div class="kre"><span class="gr">3 MB</span><span class="marke">LGPL</span></div></div>
+
+      <div class="grp">Nur wenn du es brauchst</div>
+
+      <div class="komp" data-w="1"><span class="hk">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
+          stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></span>
+        <div class="ktx"><b>qBittorrent</b>
+          <div class="wo">Nimmt Magnetlinks entgegen.</div>
+          <div class="warum"><b>Wenn du es einschaltest:</b> BitTorrent wird ein Kandidat im
+          Rennen. Wir bauen keinen eigenen Motor dafür.</div></div>
+        <div class="kre"><span class="gr">62 MB</span><span class="marke">GPL-2</span></div></div>
+
+      <div class="komp" data-w="1"><span class="hk">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
+          stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></span>
+        <div class="ktx"><b>RetroArch</b>
+          <div class="wo">Spielt ROMs — das Spiele-Regal.</div>
+          <div class="warum"><b>Wenn du es einschaltest:</b> Spiele werden zu Werken mit
+          eigenen Einstellungen je Titel (E159).</div></div>
+        <div class="kre"><span class="gr">210 MB</span><span class="marke">GPL-3</span></div></div>
+
+      <div class="komp" data-w="1"><span class="hk">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
+          stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></span>
+        <div class="ktx"><b>Ein Übersetzungsmodell (lokal)</b>
+          <div class="wo">Übersetzt Kapitel, ohne dass etwas den Rechner verlässt.</div>
+          <div class="warum"><b>Wenn du es einschaltest:</b> §10.2 wird nutzbar. <b>Groß</b> —
+          und ohne Grafikkarte langsam.</div></div>
+        <div class="kre"><span class="gr">4,1 GB</span><span class="marke ge">braucht GPU</span></div></div>
+
+      <div class="fuss">
+        <span class="sum" id="sum">Pflicht 145 MB · gewählt 11 MB · <b>zusammen 156 MB</b></span>
+        <span class="re"><button class="knopf">Zurück</button>
+          <button class="knopf haupt">Einrichten</button></span></div>
+    </div>
+  </div>
+
+  <div class="erkl">
+    <div class="ek gut"><span class="ab">Die Regel</span><h4>Drei Klassen, drei Sätze</h4>
+      <p><b>Pflicht:</b> „Ohne das gibt es X nicht." <b>Empfohlen:</b> „Ohne das verlierst du
+      Y." <b>Optional:</b> „Wenn du es einschaltest, bekommst du Z." Jeder Bestandteil hat
+      genau <b>einen</b> dieser Sätze.</p></div>
+    <div class="ek"><span class="ab">Was dabeisteht</span><h4>Größe, Lizenz, Zweck</h4>
+      <p>Kein „Komponente installieren?" ohne Angabe. <b>Wer 4,1 GB herunterlädt, darf das
+      vorher wissen</b> — und wer GPL-3 nicht will, auch.</p></div>
+    <div class="ek"><span class="ab">Was nie passiert</span><h4>Kein Häkchen im Kleingedruckten</h4>
+      <p>Keine vorausgewählte Symbolleiste, keine Suchmaschine, kein „auch installieren".
+      <em>Der Installer ist der erste Vertrauensbeweis — und der einzige, den man nur einmal
+      geben kann.</em></p></div>
+  </div>
+</section>
+
+<!-- ══════════ ERSTER START ══════════ -->
+<section id="t-ers" hidden>
+  <p class="sub">Der einzige Bildschirm, den <b>jeder</b> Nutzer sieht — und der einzige, auf
+  dem noch nichts da ist. Ein leeres Regal ist entweder eine Einladung oder eine Sackgasse; das
+  entscheidet sich hier.</p>
+
+  <div class="bild">
+    <div class="bildkopf"><span class="pkt"></span><span>Erster Start</span>
+      <span class="re">Bibliothek: leer</span></div>
+    <div class="leer">
+      <div class="logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+          stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 5.5h6a2.5 2.5 0 0 1 2.5 2.5v11a2 2 0 0 0-2-2H4z"/>
+          <path d="M20 5.5h-6a2.5 2.5 0 0 0-2.5 2.5v11a2 2 0 0 1 2-2h6z"/></svg></div>
+      <h4>Dein Regal ist leer. Das ist der beste Moment.</h4>
+      <p>Such dir aus, womit SyncFindus anfangen soll. Alles davon lässt sich später ergänzen —
+      und nichts davon musst du jetzt entscheiden.</p>
+      <div class="wege">
+        <div class="weg haupt">
+          <div class="ik"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 7.5h6l2 2.5h10v9.5H3z"/><path d="M3 7.5V5h5l1.5 2.5"/></svg></div>
+          <b>Einen Ordner zeigen</b>
+          <span>Was da liegt, wird zu Werken. Nichts wird verschoben oder umbenannt.</span></div>
+        <div class="weg">
+          <div class="ik"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg></div>
+          <b>Aus dem Browser lesen</b>
+          <span>Verlauf und Lesezeichen einmal durchsehen — read-only, es wird nichts
+          verändert.</span></div>
+        <div class="weg">
+          <div class="ik"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 4v11"/><path d="M8 11l4 4 4-4"/><path d="M4 18v2h16v-2"/></svg></div>
+          <b>Ein Konto verbinden</b>
+          <span>AniList, MyAnimeList, Trakt — die Listen kommen mit, der Inhalt nicht
+          (E129).</span></div>
+        <div class="weg">
+          <div class="ik"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 6h14v13H5z"/><path d="M9 10h6"/><path d="M9 14h4"/></svg></div>
+          <b>Einfach umsehen</b>
+          <span>Nichts einlesen. Suchen, stöbern, ein erstes Werk wünschen.</span></div>
+      </div>
+      <p class="spaeter">Egal was du wählst — <b>nichts wird gelöscht, nichts umbenannt,
+      nichts verschoben.</b></p>
+    </div>
+  </div>
+
+  <div class="merk">
+    <p><b>Warum kein Assistent mit sieben Schritten.</b> Der erste Start ist der Moment mit der
+    höchsten Abbruchrate in jedem Programm. Vier Kacheln, jede ein vollständiger Weg,
+    <b>keine Reihenfolge</b> — und die vierte heißt ausdrücklich „einfach umsehen", damit
+    niemand etwas einlesen muss, um überhaupt zu sehen, was das hier ist.</p>
+    <p><b>Und der wichtigste Satz steht ganz unten:</b> nichts wird gelöscht, umbenannt oder
+    verschoben. Wer 64 TB hat, klickt sonst nirgends drauf — zu Recht.</p>
+  </div>
+</section>
+
+<!-- ══════════ EMULATOR ══════════ -->
+<section id="t-emu" hidden>
+  <div class="merk">
+    <p>🔑 <b>E159 — die Einstellung gehört zum Spiel, nicht zum Emulator.</b> Genau das ist
+    dein Punkt beim Spiele-Regal. Der übliche Weg ist: man stellt RetroArch ein, und alles
+    erbt es. <b>Das geht immer schief</b>, weil <em>Chrono Trigger</em> einen anderen Shader
+    braucht als <em>Sonic</em>, und <em>Ocarina of Time</em> eine andere Auflösung als
+    <em>Pokémon Rot</em>.</p>
+  </div>
+
+  <div class="bild">
+    <div class="bildkopf"><span class="pkt"></span><span>Werk-Seite · Spiel</span>
+      <span class="re">Einstellungen</span></div>
+    <div class="inn">
+      <div class="emkopf">
+        <div class="emcov"></div>
+        <div class="emtx"><b>Chrono Trigger</b>
+          <span>SNES · 1995 · Square · 26 h gespielt</span>
+          <div class="zei"><span class="marke g">Prüfsumme stimmt</span>
+            <span class="marke">No-Intro</span><span class="marke a">3 Spielstände</span></div></div>
+        <div class="emre"><button class="knopf haupt">Spielen</button>
+          <button class="knopf">⋯</button></div></div>
+
+      <div class="ebene" id="ebene">
+        <button class="on" data-e="spiel">Dieses Spiel<small>3 eigene</small></button>
+        <button data-e="system">SNES<small>gilt für 41 Spiele</small></button>
+        <button data-e="alle">Alle Systeme<small>Grundlage</small></button>
+      </div>
+
+      <div id="etab"></div>
+
+      <div class="fuss">
+        <span class="sum" id="esum">3 Einstellungen weichen von SNES ab</span>
+        <span class="re"><button class="knopf klein">Auf SNES zurücksetzen</button>
+          <button class="knopf klein">Als SNES-Standard übernehmen</button></span></div>
+    </div>
+  </div>
+
+  <div class="merk">
+    <p><b>Drei Ebenen, und jede Zeile sagt, woher ihr Wert kommt.</b> Grundlage → System →
+    Spiel. Was auf Spielebene gesetzt ist, steht in <b class="a">Akzentfarbe</b> mit dem Wort
+    <b>eigen</b>; alles andere ist blass und trägt <b>geerbt</b>. So sieht man auf einen Blick,
+    <b>was man selbst verstellt hat</b> — die Frage, die man sich nach sechs Monaten stellt.</p>
+    <p>Zwei Knöpfe schließen den Kreis: <b>„Auf SNES zurücksetzen"</b> macht das Spiel wieder
+    unauffällig, <b>„Als SNES-Standard übernehmen"</b> hebt eine gute Einstellung eine Ebene
+    hoch. <em>Ohne den zweiten Knopf stellt man dieselbe Sache 41-mal ein.</em></p>
+  </div>
+
+  <h3>Was der Emulator vom Werk erbt — und was nicht</h3>
+  <table class="t">
+    <tr><th>Gehört zum Werk</th><th>Gehört zum System</th><th>Gehört nirgends hin</th></tr>
+    <tr><td>Shader &amp; Bildfilter<br>Auflösung/Skalierung<br>Seitenverhältnis<br>Steuerungsbelegung<br>
+      Schnellspeicher-Plätze<br>Regionsfassung (J/U/E)<br>Patches (Übersetzung, Fehlerbehebung)</td>
+      <td>Der Kern (welcher Emulator)<br>BIOS-Datei<br>Bildwiederholrate<br>Aufnahme-Einstellungen</td>
+      <td><b>Der Emulator selbst.</b> Er ist ein <b>Abspielweg</b>, wie mpv für Video —
+      austauschbar, ohne dass ein Spielstand oder eine Einstellung verlorengeht</td></tr>
+  </table>
+
+  <div class="erkl">
+    <div class="ek gut"><span class="ab">Der Kern der Sache</span><h4>ROM = Ausgabe, Spiel = Werk</h4>
+      <p>Die japanische, die amerikanische und die fan-übersetzte Fassung sind <b>drei
+      Ausgaben eines Werks</b> (E03) — mit <b>einem</b> gemeinsamen Spielstand-Verlauf und einer
+      gemeinsamen Spielzeit.</p></div>
+    <div class="ek"><span class="ab">Echtheit</span><h4>Prüfsumme statt Vertrauen</h4>
+      <p>No-Intro und Redump führen Prüfsummen für saubere Abzüge. <b>„Prüfsumme stimmt"</b>
+      ist dieselbe Idee wie die Güteleiter: <em>gemessen, nicht geglaubt</em> (E140).</p></div>
+    <div class="ek"><span class="ab">Spielstände</span><h4>Sie gehören dir, nicht dem Emulator</h4>
+      <p>Spielstände liegen <b>beim Werk</b> im Register, nicht im Emulator-Ordner. Emulator
+      wechseln, Rechner wechseln, Fassung wechseln — <b>der Stand bleibt</b>.</p></div>
+  </div>
+</section>
+
+<script>
+"use strict";
+document.getElementById("rt").addEventListener("click", function(e){
+  var b = e.target.closest("button"); if(!b) return;
+  this.querySelectorAll("button").forEach(function(x){ x.classList.toggle("on", x===b); });
+  ["ins","ers","emu"].forEach(function(t){
+    document.getElementById("t-"+t).hidden = (t !== b.dataset.t);
+  });
+});
+
+/* ── Installer: nur die wählbaren Haken reagieren ── */
+var GROESSEN = {"gallery-dl":8,"Die Browser-Erweiterung":0.24,"Chromaprint":3,
+                "qBittorrent":62,"RetroArch":210,"Ein Übersetzungsmodell (lokal)":4100};
+function summe(){
+  var mb = 0, n = 0;
+  document.querySelectorAll(".komp[data-w]").forEach(function(k){
+    if(!k.querySelector(".hk").classList.contains("an")) return;
+    n++;
+    var name = k.querySelector(".ktx b").childNodes[0].textContent.trim();
+    mb += (GROESSEN[name] || 0);
+  });
+  var t = mb >= 1000 ? (mb/1000).toFixed(1).replace(".", ",") + " GB"
+                     : Math.round(mb) + " MB";
+  var g = 145 + mb;
+  var gt = g >= 1000 ? (g/1000).toFixed(1).replace(".", ",") + " GB" : Math.round(g) + " MB";
+  document.getElementById("sum").innerHTML =
+    "Pflicht 145 MB · gewählt " + t + " · <b>zusammen " + gt + "</b>";
+  document.getElementById("sumkopf").textContent = "4 Pflicht · " + n + " gewählt";
+}
+document.querySelectorAll(".komp[data-w]").forEach(function(k){
+  k.addEventListener("click", function(){
+    var h = k.querySelector(".hk");
+    h.classList.toggle("an");
+    k.classList.toggle("an", h.classList.contains("an"));
+    summe();
+  });
+});
+summe();
+
+/* ── Emulator: drei Ebenen, jede Zeile mit Herkunft ── */
+var EINST = {
+  spiel: [
+    ["Kern", "welcher Emulator spielt", ["Snes9x","bsnes","Mesen-S"], 1, "geerbt · SNES"],
+    ["Bildfilter", "Shader", ["aus","CRT","LCD","xBR"], 1, "eigen"],
+    ["Skalierung", "Innenauflösung", ["1×","2×","4×"], 1, "geerbt · SNES"],
+    ["Seitenverhältnis", "4:3 oder gedehnt", ["4:3","8:7","Vollbild"], 0, "eigen"],
+    ["Steuerung", "Belegung für dieses Spiel", ["Standard","Eigene"], 1, "eigen"],
+    ["Fassung", "Regions- und Patch-Wahl", ["JP","US","US + DE-Patch"], 2, "geerbt · Werk"],
+    ["Schnellspeichern", "Plätze", ["aus","4","10"], 1, "geerbt · alle"]
+  ],
+  system: [
+    ["Kern", "welcher Emulator spielt", ["Snes9x","bsnes","Mesen-S"], 1, "eigen · SNES"],
+    ["Bildfilter", "Shader", ["aus","CRT","LCD","xBR"], 0, "geerbt · alle"],
+    ["Skalierung", "Innenauflösung", ["1×","2×","4×"], 1, "eigen · SNES"],
+    ["Seitenverhältnis", "4:3 oder gedehnt", ["4:3","8:7","Vollbild"], 1, "geerbt · alle"],
+    ["BIOS", "Systemdatei", ["nicht nötig"], 0, "eigen · SNES"],
+    ["Bildwiederholrate", "Hz", ["60,10","59,94","frei"], 0, "eigen · SNES"],
+    ["Schnellspeichern", "Plätze", ["aus","4","10"], 1, "geerbt · alle"]
+  ],
+  alle: [
+    ["Bildfilter", "Shader", ["aus","CRT","LCD","xBR"], 0, "Grundlage"],
+    ["Seitenverhältnis", "4:3 oder gedehnt", ["4:3","8:7","Vollbild"], 1, "Grundlage"],
+    ["Schnellspeichern", "Plätze", ["aus","4","10"], 1, "Grundlage"],
+    ["Beim Schließen", "automatisch speichern", ["nein","ja"], 1, "Grundlage"],
+    ["Spielzeit zählen", "ins Werk schreiben", ["nein","ja"], 1, "Grundlage"]
+  ]
+};
+function zeichneEbene(e){
+  var d = EINST[e], h = "";
+  for(var i=0;i<d.length;i++){
+    var z = d[i], eig = z[4].indexOf("eigen") === 0;
+    h += '<div class="ez' + (eig ? "" : " geerbt") + '">' +
+         '<span class="en">' + z[0] + '<small>' + z[1] + '</small></span>' +
+         '<span class="ew"><span class="seg">' +
+         z[2].map(function(o, j){
+           return '<button class="' + (j === z[3] ? "on" : "") + '">' + o + '</button>';
+         }).join("") + '</span></span>' +
+         '<span class="herk' + (eig ? " eig" : "") + '">' + z[4] + '</span></div>';
+  }
+  document.getElementById("etab").innerHTML = h;
+  var n = d.filter(function(z){ return z[4].indexOf("eigen") === 0; }).length;
+  document.getElementById("esum").textContent =
+    e === "spiel" ? n + " Einstellungen weichen von SNES ab"
+  : e === "system" ? n + " Einstellungen weichen von der Grundlage ab"
+  : "Grundlage für alle Systeme";
+  document.querySelectorAll("#etab .seg").forEach(function(s){
+    s.addEventListener("click", function(ev){
+      var b = ev.target.closest("button"); if(!b) return;
+      s.querySelectorAll("button").forEach(function(x){ x.classList.toggle("on", x===b); });
+      var zeile = s.closest(".ez");
+      zeile.classList.remove("geerbt");
+      var hk = zeile.querySelector(".herk");
+      hk.classList.add("eig");
+      hk.textContent = "eigen";
+    });
+  });
+}
+document.getElementById("ebene").addEventListener("click", function(e){
+  var b = e.target.closest("button"); if(!b) return;
+  this.querySelectorAll("button").forEach(function(x){ x.classList.toggle("on", x===b); });
+  zeichneEbene(b.dataset.e);
+});
+zeichneEbene("spiel");
+</script>
+</div>

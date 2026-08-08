@@ -7,6 +7,11 @@
 Die Entwürfe sind **keine Umsetzung**, sondern der Beweis, dass eine Entscheidung trägt.
 Wer baut, baut gegen das Vision-Dokument; die Entwürfe zeigen, wie es aussehen soll.
 
+> 📂 **Die Dateien liegen in `Doku/entwuerfe/`** — 22 eigenständige HTML-Seiten, offline
+> lauffähig, ohne Fremdquellen. Im Browser öffnen, sie sind anklickbar.
+> ⚠️ **Widerspricht ein Entwurf dem Pflichtenheft, gilt das Pflichtenheft** — und der
+> Widerspruch gehört gemeldet.
+
 ## Fertig gezeichnet
 
 | # | Entwurf | Beantwortet | Abschnitt |

@@ -1,0 +1,231 @@
+<title>SyncRegal — Die Mischung: Tag und Nacht</title>
+<style>
+:root{
+  --s-bg:#11141a; --s-panel:#181d25; --s-line:#252d38; --s-line2:#333d4b;
+  --s-tx:#e6ebf1; --s-tx2:#94a0af; --s-tx3:#68717e; --s-akz:#F0873C;
+  --disp:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --data:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+}
+@media (prefers-color-scheme:light){
+  :root{--s-bg:#f0ece5;--s-bg2:#e5dfd5;--s-panel:#fffdf9;--s-line:#ded5c8;--s-line2:#c5baa9;
+    --s-tx:#221d17;--s-tx2:#635a4f;--s-tx3:#8a8073;--s-akz:#a94e17}
+}
+:root[data-theme="light"]{--s-bg:#f0ece5;--s-panel:#fffdf9;--s-line:#ded5c8;--s-line2:#c5baa9;
+  --s-tx:#221d17;--s-tx2:#635a4f;--s-tx3:#8a8073;--s-akz:#a94e17}
+:root[data-theme="dark"]{--s-bg:#11141a;--s-panel:#181d25;--s-line:#252d38;--s-line2:#333d4b;
+  --s-tx:#e6ebf1;--s-tx2:#94a0af;--s-tx3:#68717e;--s-akz:#F0873C}
+
+*{box-sizing:border-box}
+body{margin:0;background:var(--s-bg);color:var(--s-tx);font-family:var(--disp);font-size:16px;
+  line-height:1.6;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1020px;margin:0 auto;padding:38px 20px 80px}
+.eyebrow{font-family:var(--data);font-size:11px;letter-spacing:.17em;text-transform:uppercase;
+  color:var(--s-akz);margin:0 0 11px}
+h1{font-size:clamp(29px,4.4vw,44px);line-height:1.06;letter-spacing:-.028em;font-weight:800;
+  margin:0 0 13px;text-wrap:balance}
+.lede{font-size:17px;color:var(--s-tx2);max-width:63ch;margin:0}
+
+/* Umschalter */
+.toggle{display:inline-flex;gap:4px;margin:30px 0 6px;padding:4px;background:var(--s-panel);
+  border:1px solid var(--s-line2);border-radius:999px}
+.tg{appearance:none;border:0;background:transparent;color:var(--s-tx2);font-family:var(--disp);
+  font-size:14px;font-weight:700;padding:9px 24px;border-radius:999px;cursor:pointer;
+  transition:background .2s,color .2s}
+.tg[aria-pressed="true"]{background:var(--s-akz);color:#120802}
+@media (prefers-color-scheme:light){:root:not([data-theme]) .tg[aria-pressed="true"]{color:#fffdf9}}
+:root[data-theme="light"] .tg[aria-pressed="true"]{color:#fffdf9}
+.tg:focus-visible{outline:2px solid var(--s-tx);outline-offset:2px}
+.tg-note{font-family:var(--data);font-size:11.5px;color:var(--s-tx3);margin:0 0 22px}
+
+/* Flächen */
+.grid{display:grid;grid-template-columns:1fr;gap:16px}
+@media(min-width:800px){.grid{grid-template-columns:1.15fr 1fr 1fr}}
+.karte{border:1px solid var(--s-line);border-radius:15px;overflow:hidden;background:var(--s-panel)}
+.k-kopf{padding:12px 15px;border-bottom:1px solid var(--s-line);display:flex;
+  align-items:baseline;gap:9px;flex-wrap:wrap}
+.k-kopf b{font-size:14.5px;letter-spacing:-.01em}
+.k-kopf span{font-family:var(--data);font-size:10px;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--s-tx3)}
+.k-kopf span.fix{color:var(--s-akz)}
+.k-in{padding:14px}
+
+/* ==== Regal ==== */
+.regal{background:var(--g);border-radius:10px;padding:12px;transition:background .45s}
+.r-hero{border-radius:9px;padding:12px;margin-bottom:11px;background:var(--p);border:1px solid var(--l);
+  display:flex;align-items:center;gap:11px;transition:background .45s,border-color .45s}
+.r-play{width:30px;height:30px;border-radius:8px;background:var(--a);flex:0 0 auto;display:grid;
+  place-items:center;font-size:12px;color:var(--onA);transition:background .45s}
+.r-hero b{display:block;font-size:12px;color:var(--t);letter-spacing:-.01em;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis;transition:color .45s}
+.r-hero i{font-style:normal;font-family:var(--data);font-size:9.5px;color:var(--t2);transition:color .45s}
+.r-tiles{display:flex;gap:9px}
+.r-tile{flex:1;aspect-ratio:2/3;border-radius:8px;position:relative;border:1px solid var(--l);
+  overflow:hidden;transition:border-color .45s}
+.r-tile i{position:absolute;left:0;bottom:0;height:3px;background:var(--a);transition:background .45s}
+.r-chips{display:flex;gap:6px;margin-top:11px}
+.chip{font-family:var(--data);font-size:9px;padding:3px 8px;border-radius:99px;border:1px solid var(--l);
+  color:var(--t2);transition:all .45s}
+.chip.on{background:var(--a);color:var(--onA);border-color:var(--a)}
+
+/* ==== Leser ==== */
+.leser{background:var(--rb);border-radius:10px;padding:16px 17px;transition:background .45s}
+.leser h5{margin:0 0 9px;font-family:var(--data);font-size:10px;font-weight:400;letter-spacing:.08em;
+  color:var(--rt);opacity:.55;transition:color .45s}
+.leser p{margin:0;font-size:13.5px;line-height:1.78;color:var(--rt);
+  font-family:Georgia,"Iowan Old Style","Times New Roman",serif;transition:color .45s}
+.leser .bar{margin-top:13px;height:2px;border-radius:2px;
+  background:color-mix(in srgb,var(--rt) 16%,transparent)}
+.leser .bar i{display:block;height:100%;width:44%;background:var(--a);border-radius:2px;transition:background .45s}
+
+/* ==== Spieler ==== */
+.spieler{background:var(--sb);border-radius:10px;overflow:hidden}
+.sp-still{height:104px;background:linear-gradient(140deg,#2a3a4a,#0f1418 72%)}
+.sp-ctrl{padding:13px}
+.sp-row{display:flex;align-items:center;gap:10px}
+.sp-play{width:27px;height:27px;border-radius:50%;background:var(--a);flex:0 0 auto;display:grid;
+  place-items:center;font-size:11px;color:var(--onA);transition:background .45s}
+.sp-track{flex:1;height:3px;background:rgba(242,242,243,.2);border-radius:2px;position:relative}
+.sp-track i{position:absolute;inset:0 38% 0 0;background:var(--a);border-radius:2px;transition:background .45s}
+.sp-tm{font-family:var(--data);font-size:9.5px;color:#F2F2F3;opacity:.7;font-variant-numeric:tabular-nums}
+.sp-tt{margin-top:9px;font-size:11.5px;color:#F2F2F3;opacity:.86;letter-spacing:-.01em}
+
+/* Zustände */
+.nacht{--g:#0E1217;--p:#161C23;--l:#232C36;--a:#F0873C;--onA:#150a02;--t:#E4E9EF;--t2:#8B97A5;
+       --rb:#1C1611;--rt:#E3D8C6;--sb:#0A0A0B}
+.tag  {--g:#F1EAE0;--p:#FBF6EE;--l:#DED2C2;--a:#B4551A;--onA:#fff8f0;--t:#241E17;--t2:#6B5F51;
+       --rb:#F6EFE3;--rt:#2B241C;--sb:#0A0A0B}
+
+/* Tabelle + Regeln */
+hr.rule{height:1px;background:var(--s-line);border:0;margin:46px 0}
+h2{font-size:23px;font-weight:800;letter-spacing:-.022em;margin:0 0 8px}
+.sub{color:var(--s-tx2);margin:0 0 20px;max-width:66ch}
+.tbl{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:11px 13px;border-bottom:1px solid var(--s-line);vertical-align:top}
+th{font-family:var(--data);font-size:10px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--s-tx3);font-weight:400;white-space:nowrap}
+td:first-child{font-weight:700;white-space:nowrap}
+td code{font-family:var(--data);font-size:12px;color:var(--s-tx2)}
+.pin{display:inline-block;font-family:var(--data);font-size:9.5px;letter-spacing:.1em;
+  text-transform:uppercase;padding:3px 8px;border-radius:99px;border:1px solid var(--s-line2);
+  color:var(--s-tx3)}
+.pin.fix{border-color:var(--s-akz);color:var(--s-akz)}
+
+.regeln{display:grid;grid-template-columns:repeat(auto-fit,minmax(238px,1fr));gap:13px;margin-top:26px}
+.regel{background:var(--s-panel);border:1px solid var(--s-line);border-radius:13px;padding:17px}
+.regel b{display:block;font-size:14px;margin-bottom:6px;letter-spacing:-.01em}
+.regel p{margin:0;font-size:13.5px;color:var(--s-tx2);line-height:1.58}
+.regel .n{font-family:var(--data);font-size:10px;color:var(--s-akz);letter-spacing:.13em;
+  display:block;margin-bottom:8px}
+@media (prefers-reduced-motion:reduce){*{transition-duration:.001ms!important}}
+</style>
+
+<div class="wrap">
+
+<p class="eyebrow">SyncRegal · entschieden</p>
+<h1>Tinte bei Nacht.<br>Papier bei Tag.<br>Der Spieler bleibt schwarz.</h1>
+<p class="lede">Drei Flächen, die verschiedene Aufgaben haben — also schalten sie auch verschieden um.
+Der Akzent ist überall derselbe Orangeton, nur seiner Fläche angepasst. Probier den Umschalter.</p>
+
+<div class="toggle" role="group" aria-label="Tag oder Nacht">
+  <button class="tg" data-m="nacht" aria-pressed="true">🌙 Nacht</button>
+  <button class="tg" data-m="tag" aria-pressed="false">☀️ Tag</button>
+</div>
+<p class="tg-note" id="note">Standard · Tinte · umgeschaltet nach Sonnenuntergang oder von Hand</p>
+
+<div class="grid">
+
+  <div class="karte">
+    <div class="k-kopf"><b>Regal</b><span id="lbl-regal">Tinte</span></div>
+    <div class="k-in"><div class="regal nacht" id="f-regal">
+      <div class="r-hero"><span class="r-play">▶</span>
+        <span><b>Frieren — Nach dem Ende der Reise</b><i>Staffel 1 · Folge 14 · noch 17 Min</i></span></div>
+      <div class="r-tiles">
+        <span class="r-tile" style="background:linear-gradient(150deg,#4a3a52,#1e1820)"><i style="width:100%"></i></span>
+        <span class="r-tile" style="background:linear-gradient(150deg,#54402a,#221a12)"><i style="width:38%"></i></span>
+        <span class="r-tile" style="background:linear-gradient(150deg,#2e4440,#141e1c)"></span>
+      </div>
+      <div class="r-chips"><span class="chip on">Angefangen</span><span class="chip">Neu</span><span class="chip">Alles</span></div>
+    </div></div>
+  </div>
+
+  <div class="karte">
+    <div class="k-kopf"><b>Leser</b><span id="lbl-leser">warm-dunkel</span></div>
+    <div class="k-in"><div class="leser nacht" id="f-leser">
+      <h5>Kapitel 412 · 44 %</h5>
+      <p>Der Regen hatte aufgehört, doch die Dachrinnen tropften noch. Klein stand am Fenster und
+      zählte die Sekunden zwischen den Tropfen, als ließe sich daraus etwas ablesen.</p>
+      <div class="bar"><i></i></div>
+    </div></div>
+  </div>
+
+  <div class="karte">
+    <div class="k-kopf"><b>Spieler</b><span class="fix" id="lbl-spieler">immer schwarz</span></div>
+    <div class="k-in"><div class="spieler nacht" id="f-spieler">
+      <div class="sp-still"></div>
+      <div class="sp-ctrl"><div class="sp-row"><span class="sp-play">▶</span>
+        <span class="sp-track"><i></i></span><span class="sp-tm">17:04</span></div>
+        <div class="sp-tt">Folge 14 — Der Zauber, der Blumen erschafft</div></div>
+    </div></div>
+  </div>
+
+</div>
+
+<hr class="rule">
+
+<h2>Was umschaltet — und was nie</h2>
+<p class="sub">Der Spieler ist die Ausnahme, und zwar mit Absicht: ein heller Rahmen um einen Film ist
+auch mittags falsch. Alles andere folgt der Tageszeit.</p>
+
+<div class="tbl"><table>
+  <tr><th>Fläche</th><th>Nacht</th><th>Tag</th><th></th></tr>
+  <tr><td>Regal</td><td>Tinte <code>#0E1217</code></td><td>Papier <code>#F1EAE0</code></td><td><span class="pin">schaltet</span></td></tr>
+  <tr><td>Leser</td><td>warm-dunkel <code>#1C1611</code></td><td>Papier <code>#F6EFE3</code></td><td><span class="pin">schaltet</span></td></tr>
+  <tr><td>Spieler</td><td>Bühne <code>#0A0A0B</code></td><td>Bühne <code>#0A0A0B</code></td><td><span class="pin fix">fest</span></td></tr>
+  <tr><td>Akzent</td><td><code>#F0873C</code></td><td><code>#B4551A</code></td><td><span class="pin">gleicher Ton</span></td></tr>
+</table></div>
+
+<div class="regeln">
+  <div class="regel"><span class="n">Warum warm und nicht Tinte</span>
+    <b>Der Leser folgt nicht dem Regal</b>
+    <p>Nachts will das Auge am Langtext Bernstein, nicht Blau — lange Wellenlängen stören den Schlaf
+    am wenigsten. Tinte ist ein wunderbarer Rahmen, aber ein schlechter Lesegrund um Mitternacht.</p></div>
+
+  <div class="regel"><span class="n">Warum derselbe Ton</span>
+    <b>Ein Orange, zwei Helligkeiten</b>
+    <p>Auf hellem Grund muss Orange dunkler werden, sonst verschwindet es. Gleicher Farbton,
+    andere Helligkeit — deshalb wirkt es in beiden Modi wie dieselbe Farbe, obwohl der Wert anders ist.</p></div>
+
+  <div class="regel"><span class="n">Alle vier haben eine Aufgabe</span>
+    <b>Nichts war umsonst</b>
+    <p>Tinte trägt das Regal, Papier den Tag, Glut den Leser bei Nacht, Bühne den Spieler.
+    Die vier Entwürfe sind keine Alternativen geblieben — sie sind vier Rollen geworden.</p></div>
+
+  <div class="regel"><span class="n">Bleibt umstellbar</span>
+    <b>Alles davon ist eine Voreinstellung</b>
+    <p>In der Werkstatt lässt sich jede Fläche einzeln umstimmen — auch „Tinte überall" oder
+    „nie umschalten". Nur muss niemand da hin, damit es gut aussieht.</p></div>
+</div>
+
+</div>
+
+<script>
+const F = ["f-regal","f-leser","f-spieler"];
+const NOTE = {
+  nacht:"Standard · Tinte · umgeschaltet nach Sonnenuntergang oder von Hand",
+  tag:"Tagmodus · Papier · für den hellen Schreibtisch — der Spieler bleibt unverändert"
+};
+const LBL = {
+  nacht:{regal:"Tinte", leser:"warm-dunkel"},
+  tag:  {regal:"Papier", leser:"Papier"}
+};
+document.querySelectorAll(".tg").forEach(b => b.addEventListener("click", () => {
+  const m = b.dataset.m;
+  document.querySelectorAll(".tg").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+  F.forEach(id => { const e = document.getElementById(id);
+    e.classList.remove("nacht","tag"); e.classList.add(m); });
+  document.getElementById("note").textContent = NOTE[m];
+  document.getElementById("lbl-regal").textContent = LBL[m].regal;
+  document.getElementById("lbl-leser").textContent = LBL[m].leser;
+}));
+</script>

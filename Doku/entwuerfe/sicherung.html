@@ -1,0 +1,318 @@
+<title>SyncFindus — Die Sicherung</title>
+<style>
+:root{
+  --bg:#0E1217; --panel:#161C23; --panel2:#1c242d; --line:#232C36; --line2:#33404e;
+  --tx:#E4E9EF; --tx2:#8B97A5; --tx3:#5f6b78; --akz:#F0873C; --onA:#150a02;
+  --grün:#5fd07a; --gelb:#d8b64a; --rot:#e06a5a; --türkis:#5fd0c4; --lila:#a98fe0;
+  --disp:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --data:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+}
+@media (prefers-color-scheme:light){
+  :root:not([data-theme="dark"]){--bg:#eff1f4;--panel:#fff;--panel2:#f4f6f8;--line:#dde2e8;--line2:#c3ccd6;
+    --tx:#1a1f26;--tx2:#5a6672;--tx3:#8592a0;--akz:#b8551c;--onA:#fff;
+    --grün:#237a42;--gelb:#8a6410;--rot:#b13a28;--türkis:#1a7f74;--lila:#6b4fa8}
+}
+:root[data-theme="light"]{--bg:#eff1f4;--panel:#fff;--panel2:#f4f6f8;--line:#dde2e8;--line2:#c3ccd6;
+  --tx:#1a1f26;--tx2:#5a6672;--tx3:#8592a0;--akz:#b8551c;--onA:#fff;
+  --grün:#237a42;--gelb:#8a6410;--rot:#b13a28;--türkis:#1a7f74;--lila:#6b4fa8}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:var(--disp);font-size:16px;
+  line-height:1.6;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1060px;margin:0 auto;padding:34px 18px 90px}
+.eyebrow{font-family:var(--data);font-size:11px;letter-spacing:.17em;text-transform:uppercase;
+  color:var(--akz);margin:0 0 11px}
+h1{font-size:clamp(27px,4.2vw,42px);line-height:1.06;letter-spacing:-.028em;font-weight:800;
+  margin:0 0 13px;text-wrap:balance}
+.lede{font-size:17px;color:var(--tx2);max-width:68ch;margin:0}
+h2{font-size:23px;font-weight:800;letter-spacing:-.022em;margin:0 0 6px}
+h3{font-size:16px;font-weight:800;letter-spacing:-.012em;margin:26px 0 6px}
+.sub{color:var(--tx2);margin:0 0 16px;max-width:74ch;font-size:14.5px}
+hr.rule{height:1px;background:var(--line);border:0;margin:40px 0}
+b.a{color:var(--akz)}
+code{font-family:var(--data);font-size:.86em;background:var(--panel2);border:1px solid var(--line);
+  border-radius:4px;padding:1px 5px}
+svg{display:block}
+
+/* Die drei Ringe */
+.ringe{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px;margin:20px 0}
+.ring{border:1px solid var(--line);border-radius:13px;background:var(--panel);padding:15px 16px;
+  position:relative;overflow:hidden}
+.ring::before{content:"";position:absolute;right:-30px;top:-30px;width:110px;height:110px;
+  border-radius:50%;border:14px solid var(--line);opacity:.5}
+.ring.r1::before{border-color:var(--türkis)}
+.ring.r2::before{border-color:var(--akz)}
+.ring.r3::before{border-color:var(--lila)}
+.ring .nr{font-family:var(--data);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--tx3);margin-bottom:6px;position:relative}
+.ring h4{margin:0 0 3px;font-size:17px;font-weight:800;letter-spacing:-.02em;position:relative}
+.ring .takt{font-family:var(--data);font-size:11px;color:var(--akz);margin-bottom:9px;
+  position:relative}
+.ring.r1 .takt{color:var(--türkis)} .ring.r3 .takt{color:var(--lila)}
+.ring p{margin:0 0 8px;font-size:13px;color:var(--tx2);position:relative}
+.ring .schuetzt{font-size:12px;padding-top:9px;border-top:1px solid var(--line);color:var(--tx3);
+  position:relative}
+.ring .schuetzt b{color:var(--tx);display:block;font-family:var(--data);font-size:9px;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--tx3);margin-bottom:3px}
+
+table.t{width:100%;border-collapse:collapse;font-size:13.5px;margin:14px 0}
+table.t th{text-align:left;font-size:10.5px;font-family:var(--data);letter-spacing:.1em;
+  text-transform:uppercase;color:var(--tx3);font-weight:400;padding:7px 9px;
+  border-bottom:1px solid var(--line2)}
+table.t td{padding:8px 9px;border-bottom:1px solid var(--line);vertical-align:top}
+table.t tr:last-child td{border-bottom:0}
+table.t td.nw{white-space:nowrap}
+
+.zwei{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:14px 0}
+.sp{border:1px solid var(--line);border-radius:11px;padding:13px 15px;background:var(--panel)}
+.sp.ja{border-color:var(--grün)} .sp.nein{border-color:var(--rot)}
+.sp h4{margin:0 0 7px;font-size:14px;font-weight:800}
+.sp.ja h4{color:var(--grün)} .sp.nein h4{color:var(--rot)}
+.sp ul{margin:0;padding-left:17px;font-size:13px;color:var(--tx2)}
+.sp li{margin-bottom:4px}
+.sp li b{color:var(--tx)}
+
+.merk{border-left:3px solid var(--akz);background:var(--panel);border-radius:0 10px 10px 0;
+  padding:12px 15px;margin:16px 0;font-size:14px}
+.merk b{color:var(--akz)}
+.merk p{margin:0}
+.merk p+p{margin-top:7px}
+.merk.warn{border-left-color:var(--rot)}
+.merk.warn b{color:var(--rot)}
+
+/* Tafel im Programm */
+.bild{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--panel);
+  container-type:inline-size;margin:18px 0}
+.bildkopf{display:flex;align-items:center;gap:9px;padding:8px 13px;border-bottom:1px solid var(--line);
+  background:var(--panel2);font-family:var(--data);font-size:10px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--tx3)}
+.bildkopf .pkt{width:8px;height:8px;border-radius:50%;background:var(--grün)}
+.bildkopf .re{margin-left:auto;text-transform:none;letter-spacing:0;font-size:11px}
+.inn{background:var(--bg);padding:15px 16px 17px}
+.sz{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line);
+  font-size:13.5px}
+.sz:last-of-type{border-bottom:0}
+.sz .amp{width:10px;height:10px;border-radius:50%;flex:0 0 auto;background:var(--grün)}
+.sz .amp.ge{background:var(--gelb)} .sz .amp.r{background:var(--rot)}
+.sz .st{flex:1;min-width:0}
+.sz .st b{display:block;font-size:13.5px;font-weight:700;line-height:1.25}
+.sz .st span{display:block;font-size:12px;color:var(--tx2)}
+.sz .zt{font-family:var(--data);font-size:11px;color:var(--tx3);flex:0 0 auto;text-align:right}
+.knopf{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line2);border-radius:8px;
+  background:var(--panel);color:var(--tx);font:inherit;font-size:12.5px;font-weight:600;
+  padding:6px 12px;cursor:pointer;min-height:30px}
+.knopf.haupt{background:var(--akz);border-color:var(--akz);color:var(--onA);font-weight:700}
+.knopf.klein{font-size:11.5px;padding:4px 9px;min-height:26px}
+.marke{display:inline-flex;align-items:center;gap:5px;font-family:var(--data);font-size:9.5px;
+  letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--line2);border-radius:5px;
+  padding:2px 6px;color:var(--tx2);white-space:nowrap}
+.marke.g{border-color:var(--grün);color:var(--grün)}
+.marke.ge{border-color:var(--gelb);color:var(--gelb)}
+.marke.t{border-color:var(--türkis);color:var(--türkis)}
+
+@media (max-width:640px){
+  .wrap{padding:26px 13px 70px}
+  .zwei{grid-template-columns:1fr}
+}
+</style>
+
+<div class="wrap">
+<p class="eyebrow">Entwurf 19 · §12.7 · überarbeitet 08.08.2026</p>
+<h1>Die Sicherung</h1>
+<p class="lede">64 TB Dateien lassen sich neu holen. <b class="a">Der Lesestand nicht.</b> JB:
+<em>„Mir sind die Infos, was ich bereits gelesen und gesehen habe, wichtiger als die Daten
+selbst. Die kann ich mir immer wieder ansammeln."</em> — Genau so ist es gebaut. <b>Und der
+Entwurf ist nach seinem Einwand von drei Ringen auf zwei geschrumpft.</b></p>
+
+<div class="merk">
+  <p>🔑 <b>E166 — zwei Ringe, und der einzige, der zählt, ist die Wiederherstellung.</b>
+  Eine Sicherung, die nie zurückgespielt wurde, ist keine Sicherung, sondern eine Hoffnung.
+  Deshalb ist der wichtigste Teil dieses Entwurfs nicht das Sichern, sondern der
+  <b>Rückspiel-Test</b> weiter unten.</p>
+</div>
+
+<h2>Was gesichert wird — und was ausdrücklich nicht</h2>
+<div class="zwei">
+  <div class="sp ja"><h4>Unersetzlich · wird gesichert</h4><ul>
+    <li><b>Das Register</b> — Werke, Ausgaben, Gruppen, Beziehungen</li>
+    <li><b>Der Fortschritt</b> — jede Position, jedes Datum, seit Tag eins</li>
+    <li><b>Handkorrekturen</b> — die 647 Zeilen Jahresarbeit (E135)</li>
+    <li><b>Das Glossar</b> — jede Übersetzungsentscheidung (E135)</li>
+    <li><b>Wünsche</b> — auch die lauernden (E150)</li>
+    <li><b>Einstellungen</b> — bis hin zu Untertitel-Versatz je Titel</li>
+    <li><b>Spielstände</b> — sie liegen beim Werk, nicht beim Emulator (E159)</li>
+  </ul>
+  <p style="margin:9px 0 0;font-size:12.5px;color:var(--tx2)"><b>Zusammen: unter 500 MB</b>
+  bei 800 Werken. Das ist der ganze Punkt — es ist <b>lächerlich klein</b> im Verhältnis zu
+  dem, was es wert ist.</p></div>
+  <div class="sp nein"><h4>Ersetzbar · wird nicht gesichert</h4><ul>
+    <li><b>Mediendateien</b> — 64 TB, neu beschaffbar (E149)</li>
+    <li><b>Titelbilder und Bühnenbilder</b> — Zwischenspeicher</li>
+    <li><b>Angereicherte Metadaten</b> — kommen aus den Ketten (§7.4)</li>
+    <li><b>Erzeugte Übersetzungen und Vertonungen</b> — aus Glossar + Modell reproduzierbar</li>
+    <li><b>Der Quellenkatalog</b> — Laufzeitdatei, abonniert (E12)</li>
+    <li><b>Protokolle</b> — rollierend begrenzt</li>
+  </ul>
+  <p style="margin:9px 0 0;font-size:12.5px;color:var(--tx2)"><b>Warum die Trennung heilig
+  ist:</b> Wer alles sichert, sichert 64 TB — also nie. Wer nur das Unersetzliche sichert,
+  sichert stündlich, ohne es zu merken.</p></div>
+</div>
+
+<hr class="rule">
+
+<h2>Zwei Ringe — nach der Korrektur</h2>
+<div class="merk warn">
+  <p><b>JB, 08.08.2026:</b> <em>„Ich finde, du übertreibst mit der Sicherung. Erklär mir, was
+  eine Kopie auf dem NAS bringt, wenn die Daten eh auf dem NAS sind. Ich werde keine Daten auf
+  meinem PC speichern."</em></p>
+  <p><b>Gar nichts — und das war ein Fehler im ersten Entwurf.</b> Ich hatte die 3-2-1-Regel
+  übernommen, ohne sie auf <b>diese</b> Anlage anzuwenden. Sie stammt aus Serverräumen. Bei
+  einem Menschen mit <b>einem</b> NAS heißt „zwei Datenträger" nichts, solange beide im selben
+  Gehäuse stecken. <b>Eine Kopie von der NAS-Platte auf die NAS-Platte ist Theater.</b></p>
+</div>
+
+<div class="ringe" style="grid-template-columns:repeat(auto-fit,minmax(280px,1fr))">
+  <div class="ring r1"><div class="nr">Ring 1 · auf dem NAS</div>
+    <h4>Der Schnappschuss</h4>
+    <div class="takt">stündlich · beim Beenden · vor jeder Änderung am Aufbau</div>
+    <p>Eine numerierte Kopie des Registers, direkt daneben. <code>VACUUM INTO</code> läuft
+    <b>im Betrieb</b>, ohne zu sperren. Dauert Sekunden, kostet ein paar hundert MB.</p>
+    <div class="schuetzt"><b>Fängt ab</b>
+      <b style="color:var(--tx);font-family:inherit;font-size:13px;letter-spacing:0;
+      text-transform:none;display:inline">Unseren eigenen Fehler.</b> Kaputte Umstellung,
+      Import der überschrieben hat, versehentliches „alles als gelesen". <b style="color:var(--tx3);
+      font-family:inherit;font-size:12px;letter-spacing:0;text-transform:none;display:block;
+      margin-top:5px">Gegen einen Plattenausfall hilft er nicht — soll er auch nicht.</b></div></div>
+
+  <div class="ring r2"><div class="nr">Ring 2 · alles außer dem NAS</div>
+    <h4>Die Kopie, die nicht das NAS ist</h4>
+    <div class="takt">täglich · irgendwohin, nur nicht dorthin</div>
+    <p><b>Hier löst sich der Einwand auf:</b> das Register ist <b>unter 500 MB</b>. Das ist kein
+    „Daten auf dem PC speichern" — das ist die Größe von zwei Filmen im Handygepäck. Es passt
+    auf alles.</p>
+    <div class="schuetzt"><b>Fängt ab</b>
+      Controller stirbt · Netzteil stirbt · zwei Platten gleichzeitig · Trojaner · Diebstahl ·
+      Feuer · ein falsches <code>rm</code>.</div></div>
+</div>
+
+<table class="t">
+  <tr><th>Ziel für Ring 2</th><th>Taugt gegen</th><th>Aufwand</th></tr>
+  <tr><td class="nw"><b>USB-Stick in der Schublade</b></td>
+    <td>Ausfall, Trojaner, Diebstahl des NAS</td><td>einmal einstecken</td></tr>
+  <tr><td class="nw"><b>Ein Ordner auf dem PC</b></td>
+    <td>dasselbe</td><td>500 MB — <b>das ist keine Datenhaltung, das ist eine Datei</b></td></tr>
+  <tr><td class="nw"><b>Dein eigener Server</b><br><span style="color:var(--tx3)">nicht das NAS</span></td>
+    <td>dasselbe, plus Feuer wenn er woanders steht</td><td>einmal einrichten</td></tr>
+  <tr><td class="nw"><b>Verschlüsselter Speicherdienst</b></td>
+    <td>alles, auch Wohnungsbrand</td>
+    <td>einmal einrichten · ⚠️ <b>versioniert und nur anfügend</b>, sonst nützt er gegen
+      Trojaner nichts</td></tr>
+</table>
+
+<div class="merk warn">
+  <p><b>Was RAID nicht ist.</b> Ein NAS mit Plattenspiegelung überlebt den Ausfall <b>einer
+  Platte</b> — und sonst nichts. Es schützt nicht gegen Löschen, nicht gegen Verschlüsselung,
+  nicht gegen einen kaputten Schreibvorgang und schon gar nicht gegen Diebstahl.
+  <b>RAID ist Verfügbarkeit, keine Sicherung.</b> Deshalb bleibt Ring 2 nötig, so klein er
+  auch ist.</p>
+</div>
+
+<hr class="rule">
+
+<h2>Der dritte Ring, den wir nicht bauen müssen</h2>
+<div class="merk">
+  <p><b>Das Wichtigste liegt ohnehin doppelt</b> — ohne dass wir dafür etwas tun.</p>
+  <p>Sobald <b>E170</b> steht (Fortschritt fließt in beide Richtungen), lebt <em>„was habe ich
+  gesehen"</em> in <b>zwei unabhängigen Systemen</b>: bei uns im Register und auf dem
+  Jellyfin-Server. Dasselbe gilt für AniList und MyAnimeList, sobald ein Konto verbunden ist.
+  <b>Das ist keine Sicherung, die wir gebaut haben — es ist eine Redundanz, die wir geschenkt
+  bekommen</b>, weil wir zurückschreiben statt nur zu lesen.</p>
+  <p><b>Die Folge, und sie ist beruhigend:</b> selbst wenn NAS <em>und</em> Ring 2 wegfallen,
+  wäre der Lesestand nicht verloren, sondern <b>rekonstruierbar</b> — aus Jellyfin, aus
+  AniList, aus dem Browserverlauf (§8.5). Mühsam und lückenhaft, aber nicht null.
+  <em>Ein System, das seine wichtigsten Daten zurückgibt statt sie zu horten, sichert sich
+  nebenbei selbst.</em></p>
+</div>
+
+<hr class="rule">
+
+<h2>Der Rückspiel-Test — die einzige Zeremonie, die bleibt</h2>
+<p class="sub">Alles oben ist Handwerk und in zwei Tagen gebaut. <b>Das hier ist der Teil, den
+fast niemand macht</b> — und der Grund, warum Sicherungen im Ernstfall so oft nutzlos sind.</p>
+
+<div class="merk warn">
+  <p><b>Die unbequeme Zahl:</b> In Erhebungen zur Datensicherung scheitert regelmäßig <b>ein
+  erheblicher Teil aller Wiederherstellungsversuche</b> — nicht weil nicht gesichert wurde,
+  sondern weil die Sicherung defekt, unvollständig oder unlesbar war und <b>es niemand
+  wusste</b>. Eine Sicherung ist erst dann eine, wenn sie einmal zurückgespielt wurde.</p>
+</div>
+
+<p class="sub"><b>Also machen wir es automatisch, monatlich, und ohne dass jemand daran denken
+muss:</b></p>
+
+<table class="t">
+  <tr><th>Schritt</th><th>Was passiert</th></tr>
+  <tr><td class="nw"><b>1 · Nehmen</b></td><td>Die <b>älteste</b> Sicherung aus Ring 3 — nicht
+    die neueste. Wer die neueste testet, testet den einfachsten Fall</td></tr>
+  <tr><td class="nw"><b>2 · Zurückspielen</b></td><td>In einen Temp-Ordner, <b>nie über die
+    laufende Datenbank</b>. Entschlüsseln, entpacken, öffnen</td></tr>
+  <tr><td class="nw"><b>3 · Zählen</b></td><td>Werke, Fortschrittseinträge, Handkorrekturen,
+    Glossarzeilen — gegen die erwarteten Zahlen. Abweichung &gt; 0 ist ein Fund</td></tr>
+  <tr><td class="nw"><b>4 · Prüfen</b></td><td><b>Der Bruchtest (E147) läuft gegen die
+    Kopie</b>, nicht gegen das Original. Alle Invarianten auf einmal, nicht nur eine — hier
+    darf es dauern</td></tr>
+  <tr><td class="nw"><b>5 · Sagen</b></td><td>Eine Zeile in der Sicherungstafel. Bei Erfolg
+    still. <b>Bei Misserfolg ist das einer der drei Anlässe aus E164</b> — „etwas ist kaputt
+    und du merkst es sonst nicht"</td></tr>
+</table>
+
+<div class="bild">
+  <div class="bildkopf"><span class="pkt"></span><span>Einstellungen · Sicherung</span>
+    <span class="re">Register: 312 MB · auf dem NAS</span></div>
+  <div class="inn">
+    <div class="sz"><span class="amp"></span>
+      <span class="st"><b>Schnappschuss</b><span>48 liegen bereit · ältester 12.07.</span></span>
+      <span class="zt">vor 14 Min</span></div>
+    <div class="sz"><span class="amp"></span>
+      <span class="st"><b>Kopie außerhalb</b><span>USB-Stick „Findus" · plus Klartext-Ausgabe (E14)</span></span>
+      <span class="zt">heute 04:12</span></div>
+    <div class="sz"><span class="amp"></span>
+      <span class="st"><b>Rückspiel-Test</b><span>Sicherung vom 08.07. zurückgespielt · 812
+        Werke, 41.204 Fortschrittseinträge, 647 Handkorrekturen · <b style="color:var(--grün)">
+        alle 14 Invarianten grün</b></span></span>
+      <span class="zt">01.08.</span></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:13px">
+      <button class="knopf haupt">Jetzt sichern</button>
+      <button class="knopf">Rückspiel-Test starten</button>
+      <button class="knopf">Aus einer Sicherung wiederherstellen…</button></div>
+  </div>
+</div>
+
+<h3>Die Wiederherstellung selbst</h3>
+<table class="t">
+  <tr><th>Regel</th><th>Warum</th></tr>
+  <tr><td class="nw"><b>Nie überschreiben,<br>immer daneben</b></td>
+    <td>Die laufende Datenbank wird vor jeder Wiederherstellung <b>selbst zum Schnappschuss</b>.
+      Wer sich beim Wiederherstellen vergreift, hat sonst zwei Katastrophen statt einer</td></tr>
+  <tr><td class="nw"><b>Vorher zeigen,<br>was drin ist</b></td>
+    <td><em>„Diese Sicherung ist vom 12.07., enthält 812 Werke und 41.204
+      Fortschrittseinträge — deine jetzige hat 819 und 41.930."</em> <b>Die Differenz steht da,
+      bevor man klickt</b></td></tr>
+  <tr><td class="nw"><b>Teilweise geht auch</b></td>
+    <td>Nur die Handkorrekturen. Nur das Glossar. Nur den Fortschritt eines Werks. Der
+      häufigste Ernstfall ist nicht „alles weg", sondern <b>„ich habe eine Sache
+      kaputtgemacht"</b></td></tr>
+  <tr><td class="nw"><b>Ohne das Programm</b></td>
+    <td>Die Klartext-Ausgabe aus Ring 2 ist <b>lesbar ohne SyncFindus</b>. Falls das Programm
+      selbst das Problem ist — oder es in zehn Jahren nicht mehr gibt (E14)</td></tr>
+</table>
+
+<div class="merk">
+  <p><b>Und der Satz, der alles zusammenhält:</b> Die Sicherung muss <b>so billig sein, dass
+  sie nie ausfällt</b>. 312 MB stündlich zu kopieren merkt niemand. 64 TB wöchentlich zu
+  kopieren merkt jeder — und stellt es nach drei Wochen ab. <b>Deshalb ist die Trennung
+  zwischen ersetzbar und unersetzbar keine Sparmaßnahme, sondern die Voraussetzung dafür, dass
+  überhaupt gesichert wird.</b></p>
+</div>
+</div>

@@ -1,0 +1,628 @@
+<title>SyncFindus — Der Leser</title>
+<style>
+:root{
+  --bg:#0E1217; --panel:#161C23; --panel2:#1c242d; --line:#232C36; --line2:#33404e;
+  --tx:#E4E9EF; --tx2:#8B97A5; --tx3:#5f6b78; --akz:#F0873C; --onA:#150a02; --ok:#5fd07a;
+  --disp:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --data:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  --serif:Georgia,"Iowan Old Style","Times New Roman",serif;
+}
+@media (prefers-color-scheme:light){
+  :root{--bg:#eff1f4;--panel:#fff;--panel2:#f4f6f8;--line:#dde2e8;--line2:#c3ccd6;
+    --tx:#1a1f26;--tx2:#5a6672;--tx3:#8592a0;--akz:#b8551c;--onA:#fff;--ok:#237a42}
+}
+:root[data-theme="light"]{--bg:#eff1f4;--panel:#fff;--panel2:#f4f6f8;--line:#dde2e8;--line2:#c3ccd6;
+  --tx:#1a1f26;--tx2:#5a6672;--tx3:#8592a0;--akz:#b8551c;--onA:#fff;--ok:#237a42}
+:root[data-theme="dark"]{--bg:#0E1217;--panel:#161C23;--panel2:#1c242d;--line:#232C36;--line2:#33404e;
+  --tx:#E4E9EF;--tx2:#8B97A5;--tx3:#5f6b78;--akz:#F0873C;--onA:#150a02;--ok:#5fd07a}
+
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:var(--disp);font-size:16px;
+  line-height:1.6;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1020px;margin:0 auto;padding:36px 20px 80px}
+.eyebrow{font-family:var(--data);font-size:11px;letter-spacing:.17em;text-transform:uppercase;
+  color:var(--akz);margin:0 0 11px}
+h1{font-size:clamp(28px,4.3vw,43px);line-height:1.06;letter-spacing:-.028em;font-weight:800;
+  margin:0 0 13px;text-wrap:balance}
+.lede{font-size:17px;color:var(--tx2);max-width:64ch;margin:0}
+h2{font-size:22px;font-weight:800;letter-spacing:-.022em;margin:0 0 6px}
+.sub{color:var(--tx2);margin:0 0 18px;max-width:66ch;font-size:15px}
+hr.rule{height:1px;background:var(--line);border:0;margin:42px 0}
+
+.switch{display:inline-flex;gap:4px;margin:26px 0 6px;padding:4px;background:var(--panel);
+  border:1px solid var(--line2);border-radius:999px;flex-wrap:wrap}
+.sw{appearance:none;border:0;background:transparent;color:var(--tx2);font-family:var(--disp);
+  font-size:13px;font-weight:700;padding:8px 17px;border-radius:999px;cursor:pointer;
+  transition:background .2s,color .2s}
+.sw[aria-pressed="true"]{background:var(--akz);color:var(--onA)}
+.sw:focus-visible{outline:2px solid var(--tx);outline-offset:2px}
+.note{font-family:var(--data);font-size:11.5px;color:var(--tx3);margin:0 0 16px;min-height:18px}
+
+/* Zoom-Regler */
+.zoomrow{display:flex;align-items:center;gap:10px;margin:6px 0 8px;flex-wrap:wrap}
+.zlbl{font-family:var(--data);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--tx3)}
+.zbtn{appearance:none;width:28px;height:28px;border-radius:9px;border:1px solid var(--line2);
+  background:var(--panel);color:var(--tx2);font-size:15px;cursor:pointer;line-height:1}
+.zbtn:hover{color:var(--tx);border-color:var(--akz)}
+#zoom{flex:1;min-width:180px;max-width:340px;accent-color:var(--akz);height:24px;cursor:pointer}
+#zoom:focus-visible,.zbtn:focus-visible,.ztick:focus-visible,.zreset:focus-visible{
+  outline:2px solid var(--akz);outline-offset:2px}
+.zval{font-family:var(--data);font-size:11.5px;color:var(--akz);min-width:76px;
+  font-variant-numeric:tabular-nums}
+.zreset{appearance:none;border:1px solid var(--line2);background:transparent;color:var(--tx3);
+  font-family:var(--data);font-size:10.5px;padding:5px 11px;border-radius:999px;cursor:pointer}
+.zreset:hover{color:var(--tx);border-color:var(--akz)}
+.zticks{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}
+.ztick{appearance:none;border:1px solid var(--line);background:var(--panel);color:var(--tx3);
+  font-family:var(--data);font-size:10px;padding:5px 11px;border-radius:999px;cursor:pointer}
+.ztick:hover{color:var(--tx);border-color:var(--akz)}
+.ztick.on{background:var(--akz);color:var(--onA);border-color:var(--akz)}
+
+.zhint{font-family:var(--data);font-size:9.5px;color:var(--tx3);align-self:center;margin-left:4px}
+.textrow{display:flex;align-items:center;gap:8px;margin:6px 0 8px;flex-wrap:wrap}
+.textrow[hidden]{display:none}
+#fsize{flex:0 1 150px;accent-color:var(--akz);height:24px;cursor:pointer}
+.vor{appearance:none;border:0;border-radius:999px;background:var(--akz);color:var(--onA);
+  font-family:var(--disp);font-size:12.5px;font-weight:700;padding:7px 16px;cursor:pointer;margin-left:auto}
+.vor.on{background:var(--ok);color:#062210}
+.vor:focus-visible,#fsize:focus-visible{outline:2px solid var(--tx);outline-offset:2px}
+
+/* Vorlesen: Satz-Markierung */
+.sz-satz{border-radius:5px;padding:1px 3px;margin:0 -3px;transition:background .25s,color .25s}
+.sz-satz.jetzt{background:rgba(240,135,60,.28);box-shadow:0 0 0 1px rgba(240,135,60,.45)}
+.sz-satz.fertig{opacity:.55}
+.canvas.text .tcol.sans{font-family:var(--disp)}
+.canvas.text .tcol.dys{font-family:Verdana,Tahoma,sans-serif;letter-spacing:.02em;word-spacing:.12em}
+
+/* Doppelseiten-Hinweis */
+.spreadnote{position:absolute;left:50%;bottom:8px;transform:translateX(-50%);z-index:8;
+  font-family:var(--data);font-size:9.5px;color:#E3D8C6;background:rgba(10,8,6,.72);
+  padding:5px 11px;border-radius:999px;backdrop-filter:blur(4px);white-space:nowrap}
+.splitline{position:absolute;left:50%;top:9px;bottom:9px;width:0;
+  border-left:1.5px dashed rgba(240,135,60,.75);z-index:4}
+
+/* ===== Lesefläche =====
+   Der Grund richtet sich nach dem MATERIAL, nicht nach dem Modus:
+     · Bilder → NEUTRAL. Ein brauner Rand faerbt gescannte Graustufen mit ein und
+       laesst Seiten vergilbt aussehen. Dieselbe Begruendung wie bei der Buehne.
+     · Text  → WARM. Papier ist warm, und warmes Licht ermuedet beim Langlesen
+       weniger. Hier gibt es keine fremden Farben, die verfaelscht werden koennten.
+   (JB-Frage 07.08.: „warum ist der Hintergrund dieses Braun?") */
+.reader{border:1px solid var(--line2);border-radius:16px;overflow:hidden;background:#0F1012;
+  position:relative;min-height:440px;display:flex;flex-direction:column;
+  container-type:inline-size;container-name:rd}
+.reader.txt{background:#F6EFE3}
+.reader.txt .canvas{--papier:1}
+
+/* Kopf- und Fußleiste (blenden bei Ruhe aus) */
+.rbar{display:flex;align-items:center;gap:12px;padding:10px 16px;
+  background:rgba(10,8,6,.72);backdrop-filter:blur(6px);color:#E3D8C6;position:relative;z-index:5}
+.reader.txt .rbar{background:rgba(246,239,227,.86);color:#2B241C}
+.rbar b{font-size:13px;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rbar small{font-family:var(--data);font-size:10px;opacity:.7;white-space:nowrap}
+.rsp{flex:1}
+.ric{width:30px;height:30px;border-radius:9px;border:1px solid rgba(227,216,198,.22);
+  display:grid;place-items:center;font-size:13px;flex:0 0 auto}
+.reader.txt .ric{border-color:rgba(43,36,28,.22)}
+.rfoot{margin-top:auto;padding:9px 16px;background:rgba(10,8,6,.72);backdrop-filter:blur(6px);
+  display:flex;align-items:center;gap:12px;color:#E3D8C6;position:relative;z-index:5}
+.reader.txt .rfoot{background:rgba(246,239,227,.86);color:#2B241C}
+.prog{flex:1;height:3px;background:rgba(227,216,198,.2);border-radius:2px;position:relative}
+.reader.txt .prog{background:rgba(43,36,28,.16)}
+.prog i{position:absolute;inset:0 56% 0 0;background:var(--akz);border-radius:2px}
+.rfoot small{font-family:var(--data);font-size:10px;opacity:.75;font-variant-numeric:tabular-nums}
+
+/* Seitenfläche — Höhe fest, damit die Zoomrechnung verlässlich ist */
+.canvas{flex:1;min-height:340px;display:flex;align-items:center;justify-content:center;gap:10px;
+  padding:14px;overflow:hidden;position:relative;--z:1;--basis:300px;
+  --sk:calc(var(--basis) * var(--z) / 300)}
+.canvas.strip{flex-direction:column;justify-content:flex-start;gap:0;padding:0;overflow:hidden}
+/* Ein Endlosstreifen darf nirgends aufhoeren — auch nicht an einer Leiste.
+   Deshalb faellt die Fussleiste hier ganz weg; alles Noetige steht in der
+   Schiene rechts und in der Kopfzeile. (JB-Fund 07.08., dritter Anlauf) */
+.reader.stripmodus .rfoot{display:none}
+/* Kapitelgrenzen wandern in DIESELBE Leiste wie überall — nicht in eine zweite Schiene. */
+.prog u{position:absolute;top:-3px;bottom:-3px;width:1.5px;background:rgba(227,216,198,.55);
+  text-decoration:none}
+.reader.txt .prog u{background:rgba(43,36,28,.4)}
+.canvas.text{display:block;padding:34px 40px;overflow:hidden}
+
+/* Manga-Seite aus Rahmen gezeichnet — Größe NUR über --z, Verhältnis bleibt immer 2:3.
+   --sk ist der Maßstab der Seite: ALLES darin rechnet damit, sonst schrumpft der Text,
+   während der Rahmen wächst (JB-Fund 07.08., zweiter Anlauf). */
+.page{background:#efe9df;border:1px solid #b9ae9c;aspect-ratio:2/3;
+  height:calc(var(--basis) * var(--z));width:auto;flex:0 0 auto;
+  padding:calc(9px * var(--sk));display:grid;gap:calc(7px * var(--sk));
+  position:relative;transition:height .18s ease-out}
+.page.spread{aspect-ratio:4/3}
+.pn{background:#d9d1c4;border:calc(1.5px * var(--sk)) solid #2a241d;position:relative;overflow:hidden}
+.pn::after{content:"";position:absolute;inset:0;
+  background:linear-gradient(140deg,rgba(42,36,29,.16),transparent 55%)}
+.pn.dark{background:#2a241d}
+.pn.mid{background:#a89e8e}
+.bub{position:absolute;background:#fff;border:calc(1.5px * var(--sk)) solid #2a241d;border-radius:44%;
+  font-family:var(--serif);font-size:calc(7px * var(--sk));color:#2a241d;display:grid;place-items:center;
+  padding:calc(4px * var(--sk)) calc(6px * var(--sk));text-align:center;line-height:1.15;z-index:2}
+.pnum{position:absolute;bottom:calc(3px * var(--sk));right:calc(6px * var(--sk));
+  font-family:var(--data);font-size:calc(7.5px * var(--sk));color:#8b8071}
+
+/* Layout A: 4 Rahmen */
+.lay-a{grid-template-columns:1fr 1fr;grid-template-rows:1.3fr 1fr 1fr}
+.lay-a .pn:nth-child(1){grid-column:1/-1}
+/* Layout B: 5 Rahmen */
+.lay-b{grid-template-columns:1fr 1fr 1fr;grid-template-rows:1fr 1.4fr 1fr}
+.lay-b .pn:nth-child(1){grid-column:1/3}
+.lay-b .pn:nth-child(3){grid-column:1/-1}
+
+/* Long Strip — Breite UND Höhe skalieren gemeinsam: das ist Zoom, nicht Dehnen */
+.stripwrap{display:flex;flex-direction:column;align-items:center;gap:0;width:100%;
+  flex:0 0 auto}
+.stripwrap .pn{width:calc(300px * var(--z));height:calc(118px * var(--z));
+  border-left:none;border-right:none;transition:width .18s,height .18s}
+.gap{height:0}
+/* Endlosstreifen: der Fortschritt sieht aus wie eine BILDLAUFLEISTE, weil man
+   genau das erwartet, wenn man scrollt (JB 07.08.: „das finde ich formschöner").
+   Sie liegt am rechten Rand der Fläche, nicht als zweite Anzeige daneben —
+   und sie zählt JE KAPITEL, nicht über das ganze Werk. */
+.schiene{position:absolute;right:5px;top:8px;bottom:8px;width:6px;border-radius:3px;
+  background:rgba(227,216,198,.10);z-index:6}
+.schiene i{position:absolute;left:0;right:0;border-radius:3px;background:rgba(227,216,198,.42);
+  transition:top .2s,height .2s}
+.schiene i.jetzt{background:var(--akz)}
+.schiene u{position:absolute;left:-4px;right:-4px;height:1px;background:rgba(227,216,198,.28);
+  text-decoration:none}
+.schiene b{position:absolute;right:12px;font-family:var(--data);font-size:9px;
+  color:#E3D8C6;background:rgba(10,8,6,.8);border-radius:5px;padding:1px 6px;white-space:nowrap;
+  transform:translateY(-50%)}
+
+/* Passung Einzelseite */
+.page.fit{height:100%;width:auto}
+.page.fill{height:auto;width:min(100%,300px);max-height:none;aspect-ratio:2/3}
+
+/* Geführt — Seite fährt mit, aktiver Rahmen steht in der Mitte.
+   ⚠️ NICHT height:100% — dieselbe Prozenthöhen-Falle wie bei .page (JB-Fund 07.08.).
+   Der Behälter bekommt seine Höhe über flex/align-self, nicht über Prozent. */
+.gwrap{position:relative;flex:1 1 auto;align-self:stretch;min-height:300px;overflow:hidden}
+.page.guided{transition:transform .42s cubic-bezier(.22,.61,.36,1);transform-origin:0 0;
+  position:absolute;left:0;top:0}
+/* Der Rest der Seite wird entsättigt UND abgedunkelt, der aktive Rahmen bleibt farbig */
+.page.guided{background:#3a332b}
+.page.guided .pn{filter:grayscale(1) brightness(.42);transition:filter .42s,box-shadow .42s}
+.page.guided .pn.aktiv{filter:none;z-index:3;
+  box-shadow:0 0 0 3px var(--akz),0 0 0 8px rgba(240,135,60,.22),0 12px 34px rgba(0,0,0,.6)}
+/* aktiver Rahmen bekommt zusätzlich einen warmen Ton, damit der Unterschied knallt */
+.page.guided .pn.aktiv::before{content:"";position:absolute;inset:0;z-index:1;
+  background:linear-gradient(145deg,rgba(240,135,60,.18),transparent 60%);pointer-events:none}
+.page.guided .bub{opacity:0;transition:opacity .3s}
+.page.guided .pn.aktiv .bub{opacity:1}
+.gnav{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);display:flex;gap:7px;
+  z-index:9;background:rgba(10,8,6,.78);padding:9px 13px;border-radius:999px;backdrop-filter:blur(4px)}
+.gdot{width:9px;height:9px;border-radius:50%;background:rgba(227,216,198,.4);cursor:pointer;
+  transition:width .25s,background .25s}
+.gdot:hover{background:rgba(227,216,198,.75)}
+.gdot.on{background:var(--akz);width:22px;border-radius:99px}
+.ghint{position:absolute;left:50%;bottom:44px;transform:translateX(-50%);z-index:9;
+  font-family:var(--data);font-size:9.5px;color:rgba(227,216,198,.55);white-space:nowrap;
+  pointer-events:none}
+
+/* Text */
+.canvas.text .tcol{max-width:34em;margin:0 auto;font-family:var(--serif);font-size:15.5px;
+  line-height:1.78;color:#2B241C;hyphens:auto}
+.canvas.text h4{font-family:var(--data);font-size:10px;font-weight:400;letter-spacing:.14em;
+  text-transform:uppercase;color:#8a7d6b;margin:0 0 14px}
+.canvas.text p{margin:0 0 14px}
+.nameref{color:#9a5a1e;border-bottom:1px dotted #b98a56;cursor:help;font-weight:600}
+
+/* Werk-Wissen-Blase */
+.know{position:absolute;left:50%;top:52%;transform:translateX(-50%);width:min(320px,86%);
+  background:var(--panel);border:1px solid var(--line2);border-radius:12px;padding:14px 16px;
+  box-shadow:0 18px 50px rgba(0,0,0,.55);z-index:20;color:var(--tx)}
+.know h5{margin:0 0 3px;font-size:14.5px;letter-spacing:-.012em}
+.know .orig{font-family:var(--data);font-size:10.5px;color:var(--akz);margin-bottom:9px}
+.know p{margin:0 0 9px;font-size:13px;color:var(--tx2);line-height:1.55}
+.know .row{display:flex;gap:8px;flex-wrap:wrap}
+.know .tag{font-family:var(--data);font-size:9.5px;padding:3px 8px;border-radius:6px;
+  background:var(--panel2);color:var(--tx2);border:1px solid var(--line)}
+
+/* Karten */
+.karten{display:grid;grid-template-columns:repeat(auto-fit,minmax(238px,1fr));gap:13px;margin-top:18px}
+.k{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:17px}
+.k .n{font-family:var(--data);font-size:10px;color:var(--akz);letter-spacing:.13em;
+  text-transform:uppercase;display:block;margin-bottom:8px}
+.k b{display:block;font-size:14px;margin-bottom:6px;letter-spacing:-.01em}
+.k p{margin:0;font-size:13.5px;color:var(--tx2);line-height:1.58}
+.tbl{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--data);font-size:10px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--tx3);font-weight:400;white-space:nowrap}
+td:first-child{font-weight:700;white-space:nowrap}
+.merk{background:var(--panel);border-left:3px solid var(--akz);border-radius:0 12px 12px 0;
+  padding:17px 19px;margin:20px 0}
+.merk p{margin:0;font-size:16px;line-height:1.58}
+.merk p+p{margin-top:8px;color:var(--tx2);font-size:14px}
+@container rd (max-width:620px){ .page{max-height:250px} .rbar small{display:none} }
+@media (prefers-reduced-motion:reduce){*{transition-duration:.001ms!important}}
+</style>
+
+<div class="wrap">
+
+<p class="eyebrow">SyncFindus · Baustein Leser</p>
+<h1>Fünf Lesearten.<br>Der Nutzer wählt keine.</h1>
+<p class="lede">Webtoon bekommt Endlosstreifen, Manga bekommt Doppelseite von rechts, Novel bekommt
+Fließtext — <em>erkannt, nicht eingestellt.</em> Umstellen geht trotzdem, aber niemand muss.</p>
+
+<div class="switch" role="group" aria-label="Leseart">
+  <button class="sw" data-m="einzel" aria-pressed="true">Einzelseite</button>
+  <button class="sw" data-m="doppel" aria-pressed="false">Doppelseite</button>
+  <button class="sw" data-m="strip" aria-pressed="false">Endlosstreifen</button>
+  <button class="sw" data-m="gefuehrt" aria-pressed="false">Geführt</button>
+  <button class="sw" data-m="text" aria-pressed="false">Text</button>
+</div>
+<p class="note" id="note">Standard für westliche Comics und einzelne Seiten · links/rechts blättern</p>
+
+<div class="zoomrow">
+  <span class="zlbl" id="zlabel">Größe</span>
+  <button class="zbtn" id="zminus" aria-label="kleiner">−</button>
+  <input type="range" id="zoom" min="-60" max="160" step="1" value="0" aria-label="Zoom">
+  <button class="zbtn" id="zplus" aria-label="größer">+</button>
+  <span class="zval" id="zval">passend</span>
+  <button class="zreset" id="zreset">Standard</button>
+</div>
+<div class="zticks">
+  <span class="zhint">Der Regler ersetzt alle Modi. Alles Weitere lebt in der Werkstatt (⚙).</span>
+</div>
+<p class="note" id="fitnote">Ein Regler, drei Bezugspunkte. Das Seitenverhältnis bleibt <b>immer</b> erhalten — nie gedehnt.</p>
+
+<!-- Textleiste: erscheint nur im Text-Modus -->
+<div class="textrow" id="textrow" hidden>
+  <span class="zlbl">Schrift</span>
+  <button class="ztick fnt on" data-f="serif">Serif</button>
+  <button class="ztick fnt" data-f="sans">Sans</button>
+  <button class="ztick fnt" data-f="dys">Legasthenie</button>
+  <button class="vor" id="vorlesen">▶ Vorlesen</button>
+</div>
+
+<div class="reader" id="reader">
+  <div class="rbar">
+    <span class="ric">‹</span>
+    <b id="rtitle">Junk the Black Shadow</b>
+    <small id="rsub">Kapitel 30 · Seite 14 / 22</small>
+    <span class="rsp"></span>
+    <span class="ric" title="Werk-Wissen">👤</span>
+    <span class="ric" title="Leseart">▦</span>
+    <span class="ric" title="Einstellungen">⚙</span>
+  </div>
+
+  <div class="canvas" id="canvas"></div>
+
+  <div class="rfoot">
+    <small id="fl">Kap. 30</small>
+    <span class="prog"><i id="pbar"></i></span>
+    <small id="fr">63 %</small>
+    <span class="ric" style="width:26px;height:26px;font-size:11px">⤢</span>
+  </div>
+</div>
+
+<hr class="rule">
+
+<h2>Was daran besser ist als bei allen anderen</h2>
+<p class="sub">Die Lesearten selbst gibt es woanders auch. Diese sechs Dinge nicht — oder nur einzeln.</p>
+
+<div class="karten">
+  <div class="k"><span class="n">Niemand wählt</span><b>Leseart wird erkannt</b>
+    <p>Aus Medium und Seitenmaßen: sehr hohe schmale Bilder → Endlosstreifen · japanischer
+    Ursprung → von rechts · Text → Fließtext. <b>Der Modus-Wähler ist für die Ausnahme da,
+    nicht für den Regelfall.</b></p></div>
+
+  <div class="k"><span class="n">Praktisch fehlerfrei</span><b>Doppelseiten erkennen</b>
+    <p>Eine normale Seite hat ein Verhältnis um <b>0,67</b> (2:3), eine Doppelseite um
+    <b>1,33</b> — <em>doppelt so groß</em>. Verglichen wird gegen den Mittelwert des Kapitels,
+    nicht gegen einen festen Wert. Der Abstand ist so riesig, dass Fehler praktisch
+    ausgeschlossen sind.</p></div>
+
+  <div class="k"><span class="n">Der echte Stolperstein</span><b>Die Paarung danach</b>
+    <p>Nach einer Doppelseite verschiebt sich die Paarung um eins. Wer das nicht nachzieht,
+    zeigt <em>alle</em> folgenden Seiten falsch gepaart — und merkt es zwanzig Seiten später.
+    Das ist der Fehler, den fast alle einfachen Leser machen.</p></div>
+
+  <div class="k"><span class="n">Selten gebaut</span><b>Geführte Ansicht ohne KI</b>
+    <p>Rahmen erkennt man an den hellen Zwischenräumen — reine Bildverarbeitung, kein Modell
+    nötig. Die Seite bleibt sichtbar und wird abgedunkelt, damit man die Orientierung nicht
+    verliert. Für Handy und Fernseher der Unterschied zwischen „lesbar" und „lesbar mit Lupe".</p></div>
+
+  <div class="k"><span class="n">Kein Klick</span><b>Fließender Kapitelübergang</b>
+    <p>Kein „Kapitel zu Ende — weiter?". Man scrollt einfach ins nächste hinein; die
+    Warteschlange hat es längst vorgeladen. Kapitelgrenzen sind eine Markierung im Balken,
+    keine Wand.</p></div>
+
+  <div class="k"><span class="n">Zweistufig</span><b>Die Stelle, nicht das Kapitel</b>
+    <p>Gemerkt wird Kapitel <em>und</em> Position darin (Seite, Absatz, Prozent). Beim
+    Zurückkommen landest du auf der Seite, nicht am Kapitelanfang.</p></div>
+
+  <div class="k"><span class="n">🔑 Der Unterschied</span><b>Der Leser kennt die Figuren</b>
+    <p>Auf einen Namen tippen → <em>wer ist das nochmal?</em> Kommt aus dem Werk-Wissen, das
+    ohnehin für Übersetzung und Vertonung gepflegt wird. <b>Das kann kein anderer Leser</b>, weil
+    keiner die Daten hat.</p></div>
+</div>
+
+<div class="merk">
+  <p><b>Probier es aus: in der Textansicht auf einen <span class="nameref" style="cursor:pointer">unterstrichenen Namen</span> tippen.</b></p>
+  <p>Das ist der Moment, in dem sich die ganze Glossar-Arbeit auszahlt — nicht in der Übersetzung,
+  sondern beim Lesen, wenn man nach zweihundert Kapiteln vergessen hat, wer wer war.</p>
+</div>
+
+<hr class="rule">
+
+<h2>Die Werkstatt des Lesers</h2>
+<p class="sub">Alles hier drin, nichts davon auf der Fläche (Sichtbarkeitsstufe 4).</p>
+
+<div class="tbl"><table>
+  <tr><th>Gruppe</th><th>Einstellungen</th></tr>
+  <tr><td>Leseart</td><td>Einzelseite · Doppelseite · Endlosstreifen · Geführt · Text · <b>Automatisch</b> (Standard)</td></tr>
+  <tr><td>Richtung</td><td>links→rechts · rechts→links · von oben · <b>Automatisch</b></td></tr>
+  <tr><td>Übergang</td><td>fließend · blättern · gleiten · ohne Bewegung</td></tr>
+  <tr><td>Fläche</td><td>Papier · Sepia · Warm-Dunkel · Schwarz (OLED) · <b>Tageszeit</b> (Standard)</td></tr>
+  <tr><td>Bild</td><td>Randbeschnitt · Kontrast · Schärfen · Doppelseiten zusammenfügen · Graustufen glätten</td></tr>
+  <tr><td>Text</td><td>Schrift · Größe · Zeilenhöhe · Zeilenlänge · Ränder · Blocksatz · <b>Silbentrennung</b> (für Deutsch nötig)</td></tr>
+  <tr><td>Bewegung</td><td>weiches Scrollen · Geschwindigkeit · Tempo bei Tastendruck</td></tr>
+  <tr><td>Anzeigen</td><td>Übersetzungsgüte einblenden · Figurennamen antippbar · Kapitelmarken im Balken · Uhr</td></tr>
+  <tr><td>Vorladen</td><td>1 / 3 / 10 Einheiten voraus · nur im WLAN</td></tr>
+</table></div>
+
+</div>
+
+<script>
+const P = n => `<span class="pnum">${n}</span>`;
+const pageA = (n,b,extra="") => `<div class="page lay-a ${extra}">
+  <div class="pn dark${extra?" aktiv":""}">${b?`<span class="bub" style="left:12%;top:22%;width:52%">${b}</span>`:""}</div>
+  <div class="pn"></div><div class="pn mid"></div>
+  <div class="pn mid"></div><div class="pn"></div>${P(n)}</div>`;
+const pageB = n => `<div class="page lay-b">
+  <div class="pn mid"></div><div class="pn dark"></div>
+  <div class="pn"><span class="bub" style="right:8%;top:26%;width:44%">Er wusste es<br>die ganze Zeit.</span></div>
+  <div class="pn mid"></div><div class="pn"></div><div class="pn dark"></div>${P(n)}</div>`;
+/* echte Doppelseite: EIN Bild über zwei Seiten */
+const spread = () => `<div class="page spread" style="grid-template-columns:1fr 1.6fr 1fr;grid-template-rows:1fr 1.1fr">
+  <div class="pn dark" style="grid-column:1/-1;grid-row:1/-1;position:relative">
+    <span class="bub" style="left:6%;top:14%;width:26%;font-size:8px">Sie standen<br>am Rand.</span>
+    <span class="bub" style="right:7%;bottom:16%;width:24%;font-size:8px">Und dahinter …</span>
+  </div>
+  <span class="splitline"></span>
+  <span class="pnum">88–89</span>
+  <span class="spreadnote">⚠ als Doppelseite erkannt · Verhältnis 1.33 statt 0.67 → nicht getrennt</span>
+</div>`;
+
+const NOTE = {
+  einzel:"Standard für westliche Comics und einzelne Seiten · links/rechts blättern",
+  doppel:"Manga-Modus · rechts→links · Doppelseiten werden erkannt und nie zerrissen",
+  strip:"Webtoon · durchgehend, keine Seitengrenzen · jedes Kapitel hat seinen EIGENEN Fortschritt",
+  gefuehrt:"Die Seite bleibt sichtbar, nur der aktive Rahmen ist hell — Punkte unten zum Springen",
+  text:"Novel · feste Zeilenlänge, Silbentrennung, Papier · Namen sind antippbar"
+};
+const TITLE = {
+  einzel:["Junk the Black Shadow","Kapitel 30 · Seite 14 / 22","Kap. 30","63 %"],
+  doppel:["Vinland Saga","Band 12 · Doppelseite 88–89","Band 12","41 %"],
+  strip:["Solo Leveling","Kapitel 30 · Endlosstreifen · Fortschritt zählt je Kapitel","Kap. 30","41 %"],
+  gefuehrt:["Junk the Black Shadow","Kapitel 30 · Rahmen 1 / 5","Kap. 30","66 %"],
+  text:["Lord of the Mysteries","Band 3 · Kapitel 412","Kap. 412","44 %"]
+};
+const BAR = {einzel:63,doppel:41,strip:41,gefuehrt:66,text:44};
+
+function render(m){
+  const c = document.getElementById("canvas"), r = document.getElementById("reader");
+  c.className = "canvas" + (m==="strip"?" strip":m==="text"?" text":"");
+  r.className = "reader" + (m==="text"?" txt":"");
+
+  if(m==="einzel")   c.innerHTML = pageA(14,"Wieder<br>dieser Regen.");
+  if(m==="doppel")   c.innerHTML = spread();
+  if(m==="strip")    c.innerHTML = `<div class="stripwrap">
+      <div class="pn mid"></div><div class="pn dark"><span class="bub" style="left:14%;top:24%;width:44%">Noch nicht.</span></div>
+      <div class="pn"></div><div class="pn mid"></div><div class="pn dark"></div>
+      <div class="pn"></div><div class="pn mid"></div><div class="pn dark"></div>
+      <div class="pn"></div><div class="pn mid"></div></div>
+      <div class="schiene" title="Bildlauf im Kapitel — jedes Kapitel beginnt bei 0">
+        <u style="top:0"></u><u style="top:34%"></u><u style="top:67%"></u>
+        <i style="top:0;height:34%"></i>
+        <i class="jetzt" style="top:34%;height:14%"></i>
+        <b style="top:48%">Kap. 30 · 41 %</b>
+      </div>`;
+  if(m==="gefuehrt"){
+    c.innerHTML = `<div class="gwrap">${pageA(14,"Wieder<br>dieser Regen.","guided")}</div>
+      <div class="gnav">${[0,1,2,3,4].map((i)=>`<span class="gdot${i===0?" on":""}" data-i="${i}"></span>`).join("")}</div>
+      <div class="ghint">◂ ▸ oder Punkte unten · der aktive Rahmen fährt in die Mitte</div>`;
+    gGeo = null; rahmen = 0;
+    requestAnimationFrame(()=>requestAnimationFrame(()=>setzeRahmen(0)));
+  }
+  if(m==="text")     c.innerHTML = `<div class="tcol" id="tcol"><h4>Kapitel 412 · Der Regen hört auf</h4>
+      <p><span class="sz-satz">Der Regen hatte aufgehört, doch die Dachrinnen tropften noch.</span>
+      <span class="sz-satz"><span class="nameref" data-n="klein">Klein</span> stand am Fenster und zählte die Sekunden
+      zwischen den Tropfen, als ließe sich daraus etwas ablesen.</span></p>
+      <p><span class="sz-satz">Hinter ihm räusperte sich <span class="nameref" data-n="audrey">Audrey</span>.</span>
+      <span class="sz-satz">Sie hatte den Umschlag noch immer in der Hand und hielt ihn so, als könnte er sich
+      jeden Moment entzünden.</span></p>
+      <p><span class="sz-satz">„Der Rat wird nicht warten", sagte sie.</span>
+      <span class="sz-satz">Kein Vorwurf, nur eine Feststellung — und genau das machte es schlimmer.</span></p></div>`;
+
+  // EIN Ort für den Fortschritt — die Leiste unten, in jedem Modus. Die zweite Schiene
+  // rechts war doppelt gemoppelt und liess unten eine halbleere Leiste stehen
+  // (JB-Fund 07.08., zweiter Anlauf: „der Bildschirm wird nicht magisch größer").
+  // Beim Endlosstreifen sitzt der Fortschritt als Bildlaufleiste rechts in der
+  // Fläche; die Fussleiste zeigt dort den KAPITEL-Stand, nicht den Werkstand.
+  const bar = document.querySelector(".rfoot .prog");
+  bar.innerHTML = '<i id="pbar"></i>';
+  r.classList.toggle("stripmodus", m==="strip");
+
+  const [t,s,fl,fr] = TITLE[m];
+  document.getElementById("rtitle").textContent = t;
+  document.getElementById("rsub").textContent   = s;
+  document.getElementById("fl").textContent     = fl;
+  document.getElementById("fr").textContent     = fr;
+  document.getElementById("pbar").style.right   = (100-BAR[m])+"%";
+  document.getElementById("note").textContent   = NOTE[m];
+}
+
+const WISSEN = {
+  klein:{n:"Klein Moretti", o:"克莱恩·莫雷蒂 — auch: Der Narr, Sheriff of the Night",
+    p:"Zunächst Historiker, nach seinem Tod Träger der Narren-Bahn. Zurückhaltend, ironisch, plant drei Schritte voraus.",
+    t:["ab Kap. 1","Stimme A · +12 %","Erzähler-Bezug: er"]},
+  audrey:{n:"Audrey Hall", o:"奥黛丽·霍尔 — Die Gerechtigkeit",
+    p:"Adelstochter, Mitglied des Tarot-Clubs. Höflich bis zur Härte; spricht in vollständigen Sätzen.",
+    t:["ab Kap. 14","Stimme D · klar","Anrede: Sie"]}
+};
+function popup(key,el){
+  document.querySelectorAll(".know").forEach(x=>x.remove());
+  const w = WISSEN[key]; if(!w) return;
+  const d = document.createElement("div"); d.className="know";
+  d.innerHTML = `<h5>${w.n}</h5><div class="orig">${w.o}</div><p>${w.p}</p>
+    <div class="row">${w.t.map(x=>`<span class="tag">${x}</span>`).join("")}</div>`;
+  document.getElementById("reader").appendChild(d);
+  setTimeout(()=>document.addEventListener("click",function h(){d.remove();document.removeEventListener("click",h)}),50);
+}
+document.addEventListener("click",e=>{
+  const n=e.target.closest(".nameref[data-n]"); if(n) popup(n.dataset.n,n);
+});
+
+/* Ein Regler — aber ZWEI Gedächtnisse. Bild-Zoom und Schriftgröße sind
+   verschiedene Dinge; wer die Seite auf −40 % stellt, will nicht plötzlich
+   12-px-Text lesen. Der Regler zeigt immer den Wert des aktuellen Modus.
+   (JB-Fund 07.08.: „Dachte das Bild wird größer?") */
+let modus = "einzel", zBild = 0, zText = 0, rahmen = 0;
+const zIst  = () => (modus === "text" ? zText : zBild);
+const zSetz = v => { if(modus === "text") zText = v; else zBild = v; };
+
+/* EINMAL messen, danach nur noch rechnen — sonst springt das Bild bei jedem Wechsel
+   auf Normalgröße zurück und „lädt neu" (JB-Fund 07.08.). */
+let gGeo = null;
+function messeRahmen(){
+  const wrap = document.querySelector("#canvas .gwrap");
+  const page = document.querySelector("#canvas .page.guided");
+  if(!wrap || !page) return null;
+  const alt = page.style.transform;
+  page.style.transition = "none"; page.style.transform = "none";
+  const pr = page.getBoundingClientRect(), wr = wrap.getBoundingClientRect();
+  const pns = [...page.querySelectorAll(".pn")].map(p=>{
+    const r = p.getBoundingClientRect();
+    return {cx:(r.left-pr.left)+r.width/2, cy:(r.top-pr.top)+r.height/2, w:r.width, h:r.height};
+  });
+  page.style.transform = alt; void page.offsetWidth; page.style.transition = "";
+  if(!wr.width || !pns.length || !pns[0].w) return null;
+  return {wrap:{w:wr.width,h:wr.height}, pns};
+}
+
+function setzeRahmen(i){
+  rahmen = i;
+  const page = document.querySelector("#canvas .page.guided"); if(!page) return;
+  const pns = page.querySelectorAll(".pn");
+  pns.forEach((p,k)=>p.classList.toggle("aktiv", k===i));
+  document.querySelectorAll("#canvas .gdot").forEach((d,k)=>d.classList.toggle("on", k===i));
+  document.getElementById("rsub").textContent = `Kapitel 30 · Rahmen ${i+1} / ${pns.length}`;
+
+  if(!gGeo) gGeo = messeRahmen();
+  if(!gGeo || !gGeo.pns[i]) return;
+  const a = gGeo.pns[i], W = gGeo.wrap;
+  /* Geführt passt den Rahmen IMMER ein — deshalb wäre --z hier wirkungslos:
+     größere Seite → kleinerer Einpass-Faktor → gleiches Bild, nur winziger Text.
+     Der Regler steuert hier also die FÜLLUNG: wie viel vom Sichtfeld der Rahmen
+     einnimmt. Über 100 % läuft er über den Rand — das ist echtes Hineinzoomen. */
+  const f = Math.max(.26, Math.min(1.8, 0.60 * (1 + zBild/100)));
+  const s = Math.min(3.2, (W.w*f)/a.w, (W.h*f)/a.h) || 1;
+  // Nur die Transformation ändern → der Browser bewegt weich von A nach B.
+  page.style.transform = `translate(${W.w/2 - a.cx*s}px,${W.h/2 - a.cy*s}px) scale(${s})`;
+}
+
+/* EIN Regler für alles. Bei Bildern = Zoom, bei Text = Schriftgröße.
+   Gleicher Griff, gleiche Stelle, gleicher Standard-Knopf. */
+function zoomAnwenden(){
+  const c = document.getElementById("canvas");
+  const text = (modus === "text");
+  const w = zIst();
+  document.getElementById("zoom").value = w;
+  document.getElementById("zlabel").textContent = text ? "Schriftgröße" : "Bildgröße";
+  document.getElementById("textrow").hidden = !text;
+
+  if(text){
+    groesse = 15.5 * (1 + w/200);                  // −60…+160 → ~11…28 px
+    document.getElementById("zval").textContent =
+      Math.abs(w)<3 ? "15,5 px · Standard" : groesse.toFixed(1).replace(".",",")+" px";
+    document.getElementById("fitnote").innerHTML =
+      "Derselbe Griff, eigener Wert: hier stellt er die <b>Schriftgröße</b>. Dein Bild-Zoom bleibt unangetastet. Probier <b>▶ Vorlesen</b> — der Satz wandert mit.";
+    textAnwenden();
+  } else if(modus === "gefuehrt"){
+    /* Seite bleibt auf Normalmaß — der Regler wirkt über die Füllung (siehe setzeRahmen).
+       Damit bleibt auch die gemessene Geometrie gültig: kein Neumessen, kein Springen. */
+    c.style.setProperty("--z", "1");
+    setzeRahmen(rahmen);
+    document.getElementById("zval").textContent =
+      Math.abs(w)<3 ? "eingepasst" : (w>0?"+":"") + w + " %";
+    document.getElementById("fitnote").innerHTML =
+      "Geführt passt den Rahmen selbst ein — der Regler bestimmt, <b>wie viel Sichtfeld</b> er füllt. "
+    + "Über 100 % läuft er über den Rand: echtes Hineinzoomen, nicht kleinerer Text.";
+  } else {
+    c.style.setProperty("--z", (1 + w/100).toFixed(3));
+    document.getElementById("zval").textContent =
+      Math.abs(w)<3 ? "passend" : (w>0?"+":"") + w + " %";
+    document.getElementById("fitnote").innerHTML =
+      "Ein Griff, zwei Gedächtnisse. Das Seitenverhältnis bleibt <b>immer</b> erhalten — nie gedehnt.";
+  }
+}
+
+/* ---- Text: Schrift, Größe, Vorlesen mit Markierung ---- */
+let schrift = "serif", groesse = 15.5, liest = false, lTimer = null, lIdx = 0;
+function textAnwenden(){
+  const t = document.getElementById("tcol"); if(!t) return;
+  t.classList.remove("sans","dys");
+  if(schrift!=="serif") t.classList.add(schrift);
+  t.style.fontSize = groesse + "px";
+}
+function vorlesenStop(){
+  liest = false; clearInterval(lTimer); lIdx = 0;
+  document.getElementById("vorlesen").classList.remove("on");
+  document.getElementById("vorlesen").textContent = "▶ Vorlesen";
+  document.querySelectorAll(".sz-satz").forEach(s=>s.classList.remove("jetzt","fertig"));
+}
+function vorlesenStart(){
+  const s = [...document.querySelectorAll("#tcol .sz-satz")]; if(!s.length) return;
+  liest = true; lIdx = 0;
+  const b = document.getElementById("vorlesen");
+  b.classList.add("on"); b.textContent = "⏸ läuft";
+  const schritt = ()=>{
+    s.forEach((x,k)=>{
+      x.classList.toggle("jetzt", k===lIdx);
+      x.classList.toggle("fertig", k<lIdx);
+    });
+    document.getElementById("rsub").textContent =
+      `Kapitel 412 · Satz ${lIdx+1} / ${s.length} · wird vorgelesen`;
+    lIdx++;
+    if(lIdx>=s.length){ clearInterval(lTimer); setTimeout(vorlesenStop,900); }
+  };
+  schritt(); lTimer = setInterval(schritt, 2100);
+}
+
+document.querySelectorAll(".switch .sw").forEach(b=>b.addEventListener("click",()=>{
+  document.querySelectorAll(".switch .sw").forEach(x=>x.setAttribute("aria-pressed",String(x===b)));
+  vorlesenStop();
+  modus = b.dataset.m;
+  render(modus);
+  zoomAnwenden();
+}));
+document.querySelectorAll(".fnt").forEach(f=>f.addEventListener("click",()=>{
+  document.querySelectorAll(".fnt").forEach(x=>x.classList.toggle("on",x===f));
+  schrift = f.dataset.f; textAnwenden();
+}));
+document.getElementById("vorlesen").addEventListener("click",()=>{ liest ? vorlesenStop() : vorlesenStart(); });
+window.addEventListener("resize",()=>{ if(modus==="gefuehrt"){ gGeo=null; setzeRahmen(rahmen);} });
+document.getElementById("zoom").addEventListener("input",e=>{ zSetz(+e.target.value); zoomAnwenden(); });
+document.getElementById("zminus").addEventListener("click",()=>{ zSetz(Math.max(-60,zIst()-10)); zoomAnwenden(); });
+document.getElementById("zplus").addEventListener("click",()=>{ zSetz(Math.min(160,zIst()+10)); zoomAnwenden(); });
+document.getElementById("zreset").addEventListener("click",()=>{ zSetz(0); zoomAnwenden(); });
+document.querySelectorAll(".ztick").forEach(t=>t.addEventListener("click",()=>{
+  zSetz(+t.dataset.z); zoomAnwenden();
+}));
+document.addEventListener("click",e=>{
+  const d = e.target.closest(".gdot"); if(d) setzeRahmen(+d.dataset.i);
+});
+
+render("einzel");
+zoomAnwenden();
+</script>

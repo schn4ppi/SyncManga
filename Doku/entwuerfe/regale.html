@@ -1,0 +1,742 @@
+<title>SyncFindus — Zwei Regale, eine Karte, eine Liste</title>
+<style>
+:root{
+  --bg:#0E1217; --panel:#161C23; --panel2:#1c242d; --line:#232C36; --line2:#33404e;
+  --tx:#E4E9EF; --tx2:#8B97A5; --tx3:#5f6b78; --akz:#F0873C; --onA:#150a02;
+  --grün:#5fd07a; --gelb:#d8b64a; --rot:#e06a5a; --türkis:#5fd0c4; --lila:#a98fe0;
+  --disp:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --data:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  --serif:Literata,"Source Serif 4",Georgia,serif;
+}
+@media (prefers-color-scheme:light){
+  :root:not([data-theme="dark"]){--bg:#eff1f4;--panel:#fff;--panel2:#f4f6f8;--line:#dde2e8;--line2:#c3ccd6;
+    --tx:#1a1f26;--tx2:#5a6672;--tx3:#8592a0;--akz:#b8551c;--onA:#fff;
+    --grün:#237a42;--gelb:#8a6410;--rot:#b13a28;--türkis:#1a7f74;--lila:#6b4fa8}
+}
+:root[data-theme="light"]{--bg:#eff1f4;--panel:#fff;--panel2:#f4f6f8;--line:#dde2e8;--line2:#c3ccd6;
+  --tx:#1a1f26;--tx2:#5a6672;--tx3:#8592a0;--akz:#b8551c;--onA:#fff;
+  --grün:#237a42;--gelb:#8a6410;--rot:#b13a28;--türkis:#1a7f74;--lila:#6b4fa8}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:var(--disp);font-size:16px;
+  line-height:1.6;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1160px;margin:0 auto;padding:34px 18px 90px}
+.eyebrow{font-family:var(--data);font-size:11px;letter-spacing:.17em;text-transform:uppercase;
+  color:var(--akz);margin:0 0 11px}
+h1{font-size:clamp(27px,4.2vw,42px);line-height:1.06;letter-spacing:-.028em;font-weight:800;
+  margin:0 0 13px;text-wrap:balance}
+.lede{font-size:17px;color:var(--tx2);max-width:68ch;margin:0}
+h2{font-size:23px;font-weight:800;letter-spacing:-.022em;margin:0 0 6px}
+h3{font-size:16px;font-weight:800;letter-spacing:-.012em;margin:26px 0 6px}
+.sub{color:var(--tx2);margin:0 0 16px;max-width:74ch;font-size:14.5px}
+hr.rule{height:1px;background:var(--line);border:0;margin:40px 0}
+b.a{color:var(--akz)}
+code{font-family:var(--data);font-size:.86em;background:var(--panel2);border:1px solid var(--line);
+  border-radius:4px;padding:1px 5px}
+svg{display:block}
+
+.reiter{display:flex;gap:6px;margin:26px 0 16px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.reiter button{appearance:none;background:none;border:0;border-bottom:2px solid transparent;
+  color:var(--tx2);font:inherit;font-weight:700;font-size:14px;padding:9px 14px;cursor:pointer;
+  min-height:24px;margin-bottom:-1px}
+.reiter button:hover{color:var(--tx)}
+.reiter button.on{color:var(--akz);border-bottom-color:var(--akz)}
+
+.wahl{display:flex;gap:7px;flex-wrap:wrap;margin:14px 0;align-items:center}
+.wahl .lab{font-family:var(--data);font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--tx3);margin-right:4px}
+.wahl button{appearance:none;background:var(--panel);border:1px solid var(--line2);border-radius:8px;
+  color:var(--tx2);font:inherit;font-size:13px;font-weight:600;padding:6px 13px;cursor:pointer;
+  min-height:30px}
+.wahl button:hover{border-color:var(--akz);color:var(--tx)}
+.wahl button.on{background:var(--akz);border-color:var(--akz);color:var(--onA)}
+
+.bild{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--panel);
+  container-type:inline-size}
+.bildkopf{display:flex;align-items:center;gap:9px;padding:8px 13px;border-bottom:1px solid var(--line);
+  background:var(--panel2);font-family:var(--data);font-size:10px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--tx3)}
+.bildkopf .pkt{width:8px;height:8px;border-radius:50%;background:var(--akz)}
+.bildkopf .re{margin-left:auto;text-transform:none;letter-spacing:0;font-size:11px}
+.inn{background:var(--bg);padding:15px 16px 18px}
+
+/* Kopfleiste eines Regals */
+.rkopf{display:flex;align-items:center;gap:11px;flex-wrap:wrap;margin-bottom:13px}
+.rkopf h4{margin:0;font-size:19px;font-weight:800;letter-spacing:-.022em}
+.rkopf .z{font-family:var(--data);font-size:11px;color:var(--tx2)}
+.rkopf .re{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap}
+.knopf{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line2);border-radius:8px;
+  background:var(--panel);color:var(--tx);font:inherit;font-size:12.5px;font-weight:600;
+  padding:6px 12px;cursor:pointer;min-height:30px}
+.knopf svg{width:15px;height:15px}
+.knopf.haupt{background:var(--akz);border-color:var(--akz);color:var(--onA);font-weight:700}
+.knopf.klein{font-size:11.5px;padding:4px 9px;min-height:26px}
+
+.marke{display:inline-flex;align-items:center;gap:5px;font-family:var(--data);font-size:9.5px;
+  letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--line2);border-radius:5px;
+  padding:2px 6px;color:var(--tx2);white-space:nowrap}
+.marke.g{border-color:var(--grün);color:var(--grün)}
+.marke.ge{border-color:var(--gelb);color:var(--gelb)}
+.marke.r{border-color:var(--rot);color:var(--rot)}
+.marke.t{border-color:var(--türkis);color:var(--türkis)}
+.marke.a{border-color:var(--akz);color:var(--akz)}
+.marke.voll{background:var(--grün);border-color:var(--grün);color:var(--onA)}
+.marke.defekt{background:var(--rot);border-color:var(--rot);color:#fff}
+
+/* ── MUSIK: Kacheln, das Lied zählt ── */
+.mgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:13px}
+.mk{cursor:pointer}
+.mcov{aspect-ratio:1;border-radius:9px;position:relative;overflow:hidden;
+  background:linear-gradient(150deg,#2c3b47,#8a5a35)}
+.mk:nth-child(2) .mcov{background:linear-gradient(150deg,#33283b,#7a4a5e)}
+.mk:nth-child(3) .mcov{background:linear-gradient(150deg,#1f3330,#3f6a58)}
+.mk:nth-child(4) .mcov{background:linear-gradient(150deg,#2a2f42,#5a5f8a)}
+.mk:nth-child(5) .mcov{background:linear-gradient(150deg,#3d2c22,#9a6a3a)}
+.mk:nth-child(6) .mcov{background:linear-gradient(150deg,#22303d,#4a7a9a)}
+.mk:nth-child(7) .mcov{background:linear-gradient(150deg,#3a2230,#8a4a6a)}
+.mcov::after{content:"";position:absolute;inset:0;
+  background:radial-gradient(80% 60% at 28% 24%,rgba(255,255,255,.15),transparent 60%)}
+.mk b{display:block;font-size:12.5px;font-weight:700;line-height:1.25;margin-top:7px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mk span{display:block;font-size:11.5px;color:var(--tx2);white-space:nowrap;overflow:hidden;
+  text-overflow:ellipsis}
+/* Die Lücke ist in der Musik NUR eine Zahl — grau, klein, kein Alarm. */
+.mk .luecke{font-family:var(--data);font-size:10px;color:var(--tx3);margin-top:2px}
+.mk .luecke.voll{color:var(--tx3)}
+
+/* Musik: Liedliste */
+.lliste{display:flex;flex-direction:column}
+.lz{display:flex;align-items:center;gap:12px;padding:7px 8px;border-radius:7px;font-size:13.5px}
+.lz:hover{background:var(--panel2)}
+.lz .nr{font-family:var(--data);font-size:11px;color:var(--tx3);width:2.4ch;text-align:right;flex:0 0 auto}
+.lz .cv{width:32px;height:32px;border-radius:5px;flex:0 0 auto;
+  background:linear-gradient(150deg,#2c3b47,#8a5a35)}
+.lz:nth-child(even) .cv{background:linear-gradient(150deg,#33283b,#7a4a5e)}
+.lz .lt{flex:1;min-width:0}
+.lz .lt b{display:block;font-size:13.5px;font-weight:600;line-height:1.25;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lz .lt span{display:block;font-size:11.5px;color:var(--tx2);white-space:nowrap;overflow:hidden;
+  text-overflow:ellipsis}
+.lz .re{margin-left:auto;display:flex;gap:8px;align-items:center;flex:0 0 auto}
+.lz .dur{font-family:var(--data);font-size:11px;color:var(--tx3)}
+
+/* ── HÖRBUCH: Zeilen, nur vollständig brauchbar ── */
+.hliste{display:flex;flex-direction:column;gap:9px}
+.hb{display:flex;gap:13px;padding:11px;border:1px solid var(--line);border-radius:11px;
+  background:var(--panel);align-items:center}
+.hb.defekt{border-color:var(--rot);background:linear-gradient(90deg,rgba(224,106,90,.09),var(--panel) 42%)}
+.hb.laeuft{border-color:var(--akz)}
+.hbc{width:52px;flex:0 0 52px;aspect-ratio:2/3;border-radius:7px;
+  background:linear-gradient(150deg,#2a2118,#8f6b3a);position:relative;overflow:hidden}
+.hb:nth-child(2) .hbc{background:linear-gradient(150deg,#1e2a33,#3f6a8a)}
+.hb:nth-child(3) .hbc{background:linear-gradient(150deg,#2b2033,#6a4a8a)}
+.hb:nth-child(4) .hbc{background:linear-gradient(150deg,#1f3026,#3f8a5a)}
+.hb:nth-child(5) .hbc{background:linear-gradient(150deg,#33251e,#8a5a3a)}
+.hbt{flex:1;min-width:0}
+.hbt b{display:block;font-size:14.5px;font-weight:700;letter-spacing:-.012em;line-height:1.22;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hbt .au{font-size:12px;color:var(--tx2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hbt .zei{margin-top:6px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+/* Der Vollständigkeitsbalken: JEDES Kapitel ein Segment. Eine Lücke ist hier
+   ein DEFEKT, kein Zahlenwert — deshalb sieht man sie als Loch, nicht als Prozent. */
+.kbal{display:flex;gap:1.5px;flex:1;min-width:120px;height:9px;align-items:stretch}
+.kbal i{flex:1;background:var(--line2);border-radius:1.5px}
+.kbal i.da{background:var(--grün)}
+.kbal i.hier{background:var(--akz)}
+.kbal i.fehlt{background:var(--rot);box-shadow:0 0 0 1.5px rgba(224,106,90,.32)}
+.hbz{font-family:var(--data);font-size:10.5px;color:var(--tx3);flex:0 0 auto}
+.hbre{display:flex;flex-direction:column;gap:5px;align-items:flex-end;flex:0 0 auto}
+
+/* ── HOVER-KARTE ── */
+.hovbuehne{position:relative;background:var(--bg);padding:22px 16px 30px;min-height:290px}
+.hgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:12px;
+  max-width:640px}
+.hkach{aspect-ratio:2/3;border-radius:9px;background:linear-gradient(150deg,#2c3b47,#8a5a35);
+  position:relative;cursor:pointer;transition:transform .16s,box-shadow .16s}
+.hkach:nth-child(2){background:linear-gradient(150deg,#33283b,#7a4a5e)}
+.hkach:nth-child(3){background:linear-gradient(150deg,#1f3330,#3f6a58)}
+.hkach:nth-child(4){background:linear-gradient(150deg,#2a2f42,#5a5f8a)}
+.hkach:nth-child(5){background:linear-gradient(150deg,#3d2c22,#9a6a3a)}
+.hkach:nth-child(6){background:linear-gradient(150deg,#22303d,#4a7a9a)}
+.hkach.ziel.vA{transform:scale(1.12);box-shadow:0 16px 40px -12px rgba(0,0,0,.7);z-index:3}
+.hkach.ziel.vD{box-shadow:0 0 0 2px var(--akz)}
+.hkach .name{position:absolute;left:0;right:0;bottom:0;padding:22px 8px 7px;font-size:11px;
+  font-weight:700;line-height:1.2;background:linear-gradient(transparent,rgba(0,0,0,.8));
+  border-radius:0 0 9px 9px;opacity:0;transition:opacity .16s}
+.hkach.ziel.vD .name{opacity:1}
+/* Variante A: Info unter der vergrößerten Kachel */
+.untinfo{margin-top:9px;border:1px solid var(--akz);border-radius:9px;background:var(--panel);
+  padding:9px 11px;font-size:12px;max-width:640px}
+/* Variante B: Karte daneben */
+.nebenkarte{position:absolute;right:16px;top:22px;width:250px;border:1px solid var(--line2);
+  border-radius:11px;background:var(--panel);padding:13px 14px;
+  box-shadow:0 20px 50px -18px rgba(0,0,0,.6)}
+/* Variante C: die Reihe klappt auf */
+.reihenband{margin-top:12px;border:1px solid var(--line2);border-left:3px solid var(--akz);
+  border-radius:0 11px 11px 0;background:var(--panel);padding:13px 15px;max-width:640px;
+  display:flex;gap:13px}
+.reihenband .rp{width:56px;flex:0 0 56px;aspect-ratio:2/3;border-radius:7px;
+  background:linear-gradient(150deg,#1f3330,#3f6a58)}
+.kartxt b{display:block;font-size:14px;font-weight:800;letter-spacing:-.014em;margin-bottom:2px}
+.kartxt .me{font-family:var(--data);font-size:10px;color:var(--tx3);margin-bottom:6px}
+.kartxt p{margin:0 0 8px;font-size:12.5px;color:var(--tx2);
+  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.kartxt .kn{display:flex;gap:6px;flex-wrap:wrap}
+
+/* ── LÜCKEN-LISTE ── */
+.lkkopf{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:11px;
+  margin-bottom:14px}
+.lkz{border:1px solid var(--line);border-radius:10px;background:var(--panel);padding:11px 13px}
+.lkz b{display:block;font-family:var(--data);font-size:22px;font-weight:700;letter-spacing:-.02em;
+  line-height:1.1}
+.lkz span{font-size:11.5px;color:var(--tx2)}
+.lkz.akz b{color:var(--akz)}
+.lkz.rot b{color:var(--rot)}
+.lkz.gr b{color:var(--grün)}
+
+table.lk{width:100%;border-collapse:collapse;font-size:13px}
+table.lk th{text-align:left;font-family:var(--data);font-size:9.5px;letter-spacing:.11em;
+  text-transform:uppercase;color:var(--tx3);font-weight:400;padding:6px 8px;
+  border-bottom:1px solid var(--line2)}
+table.lk td{padding:8px;border-bottom:1px solid var(--line);vertical-align:middle}
+table.lk tr:last-child td{border-bottom:0}
+table.lk tr.gew{background:rgba(240,135,60,.07)}
+.wname{display:flex;align-items:center;gap:9px;min-width:0}
+.wname .wc{width:26px;height:38px;border-radius:4px;flex:0 0 auto;
+  background:linear-gradient(150deg,#2c3b47,#8a5a35)}
+.wname b{font-size:13px;font-weight:700;line-height:1.2;white-space:nowrap;overflow:hidden;
+  text-overflow:ellipsis;display:block}
+.wname span{font-size:11px;color:var(--tx2)}
+.bal2{height:6px;border-radius:3px;background:var(--line);overflow:hidden;min-width:70px}
+.bal2 i{display:block;height:100%;background:var(--akz)}
+.bal2.leer i{background:var(--rot)}
+
+table.t{width:100%;border-collapse:collapse;font-size:13.5px;margin:14px 0}
+table.t th{text-align:left;font-size:10.5px;font-family:var(--data);letter-spacing:.1em;
+  text-transform:uppercase;color:var(--tx3);font-weight:400;padding:7px 9px;
+  border-bottom:1px solid var(--line2)}
+table.t td{padding:8px 9px;border-bottom:1px solid var(--line);vertical-align:top}
+table.t tr:last-child td{border-bottom:0}
+table.t td.nw{white-space:nowrap}
+
+.erkl{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:13px;margin-top:15px}
+.ek{border:1px solid var(--line);border-radius:11px;padding:12px 14px;background:var(--panel)}
+.ek.gut{border-color:var(--akz)}
+.ek h4{margin:0 0 5px;font-size:13.5px;font-weight:800}
+.ek p{margin:0;font-size:12.5px;color:var(--tx2)}
+.ek .ab{font-family:var(--data);font-size:9px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--tx3);display:block;margin-bottom:4px}
+.ek.gut .ab{color:var(--akz)}
+.ek em{font-style:normal;color:var(--rot)}
+.ek b{color:var(--tx)}
+
+.merk{border-left:3px solid var(--akz);background:var(--panel);border-radius:0 10px 10px 0;
+  padding:12px 15px;margin:16px 0;font-size:14px}
+.merk b{color:var(--akz)}
+.merk p{margin:0}
+.merk p+p{margin-top:7px}
+
+@container (max-width:560px){
+  .nebenkarte{position:static;width:auto;margin-top:12px}
+  .hbre{display:none}
+}
+@media (max-width:600px){
+  .wrap{padding:26px 13px 70px}
+  .erkl{grid-template-columns:1fr}
+  table.lk th:nth-child(3),table.lk td:nth-child(3){display:none}
+}
+</style>
+
+<div class="wrap">
+<p class="eyebrow">Entwurf 17 · §4.2 / §5.1 / §11</p>
+<h1>Zwei Regale, eine Karte, eine Liste</h1>
+<p class="lede">Vier Ansichten, die du sehen wolltest. Die wichtigste Erkenntnis steckt gleich
+im ersten Reiter: <b class="a">Musik und Hörbuch sind nicht dasselbe Regal</b>, auch wenn beides
+Ton ist — und der Unterschied ist nicht Geschmack, sondern <b>was eine Lücke bedeutet</b>.</p>
+
+<div class="reiter" id="rt">
+  <button class="on" data-t="mus">Das Musik-Regal</button>
+  <button data-t="hoe">Das Hörbuch-Regal</button>
+  <button data-t="hov">Die Hover-Karte</button>
+  <button data-t="lue">Die Lücken-Liste</button>
+</div>
+
+<!-- ══════════ MUSIK ══════════ -->
+<section id="t-mus">
+  <div class="merk">
+    <p>🔑 <b>E154 — in der Musik ist eine Lücke eine Zahl. Im Hörbuch ist sie ein Defekt.</b>
+    Deine Beobachtung, wörtlich: <em>„Ich brauche kein Hörbuch, wo der dritte Track fehlt. Bei
+    Musik sind Alben nicht vollständig wichtig, das Lied zählt."</em> Daraus folgt alles
+    andere — zwei Regale, zwei Grundformen, zwei Sortierungen, zwei Bedeutungen von „fertig".</p>
+  </div>
+
+  <div class="wahl">
+    <span class="lab">Ansicht</span>
+    <button class="on" data-m="alben">Alben</button>
+    <button data-m="lieder">Alle Lieder</button>
+  </div>
+
+  <div class="bild">
+    <div class="bildkopf"><span class="pkt"></span><span>Musik</span>
+      <span class="re">1.284 Lieder · 96 Alben</span></div>
+    <div class="inn">
+      <div class="rkopf"><h4>Musik</h4>
+        <span class="z">1.284 Lieder · 96 Alben · 214 Künstler</span>
+        <span class="re">
+          <button class="knopf klein">Zuletzt gehört</button>
+          <button class="knopf klein">Künstler</button>
+          <button class="knopf klein">Playlists</button></span></div>
+
+      <div id="mAlben">
+        <div class="mgrid">
+          <div class="mk"><div class="mcov"></div><b>Random Access Memories</b>
+            <span>Daft Punk · 2013</span><div class="luecke">13 von 13</div></div>
+          <div class="mk"><div class="mcov"></div><b>A Silent Voice OST</b>
+            <span>Kensuke Ushio · 2016</span><div class="luecke">27 von 32</div></div>
+          <div class="mk"><div class="mcov"></div><b>In Rainbows</b>
+            <span>Radiohead · 2007</span><div class="luecke">10 von 10</div></div>
+          <div class="mk"><div class="mcov"></div><b>Discovery</b>
+            <span>Daft Punk · 2001</span><div class="luecke">9 von 14</div></div>
+          <div class="mk"><div class="mcov"></div><b>Vinland Saga OST</b>
+            <span>Yutaka Yamada · 2019</span><div class="luecke">21 von 24</div></div>
+          <div class="mk"><div class="mcov"></div><b>Selected Ambient Works</b>
+            <span>Aphex Twin · 1992</span><div class="luecke">13 von 13</div></div>
+          <div class="mk"><div class="mcov"></div><b>Kid A</b>
+            <span>Radiohead · 2000</span><div class="luecke">7 von 11</div></div>
+        </div>
+        <p class="sub" style="margin:13px 0 0;font-size:12.5px"><b>Sieh dir „9 von 14" an —
+        es ist grau, klein und ohne Farbe.</b> Kein Warnzeichen, kein roter Rand, keine
+        Aufforderung. Ein unvollständiges Album ist in der Musik <b>kein Mangel</b>: die fünf
+        Lieder, die du hast, funktionieren.</p>
+      </div>
+
+      <div id="mLieder" hidden>
+        <div class="lliste">
+          <div class="lz"><span class="nr">1</span><span class="cv"></span>
+            <span class="lt"><b>Get Lucky</b><span>Daft Punk · Random Access Memories</span></span>
+            <span class="re"><span class="marke t">FLAC</span><span class="dur">6:09</span></span></div>
+          <div class="lz"><span class="nr">2</span><span class="cv"></span>
+            <span class="lt"><b>lit (var)</b><span>Kensuke Ushio · A Silent Voice OST</span></span>
+            <span class="re"><span class="marke t">FLAC</span><span class="dur">2:41</span></span></div>
+          <div class="lz"><span class="nr">3</span><span class="cv"></span>
+            <span class="lt"><b>Weird Fishes / Arpeggi</b><span>Radiohead · In Rainbows</span></span>
+            <span class="re"><span class="marke">AAC 256</span><span class="dur">5:18</span></span></div>
+          <div class="lz"><span class="nr">4</span><span class="cv"></span>
+            <span class="lt"><b>Veridis Quo</b><span>Daft Punk · Discovery</span></span>
+            <span class="re"><span class="marke t">FLAC</span><span class="dur">5:44</span></span></div>
+          <div class="lz"><span class="nr">5</span><span class="cv"></span>
+            <span class="lt"><b>Xtal</b><span>Aphex Twin · Selected Ambient Works</span></span>
+            <span class="re"><span class="marke t">FLAC</span><span class="dur">4:51</span></span></div>
+        </div>
+        <p class="sub" style="margin:13px 0 0;font-size:12.5px"><b>Das ist die eigentliche
+        Heimat der Musik.</b> Hier gibt es kein „vollständig" — es gibt nur Lieder, die da sind.
+        Das Album ist eine <b>Gruppe</b> (E96), also eine Sortierhilfe, kein Behälter, der voll
+        sein müsste.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="erkl">
+    <div class="ek"><span class="ab">Form</span><h4>Quadratische Kacheln</h4>
+      <p>Cover sind quadratisch, seit es CDs gibt. Sie kommen <b>dicht</b> — 132 px — weil man
+      Musik am Bild wiedererkennt, nicht am Titel.</p></div>
+    <div class="ek"><span class="ab">Sortierung</span><h4>Zuletzt gehört zuerst</h4>
+      <p>Nicht alphabetisch, nicht nach Erscheinen. <b>Musik wird wiederholt</b>, Bücher werden
+      durchgearbeitet — das ist der Unterschied in einer Zeile.</p></div>
+    <div class="ek"><span class="ab">Zustand</span><h4>Es gibt keinen Fortschritt</h4>
+      <p>Man „liest" kein Album zu Ende. Deshalb hat das Musik-Regal <b>keinen
+      Fortschrittsbalken</b> — nur „zuletzt gehört" und wie oft.</p></div>
+  </div>
+</section>
+
+<!-- ══════════ HÖRBUCH ══════════ -->
+<section id="t-hoe" hidden>
+  <div class="bild">
+    <div class="bildkopf"><span class="pkt"></span><span>Hörbücher</span>
+      <span class="re">41 Titel · 1 unvollständig</span></div>
+    <div class="inn">
+      <div class="rkopf"><h4>Hörbücher</h4>
+        <span class="z">41 Titel · 612 Stunden · <b style="color:var(--rot)">1 nicht
+        hörbar</b></span>
+        <span class="re">
+          <button class="knopf klein">Angefangen</button>
+          <button class="knopf klein">Sprecher</button>
+          <button class="knopf klein">Reihen</button></span></div>
+
+      <div class="hliste">
+        <div class="hb defekt"><div class="hbc"></div>
+          <div class="hbt"><b>Der Name des Windes</b>
+            <div class="au">Patrick Rothfuss · gelesen von Stefan Kaminski</div>
+            <div class="zei">
+              <span class="kbal">
+                <i class="da"></i><i class="da"></i><i class="fehlt"></i><i class="da"></i>
+                <i class="da"></i><i class="da"></i><i class="da"></i><i class="da"></i>
+                <i class="da"></i><i class="da"></i><i class="da"></i><i class="da"></i></span>
+              <span class="hbz">11 von 12</span></div></div>
+          <div class="hbre"><span class="marke defekt">Kapitel 3 fehlt</span>
+            <button class="knopf klein">Fehlendes holen</button></div></div>
+
+        <div class="hb laeuft"><div class="hbc"></div>
+          <div class="hbt"><b>Vinland Saga · Band 12</b>
+            <div class="au">Makoto Yukimura · von uns vertont, 3 Stimmen</div>
+            <div class="zei">
+              <span class="kbal">
+                <i class="da"></i><i class="da"></i><i class="da"></i><i class="da"></i>
+                <i class="da"></i><i class="da"></i><i class="hier"></i><i class="da"></i>
+                <i class="da"></i><i class="da"></i><i class="da"></i><i class="da"></i></span>
+              <span class="hbz">Kapitel 7 · 12:07</span></div></div>
+          <div class="hbre"><span class="marke a">läuft</span>
+            <button class="knopf klein haupt">Weiterhören</button></div></div>
+
+        <div class="hb"><div class="hbc"></div>
+          <div class="hbt"><b>Der Herr der Ringe · Die Gefährten</b>
+            <div class="au">J. R. R. Tolkien · gelesen von Achim Höppner</div>
+            <div class="zei">
+              <span class="kbal">
+                <i class="da"></i><i class="da"></i><i class="da"></i><i class="da"></i>
+                <i class="da"></i><i class="da"></i><i class="da"></i><i class="da"></i>
+                <i class="da"></i><i class="da"></i><i class="da"></i><i class="da"></i></span>
+              <span class="hbz">22 h 14 min</span></div></div>
+          <div class="hbre"><span class="marke voll">vollständig</span>
+            <button class="knopf klein">Anfangen</button></div></div>
+
+        <div class="hb"><div class="hbc"></div>
+          <div class="hbt"><b>Die drei ??? · Der Fluch des Rubins</b>
+            <div class="au">Hörspiel · Europa · 3 Sprecher</div>
+            <div class="zei">
+              <span class="kbal">
+                <i class="da"></i><i class="da"></i><i class="da"></i><i class="da"></i>
+                <i class="da"></i><i class="da"></i><i class="da"></i><i class="da"></i></span>
+              <span class="hbz">1 h 04 min · gehört</span></div></div>
+          <div class="hbre"><span class="marke g">gehört</span>
+            <button class="knopf klein">Nochmal</button></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="merk">
+    <p><b>Der Unterschied in einem Bild.</b> Oben in der Musik war „9 von 14" eine graue
+    Fußnote. Hier ist <b>ein einziges fehlendes Kapitel ein roter Balken mit eigenem
+    Knopf</b> — weil ein Hörbuch mit Loch in der Mitte <b>nicht benutzbar</b> ist. Man merkt es
+    erst nach 40 Minuten, mitten im Satz, und dann ist der Abend hin.</p>
+    <p><b>Deshalb ist der Vollständigkeitsbalken segmentiert, nicht prozentual.</b> Ein Prozentwert
+    („92 %") verschweigt, <b>wo</b> das Loch ist. Segmente zeigen es: drittes Kapitel, gleich am
+    Anfang, also sofort ein Problem — anders als ein Loch in Kapitel 47 von 48.</p>
+  </div>
+
+  <h3>Zwei Regale, Punkt für Punkt</h3>
+  <table class="t">
+    <tr><th></th><th>Musik</th><th>Hörbuch</th></tr>
+    <tr><td class="nw"><b>Was zählt</b></td><td>das <b>Lied</b></td><td>das <b>ganze Werk</b></td></tr>
+    <tr><td class="nw"><b>Eine Lücke ist</b></td><td>eine graue Zahl</td>
+      <td>ein <b>Defekt</b> — rot, mit Knopf</td></tr>
+    <tr><td class="nw"><b>Grundform</b></td><td>quadratische Kacheln, dicht</td>
+      <td>Zeilen mit 2:3-Rücken und Balken</td></tr>
+    <tr><td class="nw"><b>Sortierung</b></td><td>zuletzt gehört</td><td>angefangen zuerst</td></tr>
+    <tr><td class="nw"><b>Reihenfolge</b></td><td>egal — Zufall ist ein Feature</td>
+      <td>heilig — <b>es gibt keinen Zufall</b></td></tr>
+    <tr><td class="nw"><b>Fortschritt</b></td><td>gibt es nicht</td>
+      <td>der wichtigste Wert überhaupt (E117)</td></tr>
+    <tr><td class="nw"><b>Gruppe</b></td><td>Album — Sortierhilfe</td>
+      <td>Reihe/Band — echte Ordnung</td></tr>
+    <tr><td class="nw"><b>Wer spricht</b></td><td>Künstler (viele)</td>
+      <td><b>Sprecher</b> — eigene Sortierung wert (E138)</td></tr>
+    <tr><td class="nw"><b>Vorrat holen</b></td><td>einzelne Lieder</td>
+      <td><b>nie einzelne Kapitel</b> — immer der ganze Titel</td></tr>
+  </table>
+
+  <div class="merk">
+    <p><b>Und die Folge für die Beschaffung:</b> Ein Hörbuch wird als <b>ein Wunsch</b>
+    behandelt (E149) — erfüllt ist er erst, wenn <b>alle</b> Kapitel da sind. Fehlt eins,
+    bleibt der Wunsch offen und lauert (E150), auch wenn 11 von 12 liegen. Bei Musik ist jedes
+    Lied ein eigener Wunsch, und elf von vierzehn erfüllten Wünschen sind einfach elf erfüllte
+    Wünsche.</p>
+  </div>
+</section>
+
+<!-- ══════════ HOVER-KARTE ══════════ -->
+<section id="t-hov" hidden>
+  <p class="sub">Vier Möglichkeiten, alle anklickbar. Fahr mit der Maus über eine Kachel — oder
+  tipp sie an, wenn du auf dem Handy bist.</p>
+  <div class="wahl" id="hovwahl">
+    <span class="lab">Möglichkeit</span>
+    <button class="on" data-h="A">A · Die Kachel wächst</button>
+    <button data-h="B">B · Karte daneben</button>
+    <button data-h="C">C · Die Reihe klappt auf</button>
+    <button data-h="D">D · Nur der Rand</button>
+  </div>
+
+  <div class="bild">
+    <div class="bildkopf"><span class="pkt"></span><span id="hovk">A · Die Kachel wächst</span>
+      <span class="re">Regal · Anime</span></div>
+    <div class="hovbuehne" id="hovb">
+      <div class="hgrid" id="hgrid">
+        <div class="hkach" data-n="Frieren"><span class="name">Frieren</span></div>
+        <div class="hkach ziel" data-n="Vinland Saga"><span class="name">Vinland Saga</span></div>
+        <div class="hkach" data-n="Dandadan"><span class="name">Dandadan</span></div>
+        <div class="hkach" data-n="Dungeon Meshi"><span class="name">Dungeon Meshi</span></div>
+        <div class="hkach" data-n="Chainsaw Man"><span class="name">Chainsaw Man</span></div>
+        <div class="hkach" data-n="Monster"><span class="name">Monster</span></div>
+      </div>
+      <div class="untinfo" id="uinfo" hidden>
+        <b style="font-size:13.5px">Vinland Saga</b>
+        <span style="font-family:var(--data);font-size:10px;color:var(--tx3);margin-left:8px">
+          Anime · 2019 · ★ 8,8 · Folge 8 von 24</span>
+        <div style="margin-top:7px;display:flex;gap:6px;flex-wrap:wrap">
+          <button class="knopf klein haupt">Weitersehen</button>
+          <button class="knopf klein">Merken</button>
+          <button class="knopf klein">⋯</button></div>
+      </div>
+      <div class="nebenkarte" id="nkarte" hidden>
+        <div class="kartxt"><b>Vinland Saga</b>
+          <div class="me">Anime · 2019 · Wit Studio · ★ 8,8</div>
+          <p>Thorfinn jagt den Mann, der seinen Vater erschlug — und wird dabei Teil genau der
+          Gewalt, die er rächen will.</p>
+          <div style="margin-bottom:8px"><span class="marke a">Folge 8 / 24</span>
+            <span class="marke t">1080p</span></div>
+          <div class="kn"><button class="knopf klein haupt">Weitersehen</button>
+            <button class="knopf klein">Merken</button></div></div>
+      </div>
+      <div class="reihenband" id="rband" hidden>
+        <div class="rp"></div>
+        <div class="kartxt" style="flex:1;min-width:0"><b>Vinland Saga</b>
+          <div class="me">Anime · 2019 · Wit Studio · ★ 8,8 · Folge 8 von 24</div>
+          <p>Thorfinn jagt den Mann, der seinen Vater erschlug — und wird dabei Teil genau der
+          Gewalt, die er rächen will.</p>
+          <div class="kn"><button class="knopf klein haupt">Weitersehen</button>
+            <button class="knopf klein">Merken</button>
+            <button class="knopf klein">Zur Werk-Seite</button></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="erkl">
+    <div class="ek"><span class="ab">A · Die Kachel wächst</span><h4>Netflix' Weg</h4>
+      <p>Kachel skaliert 1,12×, Angaben darunter. Vertraut. <em>Aber sie schiebt die Nachbarn
+      optisch weg, und am Rand des Regals wächst sie aus dem Bild.</em></p></div>
+    <div class="ek"><span class="ab">B · Karte daneben</span><h4>Nichts bewegt sich</h4>
+      <p>Feste Karte rechts, das Regal bleibt völlig ruhig. Platz für Klappentext.
+      <em>Der Blick muss weit springen — Kachel links, Karte rechts.</em></p></div>
+    <div class="ek gut"><span class="ab">C · Die Reihe klappt auf · empfohlen</span>
+      <h4>Unter der Reihe, nie über ihr</h4>
+      <p>Ein Band öffnet sich <b>unterhalb</b> der Reihe. Nichts wird verdeckt, nichts springt,
+      alles bleibt lesbar — und es ist der einzige Weg, der <b>auf dem Handy identisch</b>
+      funktioniert.</p></div>
+    <div class="ek"><span class="ab">D · Nur der Rand</span><h4>Die ehrlichste Antwort</h4>
+      <p>Ein Rahmen und der volle Titel, sonst nichts. <b>Null Ablenkung, null Wartezeit.</b>
+      <em>Sagt aber auch nichts, was das Regal nicht schon zeigt.</em></p></div>
+  </div>
+
+  <div class="merk">
+    <p><b>Empfehlung: C — mit D als Sofortantwort.</b> Der Rand und der volle Titel erscheinen
+    <b>sofort</b> (0 ms), das Band <b>nach 400 ms</b>. Wer nur über das Regal streift, bekommt
+    nie ein Band zu sehen; wer stehen bleibt, bekommt alles. Das ist der Unterschied zwischen
+    „hilfsbereit" und „aufdringlich".</p>
+    <p><b>Vier Regeln, die für jede Möglichkeit gelten:</b></p>
+    <p><b>1.</b> Nichts erscheint unter dem Zeiger — sonst klickt man versehentlich hinein.
+    <b>2.</b> Verlässt der Zeiger die Kachel, verschwindet es erst nach <b>200 ms</b>; sonst
+    flackert es beim Durchfahren. <b>3.</b> Tastatur zeigt dasselbe wie Maus (Fokus = Hover),
+    sonst gibt es zwei Programme. <b>4.</b> Beim Tippen auf dem Handy gibt es <b>keinen</b>
+    Zwischenschritt — der erste Tipp öffnet das Werk. Eine Hover-Karte, die auf Berührung
+    reagiert, kostet jedem Handynutzer einen zusätzlichen Griff, für immer.</p>
+  </div>
+</section>
+
+<!-- ══════════ LÜCKEN-LISTE ══════════ -->
+<section id="t-lue" hidden>
+  <div class="merk">
+    <p><b>Deine Frage: „Ist das eine Art Download, oder?" — Ja. Und genau das ist der
+    Trick.</b> Die Lücken-Liste ist der Ort, an dem aus <b>◐ gekannt</b> ein <b>Wunsch</b>
+    wird (E150). Sie ist kein Bericht, den man liest und wegklickt — sie ist die
+    <b>Eingangstür zur Beschaffung</b>.</p>
+    <p>Kein anderes Programm kann diese Liste bauen, weil kein anderes Programm weiß, <b>was du
+    gelesen hast, ohne es zu besitzen</b>. Genau dafür gibt es die Browser-Zeugen (§8.5).</p>
+  </div>
+
+  <div class="bild">
+    <div class="bildkopf"><span class="pkt"></span><span>Lücken</span>
+      <span class="re">aus 812 gekannten Werken</span></div>
+    <div class="inn">
+      <div class="lkkopf">
+        <div class="lkz"><b>812</b><span>Werke kennst du</span></div>
+        <div class="lkz gr"><b>431</b><span>besitzt du ganz</span></div>
+        <div class="lkz akz"><b>218</b><span>haben Lücken</span></div>
+        <div class="lkz rot"><b>163</b><span>hast du gar nicht</span></div>
+      </div>
+
+      <div class="wahl" style="margin-top:0">
+        <span class="lab">Zeig mir</span>
+        <button class="on">Was mir ganz fehlt</button>
+        <button>Fast vollständig</button>
+        <button>Nur Gelesenes</button>
+        <button>Stufe A erreichbar</button>
+      </div>
+
+      <table class="lk">
+        <tr><th>Werk</th><th>Du kennst</th><th>Du besitzt</th><th>Erreichbar</th><th></th></tr>
+        <tr class="gew"><td><div class="wname"><span class="wc"></span>
+          <span><b>Solo Max-Level Newbie</b><span>Manhwa · 2021</span></span></div></td>
+          <td><b>63</b> Kapitel gelesen</td>
+          <td><span class="bal2 leer"><i style="width:0"></i></span>
+            <span style="font-family:var(--data);font-size:10.5px;color:var(--rot)">0 von 178</span></td>
+          <td><span class="marke g">Stufe A</span></td>
+          <td style="text-align:right"><button class="knopf klein haupt">Wünschen</button></td></tr>
+        <tr><td><div class="wname"><span class="wc"></span>
+          <span><b>Berserk</b><span>Manga · 1989</span></span></div></td>
+          <td><b>374</b> Kapitel gelesen</td>
+          <td><span class="bal2"><i style="width:94%"></i></span>
+            <span style="font-family:var(--data);font-size:10.5px">351 von 374</span></td>
+          <td><span class="marke ge">nur Stufe C</span></td>
+          <td style="text-align:right"><button class="knopf klein">Wünschen</button></td></tr>
+        <tr><td><div class="wname"><span class="wc"></span>
+          <span><b>Monster</b><span>Manga · 1994 · abgeschlossen</span></span></div></td>
+          <td><b>ganz gelesen</b> · 2021</td>
+          <td><span class="bal2 leer"><i style="width:0"></i></span>
+            <span style="font-family:var(--data);font-size:10.5px;color:var(--rot)">0 von 162</span></td>
+          <td><span class="marke g">Stufe S</span></td>
+          <td style="text-align:right"><button class="knopf klein haupt">Wünschen</button></td></tr>
+        <tr><td><div class="wname"><span class="wc"></span>
+          <span><b>Dungeon Meshi</b><span>Manga · 2014</span></span></div></td>
+          <td><b>97</b> Kapitel gelesen</td>
+          <td><span class="bal2"><i style="width:62%"></i></span>
+            <span style="font-family:var(--data);font-size:10.5px">60 von 97</span></td>
+          <td><span class="marke g">Stufe A</span></td>
+          <td style="text-align:right"><button class="knopf klein">Wünschen</button></td></tr>
+        <tr><td><div class="wname"><span class="wc"></span>
+          <span><b>Vinland Saga</b><span>Anime · Staffel 1</span></span></div></td>
+          <td><b>24</b> Folgen gesehen</td>
+          <td><span class="bal2 leer"><i style="width:0"></i></span>
+            <span style="font-family:var(--data);font-size:10.5px;color:var(--rot)">0 von 24</span></td>
+          <td><span class="marke g">Stufe S</span></td>
+          <td style="text-align:right"><button class="knopf klein haupt">Wünschen</button></td></tr>
+      </table>
+
+      <div style="margin-top:13px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <button class="knopf haupt">Alle 163 wünschen</button>
+        <button class="knopf">Nur die mit Stufe A oder besser (118)</button>
+        <span style="font-family:var(--data);font-size:11px;color:var(--tx3)">
+          ≈ 2,1 TB · geschätzt 3 Tage</span></div>
+    </div>
+  </div>
+
+  <div class="erkl">
+    <div class="ek gut"><span class="ab">Warum sie wirkt</span><h4>Sie beschämt nicht</h4>
+      <p>Die Zahlen sagen <b>„du kennst 812 Werke"</b>, nicht „dir fehlen 381". Der erste Satz
+      lädt ein, der zweite macht ein schlechtes Gewissen. <em>Dieselben Daten, ein anderes
+      Programm.</em></p></div>
+    <div class="ek"><span class="ab">Warum sie ehrlich ist</span><h4>Erreichbar steht dabei</h4>
+      <p>„Wünschen" ohne Aussicht ist eine Enttäuschung mit Verzögerung. Steht <b>nur Stufe
+      C</b> dran, weißt du es <b>vorher</b> — und E150 sorgt dafür, dass der Wunsch trotzdem
+      lauert.</p></div>
+    <div class="ek"><span class="ab">Warum sie nicht drängt</span><h4>Keine Zahl im Regal</h4>
+      <p>Die Lücken-Liste hat <b>kein Abzeichen</b> in der Seitenleiste. Sie ist ein Ort, den
+      man aufsucht — kein Zähler, der einen ruft. <em>Das ist der Unterschied zum Postfach,
+      das rufen <b>muss</b> (E141).</em></p></div>
+  </div>
+
+  <div class="merk">
+    <p>🔑 <b>E160 — die Lücken-Liste ist der Eingang zur Beschaffung, kein Bericht.</b>
+    Jede Zeile hat genau eine Tat: <b>wünschen</b>. Der Wunsch geht in die Warteschlange
+    (E149), scheitert er, lauert er (E150) — und taucht Wochen später von selbst als fertiges
+    Werk im Regal auf. <b>Der Weg von „das kenne ich" bis „das habe ich" ist ein Klick und
+    danach Geduld.</b></p>
+  </div>
+</section>
+
+<script>
+"use strict";
+document.getElementById("rt").addEventListener("click", function(e){
+  var b = e.target.closest("button"); if(!b) return;
+  this.querySelectorAll("button").forEach(function(x){ x.classList.toggle("on", x===b); });
+  ["mus","hoe","hov","lue"].forEach(function(t){
+    document.getElementById("t-"+t).hidden = (t !== b.dataset.t);
+  });
+});
+
+document.querySelector("#t-mus .wahl").addEventListener("click", function(e){
+  var b = e.target.closest("button"); if(!b) return;
+  this.querySelectorAll("button").forEach(function(x){ x.classList.toggle("on", x===b); });
+  var an = b.dataset.m === "alben";
+  document.getElementById("mAlben").hidden = !an;
+  document.getElementById("mLieder").hidden = an;
+});
+
+/* ── Hover-Karte: vier Möglichkeiten, echtes Verhalten ── */
+var hv = "A", ziel = null, aufTimer = null, zuTimer = null;
+var NAMEN = {
+  "Frieren":       ["Anime · 2023 · Madhouse · ★ 9,3", "Folge 8 / 28",
+    "Eine Elfe begreift erst nach dem Tod ihrer Gefährten, was achtzig gemeinsame Jahre wert waren."],
+  "Vinland Saga":  ["Anime · 2019 · Wit Studio · ★ 8,8", "Folge 8 / 24",
+    "Thorfinn jagt den Mann, der seinen Vater erschlug — und wird dabei Teil genau der Gewalt, die er rächen will."],
+  "Dandadan":      ["Anime · 2024 · Science SARU · ★ 8,5", "Folge 3 / 12",
+    "Sie glaubt an Geister, er an Außerirdische. Beide haben recht, und das ist ihr kleinstes Problem."],
+  "Dungeon Meshi": ["Anime · 2024 · Trigger · ★ 8,7", "neu für dich",
+    "Wer im Verlies kein Geld für Proviant hat, kocht eben die Monster."],
+  "Chainsaw Man":  ["Anime · 2022 · MAPPA · ★ 8,6", "Folge 12 / 12",
+    "Ein Junge mit einem Teufelshund im Herzen will nur ein normales Leben und etwas zu essen."],
+  "Monster":       ["Anime · 2004 · Madhouse · ★ 9,0", "ganz gesehen",
+    "Ein Arzt rettet ein Kind und muss Jahre später begreifen, wen genau er da gerettet hat."]
+};
+
+function hovZeig(k){
+  ziel = k;
+  document.querySelectorAll(".hkach").forEach(function(x){
+    x.classList.remove("ziel","vA","vD");
+  });
+  if(!k) { hovVerbergAlles(); return; }
+  k.classList.add("ziel");
+  if(hv === "A") k.classList.add("vA");
+  if(hv === "D") k.classList.add("vD");
+  /* D ist auch bei A/B/C die SOFORT-Antwort: Rand + voller Titel bei 0 ms. */
+  if(hv !== "D") k.classList.add("vD");
+  var d = NAMEN[k.dataset.n] || ["","",""];
+  fuelle(d, k.dataset.n);
+  clearTimeout(aufTimer);
+  if(hv === "D") return;
+  /* Das Band kommt erst nach 400 ms — wer nur durchstreift, sieht es nie. */
+  aufTimer = setTimeout(function(){
+    document.getElementById("uinfo").hidden  = (hv !== "A");
+    document.getElementById("nkarte").hidden = (hv !== "B");
+    document.getElementById("rband").hidden  = (hv !== "C");
+  }, 400);
+}
+function fuelle(d, name){
+  var u = document.getElementById("uinfo");
+  u.querySelector("b").textContent = name;
+  u.querySelector("span").textContent = d[0] + " · " + d[1];
+  [document.getElementById("nkarte"), document.getElementById("rband")].forEach(function(el){
+    el.querySelector(".kartxt b").textContent = name;
+    el.querySelector(".kartxt .me").textContent = d[0] + " · " + d[1];
+    el.querySelector(".kartxt p").textContent = d[2];
+  });
+}
+function hovVerbergAlles(){
+  ["uinfo","nkarte","rband"].forEach(function(i){ document.getElementById(i).hidden = true; });
+}
+
+document.getElementById("hgrid").addEventListener("mouseover", function(e){
+  var k = e.target.closest(".hkach"); if(!k || k === ziel) return;
+  clearTimeout(zuTimer); hovZeig(k);
+});
+document.getElementById("hovb").addEventListener("mouseleave", function(){
+  clearTimeout(aufTimer);
+  /* 200 ms Nachlauf — sonst flackert es beim Durchfahren. */
+  zuTimer = setTimeout(function(){ hovZeig(null); }, 200);
+});
+document.getElementById("hgrid").addEventListener("click", function(e){
+  var k = e.target.closest(".hkach"); if(!k) return;
+  clearTimeout(zuTimer); hovZeig(k === ziel ? null : k);
+});
+document.getElementById("hovwahl").addEventListener("click", function(e){
+  var b = e.target.closest("button"); if(!b) return;
+  this.querySelectorAll("button").forEach(function(x){ x.classList.toggle("on", x===b); });
+  hv = b.dataset.h;
+  document.getElementById("hovk").textContent = b.textContent;
+  hovVerbergAlles();
+  var alt = ziel; ziel = null;
+  hovZeig(alt || document.querySelectorAll(".hkach")[1]);
+});
+hovZeig(document.querySelectorAll(".hkach")[1]);
+</script>
+</div>

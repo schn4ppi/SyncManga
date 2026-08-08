@@ -1,0 +1,373 @@
+<title>SyncFindus — Zeichen und Farben</title>
+<style>
+:root{
+  --bg:#0E1217; --panel:#161C23; --panel2:#1c242d; --line:#232C36; --line2:#33404e;
+  --tx:#E4E9EF; --tx2:#8B97A5; --tx3:#5f6b78; --akz:#F0873C; --onA:#150a02;
+  --grün:#5fd07a; --gelb:#d8b64a; --rot:#e06a5a; --türkis:#5fd0c4;
+  --disp:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --data:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  --serif:Literata,"Source Serif 4",Georgia,serif;
+}
+@media (prefers-color-scheme:light){
+  :root:not([data-theme="dark"]){--bg:#eff1f4;--panel:#fff;--panel2:#f4f6f8;--line:#dde2e8;--line2:#c3ccd6;
+    --tx:#1a1f26;--tx2:#5a6672;--tx3:#8592a0;--akz:#b8551c;--onA:#fff;
+    --grün:#237a42;--gelb:#8a6410;--rot:#b13a28;--türkis:#1a7f74}
+}
+:root[data-theme="light"]{--bg:#eff1f4;--panel:#fff;--panel2:#f4f6f8;--line:#dde2e8;--line2:#c3ccd6;
+  --tx:#1a1f26;--tx2:#5a6672;--tx3:#8592a0;--akz:#b8551c;--onA:#fff;
+  --grün:#237a42;--gelb:#8a6410;--rot:#b13a28;--türkis:#1a7f74}
+
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:var(--disp);font-size:16px;
+  line-height:1.6;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1120px;margin:0 auto;padding:34px 18px 90px}
+.eyebrow{font-family:var(--data);font-size:11px;letter-spacing:.17em;text-transform:uppercase;
+  color:var(--akz);margin:0 0 11px}
+h1{font-size:clamp(27px,4.2vw,42px);line-height:1.06;letter-spacing:-.028em;font-weight:800;
+  margin:0 0 13px;text-wrap:balance}
+.lede{font-size:17px;color:var(--tx2);max-width:66ch;margin:0}
+h2{font-size:22px;font-weight:800;letter-spacing:-.022em;margin:0 0 6px}
+h3{font-size:15px;font-weight:800;letter-spacing:-.01em;margin:0 0 5px}
+.sub{color:var(--tx2);margin:0 0 18px;max-width:70ch;font-size:15px}
+hr.rule{height:1px;background:var(--line);border:0;margin:44px 0}
+b.a{color:var(--akz)}
+code{font-family:var(--data);font-size:.88em;background:var(--panel2);border:1px solid var(--line);
+  border-radius:4px;padding:1px 5px}
+
+/* ── Zeichentafel ── */
+.tafel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:6px;
+  margin-top:18px;display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:2px}
+.zk{padding:13px 8px 11px;border-radius:10px;text-align:center;cursor:pointer;
+  transition:background .12s}
+.zk:hover{background:var(--panel2)}
+.zk .ic{height:26px;display:flex;align-items:center;justify-content:center;color:var(--tx2);
+  transition:color .14s}
+.zk.an .ic{color:var(--akz)}
+.zk .nm{margin-top:8px;font-family:var(--data);font-size:9.5px;color:var(--tx3);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.zk.an .nm{color:var(--akz)}
+.zk .st{font-family:var(--data);font-size:8.5px;color:var(--tx3);opacity:.6}
+
+/* ── Zustandsreihe ── */
+.zreihe{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.zz{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:15px 17px;
+  flex:1;min-width:210px}
+.zz .demo{display:flex;gap:6px;align-items:center;margin-bottom:11px;min-height:34px}
+.knopf{width:32px;height:32px;border-radius:9px;border:1px solid transparent;background:transparent;
+  color:var(--tx3);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;
+  position:relative;flex:0 0 auto}
+.knopf:hover{background:var(--panel2);color:var(--tx2)}
+.knopf.an{color:var(--akz)}
+
+.knopf.haupt{background:var(--akz);color:var(--onA);width:38px;height:38px;border-radius:11px}
+.knopf.haupt:hover{filter:brightness(1.09);background:var(--akz);color:var(--onA)}
+.zz p{margin:0;font-size:13px;color:var(--tx2)}
+.zz .wo{margin-top:9px;font-family:var(--data);font-size:10px;color:var(--tx3);
+  border-top:1px solid var(--line);padding-top:8px}
+
+/* ── Farbmuster ── */
+.flaechen{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:18px}
+.fm{border:1px solid var(--line2);border-radius:12px;overflow:hidden}
+.fm .probe{height:126px;display:flex;align-items:center;justify-content:center;position:relative}
+.fm .probe .karte{width:56px;aspect-ratio:2/3;border-radius:4px;
+  background:linear-gradient(150deg,#d9d1c4,#efe9df);border:1px solid rgba(0,0,0,.3)}
+.fm .probe .grau{width:56px;height:56px;border-radius:6px;
+  background:linear-gradient(90deg,#2a2a2a,#7a7a7a,#d0d0d0)}
+.fm .probe .zeile{font-family:var(--serif);font-size:13px;max-width:78%;text-align:center;line-height:1.5}
+.fm .txt{padding:12px 14px 14px;background:var(--panel)}
+.fm .txt b{display:block;font-size:13.5px;letter-spacing:-.01em}
+.fm .txt code{font-size:10.5px}
+.fm .txt p{margin:6px 0 0;font-size:12.5px;color:var(--tx2)}
+
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:14px}
+th{text-align:left;font-family:var(--data);font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--tx3);font-weight:400;padding:0 12px 7px 0;border-bottom:1px solid var(--line)}
+td{padding:9px 12px 9px 0;border-bottom:1px solid var(--line);vertical-align:top;color:var(--tx2)}
+td:first-child{color:var(--tx);font-weight:600;white-space:nowrap}
+td b{color:var(--tx)}
+.merk{border-left:3px solid var(--akz);background:var(--panel);border-radius:0 10px 10px 0;
+  padding:13px 16px;margin-top:16px;font-size:14px;color:var(--tx2)}
+.merk b{color:var(--tx)}
+.merk.warn{border-left-color:var(--rot)}
+.karten{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px;margin-top:18px}
+.karte2{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 17px}
+.karte2 p{margin:6px 0 0;font-size:13.5px;color:var(--tx2)}
+.karte2 .wo{margin-top:9px;font-family:var(--data);font-size:10px;color:var(--tx3);
+  border-top:1px solid var(--line);padding-top:8px}
+.raster2{display:flex;gap:14px;flex-wrap:wrap;margin-top:16px;align-items:flex-start}
+.gitterbox{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px}
+.gitterbox svg{display:block}
+</style>
+
+<div class="wrap">
+
+<p class="eyebrow">SyncFindus · Bauteil 13</p>
+<h1>Zeichen und Farben</h1>
+<p class="lede">Spotifys Knöpfe sind gut, weil sie <b class="a">nichts erklären und trotzdem
+alles sagen</b> — grau heißt aus, farbig heißt an. Das Prinzip nehmen wir, die Formen auch,
+soweit sie niemandem gehören. Nur unsere Strichführung ist unsere.</p>
+
+<div class="merk">
+  <b>Wo die Grenze wirklich liegt.</b> Play, Pause, Zufall, Wiederholen, Lautstärke, das Plus
+  zum Merken — das sind seit den Kassettendecks der 60er dieselben Formen, festgeschrieben in
+  <b>IEC 60417</b> und <b>ISO 7000</b>. <b>Die gehören niemandem, und wir übernehmen sie.</b>
+  Geschützt ist nur eine konkrete <em>Zeichnung</em> mit ihren Proportionen und Rundungen —
+  also zeichnen wir sie im eigenen Maß: <b>24er-Raster, Gleichdick 1,5, runde Enden</b>.
+  Gleiches Zeichen, andere Handschrift.
+</div>
+
+<h2>Der Satz — klick sie an</h2>
+<p class="sub">Alle in <b>Gleichdick</b> gezeichnet: Strichstärke 1,5, runde Enden, runde Ecken,
+24er-Raster. Was gefüllt ist, ist es aus einem Grund — gefüllte Flächen lesen sich auf drei
+Metern schneller als Umrisse.</p>
+
+<div class="tafel" id="tafel"></div>
+
+<hr class="rule">
+
+<h2>Die Farbe ist die Beschriftung</h2>
+<p class="sub">Das ist der eigentliche Trick bei Spotify, und er ist keine Zierde: ein Knopf,
+der seinen Zustand als <b>Farbe</b> trägt, verändert seine Größe nie — und damit springt
+nichts (E103). Wer den Zustand als Text schreibt („Zufall: an"), hat beides verloren.</p>
+
+<div class="zreihe">
+  <div class="zz">
+    <div class="demo">
+      <button class="knopf" id="d1">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6.5h3.4c1 0 1.9.5 2.4 1.4l5 8.2c.5.9 1.4 1.4 2.4 1.4H21"/><path d="M3 17.5h3.4c1 0 1.9-.5 2.4-1.4l1.3-2.1"/><path d="M13.5 9.6l1.3-2.1c.5-.9 1.4-1.4 2.4-1.4H21"/><path d="M18.4 3.4 21 6l-2.6 2.6"/><path d="M18.4 14.9 21 17.5l-2.6 2.6"/></svg>
+      </button>
+      <span style="font-family:var(--data);font-size:11px;color:var(--tx3)" id="d1t">aus</span>
+    </div>
+    <h3>Zwei Zustände</h3>
+    <p>Grau = aus, Akzent = an. Kein Rahmen, keine Füllung, keine Beschriftung —
+    nur die Farbe wechselt.</p>
+    <div class="wo">Zufall · Karaoke · Radio · Nur-Ton · ❤</div>
+  </div>
+
+  <div class="zz">
+    <div class="demo">
+      <button class="knopf" id="d2">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.4V8.2A3.2 3.2 0 0 1 7.2 5h9.6L14.3 2.4"/><path d="M20 14.6v1.2a3.2 3.2 0 0 1-3.2 3.2H7.2L9.7 21.6"/><text id="d2eins" x="12" y="15.2" text-anchor="middle" font-size="8.5" font-family="ui-monospace,monospace" fill="currentColor" stroke="none" opacity="0">1</text></svg>
+      </button>
+      <span style="font-family:var(--data);font-size:11px;color:var(--tx3)" id="d2t">aus</span>
+    </div>
+    <h3>Drei Zustände</h3>
+    <p>Wiederholen kann <em>aus</em>, <em>alles</em> und <em>einer</em>. Die dritte Stufe setzt
+    eine kleine <b>1</b> <b>zwischen die Pfeile</b> — dort, wo ohnehin Platz ist, nicht in die Ecke.</p>
+    <div class="wo">eine Form, drei Bedeutungen</div>
+  </div>
+
+  <div class="zz">
+    <div class="demo">
+      <button class="knopf haupt" id="d3">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5h3.4v14H7zM13.6 5H17v14h-3.4z"/></svg>
+      </button>
+      <span style="font-family:var(--data);font-size:11px;color:var(--tx3)">immer gefüllt</span>
+    </div>
+    <h3>Die eine Hauptsache</h3>
+    <p>Play/Pause ist der einzige Knopf mit Fläche. Er ist immer größer, immer gefüllt,
+    immer an derselben Stelle — auch wenn ringsum alles verschwindet.</p>
+    <div class="wo">E37 — höchstens eine Haupthandlung</div>
+  </div>
+
+  <div class="zz">
+    <div class="demo">
+      <button class="knopf"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="8.6"/><path d="M12 8v8M8 12h8"/></svg></button>
+      <button class="knopf an"><svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="9"/><path d="M8 12.3l2.7 2.7L16.2 9.5" fill="none" stroke="#150a02" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    </div>
+    <h3>Form wechselt mit</h3>
+    <p>Beim <b>Merken</b> wird aus dem Plus ein gefüllter Haken — wie bei Spotify.
+    Nur dort, wo „besitzen / nicht besitzen" gemeint ist, nie bei Schaltern.</p>
+    <div class="wo">der zweite Kanal für Farbenblinde</div>
+  </div>
+</div>
+
+<div class="merk">
+  <b>Warum nicht Grün wie bei Spotify:</b> unser Akzent ist Orange, und ein zweiter Akzent
+  wäre ein zweiter Chef. <b>Grün ist bei uns reserviert</b> — es bedeutet im ganzen Programm
+  „läuft/aktiv/gelesen" (Zustandsampel, Kapitelstreifen, Tonpuls). Wenn Grün auch „Schalter an"
+  hieße, hätte es zwei Bedeutungen. Orange heißt überall: <em>hier hat jemand etwas eingestellt.</em>
+</div>
+
+<hr class="rule">
+
+<h2>Die Farbfrage — warum der Leser braun war und jetzt nicht mehr</h2>
+<p class="sub">Du hast völlig zu Recht gefragt, ob das zusammenpasst. Die Antwort war: teilweise.
+Ich hatte eine <b>Stimmung</b> gewählt, wo eine <b>Regel</b> hingehört. Die Regel lautet jetzt:</p>
+
+<div class="merk">
+  <b class="a">Der Grund richtet sich nach dem Material, nicht nach dem Gefühl.</b><br>
+  Liegt eigene Farbe darauf (Bilder, Film, Cover) → <b>neutral</b>, damit nichts verfälscht wird.<br>
+  Liegt nur Schrift darauf → <b>warm</b>, weil Papier warm ist und lange Lesestrecken das brauchen.
+</div>
+
+<div class="flaechen">
+  <div class="fm">
+    <div class="probe" style="background:#0E1217"><span class="grau"></span></div>
+    <div class="txt"><b>Programm · Tinte</b> <code>#0E1217</code>
+      <p>Kühl, leicht blaustichig. Das ist die <b>Möblierung</b> — sie soll hinter allem
+      zurücktreten. Ein warmer Programmgrund würde mit jedem Cover streiten.</p></div>
+  </div>
+  <div class="fm">
+    <div class="probe" style="background:#0A0A0B"><span class="grau"></span></div>
+    <div class="txt"><b>Bühne</b> <code>#0A0A0B</code>
+      <p>Fast neutral, fast schwarz. <b>Jeder Farbstich wäre eine Lüge</b> — genau deshalb sind
+      Referenzmonitore im Film neutral kalibriert. Wechselt nie zwischen Tag und Nacht.</p></div>
+  </div>
+  <div class="fm">
+    <div class="probe" style="background:#0F1012"><span class="karte"></span></div>
+    <div class="txt"><b>Leser · Bilder</b> <code>#0F1012</code> <span style="color:var(--akz);font-size:11px">neu</span>
+      <p>War <code>#1C1611</code> — braun. Das ließ gescannte Graustufen <b>vergilbt</b> aussehen,
+      weil das Auge den Rand mitrechnet. Jetzt neutral, nur eine Spur heller als die Bühne.</p></div>
+  </div>
+  <div class="fm">
+    <div class="probe" style="background:#F6EFE3;color:#2B241C">
+      <span class="zeile">Der Regen hatte aufgehört, doch die Dachrinnen tropften noch.</span></div>
+    <div class="txt"><b>Leser · Text</b> <code>#F6EFE3</code>
+      <p><b>Bleibt warm.</b> Hier gibt es keine fremde Farbe zu verfälschen — nur Schrift.
+      Und warmes Licht ermüdet beim Langlesen weniger als kaltes Weiß.</p></div>
+  </div>
+  <div class="fm">
+    <div class="probe" style="background:#1C1611">
+      <span class="zeile" style="color:#E3D8C6;font-family:var(--serif)">Der Regen hatte aufgehört.</span></div>
+    <div class="txt"><b>Leser · Text bei Nacht</b> <code>#1C1611</code>
+      <p>Das Braun bleibt — <b>hier war es immer richtig.</b> Es ist die Nachtfassung des
+      Papiers, nicht die Nachtfassung des Programms.</p></div>
+  </div>
+  <div class="fm">
+    <div class="probe" style="background:linear-gradient(120deg,#3a2140,#1a1220 60%)">
+      <span style="width:48px;height:48px;border-radius:8px;background:linear-gradient(140deg,#5a3d6e,#c2703a)"></span></div>
+    <div class="txt"><b>Musik</b> <span style="font-family:var(--data);font-size:10.5px">aus dem Cover</span>
+      <p>Der einzige Grund, der sich <b>ändert</b>: er wird aus den zwei häufigsten Farben des
+      Covers gemischt und stark abgedunkelt. Deshalb sieht jede Platte anders aus — und trotzdem
+      immer wie unser Programm.</p></div>
+  </div>
+</div>
+
+<table>
+  <tr><th style="width:23%">Fläche</th><th style="width:20%">Temperatur</th><th>Weil</th></tr>
+  <tr><td>Programm</td><td>kühl</td><td>Möbel treten zurück. Kühl wirkt neutral neben jedem Cover.</td></tr>
+  <tr><td>Bühne</td><td>neutral</td><td>Filmfarben dürfen nicht verfälscht werden.</td></tr>
+  <tr><td>Leser · Bilder</td><td>neutral</td><td>Dieselbe Begründung: Graustufen bleiben grau.</td></tr>
+  <tr><td>Leser · Text</td><td><b>warm</b></td><td>Papier ist warm, und es gibt nichts zu verfälschen.</td></tr>
+  <tr><td>Musik</td><td>aus dem Cover</td><td>Es gibt kein „richtiges" Bild — die Platte <em>ist</em> das Bild.</td></tr>
+</table>
+
+<div class="merk">
+  <b>Und warum die Bühne bläulich wirkte:</b> das war kein Farbstich, sondern das Bild selbst —
+  meine Platzhalter-Grafik ist blau. Der Grund darunter ist <code>#0A0A0B</code>, also fast
+  reines Schwarz. In einem echten Film siehst du davon ohnehin nur die Ränder.
+</div>
+
+<hr class="rule">
+
+<h2>Wie ein neues Zeichen entsteht</h2>
+<div class="karten">
+  <div class="karte2">
+    <h3>1 · Raster 24 × 24</h3>
+    <p>Alles wird in einem 24er-Feld gezeichnet, mit <b>2 px Luft</b> ringsum.
+    Damit ist jedes Zeichen gleich groß, auch wenn die Form es nicht ist.</p>
+    <div class="wo">optischer Ausgleich schlägt Mathematik</div>
+  </div>
+  <div class="karte2">
+    <h3>2 · Strich 1,5 · runde Enden</h3>
+    <p><b>Gleichdick</b> — kein Strich ist dicker als ein anderer, nirgends im Programm.
+    Ecken mit Radius, Enden rund. Das ist die eine Regel, an der man einen Satz erkennt.</p>
+    <div class="wo">stroke-width 1,5 · linecap round</div>
+  </div>
+  <div class="karte2">
+    <h3>3 · Gefüllt nur mit Grund</h3>
+    <p>Play, Pause, vor/zurück und das aktive Herz sind gefüllt — weil man sie auf drei Metern
+    erkennen muss. Alles andere bleibt Umriss.</p>
+    <div class="wo">Fernsehmodus entscheidet</div>
+  </div>
+  <div class="karte2">
+    <h3>4 · Zwei Prüfungen</h3>
+    <p>Bei <b>16 px</b> noch erkennbar? Und in <b>Graustufen</b> noch unterscheidbar?
+    Wer beides nicht besteht, wird neu gezeichnet — nicht beschriftet.</p>
+    <div class="wo">Farbe ist nie der einzige Kanal</div>
+  </div>
+</div>
+
+</div>
+
+<script>
+/* Unser Zeichensatz. Formen frei (IEC 60417 und Verwandte), Strichführung unsere:
+   Gleichdick 1,5 · runde Enden · 24er-Raster · gefüllt nur, wo Distanz es verlangt. */
+var Z = [
+ ["Wiedergabe","gefüllt",'<path d="M8 5l12 7-12 7z" fill="currentColor"/>'],
+ ["Pause","gefüllt",'<path d="M7 5h3.4v14H7zM13.6 5H17v14h-3.4z" fill="currentColor"/>'],
+ ["Vorheriger","gefüllt",'<path d="M7 5h2.2v14H7zM19 5v14l-9-7z" fill="currentColor"/>'],
+ ["Nächster","gefüllt",'<path d="M14.8 5H17v14h-2.2zM5 5v14l9-7z" fill="currentColor"/>'],
+ ["10 s zurück","Ziffer",'<path d="M12 4.2a7.8 7.8 0 1 1-7.5 5.7"/><path d="M4.1 2.9v4.6h4.6"/><text x="12.4" y="15.6" text-anchor="middle" font-size="8" font-family="ui-monospace,monospace" fill="currentColor" stroke="none">10</text>'],
+ ["10 s vor","Ziffer",'<path d="M12 4.2a7.8 7.8 0 1 0 7.5 5.7"/><path d="M19.9 2.9v4.6h-4.6"/><text x="11.6" y="15.6" text-anchor="middle" font-size="8" font-family="ui-monospace,monospace" fill="currentColor" stroke="none">10</text>'],
+ ["Zufall","Schalter",'<path d="M3 6.5h3.4c1 0 1.9.5 2.4 1.4l5 8.2c.5.9 1.4 1.4 2.4 1.4H21"/><path d="M3 17.5h3.4c1 0 1.9-.5 2.4-1.4l1.3-2.1"/><path d="M13.5 9.6l1.3-2.1c.5-.9 1.4-1.4 2.4-1.4H21"/><path d="M18.4 3.4 21 6l-2.6 2.6"/><path d="M18.4 14.9 21 17.5l-2.6 2.6"/>'],
+ ["Wiederholen","3 Stufen",'<path d="M4 9.4V8.2A3.2 3.2 0 0 1 7.2 5h9.6L14.3 2.4"/><path d="M20 14.6v1.2a3.2 3.2 0 0 1-3.2 3.2H7.2L9.7 21.6"/>'],
+ ["Wiederholen · einer","3. Stufe",'<path d="M4 9.4V8.2A3.2 3.2 0 0 1 7.2 5h9.6L14.3 2.4"/><path d="M20 14.6v1.2a3.2 3.2 0 0 1-3.2 3.2H7.2L9.7 21.6"/><text x="12" y="15.2" text-anchor="middle" font-size="8.5" font-family="ui-monospace,monospace" fill="currentColor" stroke="none">1</text>'],
+ ["Lautstärke","Regler",'<path d="M4 9.5h3.5L12 6v12l-4.5-3.5H4z" fill="currentColor" stroke="none"/><path d="M15.8 9.6a3.6 3.6 0 0 1 0 4.8"/><path d="M18.4 7a7.2 7.2 0 0 1 0 10"/>'],
+ ["Stumm","Zustand",'<path d="M4 9.5h3.5L12 6v12l-4.5-3.5H4z" fill="currentColor" stroke="none"/><path d="M16 10l4.5 4M20.5 10 16 14"/>'],
+ ["Merken","leer",'<circle cx="12" cy="12" r="8.6"/><path d="M12 8v8M8 12h8"/>'],
+ ["Gemerkt","voll",'<circle cx="12" cy="12" r="9" fill="currentColor" stroke="none"/><path d="M8 12.3l2.7 2.7L16.2 9.5" stroke="var(--panel)" stroke-width="1.9"/>'],
+ ["Weiterlesen","Richtung",'<path d="M4 5.5h6.5a2.5 2.5 0 0 1 2.5 2.5v10a2 2 0 0 0-2-2H4z"/><path d="M15.5 9.5h5"/><path d="M18 7l2.5 2.5L18 12"/>'],
+ ["Warteschlange","Liste",'<path d="M4 7h11M4 12h11M4 17h7"/><path d="M18 9v9"/><circle cx="18" cy="18" r="2"/>'],
+ ["Karaoke","Handmikro",'<circle cx="16.6" cy="7.4" r="4.1"/><path d="M13.7 10.3 5.2 18.8a2 2 0 1 0 2.8 2.8l8.5-8.5"/><path d="M6.6 17.4l2.8 2.8"/>'],
+ ["Aufnahme","Standmikro",'<rect x="9" y="2.6" width="6" height="11" rx="3"/><path d="M5.4 11.2a6.6 6.6 0 0 0 13.2 0"/><path d="M12 17.8v3.6"/>'],
+ ["Musik","Note",'<path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/>'],
+ ["Radio","Sendemast",'<circle cx="12" cy="8.6" r="2.1"/><path d="M12 10.8 9.6 21M12 10.8 14.4 21M10.4 17.4h3.2"/><path d="M8.2 4.9a5.9 5.9 0 0 0 0 7.4M15.8 4.9a5.9 5.9 0 0 1 0 7.4"/><path d="M5.5 2.5a9.4 9.4 0 0 0 0 12.2M18.5 2.5a9.4 9.4 0 0 1 0 12.2"/>'],
+ ["Einschlafen","Mond",'<path d="M20 13.5A8 8 0 0 1 10.5 4a8 8 0 1 0 9.5 9.5z"/>'],
+ ["Ausschnitt","Schere",'<circle cx="6.5" cy="17.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/><path d="M8.3 15.7 19 4M15.7 15.7 5 4"/>'],
+ ["Nur Ton","Schalter",'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 5l18 14"/>'],
+ ["Zur Quelle","Pfeil",'<path d="M10 6H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4"/><path d="M14 4h6v6"/><path d="M20 4 11 13"/>'],
+ ["Untertitel","Text",'<rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M6.5 14.5h4M13 14.5h4.5M6.5 11h2.5M11.5 11h6"/>'],
+ ["Einstellen","Zahnrad",'<circle cx="12" cy="12" r="3"/><path d="M19.3 13.4a7.6 7.6 0 0 0 0-2.8l1.8-1.3-1.9-3.3-2.1.8a7.6 7.6 0 0 0-2.4-1.4L14.4 3h-3.8l-.3 2.4a7.6 7.6 0 0 0-2.4 1.4l-2.1-.8L3.9 9.3l1.8 1.3a7.6 7.6 0 0 0 0 2.8l-1.8 1.3 1.9 3.3 2.1-.8a7.6 7.6 0 0 0 2.4 1.4l.3 2.4h3.8l.3-2.4a7.6 7.6 0 0 0 2.4-1.4l2.1.8 1.9-3.3z"/>'],
+ ["Vollbild","Ecken",'<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>'],
+ ["Bild-in-Bild","Rahmen",'<rect x="3" y="5" width="18" height="14" rx="2"/><rect x="12" y="12" width="7" height="5" rx="1" fill="currentColor" stroke="none"/>'],
+ ["Suchen","Lupe",'<circle cx="11" cy="11" r="7"/><path d="M16.5 16.5 21 21"/>'],
+ ["Regal","Rücken",'<path d="M4 5h4v14H4zM10 5h4v14h-4z"/><path d="M16.6 6.2 20 19.3"/>'],
+ ["Holen","Ablage",'<path d="M12 3.2v10.6"/><path d="M8.2 10.2 12 14l3.8-3.8"/><path d="M4 15.5V18a2.5 2.5 0 0 0 2.5 2.5h11A2.5 2.5 0 0 0 20 18v-2.5"/>'],
+ ["Wartet","Uhr",'<circle cx="12" cy="12" r="8.5"/><path d="M12 6.9V12l3.4 2"/>'],
+ ["Postfach","Ablage",'<path d="M4 13h4l1.5 3h5L16 13h4"/><path d="M5.6 5h12.8l1.6 8v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-4z"/>'],
+ ["Zurück","Pfeil",'<path d="M15 5l-7 7 7 7"/>']
+];
+
+var t = document.getElementById("tafel");
+t.innerHTML = Z.map(function(z, i){
+  return '<div class="zk" data-i="' + i + '">'
+    + '<div class="ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" '
+    + 'stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">'
+    + z[2] + '</svg></div>'
+    + '<div class="nm">' + z[0] + '</div>'
+    + '<div class="st">' + z[1] + '</div></div>';
+}).join("");
+
+t.querySelectorAll(".zk").forEach(function(k){
+  k.addEventListener("click", function(){ k.classList.toggle("an"); });
+});
+
+/* Zwei Zustände */
+var an1 = false;
+document.getElementById("d1").addEventListener("click", function(){
+  an1 = !an1;
+  this.classList.toggle("an", an1);
+  document.getElementById("d1t").textContent = an1 ? "an" : "aus";
+  document.getElementById("d1t").style.color = an1 ? "var(--akz)" : "var(--tx3)";
+});
+
+/* Drei Zustände */
+var st2 = 0, TXT = ["aus", "alles", "einer"];
+document.getElementById("d2").addEventListener("click", function(){
+  st2 = (st2 + 1) % 3;
+  this.classList.toggle("an", st2 > 0);
+  document.getElementById("d2eins").setAttribute("opacity", st2 === 2 ? "1" : "0");
+  document.getElementById("d2t").textContent = TXT[st2];
+  document.getElementById("d2t").style.color = st2 ? "var(--akz)" : "var(--tx3)";
+});
+
+/* Hauptknopf */
+var l3 = true;
+var PA = '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5h3.4v14H7zM13.6 5H17v14h-3.4z"/></svg>';
+var WI = '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5l12 7-12 7z"/></svg>';
+document.getElementById("d3").addEventListener("click", function(){
+  l3 = !l3; this.innerHTML = l3 ? PA : WI;
+});
+</script>

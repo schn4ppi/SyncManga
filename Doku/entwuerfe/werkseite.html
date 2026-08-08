@@ -1,0 +1,1296 @@
+<title>SyncFindus — Werk, Postfach, Warteschlange</title>
+<style>
+:root{
+  --bg:#0E1217; --panel:#161C23; --panel2:#1c242d; --line:#232C36; --line2:#33404e;
+  --tx:#E4E9EF; --tx2:#8B97A5; --tx3:#5f6b78; --akz:#F0873C; --onA:#150a02;
+  --grün:#5fd07a; --gelb:#d8b64a; --rot:#e06a5a; --türkis:#5fd0c4; --lila:#a98fe0;
+  --disp:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --data:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  --serif:Literata,"Source Serif 4",Georgia,serif;
+}
+@media (prefers-color-scheme:light){
+  :root:not([data-theme="dark"]){--bg:#eff1f4;--panel:#fff;--panel2:#f4f6f8;--line:#dde2e8;--line2:#c3ccd6;
+    --tx:#1a1f26;--tx2:#5a6672;--tx3:#8592a0;--akz:#b8551c;--onA:#fff;
+    --grün:#237a42;--gelb:#8a6410;--rot:#b13a28;--türkis:#1a7f74;--lila:#6b4fa8}
+}
+:root[data-theme="light"]{--bg:#eff1f4;--panel:#fff;--panel2:#f4f6f8;--line:#dde2e8;--line2:#c3ccd6;
+  --tx:#1a1f26;--tx2:#5a6672;--tx3:#8592a0;--akz:#b8551c;--onA:#fff;
+  --grün:#237a42;--gelb:#8a6410;--rot:#b13a28;--türkis:#1a7f74;--lila:#6b4fa8}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:var(--disp);font-size:16px;
+  line-height:1.6;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1160px;margin:0 auto;padding:34px 18px 90px}
+.eyebrow{font-family:var(--data);font-size:11px;letter-spacing:.17em;text-transform:uppercase;
+  color:var(--akz);margin:0 0 11px}
+h1{font-size:clamp(27px,4.2vw,42px);line-height:1.06;letter-spacing:-.028em;font-weight:800;
+  margin:0 0 13px;text-wrap:balance}
+.lede{font-size:17px;color:var(--tx2);max-width:68ch;margin:0}
+h2{font-size:23px;font-weight:800;letter-spacing:-.022em;margin:0 0 6px}
+h3{font-size:15px;font-weight:800;letter-spacing:-.01em;margin:0 0 5px}
+.sub{color:var(--tx2);margin:0 0 18px;max-width:72ch;font-size:15px}
+hr.rule{height:1px;background:var(--line);border:0;margin:42px 0}
+b.a{color:var(--akz)}
+code{font-family:var(--data);font-size:.86em;background:var(--panel2);border:1px solid var(--line);
+  border-radius:4px;padding:1px 5px}
+svg{display:block}
+
+/* ── Reiter ── */
+.reiter{display:flex;gap:6px;margin:26px 0 6px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.reiter button{appearance:none;background:none;border:0;border-bottom:2px solid transparent;
+  color:var(--tx2);font:inherit;font-weight:700;font-size:14px;padding:9px 14px;cursor:pointer;
+  min-height:24px;margin-bottom:-1px}
+.reiter button:hover{color:var(--tx)}
+.reiter button.on{color:var(--akz);border-bottom-color:var(--akz)}
+
+/* ── Wahlknöpfe ── */
+.wahl{display:flex;gap:7px;flex-wrap:wrap;margin:16px 0 14px;align-items:center}
+.wahl .lab{font-family:var(--data);font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--tx3);margin-right:4px}
+.wahl button{appearance:none;background:var(--panel);border:1px solid var(--line2);border-radius:8px;
+  color:var(--tx2);font:inherit;font-size:13px;font-weight:600;padding:6px 13px;cursor:pointer;
+  min-height:30px}
+.wahl button:hover{border-color:var(--akz);color:var(--tx)}
+.wahl button.on{background:var(--akz);border-color:var(--akz);color:var(--onA)}
+
+/* ── Der Rahmen um jeden Entwurf ── */
+.bild{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--panel);
+  container-type:inline-size}
+.bildkopf{display:flex;align-items:center;gap:9px;padding:8px 13px;border-bottom:1px solid var(--line);
+  background:var(--panel2);font-family:var(--data);font-size:10px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--tx3)}
+.bildkopf .pkt{width:8px;height:8px;border-radius:50%;background:var(--akz)}
+.bildkopf .re{margin-left:auto;text-transform:none;letter-spacing:0;font-size:11px}
+
+/* ═══════════ WERK-SEITE ═══════════ */
+.werk{background:var(--bg)}
+.rueck{display:flex;align-items:center;gap:8px;padding:10px 16px;font-size:12.5px;color:var(--tx2);
+  border-bottom:1px solid var(--line)}
+.rueck svg{width:15px;height:15px}
+
+/* A: Das Bild */
+.hero{position:relative;aspect-ratio:21/8;min-height:150px;overflow:hidden}
+.hero .kunst{position:absolute;inset:0;background:
+  radial-gradient(120% 90% at 76% 22%,rgba(240,135,60,.34),transparent 60%),
+  linear-gradient(115deg,#1a2733 0%,#2c3b47 40%,#5d4535 74%,#8a5a35 100%)}
+.hero .kunst::after{content:"";position:absolute;right:6%;bottom:-8%;width:44%;height:120%;
+  background:linear-gradient(180deg,rgba(10,14,18,.05),rgba(10,14,18,.62));
+  clip-path:polygon(24% 0,76% 8%,100% 100%,0 100%)}
+.hero .schleier{position:absolute;inset:0;background:linear-gradient(90deg,var(--bg) 4%,
+  rgba(14,18,23,.72) 42%,rgba(14,18,23,.06) 100%)}
+.hero .schleier2{position:absolute;left:0;right:0;bottom:0;height:56%;
+  background:linear-gradient(180deg,transparent,var(--bg))}
+.heroTxt{position:absolute;left:20px;bottom:14px;right:20px}
+.heroTxt .t{font-size:clamp(22px,4.6cqw,38px);font-weight:800;letter-spacing:-.03em;line-height:1.02;
+  margin:0 0 4px;text-shadow:0 2px 18px rgba(0,0,0,.5)}
+.heroTxt .u{font-size:12.5px;color:var(--tx2);display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+/* Das Fadenband — der Faden lebt IM Aufmacher, nicht darüber. Eine Anordnung,
+   ein Bereich der seinen Inhalt wechselt. (E139, überarbeitet nach JB 08.08.) */
+.faband{margin-top:7px;display:flex;align-items:baseline;gap:9px;flex-wrap:wrap}
+.faband .fk2{font-family:var(--data);font-size:9.5px;letter-spacing:.15em;text-transform:uppercase;
+  color:var(--akz);flex:0 0 auto}
+.faband b{font-size:14px;font-weight:700;letter-spacing:-.014em;min-width:0;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.faband .fn2{font-size:12px;color:var(--tx2)}
+
+/* B: Die Akte */
+.akte{display:flex;gap:16px;padding:16px}
+.pos{width:104px;flex:0 0 104px;aspect-ratio:2/3;border-radius:9px;overflow:hidden;
+  border:1px solid var(--line2);position:relative;background:linear-gradient(150deg,#2c3b47,#8a5a35)}
+.pos::after{content:"";position:absolute;inset:0;background:
+  radial-gradient(90% 70% at 30% 26%,rgba(240,135,60,.4),transparent 62%)}
+.pos.klein{width:56px;flex:0 0 56px}
+.aktetxt{min-width:0;flex:1}
+.aktetxt .t{font-size:clamp(19px,3.1cqw,27px);font-weight:800;letter-spacing:-.026em;margin:0 0 2px;
+  line-height:1.1}
+.aktetxt .u{font-size:12.5px;color:var(--tx2);margin:0 0 9px}
+
+/* C: Der Faden */
+.faden{padding:15px 16px;background:linear-gradient(100deg,rgba(240,135,60,.14),transparent 62%);
+  border-bottom:1px solid var(--line)}
+.faden .kl{font-family:var(--data);font-size:10px;letter-spacing:.15em;text-transform:uppercase;
+  color:var(--akz);margin:0 0 6px}
+.faden .gr{font-size:clamp(18px,3cqw,25px);font-weight:800;letter-spacing:-.024em;margin:0 0 3px}
+.faden .kn{font-size:12.5px;color:var(--tx2);margin:0 0 11px}
+.band{position:relative;height:74px;overflow:hidden;border-bottom:1px solid var(--line);
+  display:flex;align-items:center;gap:12px;padding:0 16px}
+.band .kunst{position:absolute;inset:0;background:linear-gradient(100deg,#1a2733,#5d4535 72%,#8a5a35);
+  opacity:.5}
+.band .pos{position:relative;width:38px;flex:0 0 38px;height:56px;aspect-ratio:auto}
+.band .bt{position:relative;min-width:0}
+.band .bt b{font-size:15px;font-weight:800;letter-spacing:-.02em;display:block;line-height:1.2;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.band .bt span{font-size:11.5px;color:var(--tx2)}
+
+/* Fortschritt */
+.fbal{height:6px;border-radius:3px;background:var(--line);overflow:hidden;margin:8px 0 6px;
+  max-width:340px}
+.fbal i{display:block;height:100%;background:var(--akz);border-radius:3px}
+.fzahl{font-family:var(--data);font-size:11.5px;color:var(--tx2)}
+.fzahl b{color:var(--tx)}
+
+/* Aktionsreihe */
+.akt{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:0 16px 14px}
+.akte .akt,.aktetxt .akt{padding:0}
+.knopf{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line2);border-radius:9px;
+  background:var(--panel);color:var(--tx);font:inherit;font-size:13.5px;font-weight:700;
+  padding:8px 15px;cursor:pointer;min-height:36px}
+.knopf svg{width:17px;height:17px}
+.knopf.haupt{background:var(--akz);border-color:var(--akz);color:var(--onA)}
+.knopf.klein{font-size:12.5px;padding:6px 11px;min-height:30px;font-weight:600}
+.knopf.nur{padding:8px;width:36px;justify-content:center}
+
+/* Marken */
+.marke{display:inline-flex;align-items:center;gap:5px;font-family:var(--data);font-size:10px;
+  letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--line2);border-radius:5px;
+  padding:2px 7px;color:var(--tx2);white-space:nowrap}
+.marke.a{border-color:var(--akz);color:var(--akz)}
+.marke.g{border-color:var(--grün);color:var(--grün)}
+.marke.ge{border-color:var(--gelb);color:var(--gelb)}
+.marke.r{border-color:var(--rot);color:var(--rot)}
+.marke.t{border-color:var(--türkis);color:var(--türkis)}
+.marke.l{border-color:var(--lila);color:var(--lila)}
+
+/* Unterreiter der Werkseite */
+.ureiter{display:flex;gap:2px;padding:0 12px;border-bottom:1px solid var(--line);overflow-x:auto}
+.ureiter button{appearance:none;background:none;border:0;border-bottom:2px solid transparent;
+  color:var(--tx3);font:inherit;font-size:13px;font-weight:700;padding:9px 11px;cursor:pointer;
+  white-space:nowrap;margin-bottom:-1px}
+.ureiter button.on{color:var(--tx);border-bottom-color:var(--akz)}
+.ureiter .z{font-family:var(--data);font-size:10px;color:var(--tx3);margin-left:5px}
+
+.inhalt{padding:13px 16px 17px;min-height:196px}
+
+/* Einheitenliste */
+.eliste{display:flex;flex-direction:column;gap:1px}
+.ez{display:flex;align-items:center;gap:11px;padding:8px 10px;border-radius:7px;font-size:13.5px}
+.ez:hover{background:var(--panel2)}
+.ez .nr{font-family:var(--data);font-size:11.5px;color:var(--tx3);width:46px;flex:0 0 46px;
+  text-align:right}
+.ez .tt{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ez .re{margin-left:auto;display:flex;gap:7px;align-items:center;flex:0 0 auto}
+.ez.gelesen .tt,.ez.gelesen .nr{color:var(--tx3)}
+.ez.hier{background:rgba(240,135,60,.11);box-shadow:inset 2px 0 0 var(--akz)}
+.ez.neu .nr{color:var(--akz)}
+.mini{width:16px;height:16px;flex:0 0 16px}
+.mini.g{color:var(--grün)}.mini.t3{color:var(--tx3)}.mini.a{color:var(--akz)}
+
+/* Gruppenkopf (Staffel / Band) */
+.gk{display:flex;align-items:center;gap:9px;padding:7px 10px;margin-top:8px;cursor:pointer;
+  border-radius:7px;font-size:12.5px;font-weight:700;color:var(--tx2);background:var(--panel2)}
+.gk:first-child{margin-top:0}
+.gk .zz{margin-left:auto;font-family:var(--data);font-size:10.5px;color:var(--tx3);font-weight:400}
+.gk svg{width:14px;height:14px;transition:transform .16s}
+.gk.zu svg{transform:rotate(-90deg)}
+
+/* Ausgaben-Tabelle */
+.austab{width:100%;border-collapse:collapse;font-size:12.5px}
+.austab th{text-align:left;font-family:var(--data);font-size:9.5px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--tx3);font-weight:400;padding:5px 8px;
+  border-bottom:1px solid var(--line)}
+.austab td{padding:8px;border-bottom:1px solid var(--line)}
+.austab tr:last-child td{border-bottom:0}
+.austab tr.hat{background:rgba(95,208,122,.07)}
+.stufe{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;
+  border-radius:6px;font-family:var(--data);font-size:11px;font-weight:700}
+.st-S{background:var(--türkis);color:var(--onA)}
+.st-A{background:var(--grün);color:var(--onA)}
+.st-B{background:var(--gelb);color:var(--onA)}
+.st-C{background:var(--akz);color:var(--onA)}
+.st-D{background:var(--rot);color:var(--onA)}
+:root[data-theme="light"] .st-S,:root[data-theme="light"] .st-A,:root[data-theme="light"] .st-B,
+:root[data-theme="light"] .st-C,:root[data-theme="light"] .st-D{color:#fff}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]) .stufe{color:#fff}}
+
+/* Beziehungsgraph */
+.bez{display:flex;flex-direction:column;gap:9px}
+.bezz{display:flex;align-items:center;gap:11px;padding:8px;border:1px solid var(--line);
+  border-radius:9px;font-size:13px}
+.bezz.jetzt{border-color:var(--akz);background:rgba(240,135,60,.08)}
+.bezz .pos{width:32px;flex:0 0 32px;height:47px}
+.bezz .bt{flex:1;min-width:0}
+.bezz .bt b{display:block;font-size:13.5px;line-height:1.25}
+.bezz .bt span{font-size:11.5px;color:var(--tx2)}
+.pfeilspur{width:14px;flex:0 0 14px;align-self:stretch;position:relative}
+.pfeilspur::before{content:"";position:absolute;left:6px;top:-9px;bottom:-9px;width:2px;
+  background:var(--line2)}
+.bezz.jetzt .pfeilspur::before{background:var(--akz)}
+
+/* ═══════════ POSTFACH ═══════════ */
+.pf{background:var(--bg)}
+.pfkopf{display:flex;align-items:center;gap:11px;padding:12px 16px;border-bottom:1px solid var(--line)}
+.pfkopf .t{font-size:16px;font-weight:800;letter-spacing:-.02em}
+.pfkopf .z{font-family:var(--data);font-size:11px;color:var(--tx2)}
+.pfkopf .re{margin-left:auto;display:flex;gap:7px}
+
+/* Stapel */
+.stapel{padding:18px 16px 20px;text-align:center;position:relative}
+.karte{max-width:520px;margin:0 auto;border:1px solid var(--line2);border-radius:13px;
+  background:var(--panel);padding:16px;position:relative;z-index:2}
+.stapel::before,.stapel::after{content:"";position:absolute;left:50%;transform:translateX(-50%);
+  border:1px solid var(--line);border-radius:13px;background:var(--panel2);max-width:520px;width:calc(100% - 32px)}
+.stapel::before{top:24px;height:170px;width:calc(100% - 46px);z-index:1;opacity:.7}
+.stapel::after{top:30px;height:160px;width:calc(100% - 62px);z-index:0;opacity:.45}
+.kdatei{font-family:var(--data);font-size:12px;color:var(--tx);word-break:break-all;
+  background:var(--panel2);border:1px solid var(--line);border-radius:7px;padding:8px 10px;
+  text-align:left;margin-bottom:11px}
+.kgrund{display:flex;align-items:flex-start;gap:8px;text-align:left;font-size:13px;color:var(--tx2);
+  margin-bottom:13px}
+.kgrund svg{width:17px;height:17px;flex:0 0 17px;color:var(--gelb);margin-top:2px}
+.kands{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:13px}
+.kand{border:1px solid var(--line);border-radius:9px;overflow:hidden;cursor:pointer;background:var(--panel2)}
+.kand:hover{border-color:var(--akz)}
+.kand.gew{border-color:var(--akz);box-shadow:0 0 0 1px var(--akz)}
+.kand .kp{aspect-ratio:2/3;background:linear-gradient(150deg,#2c3b47,#8a5a35);position:relative}
+.kand:nth-child(2) .kp{background:linear-gradient(150deg,#33283b,#7a4a5e)}
+.kand:nth-child(3) .kp{background:linear-gradient(150deg,#1f3330,#3f6a58)}
+.kand .kt{padding:6px 7px;text-align:left}
+.kand .kt b{display:block;font-size:11.5px;line-height:1.25;font-weight:700}
+.kand .kt span{font-size:10px;color:var(--tx2);font-family:var(--data)}
+.kzeile{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+
+/* Liste */
+.pfliste{display:flex;flex-direction:column}
+.pz{display:flex;align-items:center;gap:11px;padding:9px 16px;border-bottom:1px solid var(--line);
+  font-size:13px}
+.pz:hover{background:var(--panel2)}
+.pz .hk{width:16px;height:16px;flex:0 0 16px;border:1px solid var(--line2);border-radius:4px;
+  cursor:pointer}
+.pz .hk.an{background:var(--akz);border-color:var(--akz)}
+.pz .dt{flex:1;min-width:0;font-family:var(--data);font-size:11.5px;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis}
+.pz .gr{flex:0 0 auto}
+.pz .vs{flex:0 0 auto;font-size:12px;color:var(--tx2);max-width:190px;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis}
+
+/* Trichter */
+.tri{padding:6px 0}
+.trg{border-bottom:1px solid var(--line)}
+.trgk{display:flex;align-items:center;gap:10px;padding:11px 16px;cursor:pointer}
+.trgk:hover{background:var(--panel2)}
+.trgk svg.pf{width:14px;height:14px;transition:transform .16s;color:var(--tx3)}
+.trg.zu .trgk svg.pf{transform:rotate(-90deg)}
+.trgk .n{font-size:14px;font-weight:700}
+.trgk .z{font-family:var(--data);font-size:11px;color:var(--tx3)}
+.trgk .re{margin-left:auto;display:flex;gap:7px;align-items:center}
+.trgi{padding:0 16px 11px 40px}
+.trgi .hin{font-size:12.5px;color:var(--tx2);margin:0 0 9px;max-width:70ch}
+
+/* ═══════════ WARTESCHLANGE ═══════════ */
+.ws{background:var(--bg)}
+.wkopf{display:flex;align-items:center;gap:10px;padding:11px 16px;border-bottom:1px solid var(--line);
+  flex-wrap:wrap}
+.wkopf .t{font-size:16px;font-weight:800;letter-spacing:-.02em}
+.wkopf .re{margin-left:auto;display:flex;gap:7px;align-items:center}
+.durchsatz{font-family:var(--data);font-size:11px;color:var(--tx2)}
+
+/* Bahn */
+.bahn{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--line);
+  border-bottom:1px solid var(--line)}
+.spur{background:var(--bg);min-height:210px;padding:0 0 8px}
+.spurk{padding:8px 9px;border-bottom:1px solid var(--line);background:var(--panel2);
+  font-family:var(--data);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--tx3);display:flex;align-items:center;gap:6px}
+.spurk .z{margin-left:auto;color:var(--tx2)}
+.jk{margin:7px 8px 0;border:1px solid var(--line);border-radius:8px;padding:7px 8px;
+  background:var(--panel);font-size:11.5px}
+.jk b{display:block;font-weight:700;font-size:12px;line-height:1.25;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis}
+.jk span{color:var(--tx2);font-size:10.5px}
+/* Farbige Umkreisung statt bloßer Rahmenfarbe (JB 08.08.: „durch farbliche
+   Umkreisung sollte erkenntlich sein was läuft und was Probleme macht").
+   Der Ring ist ein Schein, kein Rahmen — er verschiebt nichts und ist auch
+   im Augenwinkel sichtbar, was bei einer Tafel zum Danebenschauen zählt. */
+.jk.lauf{border-color:var(--akz);box-shadow:0 0 0 2px rgba(240,135,60,.30)}
+.jk.hakt{border-color:var(--rot);box-shadow:0 0 0 2px rgba(224,106,90,.30)}
+.jk.dich{border-color:var(--gelb);box-shadow:0 0 0 2px rgba(216,182,74,.30)}
+.jk.lauf{animation:pulsring 2.4s ease-in-out infinite}
+@keyframes pulsring{
+  0%,100%{box-shadow:0 0 0 2px rgba(240,135,60,.30)}
+  50%    {box-shadow:0 0 0 3px rgba(240,135,60,.46)}
+}
+@media (prefers-reduced-motion:reduce){ .jk.lauf{animation:none} }
+.jk .wo{display:block;color:var(--tx3);font-size:10px;margin-top:3px}
+.jk .bal{height:3px;border-radius:2px;background:var(--line);margin-top:5px;overflow:hidden}
+.jk .bal i{display:block;height:100%;background:var(--akz)}
+
+/* Liste mit Punkten */
+.wliste{display:flex;flex-direction:column}
+.wz{display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:1px solid var(--line);
+  font-size:13px}
+.wz:hover{background:var(--panel2)}
+.wz .pos{width:30px;flex:0 0 30px;height:44px}
+.wz .wt{flex:1;min-width:0}
+.wz .wt b{display:block;font-size:13.5px;line-height:1.25;white-space:nowrap;overflow:hidden;
+  text-overflow:ellipsis}
+.wz .wt span{font-size:11.5px;color:var(--tx2);display:block;white-space:nowrap;overflow:hidden;
+  text-overflow:ellipsis}
+.pips{display:flex;gap:4px;flex:0 0 auto;align-items:center}
+.pip{width:9px;height:9px;border-radius:50%;background:var(--line2);position:relative}
+.pip.fertig{background:var(--grün)}
+.pip.laeuft{background:var(--akz);box-shadow:0 0 0 3px rgba(240,135,60,.22)}
+.pip.hakt{background:var(--rot)}
+.wz .zeit{font-family:var(--data);font-size:11px;color:var(--tx3);flex:0 0 auto;min-width:52px;
+  text-align:right}
+
+/* Nach Werk gebündelt */
+.wbund{display:flex;flex-direction:column}
+.wbg{border-bottom:1px solid var(--line)}
+.wbgk{display:flex;align-items:center;gap:11px;padding:10px 16px;cursor:pointer}
+.wbgk:hover{background:var(--panel2)}
+.wbgk .pos{width:26px;flex:0 0 26px;height:38px}
+.wbgk svg.pf{width:14px;height:14px;color:var(--tx3);transition:transform .16s}
+.wbg.zu .wbgk svg.pf{transform:rotate(-90deg)}
+.wbgk .wt{flex:1;min-width:0}
+.wbgi{padding:0 16px 9px 53px;display:flex;flex-direction:column;gap:1px}
+.ubz{display:flex;align-items:center;gap:10px;padding:6px 8px;border-radius:6px;font-size:12.5px}
+.ubz:hover{background:var(--panel2)}
+.ubz .ut{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* Erklärzeile unter dem Bild */
+.erkl{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:13px;margin-top:15px}
+.ek{border:1px solid var(--line);border-radius:11px;padding:12px 14px;background:var(--panel)}
+.ek.gut{border-color:var(--akz)}
+.ek h4{margin:0 0 5px;font-size:13.5px;font-weight:800}
+.ek p{margin:0;font-size:12.5px;color:var(--tx2)}
+.ek .ab{font-family:var(--data);font-size:9px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--tx3);display:block;margin-bottom:4px}
+.ek.gut .ab{color:var(--akz)}
+.ek em{font-style:normal;color:var(--rot)}
+.ek b{color:var(--tx)}
+
+/* Tabellen im Fließtext */
+table.t{width:100%;border-collapse:collapse;font-size:13.5px;margin:14px 0}
+table.t th{text-align:left;font-size:11px;font-family:var(--data);letter-spacing:.1em;
+  text-transform:uppercase;color:var(--tx3);font-weight:400;padding:7px 9px;
+  border-bottom:1px solid var(--line2)}
+table.t td{padding:8px 9px;border-bottom:1px solid var(--line);vertical-align:top}
+table.t tr:last-child td{border-bottom:0}
+table.t td:first-child{white-space:nowrap}
+
+.merk{border-left:3px solid var(--akz);background:var(--panel);border-radius:0 10px 10px 0;
+  padding:12px 15px;margin:16px 0;font-size:14px}
+.merk b{color:var(--akz)}
+.merk p{margin:0}
+.merk p+p{margin-top:7px}
+
+@container (max-width:640px){
+  .bahn{grid-template-columns:repeat(2,1fr)}
+  .spur:nth-child(n+5){display:none}
+  .akte{flex-direction:column}
+  .pos{width:84px;flex:0 0 84px}
+  .kands{grid-template-columns:1fr}
+  .kand{display:flex;gap:9px;align-items:center}
+  .kand .kp{width:38px;flex:0 0 38px;aspect-ratio:2/3}
+  .pz .vs{display:none}
+}
+@media (max-width:560px){
+  .wrap{padding:26px 13px 70px}
+  .erkl{grid-template-columns:1fr}
+}
+</style>
+
+<div class="wrap">
+<p class="eyebrow">Entwurf 16 · §4.2 / §8 / §4.5</p>
+<h1>Werk, Postfach, Warteschlange</h1>
+<p class="lede">Drei Seiten, die im Pflichtenheft beschrieben und nie gezeichnet waren. Die
+Werk-Seite ist der Knotenpunkt — sie muss für Manga, Anime, Film und Musik <b class="a">dieselbe
+Seite</b> sein. Das Postfach ist der Ausgang für alles, was nicht eindeutig war. Die
+Warteschlange ist die sichtbare Seite der Arbeit. Jede zeigt hier <b class="a">drei
+Möglichkeiten</b> — anklickbar, mit Empfehlung.</p>
+
+<div class="reiter" id="rt">
+  <button class="on" data-t="werk">Die Werk-Seite</button>
+  <button data-t="post">Das Postfach</button>
+  <button data-t="wsl">Die Warteschlange</button>
+</div>
+
+<!-- ══════════════════════ WERK-SEITE ══════════════════════ -->
+<section id="t-werk">
+  <div class="wahl">
+    <span class="lab">Anordnung</span>
+    <button class="on" data-v="A">A · Das Bild</button>
+    <button data-v="B">B · Die Akte</button>
+    <button data-v="C">C · Der Faden</button>
+  </div>
+  <div class="wahl">
+    <span class="lab">Medium</span>
+    <button class="on" data-m="manga">Manga</button>
+    <button data-m="anime">Anime</button>
+    <button data-m="film">Film</button>
+    <button data-m="musik">Album</button>
+  </div>
+  <div class="wahl">
+    <span class="lab">Zustand</span>
+    <button class="on" data-f="1">Du bist mittendrin</button>
+    <button data-f="0">Noch nie angefasst</button>
+  </div>
+
+  <div class="bild">
+    <div class="bildkopf"><span class="pkt"></span><span id="wkopfL">A · Das Bild</span>
+      <span class="re" id="wkopfR">1280 px · Nacht</span></div>
+    <div class="werk">
+      <div class="rueck">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+             stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>
+        <span id="rueckTx">Regal · Manga</span>
+      </div>
+
+      <!-- A -->
+      <div id="vA">
+        <div class="hero"><div class="kunst"></div><div class="schleier"></div>
+          <div class="schleier2"></div>
+          <div class="heroTxt">
+            <p class="t" id="aTitel">One Piece</p>
+            <p class="u" id="aUnter"></p>
+            <div class="faband" id="aFaden" hidden>
+              <span class="fk2" id="aFk"></span>
+              <b id="aFg"></b>
+              <span class="fn2" id="aFn"></span>
+            </div>
+          </div>
+        </div>
+        <div style="padding:2px 16px 0"><div class="fbal"><i id="aBal"></i></div>
+          <p class="fzahl" id="aZahl"></p></div>
+        <div class="akt" id="aAkt"></div>
+      </div>
+
+      <!-- B -->
+      <div id="vB" hidden>
+        <div class="akte">
+          <div class="pos"></div>
+          <div class="aktetxt">
+            <p class="t" id="bTitel">One Piece</p>
+            <p class="u" id="bUnter"></p>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:9px" id="bMarken"></div>
+            <div class="fbal"><i id="bBal"></i></div>
+            <p class="fzahl" id="bZahl" style="margin:0 0 11px"></p>
+            <div class="akt" id="bAkt"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- C -->
+      <div id="vC" hidden>
+        <div class="faden">
+          <p class="kl" id="cKl">Du warst hier</p>
+          <p class="gr" id="cGr"></p>
+          <p class="kn" id="cKn"></p>
+          <div class="akt" style="padding:0" id="cAkt"></div>
+        </div>
+        <div class="band"><div class="kunst"></div>
+          <div class="pos"></div>
+          <div class="bt"><b id="cTitel">One Piece</b><span id="cUnter"></span></div>
+          <div style="margin-left:auto;position:relative;text-align:right">
+            <div class="fbal" style="width:110px;margin:0 0 4px"><i id="cBal"></i></div>
+            <p class="fzahl" id="cZahl" style="font-size:10.5px"></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="ureiter" id="ur">
+        <button class="on" data-u="einh">Kapitel<span class="z" id="urZ1">1148</span></button>
+        <button data-u="ausg">Ausgaben<span class="z">4</span></button>
+        <button data-u="bez">Beziehungen<span class="z">5</span></button>
+        <button data-u="wis">Wissen</button>
+      </div>
+      <div class="inhalt" id="uInhalt"></div>
+    </div>
+  </div>
+
+  <div class="erkl">
+    <div class="ek gut"><span class="ab">A · Das Bild · deine Wahl, und sie ist richtig</span>
+      <h4>Eine Anordnung, ein Band das wechselt</h4>
+      <p>Der Aufmacher bleibt <b>immer</b>. Was sich ändert, ist eine <b>einzige Zeile</b>
+      darin: ohne Fortschritt steht dort die Herkunftszeile, mit Fortschritt das
+      <b>Fadenband</b>. Schalt oben „Zustand" um — das Bild bleibt stehen, nur das Band
+      wechselt.</p></div>
+    <div class="ek"><span class="ab">B · Die Akte</span><h4>Keine Anordnung, eine Notlage</h4>
+      <p>Kein Aufmacher, 104-px-Titelbild, sofort Zahlen. <b>Das ist kein Entwurf, das ist
+      A unter 700 px</b> (E39, Prioritätsleiter) — dieselben Kästen, gestapelt statt
+      nebeneinander.</p></div>
+    <div class="ek"><span class="ab">C · Der Faden · verworfen</span><h4>Warum du recht hattest</h4>
+      <p>Ich hatte C empfohlen. <em>Falsch — eine Seite, die sich umbaut, ist eine Seite, die
+      man nicht lernen kann.</em> Das Muskelgedächtnis stirbt, und man sucht bei jedem Werk
+      neu. C ist als Anordnung tot; sein einziger guter Gedanke — der Faden — lebt jetzt
+      <b>in A</b>.</p></div>
+  </div>
+
+  <div class="merk">
+    <p><b>Zu deinem Einwand, und er sitzt:</b> <em>„Wenn du sagst, wir sollen die gleiche
+    Oberfläche haben, dann widersprichst du dir doch, oder?"</em> — <b>Ja.</b> Nicht ganz, aber
+    genug, dass die Regel falsch war.</p>
+    <p>Der ehrliche Unterschied: <b>dieselben Kästen über alle Medien</b> ist eine Aussage über
+    das <b>Datenmodell</b> — sie kostet nichts und ist immer richtig. <b>Verschiedene
+    Anordnungen je nach Zustand</b> ist eine Aussage über das <b>Verhalten</b> — und die kostet
+    etwas, nämlich Lernbarkeit. Ich habe die zweite mit der Autorität der ersten begründet, und
+    das war ein Fehler.</p>
+    <p>🔑 <b>E139, überarbeitet: eine Anordnung, ein Bereich der seinen Inhalt wechselt.</b>
+    Der Aufmacher bleibt immer stehen. Der Fortschritt entscheidet nur, <b>was in einer
+    einzigen Zeile darin steht</b> — Herkunft oder Faden. Nichts springt, nichts baut sich um,
+    und die Seite ist nach dem zweiten Besuch auswendig gelernt.</p>
+    <p><b>Und beim Film ist es dieselbe Zeile:</b> ohne Fortschritt steht dort <em>„Denis
+    Villeneuve · 166 min · 2024"</em>, mit Fortschritt <em>„Du warst hier · bei 0:47:12 — Die
+    Reiterprüfung · noch 1 h 59"</em>. Ein Film hat kein „nächstes Kapitel", also trägt das
+    Band die <b>Zeitmarke</b>. Gleicher Ort, gleiche Höhe, anderer Inhalt — genau wie beim
+    Manga. Probier es oben aus.</p>
+  </div>
+
+  <hr class="rule">
+  <h2>Was auf jeder Werk-Seite steht — egal welches Medium</h2>
+  <p class="sub">Das ist die eigentliche Prüfung. Wenn die Seite für Film und Manga
+  verschieden ist, war das Datenmodell falsch (E03). Nur die <b>Wörter</b> wechseln, nie die
+  <b>Kästen</b>.</p>
+
+  <table class="t">
+    <tr><th>Block</th><th>Manga</th><th>Anime / Serie</th><th>Film</th><th>Album</th></tr>
+    <tr><td><b>Identität</b></td><td>Titel EN + JP, Typ, Jahr, Status</td><td>dito + Studio</td>
+      <td>dito + Regie</td><td>Künstler, Jahr, Label</td></tr>
+    <tr><td><b>Fortschritt</b></td><td>1141 / 1148 Kapitel</td><td>Folge 8 / 28</td>
+      <td>0:47 / 2:46</td><td>zuletzt gehört</td></tr>
+    <tr><td><b>Die eine Tat</b></td><td>Weiterlesen</td><td>Weitersehen</td>
+      <td>Weitersehen</td><td>Weiterhören</td></tr>
+    <tr><td><b>Gruppen</b></td><td>Bände / Arcs</td><td>Staffeln</td><td>—<span
+      style="color:var(--tx3)"> (eine)</span></td><td>Discs</td></tr>
+    <tr><td><b>Einheiten</b></td><td>Kapitel</td><td>Folgen</td><td>der Film</td><td>Titel</td></tr>
+    <tr><td><b>Ausgaben</b></td><td>Scan-Gruppen, offizielle Bände</td><td>Fassungen, Sprachen</td>
+      <td>Kinofassung / Extended</td><td>CD · Vinyl · Remaster</td></tr>
+    <tr><td><b>Beziehungen</b></td><td>Vorgänger, Ableger, Anime</td><td>Vorlage, OVA, Film</td>
+      <td>Reihe, Universum</td><td>Vorgänger, Live-Fassung</td></tr>
+    <tr><td><b>Herkunft</b></td><td colspan="4">woher stammt es, wann geprüft, was fehlt — <b>immer
+      gleich</b> (E17, E50)</td></tr>
+  </table>
+
+  <div class="merk">
+    <p><b>Die vierte Sprosse rettet den Film.</b> Sammlung → Gruppe → Einheit → Position gilt
+    auch dort, wo sie sinnlos wirkt: ein Film ist eine <b>Gruppe mit genau einer Einheit</b>.
+    Deshalb braucht die Werk-Seite keinen Sonderfall — sie blendet die leere Sprosse aus, wie
+    sie beim Manga ohne Bände die Bandzeile ausblendet. <em>Sonderfälle im Modell werden zu
+    Sonderfällen in jeder Ansicht, für immer.</em></p>
+  </div>
+
+  <hr class="rule">
+  <h2>Die Ausgaben — Qualität ist eine Leiter, kein Häkchen</h2>
+  <p class="sub">Der Reiter <b>Ausgaben</b> ist der Ort, an dem „ich habe das" und „ich könnte
+  das haben" nebeneinander stehen. Beides sind Ausgaben desselben Werks (E03). Die Stufe
+  <b>S–D</b> ist medienübergreifend gleich definiert, damit ein Qualitätsprofil („nimm nie unter
+  B") für Film, Musik und Manga <b>eine</b> Regel ist.</p>
+
+  <table class="t">
+    <tr><th>Stufe</th><th>Bewegtbild</th><th>Musik</th><th>Buch / Manga</th><th>Was sie bedeutet</th></tr>
+    <tr><td><span class="stufe st-S">S</span> Quelle</td><td>Remux, unangetastet</td>
+      <td>FLAC / Vinyl-Rip 24 bit</td><td>Verlags-EPUB, Verlagsscan</td>
+      <td>Es gibt nichts Besseres. Nur Größe spricht dagegen.</td></tr>
+    <tr><td><span class="stufe st-A">A</span> Sehr gut</td><td>BDRip 1080p+ x265</td>
+      <td>V0 / 320 kbit aus S</td><td>Scan ≥ 1600 px, sauber entrastert</td>
+      <td>Verlustbehaftet, aber nicht hörbar/sichtbar.</td></tr>
+    <tr><td><span class="stufe st-B">B</span> Gut</td><td>WEB-DL</td><td>256 kbit AAC</td>
+      <td>Reader-Scan ≈ 1200 px</td><td>Der Alltagsfall. Was Streaming liefert.</td></tr>
+    <tr><td><span class="stufe st-C">C</span> Brauchbar</td><td>WEBRip / HDTV</td>
+      <td>192 kbit</td><td>Webscan mit Kompressionsrändern</td>
+      <td>Man sieht es, es stört nicht immer.</td></tr>
+    <tr><td><span class="stufe st-D">D</span> Notnagel</td><td>Cam / VHS / &lt; 480p</td>
+      <td>&lt; 128 kbit, Transcode aus MP3</td><td>Fotografierte Seiten, OCR ohne Bilder</td>
+      <td>Besser als nichts — und wird <b>markiert</b>, nie stillschweigend behalten.</td></tr>
+  </table>
+
+  <div class="merk">
+    <p><b>E140 — die Stufe wird gemessen, nicht geglaubt.</b> Ein Dateiname, der <code>1080p
+    BluRay</code> sagt, ist eine Behauptung. Die Stufe kommt aus dem, was messbar ist:
+    Auflösung, Bitrate je Minute, Codec, Kanalzahl, Tonspur-Sprachen — beim Scan aus
+    Seitenhöhe, Dateigröße je Seite und dem Vorhandensein von Kompressionsartefakten.
+    <b>Behauptung und Messung stehen beide da</b>, und wenn sie sich widersprechen, gewinnt die
+    Messung und der Widerspruch geht ins Postfach.</p>
+    <p><b>Ein Doppel-Transcode ist der schlimmste Fall</b>, weil er sich wie A anfühlt und wie
+    C klingt: 320 kbit, aus einer 192-kbit-Datei erzeugt. Am Spektrum erkennbar (harte
+    Abbruchkante bei 16 kHz statt 20 kHz) — das prüfen wir einmal beim Einlesen, nicht bei
+    jedem Abspielen.</p>
+  </div>
+</section>
+
+<!-- ══════════════════════ POSTFACH ══════════════════════ -->
+<section id="t-post" hidden>
+  <p class="sub" style="margin-top:20px">Das Postfach ist der einzige Ausgang für Unsicherheit
+  (E48, E87). Alles, was nicht eindeutig war, liegt hier — <b>nichts wird verworfen</b>. Die
+  Gefahr ist deshalb nicht Datenverlust, sondern das Gegenteil: ein Postfach, das auf 3.000
+  Einträge wächst und nie wieder angefasst wird.</p>
+
+  <div class="wahl">
+    <span class="lab">Anordnung</span>
+    <button data-p="A">A · Der Stapel</button>
+    <button data-p="B">B · Die Liste</button>
+    <button class="on" data-p="C">C · Der Trichter</button>
+  </div>
+
+  <div class="bild">
+    <div class="bildkopf"><span class="pkt"></span><span id="pkopfL">C · Der Trichter</span>
+      <span class="re">14 offene Fälle</span></div>
+    <div class="pf">
+      <div class="pfkopf"><span class="t">Postfach</span>
+        <span class="z" id="pfZ">14 Fälle · älteste vor 2 Tagen</span>
+        <span class="re"><button class="knopf klein">Alle sicheren übernehmen (6)</button></span>
+      </div>
+
+      <!-- A Stapel -->
+      <div id="pA" hidden>
+        <div class="stapel">
+          <div class="karte">
+            <div class="kdatei">[Erai-raws] Sousou no Frieren - 09 [1080p][Multiple
+              Subtitle][A1B2C3D4].mkv</div>
+            <div class="kgrund">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                   stroke-linecap="round" stroke-linejoin="round"><path d="M12 4l9 16H3z"/>
+                <path d="M12 10v4"/><path d="M12 17.2v.1"/></svg>
+              <span><b>Zwei Kandidaten liegen gleichauf.</b> Der Fingerabdruck passt zu beiden
+              Fassungen; die Laufzeit unterscheidet sich um 4 Sekunden.</span>
+            </div>
+            <div class="kands">
+              <div class="kand gew"><div class="kp"></div><div class="kt">
+                <b>Frieren: Beyond Journey's End</b><span>2023 · Folge 9 · 94 %</span></div></div>
+              <div class="kand"><div class="kp"></div><div class="kt">
+                <b>Frieren (Director's Cut)</b><span>2024 · Folge 9 · 91 %</span></div></div>
+              <div class="kand"><div class="kp"></div><div class="kt">
+                <b>Sousou no Frieren OVA</b><span>2024 · Folge 1 · 43 %</span></div></div>
+            </div>
+            <div class="kzeile">
+              <button class="knopf haupt">Das ist es</button>
+              <button class="knopf">Keins davon — suchen</button>
+              <button class="knopf">Eigenes Video</button>
+              <button class="knopf nur" title="Später">⋯</button>
+            </div>
+          </div>
+          <p class="fzahl" style="margin:13px 0 0;position:relative;z-index:3">Fall <b>1</b> von 14
+            · <span style="color:var(--tx3)">Leertaste = übernehmen · → = später</span></p>
+        </div>
+      </div>
+
+      <!-- B Liste -->
+      <div id="pB" hidden>
+        <div class="pfliste">
+          <div class="pz"><span class="hk an"></span><span class="dt">[Erai-raws] Sousou no
+            Frieren - 09 [1080p].mkv</span><span class="gr"><span class="marke ge">2 Kandidaten</span></span>
+            <span class="vs">→ Frieren (94 %)</span></div>
+          <div class="pz"><span class="hk an"></span><span class="dt">Vinland.Saga.S02E14.German.DL.1080p.WEB.x264.mkv</span>
+            <span class="gr"><span class="marke ge">2 Kandidaten</span></span><span class="vs">→ Vinland Saga (91 %)</span></div>
+          <div class="pz"><span class="hk"></span><span class="dt">chapter-953-5-eng-li.html</span>
+            <span class="gr"><span class="marke r">Kapitelsprung</span></span><span class="vs">953 → 953.5?</span></div>
+          <div class="pz"><span class="hk"></span><span class="dt">IMG_20260714_2231.jpg (+ 88 weitere)</span>
+            <span class="gr"><span class="marke r">Kein Treffer</span></span><span class="vs">—</span></div>
+          <div class="pz"><span class="hk an"></span><span class="dt">Dandadan - 042 [Cosmic
+            Scans].cbz</span><span class="gr"><span class="marke t">Doppelt</span></span>
+            <span class="vs">→ behalte Stufe A</span></div>
+          <div class="pz"><span class="hk"></span><span class="dt">01 - Unbenannt.flac</span>
+            <span class="gr"><span class="marke ge">Kein Titel</span></span><span class="vs">Fingerabdruck läuft…</span></div>
+        </div>
+        <div style="padding:11px 16px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <button class="knopf haupt klein">3 ausgewählte übernehmen</button>
+          <button class="knopf klein">Als Eigenes ablegen</button>
+          <button class="knopf klein">Regel daraus machen…</button>
+        </div>
+      </div>
+
+      <!-- C Trichter -->
+      <div id="pC">
+        <div class="tri">
+          <div class="trg"><div class="trgk">
+            <svg class="pf" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+              stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+            <span class="n">Zwei Kandidaten</span><span class="z">6</span>
+            <span class="re"><span class="marke g">alle ≥ 90 %</span>
+              <button class="knopf klein">Alle übernehmen</button></span></div>
+            <div class="trgi">
+              <p class="hin">Der beste Treffer liegt über der Schwelle, der zweite ist dicht
+              dahinter. In sechs von sechs Fällen ist der beste Treffer richtig — hier ist
+              „alle übernehmen" die richtige Bewegung.</p>
+              <div class="eliste">
+                <div class="ez"><span class="nr">94 %</span><span class="tt">[Erai-raws] Sousou
+                  no Frieren - 09 → <b>Frieren</b></span><span class="re">
+                  <button class="knopf klein">Übernehmen</button></span></div>
+                <div class="ez"><span class="nr">91 %</span><span class="tt">Vinland.Saga.S02E14
+                  → <b>Vinland Saga</b> St. 2</span><span class="re">
+                  <button class="knopf klein">Übernehmen</button></span></div>
+              </div>
+            </div>
+          </div>
+          <div class="trg zu"><div class="trgk">
+            <svg class="pf" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+              stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+            <span class="n">Kein Treffer</span><span class="z">4</span>
+            <span class="re"><span class="marke r">braucht dich</span></span></div></div>
+          <div class="trg zu"><div class="trgk">
+            <svg class="pf" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+              stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+            <span class="n">Kapitelsprung &gt; 20 %</span><span class="z">3</span>
+            <span class="re"><span class="marke ge">prüfen</span></span></div></div>
+          <div class="trg zu"><div class="trgk">
+            <svg class="pf" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+              stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+            <span class="n">Dieselbe Ausgabe zweimal</span><span class="z">1</span>
+            <span class="re"><span class="marke t">Regel greift</span>
+              <button class="knopf klein">Bessere behalten</button></span></div></div>
+          <div class="trg zu" style="border-bottom:0"><div class="trgk">
+            <svg class="pf" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+              stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+            <span class="n">89 Bilder ohne jeden Bezug</span><span class="z">1 Bündel</span>
+            <span class="re"><button class="knopf klein">Als Eigenes ablegen</button></span></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="erkl">
+    <div class="ek"><span class="ab">A · Der Stapel</span><h4>Ein Fall, volle Aufmerksamkeit</h4>
+      <p>Groß, mit Bildern, Tastatur-bedienbar. Für <b>schwere</b> Fälle das Beste, was es gibt.
+      <em>Für 14 Fälle, von denen 6 offensichtlich sind, ist es 14-mal die gleiche Frage.</em></p></div>
+    <div class="ek"><span class="ab">B · Die Liste</span><h4>Alles auf einmal, stapelweise</h4>
+      <p>Häkchen, Massenaktion, sortierbar. Schnell — <em>aber sie zeigt Dateinamen statt Werken,
+      und man entscheidet über Dinge, die man nicht gesehen hat.</em></p></div>
+    <div class="ek gut"><span class="ab">C · Der Trichter · empfohlen</span><h4>Nach Grund, nicht nach Datei</h4>
+      <p>Gleiche Ursache = gleicher Griff. „6 × zwei Kandidaten, alle über 90 %" ist
+      <b>eine</b> Entscheidung statt sechs. Was übrig bleibt, sind die echten Fälle — und die
+      öffnen sich als <b>Stapel</b> (A). C ist der Rahmen, A der Arbeitsmodus.</p></div>
+  </div>
+
+  <div class="merk">
+    <p><b>E141 — das Postfach wächst nie stumm, und es muss leer werden können.</b>
+    Drei Pflichten:</p>
+    <p><b>1. Sichtbar.</b> Eine Zahl in der Seitenleiste, immer. Wird sie zweistellig,
+    ohne dass jemand hinsieht, ist eine Regel kaputt — nicht der Nutzer faul.</p>
+    <p><b>2. Jeder Fall hat einen Standard-Ausgang.</b> Es gibt keinen Eintrag, für den nur
+    „du musst nachdenken" gilt. Der Standard steht als Vorschlag da und ist mit einem Griff
+    auszulösen. Ein Postfach ohne Standardausgänge ist ein Friedhof.</p>
+    <p><b>3. Entscheidungen werden zu Regeln.</b> Wer dreimal dasselbe entscheidet, bekommt
+    „daraus eine Regel machen" angeboten — mit dem Satz, den die Regel danach ausführt, im
+    Klartext. Die Regel landet in der Werkstatt und ist dort <b>rücknehmbar</b> (E41).</p>
+  </div>
+
+  <h3>Die sechs Gründe — mehr gibt es nicht</h3>
+  <p class="sub">Ein Fall ohne Grund darf nicht entstehen. Die Liste ist geschlossen; eine
+  siebte Ursache heißt, dass die Erkennung eine neue Sorte Unsicherheit erfunden hat, und die
+  gehört benannt statt versteckt.</p>
+  <table class="t">
+    <tr><th>Grund</th><th>Was wir zeigen</th><th>Standard-Ausgang</th></tr>
+    <tr><td><b>Zwei Kandidaten</b></td><td>3 Vorschläge mit Titelbild, Prozent, Quelle
+      (E31: wiedererkennen statt erinnern)</td><td>bester Treffer, wenn ≥ 90 % und Abstand ≥ 5 pp</td></tr>
+    <tr><td><b>Kein Treffer</b></td><td>Dateiname zerlegt, was daran gelesen wurde</td>
+      <td>Suchfeld vorbelegt — <b>nie</b> automatisch verwerfen</td></tr>
+    <tr><td><b>Kapitelsprung</b></td><td>deine Zählung vs. Zählung der Seite, der gefundene
+      Versatz</td><td>Versatz vorschlagen, wenn er für ≥ 80 % passt</td></tr>
+    <tr><td><b>Doppelt</b></td><td>beide Ausgaben mit gemessener Stufe nebeneinander (E140)</td>
+      <td>höhere Stufe behalten, andere ins Archiv</td></tr>
+    <tr><td><b>Widerspruch</b></td><td>was Messung sagt, was Behauptung sagt</td>
+      <td>Messung übernehmen, Behauptung merken</td></tr>
+    <tr><td><b>Kein Medium</b></td><td>Bündel, nicht 89 Zeilen</td><td>als <b>Eigenes</b>
+      ablegen — nie löschen (E13)</td></tr>
+  </table>
+</section>
+
+<!-- ══════════════════════ WARTESCHLANGE ══════════════════════ -->
+<section id="t-wsl" hidden>
+  <p class="sub" style="margin-top:20px">Eine Schlange, viele Auftragsarten (§4.5): <b>erkennen ·
+  anreichern · beschaffen · prüfen · veredeln · verteilen</b>. Sie ist die einzige Stelle, an der
+  man sieht, dass das Programm arbeitet — und die einzige, an der man sieht, <b>warum es nicht
+  weitergeht</b>.</p>
+
+  <div class="wahl">
+    <span class="lab">Anordnung</span>
+    <button class="on" data-w="A">A · Die Bahn</button>
+    <button data-w="B">B · Die Zeilen</button>
+    <button data-w="C">C · Nach Werk</button>
+  </div>
+
+  <div class="bild">
+    <div class="bildkopf"><span class="pkt"></span><span id="wskopfL">A · Die Bahn</span>
+      <span class="re">31 Aufträge · 4 laufen</span></div>
+    <div class="ws">
+      <div class="wkopf"><span class="t">Warteschlange</span>
+        <span class="marke a">4 laufen</span><span class="marke ge">1 wartet auf dich</span>
+        <span class="re"><span class="durchsatz" id="dsz">12,4 MB/s · fertig ≈ 21:40</span>
+          <button class="knopf klein">Alles anhalten</button></span></div>
+
+      <!-- A Bahn -->
+      <div id="wA">
+        <div class="bahn">
+          <div class="spur"><div class="spurk"><span>Erkennen</span><span class="z">2</span></div>
+            <div class="jk"><b>IMG_2231.jpg</b><span>Fingerabdruck</span></div>
+            <div class="jk"><b>01 - Unbenannt.flac</b><span>Tonabdruck läuft</span>
+              <div class="bal"><i style="width:62%"></i></div></div></div>
+          <div class="spur"><div class="spurk"><span>Anreichern</span><span class="z">7</span></div>
+            <div class="jk"><b>Dandadan</b><span>Titelbilder</span></div>
+            <div class="jk"><b>Vinland Saga</b><span>Besetzung</span></div>
+            <div class="jk" style="opacity:.55"><b>+ 5 weitere</b><span>&nbsp;</span></div></div>
+          <div class="spur"><div class="spurk"><span>Beschaffen</span><span class="z">14</span></div>
+            <div class="jk lauf"><b>One Piece 1142</b><span>Cosmic Scans · 4,1 MB</span>
+              <div class="bal"><i id="b1" style="width:38%"></i></div></div>
+            <div class="jk lauf"><b>Frieren 09</b><span>Kandidat 1 von 5 · 47 Seeder</span>
+              <div class="bal"><i id="b2" style="width:71%"></i></div>
+              <span class="wo">Kandidat 2 steht warm</span></div>
+            <div class="jk hakt"><b>Berserk 374</b><span>alle 5 Kandidaten durch</span>
+              <span class="wo">lauert — nächste Prüfung in 4 h</span></div>
+            <div class="jk" style="opacity:.55"><b>+ 11 warten</b><span>&nbsp;</span></div></div>
+          <div class="spur"><div class="spurk"><span>Prüfen</span><span class="z">3</span></div>
+            <div class="jk"><b>Dune 2</b><span>Tonspuren zählen</span></div>
+            <div class="jk dich"><b>Chainsaw Man 12</b><span>Seite 14 defekt</span>
+              <span class="wo">wartet auf dich</span></div></div>
+          <div class="spur"><div class="spurk"><span>Veredeln</span><span class="z">5</span></div>
+            <div class="jk lauf"><b>Frieren 09</b><span>Untertitel · DE</span>
+              <div class="bal"><i id="b3" style="width:18%"></i></div></div>
+            <div class="jk"><b>One Piece 1141</b><span>Übersetzung EN</span></div></div>
+        </div>
+      </div>
+
+      <!-- B Zeilen -->
+      <div id="wB" hidden>
+        <div class="wliste">
+          <div class="wz"><div class="pos"></div><div class="wt"><b>One Piece — Kapitel 1142</b>
+            <span>lädt von Cosmic Scans · 4,1 MB · Stufe A</span></div>
+            <div class="pips"><span class="pip fertig"></span><span class="pip fertig"></span>
+              <span class="pip laeuft"></span><span class="pip"></span><span class="pip"></span></div>
+            <span class="zeit">0:12</span></div>
+          <div class="wz"><div class="pos" style="background:linear-gradient(150deg,#33283b,#7a4a5e)"></div>
+            <div class="wt"><b>Frieren — Folge 9</b><span>lädt · 1080p · 1,4 GB · Stufe B</span></div>
+            <div class="pips"><span class="pip fertig"></span><span class="pip fertig"></span>
+              <span class="pip laeuft"></span><span class="pip"></span><span class="pip"></span></div>
+            <span class="zeit">3:41</span></div>
+          <div class="wz"><div class="pos" style="background:linear-gradient(150deg,#1f3330,#3f6a58)"></div>
+            <div class="wt"><b>Berserk — Kapitel 374</b>
+              <span style="color:var(--rot)">hängt: keine Quelle über Stufe C · nächster Versuch in 4 h</span></div>
+            <div class="pips"><span class="pip fertig"></span><span class="pip fertig"></span>
+              <span class="pip hakt"></span><span class="pip"></span><span class="pip"></span></div>
+            <span class="zeit">2/5</span></div>
+          <div class="wz"><div class="pos" style="background:linear-gradient(150deg,#2c3b47,#8a5a35)"></div>
+            <div class="wt"><b>Chainsaw Man — Kapitel 12</b>
+              <span style="color:var(--gelb)">wartet auf dich: Seite 14 ist defekt — neu holen?</span></div>
+            <div class="pips"><span class="pip fertig"></span><span class="pip fertig"></span>
+              <span class="pip fertig"></span><span class="pip hakt"></span><span class="pip"></span></div>
+            <span class="zeit">—</span></div>
+          <div class="wz"><div class="pos" style="background:linear-gradient(150deg,#2a2f42,#5a5f8a)"></div>
+            <div class="wt"><b>Dune: Part Two</b><span>prüft Tonspuren · 7 Sprachen gefunden</span></div>
+            <div class="pips"><span class="pip fertig"></span><span class="pip fertig"></span>
+              <span class="pip fertig"></span><span class="pip laeuft"></span><span class="pip"></span></div>
+            <span class="zeit">0:04</span></div>
+        </div>
+        <div style="padding:9px 16px;font-family:var(--data);font-size:10.5px;color:var(--tx3)">
+          erkennen · anreichern · beschaffen · prüfen · veredeln</div>
+      </div>
+
+      <!-- C nach Werk -->
+      <div id="wC" hidden>
+        <div class="wbund">
+          <div class="wbg"><div class="wbgk">
+            <svg class="pf" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+              stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+            <div class="pos"></div><div class="wt"><b>One Piece</b>
+              <span>3 Aufträge · 1 lädt · fertig ≈ 21:12</span></div>
+            <span class="marke a">lädt</span></div>
+            <div class="wbgi">
+              <div class="ubz"><span class="pip laeuft"></span><span class="ut">Kapitel 1142
+                holen — Cosmic Scans, 4,1 MB</span><span class="fzahl">0:12</span></div>
+              <div class="ubz"><span class="pip"></span><span class="ut">Kapitel 1141 übersetzen
+                — EN, 214 Blasen</span><span class="fzahl">wartet</span></div>
+              <div class="ubz"><span class="pip"></span><span class="ut">Titelbilder für 3 Bände
+                nachladen</span><span class="fzahl">wartet</span></div>
+            </div></div>
+          <div class="wbg zu"><div class="wbgk">
+            <svg class="pf" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+              stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+            <div class="pos" style="background:linear-gradient(150deg,#33283b,#7a4a5e)"></div>
+            <div class="wt"><b>Frieren</b><span>2 Aufträge · 1 lädt, 1 veredelt</span></div>
+            <span class="marke a">lädt</span></div></div>
+          <div class="wbg zu"><div class="wbgk">
+            <svg class="pf" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+              stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+            <div class="pos" style="background:linear-gradient(150deg,#2c3b47,#8a5a35)"></div>
+            <div class="wt"><b>Chainsaw Man</b>
+              <span style="color:var(--gelb)">wartet auf dich — Seite 14 defekt</span></div>
+            <span class="marke ge">du</span>
+            <button class="knopf klein">Neu holen</button></div></div>
+          <div class="wbg zu"><div class="wbgk">
+            <svg class="pf" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+              stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+            <div class="pos" style="background:linear-gradient(150deg,#1f3330,#3f6a58)"></div>
+            <div class="wt"><b>Berserk</b>
+              <span style="color:var(--rot)">hängt — keine Quelle über Stufe C, Versuch 2 von 5</span></div>
+            <span class="marke r">hängt</span></div></div>
+          <div class="wbg zu" style="border-bottom:0"><div class="wbgk">
+            <svg class="pf" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+              stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+            <div class="pos" style="background:linear-gradient(150deg,#26313d,#4a5a6a)"></div>
+            <div class="wt"><b>Sammelarbeit</b><span>21 Aufträge ohne Werkbezug · Titelbilder,
+              Prüfungen</span></div><span class="marke">still</span></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="erkl">
+    <div class="ek gut"><span class="ab">A · Die Bahn · deine Wahl</span>
+      <h4>Weil sie zum Danebenschauen ist</h4>
+      <p>Ich hatte C empfohlen, weil „wo ist One Piece 1142?" fünf Spalten Suchen bedeutet.
+      <b>Dein Argument schlägt meins:</b> <em>„Die Warteschlange wird eh überbewertet, es ist
+      halt ein Progress."</em> Wenn man sie <b>nie durchsucht, sondern nur ansieht</b>, ist der
+      Suchnachteil keiner — und die Bahn zeigt als einzige, <b>wo es klemmt</b>.</p></div>
+    <div class="ek"><span class="ab">B · Die Zeilen</span><h4>Bleibt für schmal</h4>
+      <p>Unter 640 px hat die Bahn keinen Platz für fünf Spuren. Dann werden daraus Zeilen mit
+      Punkten — <b>keine zweite Anordnung, die Notlage der ersten.</b></p></div>
+    <div class="ek"><span class="ab">C · Nach Werk</span><h4>Wird zum Aufklappen</h4>
+      <p>Nicht verworfen, sondern verschoben: <b>ein Klick auf eine Karte in der Bahn</b> zeigt
+      alles, was zu diesem Werk läuft. C ist die Tiefe, nicht die Oberfläche.</p></div>
+  </div>
+
+  <div class="merk">
+    <p><b>Zu deiner Frage, warum ich etwas vorschlage, woran ich nicht glaube:</b> Ich glaube
+    schon an die Empfohlenen — aber die anderen sind <b>keine Vogelscheuchen</b>. Sie sind
+    echte Entwürfe mit echten Stärken, und sie stehen da, damit du mich <b>mit Wissen</b>
+    überstimmen kannst statt nach Gefühl. Bei Werk-Seite und Warteschlange hast du genau das
+    getan, und in beiden Fällen hattest du recht. Wenn ich dir nur meinen Favoriten zeige,
+    bekommst du meine Meinung — nicht deine Entscheidung.</p>
+    <p><b>E142 bleibt, verschoben:</b> gebündelt wird nach <b>Werk</b>, aber beim Aufklappen,
+    nicht in der Grundansicht. <b>E143 bleibt unverändert:</b> jede Karte beantwortet
+    <b>was tut sie</b> · <b>worauf wartet sie</b> · <b>was bei Fehlschlag</b>.</p>
+  </div>
+
+  <h3>Und die eigentliche Frage: wie wird nichts aufgehalten?</h3>
+  <p class="sub">Geo-Sperre, tote Seeder, kaputter Direktlink — <b>garantieren</b> kann man
+  nichts. Man kann nur dafür sorgen, dass ein Fehlschlag <b>nichts kostet außer Zeit, die
+  ohnehin parallel läuft</b>. Der Trick ist, den Auftrag anders zu formulieren.</p>
+
+  <table class="t">
+    <tr><th></th><th>Auftrag <span style="color:var(--rot)">(falsch)</span></th>
+      <th>Wunsch <span style="color:var(--grün)">(richtig)</span></th></tr>
+    <tr><td><b>lautet</b></td><td>„lade Frieren 09 von dort"</td>
+      <td>„beschaffe Frieren 09, mindestens Stufe B, JP + Sub DE"</td></tr>
+    <tr><td><b>Quelle tot</b></td><td>Auftrag scheitert</td>
+      <td>Kandidat 2 von 5 übernimmt — <b>ohne dass jemand etwas merkt</b></td></tr>
+    <tr><td><b>Geo-Sperre</b></td><td>rot</td><td>ein <b>Ablöseschritt</b>, kein Fehler
+      (<code>geo.py</code>/<code>vpn.py</code> gibt es schon)</td></tr>
+    <tr><td><b>alles gescheitert</b></td><td>Auftrag stirbt, du erfährst es nie</td>
+      <td><b>Der Wunsch lauert</b> — und schlägt zu, sobald eine neue Quelle auftaucht</td></tr>
+  </table>
+
+  <div class="merk">
+    <p>🔑 <b>E149 — Beschaffung ist ein Rennen, kein Auftrag.</b> Alle Kandidaten werden
+    <b>vorgeprüft, ohne ein einziges Byte zu laden</b>: Seederzahl aus dem DHT, beim Direktlink
+    ein <code>HEAD</code> (Größe plausibel? <code>Accept-Ranges</code> da? Typ richtig?).
+    <b>Ein Kandidat, der sich nicht fortsetzen lässt, ist ein schlechter Kandidat — und das
+    weiß man vorher, nicht nach 4 GB.</b> Bricht die Rate ein, startet der nächste
+    <b>parallel</b>; wer zuerst fertig ist, gewinnt. Der Langsame wird nicht abgebrochen,
+    sondern überholt. <b>Teildaten bleiben immer liegen</b> — nichts wird zweimal geladen.</p>
+    <p>🔑 <b>E150 — der Wunsch stirbt nie.</b> Scheitern alle Kandidaten, bleibt der Wunsch
+    stehen und wird bei jeder neuen Quelle, jedem RSS-Treffer, jeder neuen Liste automatisch
+    neu bewertet. <b>Ein Auftrag scheitert. Ein Wunsch wartet.</b> Berserk 374 gibt es heute
+    nicht über Stufe C — in vier Wochen schon, und dann passiert es von selbst.</p>
+    <p><b>Deshalb hält nie etwas etwas anderes auf:</b> jede Spur hat eigene Plätze. Ein
+    hängender Torrent belegt keinen Platz beim Prüfen, Veredeln oder Anreichern — er wartet auf
+    seiner eigenen Bahn, und das sieht man ihm an.</p>
+  </div>
+
+  <h3>Drei Zustände, drei Farben — und einer davon ist nicht rot</h3>
+  <table class="t">
+    <tr><th>Zustand</th><th>Farbe</th><th>Heißt</th><th>Was der Nutzer tun kann</th></tr>
+    <tr><td><b>läuft</b></td><td><span class="marke a">Akzent</span></td><td>arbeitet gerade</td>
+      <td>anhalten, vorziehen</td></tr>
+    <tr><td><b>wartet</b></td><td><span class="marke">grau</span></td><td>Reihenfolge, nicht Problem</td>
+      <td>nichts — <b>und das ist die Botschaft</b></td></tr>
+    <tr><td><b>wartet auf dich</b></td><td><span class="marke ge">gelb</span></td>
+      <td>eine Entscheidung fehlt</td><td>hier entscheiden <b>oder</b> ins Postfach schieben</td></tr>
+    <tr><td><b>hängt</b></td><td><span class="marke r">rot</span></td>
+      <td>hat es versucht und aufgegeben</td><td>anderer Quelle erlauben, Stufe senken, streichen</td></tr>
+  </table>
+  <p class="sub"><b>Gelb ist kein Fehler.</b> Wer „wartet auf dich" rot färbt, erzieht dazu,
+  Rot zu ignorieren — und dann wird auch echtes Rot ignoriert. Rot bedeutet:
+  <b>das Programm hat sein Bestes gegeben</b> (E122, gestuftes Aufgeben) — mit 1 · 4 · 24 · 72
+  Stunden Abstand, danach still.</p>
+</section>
+
+<script>
+"use strict";
+var D = {
+  manga:{t:"One Piece", o:"ワンピース", ru:"Regal · Manga", meta:"Manga · JP · 1997 – läuft · Eiichiro Oda",
+    marken:["JP","läuft","★ 9,1","Stufe A"], bal:99.4, zahl:"<b>1141</b> von 1148 Kapitel · 7 neu",
+    tat:"Weiterlesen · Kap. 1142", tat0:"Ab Kapitel 1 lesen", zahl0:"1148 Kapitel · 108 Bände · seit 1997", einh:"Kapitel", einhZ:"1148",
+    fk:"Du warst hier · vor 2 Tagen", fg:"Kapitel 1141 — „Der Wille des D.“",
+    fn:"7 neue Kapitel seit deinem letzten Besuch", ft:"Kapitel 1142 lesen",
+    gruppen:[["Band 108 · Elbaf",["1141 · Der Wille des D.","1142 · Sonnengott","1143 · Das Fest"]],
+             ["Band 107 · Egghead",["1130 · Rückkehr","1131 · Der Bericht"]]],
+    ausg:[["S","Verlagsscan JP","Shueisha · 2400 px","—"],
+          ["A","Cosmic Scans EN","1600 px · entrastert","hier"],
+          ["B","Reader-Scan","1200 px · webp","hier"],
+          ["D","Handyfotos","800 px, schief","Archiv"]],
+    bez:[["Vorlage","One Piece","Manga · 1997 · läuft",1],
+         ["Adaption","One Piece","Anime · 1999 · 1140 Folgen",0],
+         ["Ableger","One Piece: Ace's Story","Manga · 2018 · 4 Bände",0],
+         ["Neuauflage","One Piece Log","Anime · 2025",0],
+         ["Reihe","Wano · Egghead · Elbaf","3 Arcs",0]]},
+  anime:{t:"Frieren", o:"葬送のフリーレン", ru:"Regal · Anime", meta:"Anime · JP · 2023 · Madhouse",
+    marken:["JP","Staffel 2 läuft","★ 9,3","Stufe B"], bal:66, zahl:"<b>Folge 8</b> von 12 · Staffel 2",
+    tat:"Weitersehen · Folge 9", tat0:"Folge 1 sehen", zahl0:"40 Folgen · 2 Staffeln · ~24 min", einh:"Folgen", einhZ:"40",
+    fk:"Du warst hier · gestern", fg:"Folge 8 — „Die Prüfung des Meisters“",
+    fn:"Folge 9 ist seit 2 Tagen da", ft:"Folge 9 sehen",
+    gruppen:[["Staffel 2 · 2026",["07 · Das Nordreich","08 · Die Prüfung des Meisters","09 · Aureole"]],
+             ["Staffel 1 · 2023",["27 · Kein Zauber","28 · Weiter"]]],
+    ausg:[["S","Blu-ray Remux","1080p · 24 GB · JP+DE","—"],
+          ["B","WEB-DL 1080p","Crunchyroll · JP, Sub DE","hier"],
+          ["B","WEB-DL 1080p","Synchro DE","hier"],
+          ["C","WEBRip 720p","kleine Datei","—"]],
+    bez:[["Vorlage","Sousou no Frieren","Manga · 2020 · läuft",0],
+         ["Werk","Frieren","Anime · 2023",1],
+         ["Sonderfolge","Frieren OVA","2024 · 2 Folgen",0],
+         ["Zusammenschnitt","Frieren: Journey's End","Film · 2024",0],
+         ["Reihe","Staffel 1 → OVA → Staffel 2","kanonische Ordnung",0]]},
+  film:{t:"Dune: Part Two", o:"", ru:"Regal · Filme", meta:"Film · US · 2024 · Denis Villeneuve · 166 min",
+    marken:["US","2024","★ 8,5","Stufe S"], bal:28, zahl:"<b>0:47</b> von 2:46 · vor 5 Tagen",
+    tat:"Weitersehen · 0:47", tat0:"Film starten", zahl0:"166 Minuten · 2 Fassungen", einh:"Fassungen", einhZ:"2",
+    fk:"Du warst hier · vor 5 Tagen", fg:"bei 0:47:12 — Die Reiterprüfung",
+    fn:"noch 1 Stunde 59 Minuten", ft:"Weitersehen",
+    gruppen:[["Der Film",["Kinofassung · 166 min","IMAX-Fassung · 166 min, 1.43:1"]],
+             ["Beiwerk",["Making-of · 41 min","Gelöschte Szenen · 12 min"]]],
+    ausg:[["S","UHD-Remux","2160p HDR10+ · 78 GB · Atmos","hier"],
+          ["A","BDRip 1080p x265","9,4 GB · DTS-HD","—"],
+          ["B","WEB-DL 2160p","Max · 21 GB","—"],
+          ["C","WEBRip 1080p","2,1 GB","Archiv"]],
+    bez:[["Vorgänger","Dune (2021)","Film · gesehen",0],
+         ["Werk","Dune: Part Two","Film · 2024",1],
+         ["Nachfolger","Dune: Part Three","Film · 2026 · angekündigt",0],
+         ["Vorlage","Dune (Herbert, 1965)","Roman · im Regal",0],
+         ["Universum","Dune","4 Filme, 2 Serien, 6 Romane",0]]},
+  musik:{t:"Random Access Memories", o:"", ru:"Regal · Musik", meta:"Album · FR · 2013 · Daft Punk · Columbia",
+    marken:["FR","2013","★ 8,8","Stufe S"], bal:52, zahl:"<b>7</b> von 13 Titeln gehört",
+    tat:"Weiterhören · Titel 8", tat0:"Album hören", zahl0:"13 Titel · 74 Minuten", einh:"Titel", einhZ:"13",
+    fk:"Zuletzt gehört · vor 3 Wochen", fg:"Titel 7 — „Touch“",
+    fn:"6 Titel noch nie gehört", ft:"Bei Titel 8 weiter",
+    gruppen:[["Disc 1",["06 · Touch","07 · Get Lucky","08 · Beyond"]],
+             ["Fassungen",["Live at Coachella · 2006","Remaster 2023 · 10 Jahre"]]],
+    ausg:[["S","Vinyl-Rip 24/96","FLAC · 1,8 GB","hier"],
+          ["S","CD-Rip","FLAC 16/44 · 480 MB","hier"],
+          ["B","AAC 256","Streaming-Mitschnitt","—"],
+          ["D","MP3 320 aus 192","Doppel-Transcode erkannt","Archiv"]],
+    bez:[["Vorgänger","Human After All","Album · 2005",0],
+         ["Werk","Random Access Memories","Album · 2013",1],
+         ["Neuauflage","RAM · 10th Anniversary","Album · 2023 · + 35 min",0],
+         ["Ableger","Get Lucky (Single)","Single · 2013",0],
+         ["Vorlage","TRON: Legacy","Soundtrack · 2010",0]]}
+};
+
+var v = "A", m = "manga", u = "einh", fort = true;
+
+function svgIcon(p){ return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" '+
+  'stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">'+p+'</svg>'; }
+var I = {
+  play:'<path d="M8 5.5l11 6.5-11 6.5z"/>',
+  plus:'<path d="M12 5v14"/><path d="M5 12h14"/>',
+  punkte:'<circle cx="5.5" cy="12" r="1.2" fill="currentColor" stroke="none"/>'+
+         '<circle cx="12" cy="12" r="1.2" fill="currentColor" stroke="none"/>'+
+         '<circle cx="18.5" cy="12" r="1.2" fill="currentColor" stroke="none"/>',
+  holen:'<path d="M12 4v10"/><path d="M8.5 10.5L12 14l3.5-3.5"/><path d="M4 17v2h16v-2"/>',
+  haken:'<path d="M5 12.5l4.5 4.5L19 7"/>',
+  kreis:'<circle cx="12" cy="12" r="7.5"/>'
+};
+
+/* Dieselbe Reihe, andere Beschriftung — nie eine andere Reihe.
+   Ohne Fortschritt heißt der Hauptknopf „anfangen", mit Fortschritt „weiter". */
+function tat(d){
+  var haupt = fort ? d.tat : d.tat0;
+  return '<button class="knopf haupt">'+svgIcon(I.play)+haupt+'</button>'+
+    '<button class="knopf">'+svgIcon(I.plus)+(fort ? 'Merken' : 'Ins Regal')+'</button>'+
+    '<button class="knopf">'+svgIcon(I.holen)+'Holen</button>'+
+    '<button class="knopf nur" title="Mehr">'+svgIcon(I.punkte)+'</button>';
+}
+function marken(d){
+  return d.marken.map(function(x,i){
+    return '<span class="marke'+(i===3?' g':(i===2?' a':''))+'">'+x+'</span>'; }).join("");
+}
+
+function zeichneKopf(){
+  var d = D[m];
+  document.getElementById("rueckTx").textContent = d.ru;
+  document.getElementById("wkopfL").textContent =
+    v==="A" ? "A · Das Bild" : v==="B" ? "B · Die Akte" : "C · Der Faden";
+  document.getElementById("wkopfR").textContent =
+    (v==="B" ? "700 px · " : "1280 px · ") + "Nacht";
+  ["A","B","C"].forEach(function(x){ document.getElementById("v"+x).hidden = (x!==v); });
+
+  document.getElementById("aTitel").textContent = d.t;
+  document.getElementById("aUnter").innerHTML = (d.o?'<span style="opacity:.8">'+d.o+'</span>':'')+
+    '<span>'+d.meta+'</span>';
+  /* Das Fadenband erscheint IM Aufmacher, wenn es etwas zu sagen hat. Es
+     ersetzt keine Anordnung — es füllt einen Bereich, der sonst leer bleibt. */
+  document.getElementById("aFaden").hidden = !fort;
+  document.getElementById("aFk").textContent = d.fk;
+  document.getElementById("aFg").textContent = d.fg;
+  document.getElementById("aFn").textContent = "· " + d.fn;
+  document.getElementById("aBal").parentNode.hidden = !fort;
+  document.getElementById("aBal").style.width = d.bal+"%";
+  document.getElementById("aZahl").innerHTML = fort ? d.zahl : d.zahl0;
+  document.getElementById("aAkt").innerHTML = tat(d);
+
+  document.getElementById("bTitel").textContent = d.t;
+  document.getElementById("bUnter").textContent = (d.o? d.o+" · ":"") + d.meta;
+  document.getElementById("bMarken").innerHTML = marken(d);
+  document.getElementById("bBal").style.width = d.bal+"%";
+  document.getElementById("bZahl").innerHTML = d.zahl;
+  document.getElementById("bAkt").innerHTML = tat(d);
+
+  document.getElementById("cKl").textContent = d.fk;
+  document.getElementById("cGr").textContent = d.fg;
+  document.getElementById("cKn").textContent = d.fn;
+  document.getElementById("cAkt").innerHTML =
+    '<button class="knopf haupt">'+svgIcon(I.play)+d.ft+'</button>'+
+    '<button class="knopf">'+svgIcon(I.holen)+'Alles Neue holen</button>';
+  document.getElementById("cTitel").textContent = d.t;
+  document.getElementById("cUnter").textContent = d.meta;
+  document.getElementById("cBal").style.width = d.bal+"%";
+  document.getElementById("cZahl").innerHTML = d.zahl;
+
+  document.querySelector('#ur button[data-u="einh"]').innerHTML =
+    d.einh + '<span class="z">'+d.einhZ+'</span>';
+  zeichneInhalt();
+}
+
+function zeichneInhalt(){
+  var d = D[m], h = "", i, j;
+  if(u === "einh"){
+    h = '<div class="eliste">';
+    for(i=0;i<d.gruppen.length;i++){
+      var g = d.gruppen[i];
+      h += '<div class="gk'+(i>0?' zu':'')+'">'+svgIcon('<path d="M6 9l6 6 6-6"/>')+
+           '<span>'+g[0]+'</span><span class="zz">'+g[1].length+'</span></div>';
+      if(i>0) continue;
+      for(j=0;j<g[1].length;j++){
+        var tl = g[1][j], teile = tl.split(" · ");
+        var st = (j===0) ? "gelesen" : (j===1 ? "hier" : "neu");
+        h += '<div class="ez '+st+'"><span class="nr">'+teile[0]+'</span>'+
+          '<span class="tt">'+(teile[1]||"")+'</span><span class="re">'+
+          (st==="gelesen" ? '<span class="mini g">'+svgIcon(I.haken)+'</span>' :
+           st==="hier" ? '<span class="marke a">hier</span>' :
+                         '<span class="marke">neu</span>')+
+          '<span class="marke t">'+(m==="musik"?"FLAC":m==="manga"?"Stufe A":"1080p")+'</span>'+
+          '</span></div>';
+      }
+    }
+    h += '</div>';
+  } else if(u === "ausg"){
+    h = '<table class="austab"><tr><th>Stufe</th><th>Ausgabe</th><th>Gemessen</th>'+
+        '<th>Bei dir</th><th></th></tr>';
+    for(i=0;i<d.ausg.length;i++){
+      var a = d.ausg[i], hat = (a[3]==="hier");
+      h += '<tr class="'+(hat?"hat":"")+'"><td><span class="stufe st-'+a[0]+'">'+a[0]+'</span></td>'+
+        '<td><b>'+a[1]+'</b></td><td style="color:var(--tx2)">'+a[2]+'</td>'+
+        '<td>'+(hat?'<span class="marke g">im Regal</span>':
+                a[3]==="Archiv"?'<span class="marke">Archiv</span>':
+                '<span style="color:var(--tx3)">—</span>')+'</td>'+
+        '<td style="text-align:right">'+(hat?'<button class="knopf klein">Nutzen</button>':
+          '<button class="knopf klein">'+svgIcon(I.holen)+'Holen</button>')+'</td></tr>';
+    }
+    h += '</table><p class="sub" style="margin:11px 0 0;font-size:12.5px">Die Stufe ist '+
+      '<b>gemessen</b>, nicht aus dem Dateinamen gelesen (E140). Ein Qualitätsprofil '+
+      '(„nie unter B") gilt für alle Medien gleich.</p>';
+  } else if(u === "bez"){
+    h = '<div class="bez">';
+    for(i=0;i<d.bez.length;i++){
+      var b = d.bez[i];
+      h += '<div class="bezz'+(b[3]?" jetzt":"")+'"><div class="pfeilspur"></div>'+
+        '<div class="pos"></div><div class="bt"><b>'+b[1]+'</b><span>'+b[2]+'</span></div>'+
+        '<span class="marke'+(b[3]?" a":"")+'">'+b[0]+'</span></div>';
+    }
+    h += '</div><p class="sub" style="margin:11px 0 0;font-size:12.5px">Beziehungen sind '+
+      '<b>gerichtet und benannt</b> — „Vorlage", „Adaption", „Ableger", „Reihe", „Universum". '+
+      'Ein ungerichtetes „ähnlich" wäre wertlos: es sagt nicht, <b>was man als Nächstes '+
+      'anfassen soll</b> (E120).</p>';
+  } else {
+    h = '<div class="erkl" style="margin:0">'+
+      '<div class="ek"><span class="ab">Herkunft</span><h4>Woher wir es wissen</h4>'+
+      '<p>Titel &amp; Bilder von <b>AniList</b> · Bewertung Median aus 4 Datenbanken · '+
+      'Kapitelzählung <b>MangaUpdates</b> · zuletzt geprüft <b>heute, 14:02</b>.</p></div>'+
+      '<div class="ek"><span class="ab">Bei dir</span><h4>Was da liegt</h4>'+
+      '<p>112 Dateien · 4,1 GB · zuletzt geprüft vor 3 Tagen · <b>2 Lücken</b> '+
+      '(Kapitel 1044, 1077).</p></div>'+
+      '<div class="ek"><span class="ab">Widersprüche</span><h4>Was nicht zusammenpasst</h4>'+
+      '<p>AniList sagt 1148 Kapitel, MangaUpdates sagt 1146. <b>Wir zeigen 1148 und '+
+      'nennen die Abweichung</b> — nie stumm mitteln (E17).</p></div></div>';
+  }
+  document.getElementById("uInhalt").innerHTML = h;
+  document.getElementById("uInhalt").querySelectorAll(".gk").forEach(function(g){
+    g.addEventListener("click", function(){ g.classList.toggle("zu"); });
+  });
+}
+
+document.getElementById("rt").addEventListener("click", function(e){
+  var b = e.target.closest("button"); if(!b) return;
+  this.querySelectorAll("button").forEach(function(x){ x.classList.toggle("on", x===b); });
+  ["werk","post","wsl"].forEach(function(t){
+    document.getElementById("t-"+t).hidden = (t !== b.dataset.t);
+  });
+});
+
+document.querySelectorAll("#t-werk .wahl").forEach(function(w){
+  w.addEventListener("click", function(e){
+    var b = e.target.closest("button"); if(!b) return;
+    w.querySelectorAll("button").forEach(function(x){ x.classList.toggle("on", x===b); });
+    if(b.dataset.v) v = b.dataset.v;
+    if(b.dataset.m) m = b.dataset.m;
+    if(b.dataset.f) fort = (b.dataset.f === "1");
+    zeichneKopf();
+  });
+});
+document.getElementById("ur").addEventListener("click", function(e){
+  var b = e.target.closest("button"); if(!b) return;
+  this.querySelectorAll("button").forEach(function(x){ x.classList.toggle("on", x===b); });
+  u = b.dataset.u; zeichneInhalt();
+});
+
+document.querySelector("#t-post .wahl").addEventListener("click", function(e){
+  var b = e.target.closest("button"); if(!b) return;
+  this.querySelectorAll("button").forEach(function(x){ x.classList.toggle("on", x===b); });
+  var p = b.dataset.p;
+  ["A","B","C"].forEach(function(x){ document.getElementById("p"+x).hidden = (x!==p); });
+  document.getElementById("pkopfL").textContent =
+    p==="A" ? "A · Der Stapel" : p==="B" ? "B · Die Liste" : "C · Der Trichter";
+});
+document.querySelector("#t-wsl .wahl").addEventListener("click", function(e){
+  var b = e.target.closest("button"); if(!b) return;
+  this.querySelectorAll("button").forEach(function(x){ x.classList.toggle("on", x===b); });
+  var w = b.dataset.w;
+  ["A","B","C"].forEach(function(x){ document.getElementById("w"+x).hidden = (x!==w); });
+  document.getElementById("wskopfL").textContent =
+    w==="A" ? "A · Die Bahn" : w==="B" ? "B · Die Zeilen" : "C · Nach Werk";
+});
+
+document.querySelectorAll(".kand").forEach(function(k){
+  k.addEventListener("click", function(){
+    k.parentNode.querySelectorAll(".kand").forEach(function(x){
+      x.classList.toggle("gew", x===k); });
+  });
+});
+document.querySelectorAll(".pz .hk").forEach(function(h){
+  h.addEventListener("click", function(){ h.classList.toggle("an"); });
+});
+document.querySelectorAll(".trgk").forEach(function(k){
+  k.addEventListener("click", function(e){
+    if(e.target.closest("button")) return;
+    k.parentNode.classList.toggle("zu");
+  });
+});
+document.querySelectorAll(".wbgk").forEach(function(k){
+  k.addEventListener("click", function(e){
+    if(e.target.closest("button")) return;
+    k.parentNode.classList.toggle("zu");
+  });
+});
+
+var tick = 0;
+setInterval(function(){
+  tick++;
+  var b1 = document.getElementById("b1"), b2 = document.getElementById("b2"),
+      b3 = document.getElementById("b3");
+  if(b1) b1.style.width = (38 + (tick*3) % 55) + "%";
+  if(b2) b2.style.width = (71 + (tick*2) % 27) + "%";
+  if(b3) b3.style.width = (18 + (tick*4) % 70) + "%";
+  var d = document.getElementById("dsz");
+  if(d) d.textContent = (10.8 + ((tick*7)%38)/10).toFixed(1) + " MB/s · fertig ≈ 21:40";
+}, 900);
+
+zeichneKopf();
+</script>
+</div>

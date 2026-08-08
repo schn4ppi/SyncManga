@@ -1,0 +1,723 @@
+<title>SyncFindus — Woher es kommt</title>
+<style>
+:root{
+  --bg:#0E1217; --panel:#161C23; --panel2:#1c242d; --line:#232C36; --line2:#33404e;
+  --tx:#E4E9EF; --tx2:#8B97A5; --tx3:#5f6b78; --akz:#F0873C; --onA:#150a02;
+  --grün:#5fd07a; --gelb:#d8b64a; --rot:#e06a5a; --türkis:#5fd0c4; --lila:#a98fe0;
+  --disp:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --data:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+}
+@media (prefers-color-scheme:light){
+  :root:not([data-theme="dark"]){--bg:#eff1f4;--panel:#fff;--panel2:#f4f6f8;--line:#dde2e8;--line2:#c3ccd6;
+    --tx:#1a1f26;--tx2:#5a6672;--tx3:#8592a0;--akz:#b8551c;--onA:#fff;
+    --grün:#237a42;--gelb:#8a6410;--rot:#b13a28;--türkis:#1a7f74;--lila:#6b4fa8}
+}
+:root[data-theme="light"]{--bg:#eff1f4;--panel:#fff;--panel2:#f4f6f8;--line:#dde2e8;--line2:#c3ccd6;
+  --tx:#1a1f26;--tx2:#5a6672;--tx3:#8592a0;--akz:#b8551c;--onA:#fff;
+  --grün:#237a42;--gelb:#8a6410;--rot:#b13a28;--türkis:#1a7f74;--lila:#6b4fa8}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:var(--disp);font-size:16px;
+  line-height:1.6;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1120px;margin:0 auto;padding:34px 18px 90px}
+.eyebrow{font-family:var(--data);font-size:11px;letter-spacing:.17em;text-transform:uppercase;
+  color:var(--akz);margin:0 0 11px}
+h1{font-size:clamp(27px,4.2vw,42px);line-height:1.06;letter-spacing:-.028em;font-weight:800;
+  margin:0 0 13px;text-wrap:balance}
+.lede{font-size:17px;color:var(--tx2);max-width:68ch;margin:0}
+h2{font-size:23px;font-weight:800;letter-spacing:-.022em;margin:0 0 6px}
+h3{font-size:16px;font-weight:800;letter-spacing:-.012em;margin:26px 0 6px}
+.sub{color:var(--tx2);margin:0 0 16px;max-width:74ch;font-size:14.5px}
+hr.rule{height:1px;background:var(--line);border:0;margin:42px 0}
+b.a{color:var(--akz)}
+code{font-family:var(--data);font-size:.86em;background:var(--panel2);border:1px solid var(--line);
+  border-radius:4px;padding:1px 5px}
+svg{display:block}
+a{color:var(--akz)}
+
+.reiter{display:flex;gap:6px;margin:26px 0 18px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.reiter button{appearance:none;background:none;border:0;border-bottom:2px solid transparent;
+  color:var(--tx2);font:inherit;font-weight:700;font-size:14px;padding:9px 14px;cursor:pointer;
+  min-height:24px;margin-bottom:-1px}
+.reiter button:hover{color:var(--tx)}
+.reiter button.on{color:var(--akz);border-bottom-color:var(--akz)}
+
+table.t{width:100%;border-collapse:collapse;font-size:13.5px;margin:12px 0 4px}
+table.t th{text-align:left;font-size:10.5px;font-family:var(--data);letter-spacing:.1em;
+  text-transform:uppercase;color:var(--tx3);font-weight:400;padding:7px 9px;
+  border-bottom:1px solid var(--line2)}
+table.t td{padding:8px 9px;border-bottom:1px solid var(--line);vertical-align:top}
+table.t tr:last-child td{border-bottom:0}
+table.t td.nw{white-space:nowrap}
+
+.stufe{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;
+  border-radius:6px;font-family:var(--data);font-size:11px;font-weight:700;color:#150a02}
+.st-S{background:var(--türkis)} .st-A{background:var(--grün)} .st-B{background:var(--gelb)}
+.st-C{background:var(--akz)} .st-D{background:var(--rot)}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]) .stufe{color:#fff}}
+:root[data-theme="light"] .stufe{color:#fff}
+
+.marke{display:inline-flex;align-items:center;gap:5px;font-family:var(--data);font-size:9.5px;
+  letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--line2);border-radius:5px;
+  padding:2px 6px;color:var(--tx2);white-space:nowrap}
+.marke.g{border-color:var(--grün);color:var(--grün)}
+.marke.ge{border-color:var(--gelb);color:var(--gelb)}
+.marke.r{border-color:var(--rot);color:var(--rot)}
+.marke.t{border-color:var(--türkis);color:var(--türkis)}
+.marke.a{border-color:var(--akz);color:var(--akz)}
+.marke.l{border-color:var(--lila);color:var(--lila)}
+
+/* Kette */
+.kette{border:1px solid var(--line);border-radius:12px;background:var(--panel);padding:13px 15px;
+  margin:11px 0}
+.kkopf{display:flex;align-items:center;gap:9px;margin-bottom:9px}
+.kkopf b{font-size:14.5px}
+.kkopf .zt{margin-left:auto;font-family:var(--data);font-size:10px;color:var(--tx3)}
+.glieder{display:flex;align-items:stretch;gap:0;flex-wrap:wrap}
+.gl{display:flex;align-items:center;gap:7px;border:1px solid var(--line2);border-radius:8px;
+  padding:6px 10px;font-size:12.5px;background:var(--panel2);white-space:nowrap}
+.gl.p{border-color:var(--akz);background:rgba(240,135,60,.1)}
+.gl .n{font-family:var(--data);font-size:9px;color:var(--tx3)}
+.pf{display:flex;align-items:center;padding:0 5px;color:var(--tx3);flex:0 0 auto}
+.pf svg{width:15px;height:15px}
+.kfuss{font-size:12.5px;color:var(--tx2);margin:9px 0 0}
+.kfuss em{font-style:normal;color:var(--gelb)}
+.kfuss b{color:var(--tx)}
+
+/* Fluss Browser */
+.fluss{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:11px;margin:14px 0}
+.fk{border:1px solid var(--line);border-radius:11px;background:var(--panel);padding:12px 14px;
+  position:relative}
+.fk.stark{border-color:var(--grün)}
+.fk.schwach{border-color:var(--line2);opacity:.92}
+.fk .rang{position:absolute;top:-9px;left:12px;font-family:var(--data);font-size:9px;
+  letter-spacing:.12em;text-transform:uppercase;background:var(--bg);padding:0 6px;color:var(--tx3)}
+.fk.stark .rang{color:var(--grün)}
+.fk h4{margin:2px 0 5px;font-size:14px;font-weight:800}
+.fk p{margin:0;font-size:12.5px;color:var(--tx2)}
+.fk p+p{margin-top:6px}
+.fk b{color:var(--tx)}
+.fk em{font-style:normal;color:var(--rot)}
+.fk .gew{font-family:var(--data);font-size:10.5px;color:var(--akz);margin-top:7px;display:block}
+
+.merk{border-left:3px solid var(--akz);background:var(--panel);border-radius:0 10px 10px 0;
+  padding:12px 15px;margin:16px 0;font-size:14px}
+.merk b{color:var(--akz)}
+.merk p{margin:0}
+.merk p+p{margin-top:7px}
+.merk.warn{border-left-color:var(--gelb)}
+.merk.warn b{color:var(--gelb)}
+
+.zwei{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:14px 0}
+.sp{border:1px solid var(--line);border-radius:11px;padding:13px 15px;background:var(--panel)}
+.sp.ja{border-color:var(--grün)}
+.sp.nein{border-color:var(--rot)}
+.sp h4{margin:0 0 7px;font-size:14px;font-weight:800}
+.sp.ja h4{color:var(--grün)} .sp.nein h4{color:var(--rot)}
+.sp ul{margin:0;padding-left:17px;font-size:13px;color:var(--tx2)}
+.sp li{margin-bottom:4px}
+.sp li b{color:var(--tx)}
+
+@media (max-width:640px){
+  .wrap{padding:26px 13px 70px}
+  .zwei{grid-template-columns:1fr}
+  table.t{font-size:12.5px}
+  table.t td,table.t th{padding:6px 5px}
+}
+</style>
+
+<div class="wrap">
+<p class="eyebrow">Beiblatt · §7 / §8 / §9</p>
+<h1>Woher es kommt</h1>
+<p class="lede">Drei verschiedene Fragen, die ständig verwechselt werden. <b class="a">Wissen</b>
+ist, was ein Werk <em>ist</em> — Titel, Cover, Kapitelzahl. <b class="a">Inhalt</b> ist die Datei
+selbst. <b class="a">Zustand</b> ist, wo du stehst. Für alle drei brauchen wir Quellen,
+Fallbacks und Sicherheiten — und für alle drei sehen sie völlig anders aus.</p>
+
+<div class="reiter" id="rt">
+  <button class="on" data-t="wis">Wissen · Metadaten</button>
+  <button data-t="inh">Inhalt · Dateien</button>
+  <button data-t="zus">Zustand · Browser</button>
+  <button data-t="wzg">Werkzeuge · Protokolle</button>
+</div>
+
+<!-- ═══════ WISSEN ═══════ -->
+<section id="t-wis">
+  <p class="sub">Jede Kette hat einen <b>Primär</b> und mindestens zwei Rückfallebenen. Fällt ein
+  Glied aus, rutscht die Kette weiter und <b>vermerkt das</b> — SyncManga macht das heute schon
+  über <code>srcstatus</code>, und genau das wandert mit. Was nie passieren darf: eine Kette mit
+  nur einem Glied.</p>
+
+  <div class="kette">
+    <div class="kkopf"><b>Manga · Manhwa · Manhua</b><span class="marke g">läuft heute</span>
+      <span class="zt">aus SyncManga übernommen</span></div>
+    <div class="glieder">
+      <span class="gl p"><span class="n">1</span>MangaBaka</span>
+      <span class="pf"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+        stroke-linecap="round"><path d="M5 12h13"/><path d="M14 7l5 5-5 5"/></svg></span>
+      <span class="gl"><span class="n">2</span>AniList</span>
+      <span class="pf"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+        stroke-linecap="round"><path d="M5 12h13"/><path d="M14 7l5 5-5 5"/></svg></span>
+      <span class="gl"><span class="n">3</span>MangaUpdates</span>
+      <span class="pf"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+        stroke-linecap="round"><path d="M5 12h13"/><path d="M14 7l5 5-5 5"/></svg></span>
+      <span class="gl"><span class="n">4</span>Kitsu</span>
+      <span class="pf"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+        stroke-linecap="round"><path d="M5 12h13"/><path d="M14 7l5 5-5 5"/></svg></span>
+      <span class="gl"><span class="n">5</span>Jikan / MAL</span>
+    </div>
+    <p class="kfuss">MangaBaka führt Dubletten über <code>merged_with</code> zusammen — das ist der
+    Grund, warum es primär ist. <em>Es drosselt hart (429 nach 5–6 schnellen Aufrufen) und
+    verträgt keine Parallelität</em>, deshalb ein einziger Semaphor-Platz. Bewertung =
+    <b>Median über Datenbanken</b>, nie über Reader.</p>
+  </div>
+
+  <div class="kette">
+    <div class="kkopf"><b>Anime · Serie · Film</b><span class="marke ge">neu zu bauen</span>
+      <span class="zt">TMDB ist der Industriestandard</span></div>
+    <div class="glieder">
+      <span class="gl p"><span class="n">1</span>TMDB</span>
+      <span class="pf"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+        stroke-linecap="round"><path d="M5 12h13"/><path d="M14 7l5 5-5 5"/></svg></span>
+      <span class="gl"><span class="n">2</span>TVDB</span>
+      <span class="pf"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+        stroke-linecap="round"><path d="M5 12h13"/><path d="M14 7l5 5-5 5"/></svg></span>
+      <span class="gl"><span class="n">3</span>AniList</span>
+      <span class="pf"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+        stroke-linecap="round"><path d="M5 12h13"/><path d="M14 7l5 5-5 5"/></svg></span>
+      <span class="gl"><span class="n">4</span>AniDB</span>
+      <span class="pf"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+        stroke-linecap="round"><path d="M5 12h13"/><path d="M14 7l5 5-5 5"/></svg></span>
+      <span class="gl"><span class="n">5</span>Wikidata</span>
+    </div>
+    <p class="kfuss"><b>AniDB ist kein Zierrat:</b> es ist die einzige Datenbank, die
+    <b>Dateiprüfsummen</b> auf Folgen abbildet — damit erkennt man eine Datei ohne jeden
+    Dateinamen. <em>Die Folgenzählung ist die Falle:</em> TVDB zählt in Staffeln, AniDB
+    fortlaufend, TMDB manchmal beides. Der Versatz gehört zum Werk, nicht zur Datei (dieselbe
+    Mechanik wie der Kapitelversatz beim Manga).</p>
+  </div>
+
+  <div class="kette">
+    <div class="kkopf"><b>Musik · DJ-Sets</b><span class="marke ge">neu zu bauen</span>
+      <span class="zt">Fingerabdruck schlägt Dateiname</span></div>
+    <div class="glieder">
+      <span class="gl p"><span class="n">1</span>MusicBrainz</span>
+      <span class="pf"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+        stroke-linecap="round"><path d="M5 12h13"/><path d="M14 7l5 5-5 5"/></svg></span>
+      <span class="gl"><span class="n">2</span>AcoustID / Chromaprint</span>
+      <span class="pf"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+        stroke-linecap="round"><path d="M5 12h13"/><path d="M14 7l5 5-5 5"/></svg></span>
+      <span class="gl"><span class="n">3</span>Discogs</span>
+      <span class="pf"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+        stroke-linecap="round"><path d="M5 12h13"/><path d="M14 7l5 5-5 5"/></svg></span>
+      <span class="gl"><span class="n">4</span>iTunes-Suche</span>
+      <span class="pf"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+        stroke-linecap="round"><path d="M5 12h13"/><path d="M14 7l5 5-5 5"/></svg></span>
+      <span class="gl"><span class="n">5</span>Cover Art Archive</span>
+    </div>
+    <p class="kfuss">MusicBrainz trägt <b>Work → Recording → Release</b> — genau unsere Leiter
+    (E96). <b>AcoustID</b> ist der Grund, warum Musik der einfachste Fall ist: 30 Sekunden Ton
+    genügen für eine eindeutige ID, ganz ohne Titel. <code>_mb_suche</code> und
+    <code>_itunes_suche</code> stehen in SyncYouTube fertig da.</p>
+  </div>
+
+  <div class="kette">
+    <div class="kkopf"><b>Bücher · Novels · Hörbücher</b><span class="marke r">der Problemfall</span>
+      <span class="zt">Readarr ist 2025 genau hieran gestorben</span></div>
+    <div class="glieder">
+      <span class="gl p"><span class="n">1</span>Open Library</span>
+      <span class="pf"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+        stroke-linecap="round"><path d="M5 12h13"/><path d="M14 7l5 5-5 5"/></svg></span>
+      <span class="gl"><span class="n">2</span>Google Books</span>
+      <span class="pf"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+        stroke-linecap="round"><path d="M5 12h13"/><path d="M14 7l5 5-5 5"/></svg></span>
+      <span class="gl"><span class="n">3</span>Wikidata</span>
+      <span class="pf"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+        stroke-linecap="round"><path d="M5 12h13"/><path d="M14 7l5 5-5 5"/></svg></span>
+      <span class="gl"><span class="n">4</span>DNB (deutsch)</span>
+      <span class="pf"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+        stroke-linecap="round"><path d="M5 12h13"/><path d="M14 7l5 5-5 5"/></svg></span>
+      <span class="gl"><span class="n">5</span>ISBN aus der Datei</span>
+    </div>
+    <p class="kfuss"><b>Warum das der Problemfall ist:</b> Bücher haben kein AniList. Open
+    Library ist unvollständig und uneinheitlich, Google Books hat Limits, Goodreads hat 2020 die
+    Schnittstelle geschlossen. <em>Readarr wurde Mitte 2025 eingestellt — nicht am Code, an den
+    Metadaten.</em> Unsere Antwort: die <b>ISBN in der EPUB</b> (<code>OPF</code>-Metadaten) ist
+    oft besser als jede Datenbank, und für Light Novels bleibt AniList zuständig, weil sie dort
+    als Werk geführt werden.</p>
+  </div>
+
+  <div class="kette">
+    <div class="kkopf"><b>Spiele</b><span class="marke t">geliehen</span>
+      <span class="zt">Playnite besitzt das Problem schon</span></div>
+    <div class="glieder">
+      <span class="gl p"><span class="n">1</span>Playnite-Bibliothek</span>
+      <span class="pf"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+        stroke-linecap="round"><path d="M5 12h13"/><path d="M14 7l5 5-5 5"/></svg></span>
+      <span class="gl"><span class="n">2</span>IGDB</span>
+      <span class="pf"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+        stroke-linecap="round"><path d="M5 12h13"/><path d="M14 7l5 5-5 5"/></svg></span>
+      <span class="gl"><span class="n">3</span>SteamGridDB</span>
+      <span class="pf"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+        stroke-linecap="round"><path d="M5 12h13"/><path d="M14 7l5 5-5 5"/></svg></span>
+      <span class="gl"><span class="n">4</span>No-Intro / Redump (ROMs)</span>
+    </div>
+    <p class="kfuss">Hier bauen wir <b>gar nichts</b> (E11): Playnite kennt alle Läufe schon.
+    <b>No-Intro/Redump</b> sind Prüfsummenlisten — eine ROM-Datei wird darüber exakt bestimmt,
+    inklusive „das ist eine schlechte Kopie".</p>
+  </div>
+
+  <div class="merk">
+    <p><b>Die Regel über allen Ketten: Herkunft wird mitgeschrieben.</b> Jedes Feld weiß, aus
+    welcher Quelle es stammt und wann es geholt wurde. Deshalb kann eine Handkorrektur nie von
+    einem späteren Lauf überschrieben werden, und deshalb kann die Werk-Seite den Reiter
+    <b>Wissen</b> überhaupt zeigen (E17, E50). <b>Ein Wert ohne Herkunft ist ein Gerücht.</b></p>
+  </div>
+</section>
+
+<!-- ═══════ INHALT ═══════ -->
+<section id="t-inh" hidden>
+  <div class="merk warn">
+    <p><b>Vorweg, damit es klar ist:</b> Wo man Blu-rays herunterlädt, sage ich dir nicht — das
+    sind ausschließlich Piraterieseiten, und dazu gebe ich keine Adressen. Alles andere
+    beantworte ich vollständig: <b>welche legalen Quellen es je Medium wirklich gibt</b>, wie
+    gut sie sind, und — wichtiger für den Bau — <b>wie das Programm mit Quellen umgeht, die es
+    nicht kennt</b>.</p>
+  </div>
+
+  <h3>Bücher &amp; Novels</h3>
+  <table class="t">
+    <tr><th>Quelle</th><th>Stufe</th><th>Umfang</th><th>Format</th><th>Anmerkung</th></tr>
+    <tr><td class="nw"><b>Standard Ebooks</b></td><td><span class="stufe st-S">S</span></td>
+      <td>~1.000</td><td>EPUB 3</td>
+      <td>Gutenberg-Texte, von Hand gesetzt, OCR korrigiert, eigenes Cover. <b>Die beste
+      digitale Typografie, die es geschenkt gibt.</b> Klein, aber jedes Stück ein Vollbild.</td></tr>
+    <tr><td class="nw"><b>Project Gutenberg</b></td><td><span class="stufe st-B">B</span></td>
+      <td>~78.000</td><td>EPUB · TXT · HTML</td>
+      <td>Das Original. Alles vor 1930 (US-Recht). Typografie roh, Inhalt makellos, kein DRM.</td></tr>
+    <tr><td class="nw"><b>Internet Archive</b><br><span style="color:var(--tx3)">Open Library</span></td>
+      <td><span class="stufe st-C">C</span></td><td>Millionen</td><td>Scan-PDF · DjVu · Leihe</td>
+      <td>Auch Nicht-Gemeinfreies, aber als <b>Leihe mit DRM</b> — für uns nur als
+      <em>Wissensquelle</em> nutzbar, nicht als Inhalt (dieselbe Lage wie E129).</td></tr>
+    <tr><td class="nw"><b>Zeno.org</b> · <b>DTA</b><br><span style="color:var(--tx3)">Wikisource DE</span></td>
+      <td><span class="stufe st-B">B</span></td><td>zehntausende</td><td>HTML · TEI-XML</td>
+      <td>Der deutsche Kanon. <b>Deutsches Textarchiv</b> liefert TEI — sauberer als jedes EPUB.
+      ⚠️ Projekt Gutenberg-DE ist seit dem S.-Fischer-Urteil aus Deutschland gesperrt.</td></tr>
+    <tr><td class="nw"><b>Baen Free Library</b><br><span style="color:var(--tx3)">Tor · Humble</span></td>
+      <td><span class="stufe st-S">S</span></td><td>hunderte</td><td>EPUB · MOBI</td>
+      <td>Verlags-EPUBs, <b>DRM-frei und legal geschenkt</b>. Baen macht das seit 1999 aus
+      Überzeugung. Tor verkauft DRM-frei. Humble bündelt komplette Verlagskataloge.</td></tr>
+    <tr><td class="nw"><b>Deine eigenen Käufe</b></td><td><span class="stufe st-S">S</span></td>
+      <td>—</td><td>EPUB · PDF</td>
+      <td><b>Der wichtigste Kanal überhaupt.</b> Ein gekauftes DRM-freies EPUB ist Stufe S und
+      gehört dir. SyncFindus liest den Ordner und macht daraus ein Werk.</td></tr>
+  </table>
+
+  <h3>Hörbücher &amp; Hörspiele</h3>
+  <table class="t">
+    <tr><th>Quelle</th><th>Stufe</th><th>Sprache</th><th>Anmerkung</th></tr>
+    <tr><td class="nw"><b>LibriVox</b></td><td><span class="stufe st-C">C</span></td><td>viele, v. a. EN</td>
+      <td>Gemeinfrei, von Freiwilligen gelesen, ~20.000 Titel. Qualität schwankt <b>pro
+      Sprecher</b> — deshalb ist die Sprecher-Marke (E138) hier keine Spielerei.</td></tr>
+    <tr><td class="nw"><b>ARD Audiothek</b></td><td><span class="stufe st-A">A</span></td><td>DE</td>
+      <td><b>Hörspiele in Rundfunkqualität</b>, produziert mit echten Schauspielern.
+      Gebührenfinanziert, frei hörbar, viele Titel dauerhaft. Der stärkste deutsche Kanal.</td></tr>
+    <tr><td class="nw"><b>Deutschlandfunk</b><br><span style="color:var(--tx3)">Feature · Kriminalhörspiel</span></td>
+      <td><span class="stufe st-A">A</span></td><td>DE</td>
+      <td>Podcast-Feeds im Klartext — <b>ein Adapter, fertig</b>. Kein Bot-Schutz, kein Konto.</td></tr>
+    <tr><td class="nw"><b>Eigene Käufe</b></td><td><span class="stufe st-S">S</span></td><td>alle</td>
+      <td>⚠️ Audible liefert <code>.aax</code> mit DRM — <b>nicht</b> unser Weg. Aber: Bookbeat,
+      Bandcamp-Hörbücher, Verlags-Direktverkauf liefern MP3/M4B ohne Schloss.</td></tr>
+  </table>
+
+  <h3>Musik &amp; DJ-Sets</h3>
+  <table class="t">
+    <tr><th>Quelle</th><th>Stufe</th><th>Anmerkung</th></tr>
+    <tr><td class="nw"><b>Bandcamp</b></td><td><span class="stufe st-S">S</span></td>
+      <td>Gekauft heißt <b>FLAC 24 bit, DRM-frei, dein Ordner</b>. Der Künstler bekommt den
+      Großteil. Für unsere Zwecke die beste Musikquelle, die existiert.</td></tr>
+    <tr><td class="nw"><b>Live Music Archive</b><br><span style="color:var(--tx3)">archive.org/etree</span></td>
+      <td><span class="stufe st-S">S</span></td>
+      <td><b>Über 250.000 Konzertmitschnitte</b>, von den Bands ausdrücklich freigegeben,
+      als FLAC. Grateful Dead, Smashing Pumpkins, tausende mehr. <b>Genau dein DJ-Set- und
+      Live-Fall</b> — und maschinenlesbar über die Archive-API.</td></tr>
+    <tr><td class="nw"><b>arte Concert</b></td><td><span class="stufe st-A">A</span></td>
+      <td>Ganze Sets von Festivals, in Bild <b>und</b> Ton, DE/FR/EN. Zeitlich begrenzt — genau
+      der Fall, für den die Warteschlange „jetzt holen, später schauen" existiert.</td></tr>
+    <tr><td class="nw"><b>Free Music Archive</b><br><span style="color:var(--tx3)">Jamendo · Netlabels</span></td>
+      <td><span class="stufe st-B">B</span></td>
+      <td>Creative Commons. Für Hintergrund und Entdeckung gut, für einen bestimmten Titel
+      nutzlos.</td></tr>
+    <tr><td class="nw"><b>Eigene CDs</b></td><td><span class="stufe st-S">S</span></td>
+      <td>Eine Audio-CD hat <b>kein</b> Kopierschutz-Problem: rippen ist Privatkopie, das
+      Ergebnis ist bitgenau (Stufe S), und AccurateRip sagt dir sogar, ob der Rip fehlerfrei
+      war. <b>Der unterschätzteste Weg zu perfekter Musik.</b></td></tr>
+  </table>
+
+  <h3>Film &amp; Serie</h3>
+  <table class="t">
+    <tr><th>Quelle</th><th>Stufe</th><th>Sprache</th><th>Anmerkung</th></tr>
+    <tr><td class="nw"><b>MediathekView</b><br><span style="color:var(--tx3)">ARD ZDF arte 3sat ORF SRF</span></td>
+      <td><span class="stufe st-B">B</span></td><td>DE</td>
+      <td><b>Der mit Abstand stärkste legale Kanal für uns.</b> Eine maschinenlesbare
+      <b>Filmliste</b> über alle öffentlich-rechtlichen Mediatheken, MP4-Download vorgesehen,
+      seit Jahren stabil. <b>Ein Adapter deckt dreizehn Sender ab.</b> Dazu Untertitel und teils
+      Audiodeskription — fertig für unsere Veredelung.</td></tr>
+    <tr><td class="nw"><b>arte</b></td><td><span class="stufe st-A">A</span></td><td>DE · FR</td>
+      <td>Dokus und Filme in hoher Qualität, oft 1080p, oft mehrsprachig. Zeitlich begrenzt.</td></tr>
+    <tr><td class="nw"><b>Internet Archive</b><br><span style="color:var(--tx3)">Feature Films · Prelinger</span></td>
+      <td><span class="stufe st-C">C</span></td><td>EN</td>
+      <td>Gemeinfreie Filme, Serials, Werbefilme. Qualität von „grausig" bis „restauriert". Ab
+      1. Januar 2026 ist alles von <b>1930</b> dazugekommen.</td></tr>
+    <tr><td class="nw"><b>Deine eigenen Scheiben</b></td><td><span class="stufe st-S">S</span></td>
+      <td>alle</td>
+      <td>Technisch der einzige Weg zu <b>echtem Stufe S</b> (Remux). ⚠️ Rechtlich in
+      Deutschland heikel: § 95a UrhG verbietet das Umgehen wirksamer technischer Maßnahmen —
+      und AACS auf Blu-ray gilt als solche, <b>auch für die Privatkopie</b>. Ich sage dir das
+      geradeheraus, statt so zu tun, als wäre es geklärt.</td></tr>
+    <tr><td class="nw"><b>Streaming-Abos</b></td><td><span class="stufe st-D">D</span></td><td>alle</td>
+      <td>❌ <b>Widevine ist nicht zu knacken.</b> Netflix, Disney+, Crunchyroll liefern kein
+      Bild an uns. Das Konto liefert <b>Wissen</b> — was du gesehen hast, was auf der Liste
+      steht (E129).</td></tr>
+  </table>
+
+  <h3>Manga &amp; Comics</h3>
+  <table class="t">
+    <tr><th>Quelle</th><th>Stufe</th><th>Anmerkung</th></tr>
+    <tr><td class="nw"><b>MANGA Plus</b><br><span style="color:var(--tx3)">Shueisha</span></td>
+      <td><span class="stufe st-A">A</span></td>
+      <td>Aktuelle Kapitel von One Piece &amp; Co., <b>kostenlos und offiziell</b>, am
+      Erscheinungstag, in EN/ES. Erste und letzte Kapitel dauerhaft frei, die Mitte nicht —
+      deshalb steht es in SyncManga zu Recht auf <code>PAYWALL_SITES</code>: als
+      <b>Leseort</b> legal, als <b>Quelle für eine ganze Serie</b> untauglich.</td></tr>
+    <tr><td class="nw"><b>Webtoon · Tapas</b></td><td><span class="stufe st-A">A</span></td>
+      <td>Riesiger freier Katalog, werbefinanziert, offiziell. Nur die neuesten Folgen kosten
+      („Fast Pass") — deshalb bleibt webtoons.com in SyncManga bewusst <b>erlaubt</b>.</td></tr>
+    <tr><td class="nw"><b>Digital Comic Museum</b><br><span style="color:var(--tx3)">Comic Book Plus</span></td>
+      <td><span class="stufe st-B">B</span></td>
+      <td>Golden-Age-Comics vor 1959, gemeinfrei, als CBZ mit hochauflösenden Scans.
+      Zehntausende Hefte, sauber gescannt, völlig frei.</td></tr>
+    <tr><td class="nw"><b>Verlagskäufe</b><br><span style="color:var(--tx3)">Humble · Fanatical</span></td>
+      <td><span class="stufe st-S">S</span></td>
+      <td>Manga-Bundles kommen als <b>CBZ ohne DRM</b>. Verlagsscan, 2400 px. Es gibt keine
+      bessere Manga-Datei als die.</td></tr>
+  </table>
+
+  <hr class="rule">
+  <h2>Was das Programm damit macht — und was es nicht tut</h2>
+  <div class="zwei">
+    <div class="sp ja"><h4>Das Programm kann</h4><ul>
+      <li>eine <b>Quellenliste abonnieren</b> — Adresse einfügen, Quellen erscheinen; Liste
+        entfernen, weg</li>
+      <li>jede beschriebene Quelle <b>gleich behandeln</b>: suchen, prüfen, holen, messen</li>
+      <li><b>Qualitätsprofile</b> („nie unter B", „bevorzuge FLAC") medienübergreifend anwenden</li>
+      <li><b>Gruppen-Vorlieben</b> merken — „bevorzuge Erai-raws", „diese Scanlation nie"</li>
+      <li>einen Ordner einlesen und daraus Werke bauen, ohne je etwas herunterzuladen</li>
+    </ul></div>
+    <div class="sp nein"><h4>Das Programm tut nicht</h4><ul>
+      <li><b>keinen Quellenkatalog mitliefern</b> (E12) — der Katalog ist eine Laufzeitdatei,
+        nie Repo-Inhalt</li>
+      <li>keine Adressen vorschlagen, die es nicht kennt</li>
+      <li><b>kein DRM umgehen</b> — weder Widevine noch AACS noch Adobe ACSM</li>
+      <li>nichts löschen, was der Nutzer besitzt</li>
+      <li>nichts hochladen, verteilen oder weiterreichen</li>
+    </ul></div>
+  </div>
+  <div class="merk">
+    <p><b>Warum das keine Ausrede ist, sondern die einzige Bauform, die überlebt.</b> Sony nahm
+    mit <em>einer</em> DMCA-Meldung über 200 Aniyomi-Erweiterungen offline. FAKKU ging im März
+    2026 gegen Mihon-Repos vor. Kakao drohte Tachiyomis Entwicklern persönlich, bis das Projekt
+    einging. <b>Ziel war nie die Leser-Engine, immer der Quellenkatalog.</b> Wer den Katalog
+    nicht im Programm hat, hat nichts, was man ihm nehmen kann.</p>
+    <p>⚠️ <code>data/sources.json</code> und <code>data/readers_pattern.json</code> liegen heute
+    öffentlich im SyncManga-Repo und sind <b>genau diese Artefaktklasse</b>. Das ist vor dem
+    Umzug zu klären — nicht danach.</p>
+  </div>
+</section>
+
+<!-- ═══════ ZUSTAND ═══════ -->
+<section id="t-zus" hidden>
+  <p class="sub">Sechs Datenquellen, nach <b>Verlässlichkeit</b> geordnet. Jede steht allein —
+  fällt eine weg, funktioniert das Programm mit weniger Genauigkeit weiter, nie gar nicht.</p>
+
+  <div class="fluss">
+    <div class="fk stark"><span class="rang">1 · stärkster Zeuge</span>
+      <h4>Unser eigener Leser</h4>
+      <p>Wenn du in SyncFindus liest oder siehst, wissen wir die Position <b>seitengenau und
+      sekundengenau</b>. Keine Rateei, kein Parser.</p>
+      <span class="gew">Gewicht 1,0 · Beweis</span></div>
+    <div class="fk stark"><span class="rang">2</span><h4>Die Erweiterung</h4>
+      <p>Meldet beim Lesen im Browser Werk und Kapitel direkt an <code>localhost</code>, mit
+      der Adapterliste als Übersetzer (E67, E68).</p>
+      <p><em>Firefox erlaubt das; Chrome baut seit 2024 ab, was wir brauchen.</em></p>
+      <span class="gew">Gewicht 0,9 · Beweis</span></div>
+    <div class="fk"><span class="rang">3</span><h4>Verlauf &amp; Lesezeichen</h4>
+      <p>Firefox/Waterfox/LibreWolf: <code>places.sqlite</code>. Chromium-Familie:
+      <code>History</code> + <code>Bookmarks</code>. <b>Nur lesend</b>, in eine Kopie, nie im
+      Browser selbst.</p>
+      <p>Ein Lesezeichen wiegt mehr als ein Verlaufseintrag: <b>Absicht schlägt Zufall.</b></p>
+      <span class="gew">Gewicht 0,6 · Hinweis</span></div>
+    <div class="fk"><span class="rang">4</span><h4>Fremdkonten</h4>
+      <p>AniList, MyAnimeList, Spotify, Trakt: was du dort gepflegt hast. <b>Genau, aber
+      alt</b> — es endet, wo du aufgehört hast zu pflegen.</p>
+      <span class="gew">Gewicht 0,7 · Hinweis</span></div>
+    <div class="fk"><span class="rang">5</span><h4>Dateien auf der Platte</h4>
+      <p>Was da liegt, sagt was du <b>hast</b> — nicht, was du <b>gelesen</b> hast. Trotzdem
+      wertvoll: 112 Dateien bis Kapitel 1141 ist ein starkes Indiz.</p>
+      <span class="gew">Gewicht 0,4 · Indiz</span></div>
+    <div class="fk schwach"><span class="rang">6 · schwächster</span><h4>Dateiname &amp; Adresse</h4>
+      <p><b>Die Adresse ist ein Hinweis, nie ein Beweis</b> (E76). Ein Dateiname, der
+      <code>1080p BluRay</code> sagt, ist eine Behauptung von jemandem, den wir nicht kennen.</p>
+      <span class="gew">Gewicht 0,2 · Verdacht</span></div>
+  </div>
+
+  <h3>Die Sicherheiten — was schiefgehen kann und was es abfängt</h3>
+  <table class="t">
+    <tr><th>Gefahr</th><th>Was wirklich passiert</th><th>Sicherung</th></tr>
+    <tr><td class="nw"><b>Browser sperrt die DB</b></td>
+      <td>Firefox hält <code>places.sqlite</code> mit WAL offen; Lesen schlägt fehl oder liefert
+        Bruchstücke</td>
+      <td>In den Temp-Ordner <b>kopieren</b> und die Kopie <code>immutable</code> öffnen. <b>Im
+        Browser wird nie etwas verändert</b> — harte Regel, keine Ausnahme.</td></tr>
+    <tr><td class="nw"><b>Rauschen im Verlauf</b></td>
+      <td>Wayback-Besuche wurden zur Serie „Wayback Machine". Ein Newsletter-Beitrag
+        („Your Manga Week #16") wurde ein Reader. Ein Shop wurde eine Serie.</td>
+      <td>Sperrliste plus <b>Reader-Pfadmuster</b> plus eine kuratierte Liste bekannter
+        Leseseiten. Alles drei muss zusammenpassen. <b>Jeder dieser Fehlgriffe steht heute
+        namentlich im Quelltext</b> — das ist die Sorte Dokumentation, die mitwandert.</td></tr>
+    <tr><td class="nw"><b>Fehlzuordnung</b></td>
+      <td>„Soul Anomaly" landet beim falschen Werk, weil zwei Titel sich ähneln</td>
+      <td><b>Zwei unabhängige Zeugen</b> (E31). Ähnlichkeit allein zählt nicht; Popularität ist
+        <b>nur Stichentscheid</b>, nie Grund.</td></tr>
+    <tr><td class="nw"><b>Falsche Kapitelzahl</b></td>
+      <td>Seite zählt anders, Prolog mitgezählt, Dezimalkapitel als <code>chapter-953-5</code></td>
+      <td>Vergleich mit der Bezugsliste, <b>konstanten Versatz suchen</b>. Passt einer für
+        ≥ 80 %, wird er gespeichert und <b>angezeigt</b>. Passt keiner: Postfach.</td></tr>
+    <tr><td class="nw"><b>Rückschritt</b></td>
+      <td>Ein alter Verlaufseintrag setzt den Lesestand von 1141 auf 300 zurück</td>
+      <td><b>Fortschritt geht nie rückwärts</b>, außer du sagst es. Sprünge über 20 % gehen ins
+        Postfach statt durch.</td></tr>
+    <tr><td class="nw"><b>Verlauf gelöscht</b></td>
+      <td>Chrome kürzt nach 90 Tagen. Ein „Browserdaten löschen" wischt alles.</td>
+      <td><span class="marke a">E145</span> <b>Der Browser ist ein Zeuge, kein Gedächtnis.</b>
+        Einmal gelesen, gehört der Lesestand uns — dauerhaft, mit Datum und Herkunft. Ein
+        geleerter Verlauf ändert <b>gar nichts</b>.</td></tr>
+    <tr><td class="nw"><b>Privater Modus</b></td>
+      <td>liefert nichts, und das ist richtig so</td>
+      <td>Kein Umweg, keine Trickserei. Wer privat liest, will nicht gezählt werden. Der Leser
+        (Quelle 1) und die Erweiterung decken den Fall ab, wenn man es <b>will</b>.</td></tr>
+  </table>
+
+  <div class="merk">
+    <p><b>Und die unbequeme Wahrheit über die Erweiterung:</b> Firefox erlaubt alles, was wir
+    brauchen. Chrome hat mit Manifest V3 abgebaut und mag Add-ons nicht, die mit
+    <code>localhost</code> sprechen. Also <b>Firefox zuerst und ordentlich</b>, Chrome als
+    Beipack. Die Erweiterung ist <b>Zubehör</b> — fällt sie weg, läuft SyncFindus mit Quelle 3
+    weiter, so wie SyncManga das heute schon tut.</p>
+  </div>
+</section>
+
+<!-- ═══════ WERKZEUGE ═══════ -->
+<section id="t-wzg" hidden>
+  <div class="merk warn">
+    <p><b>Die kurze Antwort auf „gib mir die Liste":</b> Eine Liste von Seiten schreibe ich
+    dir nicht auf. Aber die Liste ist auch <b>nicht das, was du brauchst</b> — sie rottet in
+    Wochen, und wer sie im Programm hat, verliert das Programm. Was du brauchst, sind die
+    <b>vier Protokolle</b>, in denen andere Leute diese Listen täglich pflegen. Die baue ich
+    dir vollständig ein, und dann trägst du in dein Programm ein, was du willst — ohne dass
+    je etwas davon in unserem Repo steht.</p>
+  </div>
+
+  <h3>Vier Protokolle statt einer Liste</h3>
+  <table class="t">
+    <tr><th>Protokoll</th><th>Wer pflegt es</th><th>Umfang</th><th>Was wir bauen</th></tr>
+    <tr><td class="nw"><b>Cardigann-YAML</b><br><span style="color:var(--tx3)">Prowlarr · Jackett</span></td>
+      <td>Gemeinschaft, <b>täglich</b> per GitHub-Action zwischen beiden Projekten
+        abgeglichen</td>
+      <td><b>500+</b> Indexer-Definitionen</td>
+      <td><b>Ein</b> Adapter, der mit deinem Prowlarr spricht. Jeder Indexer, den du dort
+        einrichtest, ist in SyncFindus sofort eine Quelle. <b>Ein Adapter, 500 Quellen.</b></td></tr>
+    <tr><td class="nw"><b><code>index.min.json</code></b><br><span style="color:var(--tx3)">Mihon · Aniyomi</span></td>
+      <td>Gemeinschaft (Keiyoushi u. a.), Abgleich alle paar Stunden</td>
+      <td>hunderte Lesequellen</td>
+      <td>Ein Abonnent für Erweiterungslisten — Adresse einfügen, Quellen erscheinen; Adresse
+        entfernen, weg. Genau die Bauform aus <b>E12</b>.</td></tr>
+    <tr><td class="nw"><b>yt-dlp-Extraktoren</b></td>
+      <td>hunderte Mitwirkende, Veröffentlichung fast wöchentlich</td>
+      <td><b>~1.800 Seiten</b></td>
+      <td>yt-dlp <b>ist</b> unser universeller HTTP-Adapter. YouTube, Twitch, arte, alle
+        Mediatheken, SoundCloud, Bandcamp, Vimeo, Nebula — eine Anbindung, tausend Seiten.</td></tr>
+    <tr><td class="nw"><b>MediathekView-Filmliste</b></td>
+      <td>Verein, seit 2011 stabil</td><td>13 Sender</td>
+      <td>Eine komprimierte JSON-Datei lesen. Kein Konto, kein Bot-Schutz, kein Vertrag.</td></tr>
+    <tr><td class="nw"><b>BitTorrent / Magnet</b></td>
+      <td>niemand — es ist ein <b>Protokoll</b>, kein Anbieter</td><td>—</td>
+      <td>Magnetlink erkennen, an deinen Client (qBittorrent, Transmission, Deluge) übergeben,
+        Fortschritt zurücklesen. <b>Wie bei Sonarr: wir fahren, du entscheidest wohin.</b></td></tr>
+  </table>
+
+  <div class="merk">
+    <p><b>Warum das mehr ist als eine Liste, nicht weniger.</b> Eine Liste von 200 Adressen ist
+    in drei Monaten zu einem Drittel tot. Ein Cardigann-Adapter ist in drei Monaten <b>mehr</b>
+    wert, weil hunderte Leute in der Zwischenzeit Definitionen nachgezogen haben. Du bekommst
+    nicht meine Liste — du bekommst <b>jede</b> Liste, die es gibt, und die von morgen dazu.</p>
+  </div>
+
+  <h3>Das Werkzeugfeld — was auf GitHub schon gelöst ist</h3>
+  <p class="sub">Alles hier ist quelloffen, aktiv gepflegt und wird <b>eingebunden statt
+  nachgebaut</b> (E11). Die Spalte „Rolle" sagt, was SyncFindus damit tut.</p>
+  <table class="t">
+    <tr><th>Werkzeug</th><th>Was es kann</th><th>Rolle bei uns</th></tr>
+    <tr><td class="nw"><b>yt-dlp</b></td><td>~1.800 Seiten-Extraktoren, Formatwahl, Wiederaufnahme,
+      Untertitel, Kapitelmarken, SponsorBlock</td>
+      <td><span class="marke a">Motor</span> Alles, was über HTTP kommt. Steht in SyncYouTube
+      bereits im Einsatz.</td></tr>
+    <tr><td class="nw"><b>streamlink</b></td><td>Live-Ströme mitschneiden (Twitch, YouTube-Live,
+      Sender-Streams)</td><td><span class="marke a">Motor</span> Der Live-Fall, den yt-dlp
+      schlechter kann</td></tr>
+    <tr><td class="nw"><b>gallery-dl</b></td><td>Bildstrecken und <b>Manga-Kapitel</b> von
+      hunderten Seiten, mit eigener Konfigurationsdatei je Seite</td>
+      <td><span class="marke a">Motor</span> Der Kapitelbild-Holer — genau die Lücke, die
+      SyncManga heute hat</td></tr>
+    <tr><td class="nw"><b>Prowlarr</b> · <b>Jackett</b></td><td>500+ Indexer hinter <b>einer</b>
+      Suchschnittstelle</td><td><span class="marke t">Klempnerei</span> Wir sprechen mit ihm,
+      nie mit den Indexern selbst (E11)</td></tr>
+    <tr><td class="nw"><b>qBittorrent</b> · <b>Transmission</b><br><span style="color:var(--tx3)">libtorrent</span></td>
+      <td>BitTorrent mit Web-API, Kategorien, Ratenbegrenzung</td>
+      <td><span class="marke t">Klempnerei</span> Magnet hinein, Fortschritt heraus. Wir bauen
+      keinen Torrent-Motor.</td></tr>
+    <tr><td class="nw"><b>Bazarr</b></td><td>Untertitel suchen, bewerten, synchronisieren</td>
+      <td><span class="marke t">Klempnerei</span> — bis unsere eigene Übersetzung (§10.2) besser
+      ist</td></tr>
+    <tr><td class="nw"><b>beets</b></td><td><b>Der Goldstandard</b> für Musikbibliotheken:
+      MusicBrainz-Abgleich, Umbenennung, Etiketten, Cover, Plugin für AcoustID</td>
+      <td><span class="marke l">Vorbild</span> Sein Datenmodell und seine Autotagger-Logik sind
+      genau das, was §8.2 beschreibt</td></tr>
+    <tr><td class="nw"><b>MusicBrainz Picard</b></td><td>Fingerabdruck → Etiketten, von Hand
+      korrigierbar</td><td><span class="marke a">Motor</span> Der Tonabdruck-Schritt</td></tr>
+    <tr><td class="nw"><b>spotDL</b></td><td>Spotify-Playlist → Titelliste → Tonspur von
+      anderswo, mit korrekten Etiketten</td>
+      <td><span class="marke l">Vorbild</span> Genau <b>E129</b> in Code: das Konto liefert die
+      <b>Liste</b>, nicht den Ton</td></tr>
+    <tr><td class="nw"><b>MakeMKV</b></td><td>Blu-ray/DVD → MKV, alle Spuren unangetastet
+      (<b>Stufe S</b>)</td><td><span class="marke ge">deine Scheibe</span> siehe unten</td></tr>
+    <tr><td class="nw"><b>ffmpeg</b> · <b>HandBrake</b></td><td>umwandeln, messen, prüfen</td>
+      <td><span class="marke a">Motor</span> <code>ffprobe</code> ist unser <b>Messgerät</b>
+      für E140</td></tr>
+    <tr><td class="nw"><b>Calibre</b></td><td>E-Book-Verwaltung, Formatwandlung, Metadaten aus
+      vielen Quellen</td><td><span class="marke l">Vorbild</span> Seine Metadatenquellen-Kette
+      ist die beste, die es für Bücher gibt</td></tr>
+    <tr><td class="nw"><b>Kavita</b> · <b>Komga</b><br><span style="color:var(--tx3)">Kapowarr · Mylar3</span></td>
+      <td>Comic-/Manga-Server mit Lesefortschritt und OPDS</td>
+      <td><span class="marke l">Vorbild</span> + <span class="marke t">Ziel</span> — wir
+      exportieren so, dass sie unsere Bibliothek lesen können (E06)</td></tr>
+    <tr><td class="nw"><b>MediathekView</b></td><td>die Filmliste selbst, plus fertige
+      Download-Logik</td><td><span class="marke a">Motor</span> Ein Adapter, 13 Sender</td></tr>
+    <tr><td class="nw"><b>Nicotine+</b></td><td>Soulseek-Client — das <b>älteste noch lebende</b>
+      Musiktausch-Netz, stark bei Seltenem und bei Vollalben</td>
+      <td><span class="marke t">Klempnerei</span> Protokoll-Anbindung, kein Katalog</td></tr>
+  </table>
+
+  <div class="merk">
+    <p><b>Zu deiner Blu-ray ohne Player:</b> Das Werkzeug heißt <b>MakeMKV</b> — es liest die
+    Scheibe im Laufwerk und schreibt eine MKV mit allen Bild-, Ton- und Untertitelspuren
+    unangetastet. Das ist der einzige Weg zu echtem <b>Stufe S</b>, und für deinen Fall (Scheibe
+    da, Abspieler weg) ist es genau das richtige Werkzeug.</p>
+    <p>⚠️ <b>Und die ehrliche Fußnote dazu:</b> § 95a UrhG verbietet in Deutschland das Umgehen
+    wirksamer technischer Maßnahmen, und AACS gilt als eine — <b>ohne Ausnahme für die
+    Privatkopie</b>. Andere Länder sehen das anders. Ich sage dir, was das Werkzeug ist und wie
+    die Rechtslage steht; welchen Weg du gehst, ist deine Entscheidung, nicht meine.</p>
+  </div>
+
+  <h3>Und was ich dir nicht aufschreibe</h3>
+  <p class="sub">Eine kuratierte Liste von Piraterieseiten schreibe ich nicht auf — auch nicht
+  in Abschnitte sortiert. Das ist meine Grenze, sie steht fest, und ich mache kein Theater
+  darum. Alles andere aus deiner Frage ist oben beantwortet: die Protokolle, die Werkzeuge, die
+  Verzeichnisse, die Rechtslage, die Qualitätsstufen — und unten die Frage, die eigentlich die
+  wichtige war.</p>
+
+  <hr class="rule">
+  <h2>Das Rennen — wie nichts aufgehalten wird</h2>
+  <p class="sub">Deine beste Frage: <em>„Was wichtig an der Warteschlange ist, dass nichts
+  aufgehalten wird. YouTube blockiert durch Länderzonen, ein Torrent hat keine Seeder mehr,
+  ein Direktdownload ist fehlerhaft. Wie garantieren wir Sicherheit und Erfolg?"</em> —
+  Garantieren kann man es nicht. Man kann nur dafür sorgen, dass <b>ein Fehlschlag nichts
+  kostet außer Zeit, die parallel ohnehin läuft</b>.</p>
+
+  <div class="merk">
+    <p>🔑 <b>E149 — Beschaffung ist ein Rennen, kein Auftrag.</b> Ein Auftrag lautet „lade von
+    dort". Ein Rennen lautet <b>„beschaffe mir das, mindestens Stufe B, Sprache JP mit
+    deutschen Untertiteln"</b> — und alle Kandidaten treten gleichzeitig an.</p>
+  </div>
+
+  <div class="fluss" style="grid-template-columns:1fr">
+    <div class="fk stark"><span class="rang">Wunsch</span>
+      <h4>Frieren — Folge 9 · mindestens B · JP + Sub DE</h4>
+      <table class="t" style="margin:9px 0 0">
+        <tr><th>Kandidat</th><th>Vorprüfung</th><th>Kostet</th><th>Zustand</th></tr>
+        <tr><td class="nw">Torrent · Erai-raws 1080p</td><td>DHT: <b>47 Seeder</b>, 12 Leecher</td>
+          <td>0 Bytes</td><td><span class="marke a">läuft · 71 %</span></td></tr>
+        <tr><td class="nw">Torrent · SubsPlease 1080p</td><td>DHT: 12 Seeder</td><td>0 Bytes</td>
+          <td><span class="marke">warm — startet bei Einbruch</span></td></tr>
+        <tr><td class="nw">Direktlink · Filehoster</td><td><code>HEAD</code>: 200, aber
+          <b>kein <code>Range</code></b></td><td>0 Bytes</td>
+          <td><span class="marke ge">abgewertet — kein Fortsetzen möglich</span></td></tr>
+        <tr><td class="nw">Mediathek · Sender</td><td>Geo: nicht DE</td><td>0 Bytes</td>
+          <td><span class="marke ge">Länderwechsel wäre ein Schritt, kein Fehler</span></td></tr>
+        <tr><td class="nw">WEBRip 720p</td><td>Stufe <b>C</b></td><td>—</td>
+          <td><span class="marke r">unter deinem Profil — nur als Notnagel</span></td></tr>
+      </table>
+    </div>
+  </div>
+
+  <table class="t">
+    <tr><th>Regel</th><th>Warum</th></tr>
+    <tr><td class="nw"><b>Vorprüfung kostet keine Bytes</b></td>
+      <td>Seederzahl kommt aus DHT/Tracker <b>vor</b> dem Start. Ein Direktlink wird per
+        <code>HEAD</code> geprüft: Größe plausibel? <code>Accept-Ranges</code> vorhanden?
+        Inhaltstyp richtig? <b>Ein Kandidat, der nicht fortsetzbar ist, ist ein schlechter
+        Kandidat</b> — das weiß man vorher, nicht nach 4 GB.</td></tr>
+    <tr><td class="nw"><b>Ablösung statt Abbruch</b></td>
+      <td>Fällt die Rate über 3 Minuten unter ein Viertel des Erwarteten, startet Kandidat 2
+        <b>parallel</b>. Wer zuerst fertig ist, gewinnt. Der Langsame wird nicht abgebrochen,
+        sondern <b>überholt</b> — kein Neuanfang bei null.</td></tr>
+    <tr><td class="nw"><b>Teildaten bleiben</b></td>
+      <td>Jeder abgebrochene Versuch hinterlässt Bytes. Bei Torrents zählen sie ohnehin weiter;
+        bei HTTP mit <code>Range</code> setzt der nächste Versuch dort an. <b>Nichts wird
+        zweimal geladen.</b></td></tr>
+    <tr><td class="nw"><b>Geo ist ein Schritt, kein Fehler</b></td>
+      <td><code>geo.py</code> und <code>vpn.py</code> aus SyncYouTube <b>existieren bereits</b>.
+        „In DE gesperrt" heißt: nächster Ablöseschritt mit anderem Ausgang, nicht rot.</td></tr>
+    <tr><td class="nw"><b>Spuren sind getrennt</b></td>
+      <td>Ein hängender Torrent belegt <b>keinen</b> Platz in der Rechen- oder Prüfspur. Was
+        wartet, wartet auf seiner eigenen Bahn — deshalb hält nie etwas etwas anderes auf.</td></tr>
+    <tr><td class="nw">🔑 <b>E150 — der Wunsch stirbt nie</b></td>
+      <td>Scheitern <b>alle</b> Kandidaten, bleibt der Wunsch stehen und <b>lauert</b>: er wird
+        bei jeder neuen Quelle, jedem neuen Kapitel-Fund, jedem RSS-Treffer automatisch neu
+        bewertet. <b>Ein Auftrag scheitert. Ein Wunsch wartet.</b> Berserk 374 gibt es heute
+        nicht über Stufe C — in vier Wochen schon, und dann passiert es von selbst.</td></tr>
+  </table>
+
+  <div class="merk">
+    <p><b>Und die Sicherheit.</b> Drei Dinge, die nichts mit Erfolg zu tun haben, aber alles
+    mit Ruhe: <b>1.</b> Was hereinkommt, wird geprüft, bevor es die Bibliothek berührt —
+    Dateityp gegen Inhalt (nicht gegen Endung), Archive nie automatisch entpackt-und-ausgeführt,
+    <code>ffprobe</code> muss die Datei verstehen. <b>2.</b> Alles Netzwerkige läuft mit den
+    kleinsten nötigen Rechten und schreibt nur in einen Eingangsordner, nie in die Bibliothek.
+    <b>3.</b> Kein Beschaffungsweg darf je den Leser oder die Bühne blockieren — was du gerade
+    ansiehst, hat immer Vorrang vor allem, was geholt wird (§4.5, Prioritäten).</p>
+  </div>
+</section>
+
+<script>
+"use strict";
+document.getElementById("rt").addEventListener("click", function(e){
+  var b = e.target.closest("button"); if(!b) return;
+  this.querySelectorAll("button").forEach(function(x){ x.classList.toggle("on", x===b); });
+  ["wis","inh","zus","wzg"].forEach(function(t){
+    document.getElementById("t-"+t).hidden = (t !== b.dataset.t);
+  });
+});
+</script>
+</div>

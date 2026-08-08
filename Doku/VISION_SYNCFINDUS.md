@@ -36,6 +36,8 @@ durch **Überarbeiten**. Wer etwas hinzufügt, räumt gleichzeitig auf.
 |---|---|
 | `ENTWUERFE.md` | welche Entwürfe es gibt und was noch fehlt |
 | `NICHT_UEBERNOMMEN.md` | ⚠️ **was aus SyncManga und SyncYouTube noch fehlt** — wird abgearbeitet, bis sie leer ist |
+| `PROMPT_FUER_DIE_ZWEITE_KI.md` | der **Übergabe-Prompt** — zum Kopieren, für einen Lauf ohne Aufsicht |
+| `entwuerfe/*.html` | die **22 Entwürfe** selbst, offline lauffähig |
 | `PFLEGE.md` | **die wöchentliche Prüfung** — was neu ist, was ersetzt wurde, was gestorben ist |
 | `UEBERNAHME_AUS_SYNCYOUTUBE.md` | welcher Code wörtlich übernommen wird, mit Datei und Funktion |
 

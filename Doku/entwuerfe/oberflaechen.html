@@ -1,0 +1,403 @@
+<title>SyncFindus — Die drei Oberflächen</title>
+<style>
+:root{
+  --bg:#0E1217; --panel:#161C23; --panel2:#1c242d; --line:#232C36; --line2:#33404e;
+  --tx:#E4E9EF; --tx2:#8B97A5; --tx3:#5f6b78; --akz:#F0873C; --onA:#150a02;
+  --disp:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --data:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+}
+@media (prefers-color-scheme:light){
+  :root{--bg:#eff1f4;--panel:#fff;--panel2:#f4f6f8;--line:#dde2e8;--line2:#c3ccd6;
+    --tx:#1a1f26;--tx2:#5a6672;--tx3:#8592a0;--akz:#b8551c;--onA:#fff}
+}
+:root[data-theme="light"]{--bg:#eff1f4;--panel:#fff;--panel2:#f4f6f8;--line:#dde2e8;--line2:#c3ccd6;
+  --tx:#1a1f26;--tx2:#5a6672;--tx3:#8592a0;--akz:#b8551c;--onA:#fff}
+:root[data-theme="dark"]{--bg:#0E1217;--panel:#161C23;--panel2:#1c242d;--line:#232C36;--line2:#33404e;
+  --tx:#E4E9EF;--tx2:#8B97A5;--tx3:#5f6b78;--akz:#F0873C;--onA:#150a02}
+
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:var(--disp);font-size:16px;
+  line-height:1.6;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1080px;margin:0 auto;padding:36px 20px 80px}
+.eyebrow{font-family:var(--data);font-size:11px;letter-spacing:.17em;text-transform:uppercase;
+  color:var(--akz);margin:0 0 11px}
+h1{font-size:clamp(28px,4.3vw,43px);line-height:1.06;letter-spacing:-.028em;font-weight:800;
+  margin:0 0 13px;text-wrap:balance}
+.lede{font-size:17px;color:var(--tx2);max-width:64ch;margin:0}
+h2{font-size:22px;font-weight:800;letter-spacing:-.022em;margin:0 0 6px}
+.sub{color:var(--tx2);margin:0 0 18px;max-width:66ch;font-size:15px}
+hr.rule{height:1px;background:var(--line);border:0;margin:42px 0}
+
+.switch{display:inline-flex;gap:4px;margin:28px 0 8px;padding:4px;background:var(--panel);
+  border:1px solid var(--line2);border-radius:999px}
+.sw{appearance:none;border:0;background:transparent;color:var(--tx2);font-family:var(--disp);
+  font-size:14px;font-weight:700;padding:9px 22px;border-radius:999px;cursor:pointer;
+  transition:background .2s,color .2s}
+.sw[aria-pressed="true"]{background:var(--akz);color:var(--onA)}
+.sw:focus-visible{outline:2px solid var(--tx);outline-offset:2px}
+.note{font-family:var(--data);font-size:11.5px;color:var(--tx3);margin:0 0 18px}
+
+/* ===== Bühne ===== */
+.stage{border:1px solid var(--line2);border-radius:16px;overflow:hidden;background:#0E1217;color:#E4E9EF;
+  container-type:inline-size;container-name:stage}
+.view{display:none}.view.on{display:block}
+
+/* --- Prioritätsleiter, jetzt auch im Entwurf angewendet (Behälter-Abfragen) --- */
+@container stage (max-width:1040px){ .sh span{display:none} }        /* Rang 12: Regal-Untertitel */
+@container stage (max-width:900px){ .qsum .mini{display:none} }       /* Rang 11 */
+@container stage (max-width:820px){ .row5{grid-template-columns:repeat(5,1fr)}
+  .tvrow{grid-template-columns:repeat(5,1fr)} }
+@container stage (max-width:700px){ .row5{grid-template-columns:repeat(4,1fr)}
+  .tvrow{grid-template-columns:repeat(4,1fr)}
+  .side{width:150px} .hin h3{font-size:21px} .qi .ty{width:66px} }
+@container stage (max-width:560px){ .row5{grid-template-columns:repeat(3,1fr)}
+  .tvrow{grid-template-columns:repeat(3,1fr)}
+  .side{display:none} .hmeta{display:none} .btn.g{display:none}
+  .qi .pb{width:60px} .cmdin{font-size:11px} }
+@container stage (max-width:460px){ .row5,.tvrow{grid-template-columns:repeat(2,1fr)}
+  .qsum{font-size:9.5px} }
+
+/* ---------- gemeinsam ---------- */
+.poster{position:relative;border-radius:12px;overflow:hidden;border:1px solid #232C36;
+  display:flex;align-items:flex-end;padding:8px}
+.poster::after{content:"";position:absolute;inset:0;z-index:1;
+  background:linear-gradient(to top,rgba(0,0,0,.82),transparent 55%)}
+/* z-index:2 — der Titel muss ÜBER dem Schleier liegen, nicht darunter (JB-Fund 07.08.) */
+.poster b{position:relative;z-index:2;font-size:11px;font-weight:800;color:#fff;line-height:1.15}
+.poster i.bar{position:absolute;left:0;bottom:0;height:3px;background:#F0873C;z-index:3}
+
+/* ---------- PC ---------- */
+.pc{display:flex;min-height:500px;font-size:13px}
+.side{width:190px;flex:0 0 auto;background:#12171e;border-right:1px solid #232C36;padding:16px 11px}
+.logo{font-weight:800;font-size:15px;letter-spacing:-.02em;margin-bottom:16px;padding:0 7px}
+.logo em{color:#F0873C;font-style:normal}
+.nv{display:flex;align-items:center;gap:9px;padding:8px;border-radius:9px;color:#8B97A5;font-size:12.5px}
+.nv.on{background:#1c242d;color:#E4E9EF;box-shadow:inset 2px 0 0 #F0873C}
+.nv small{margin-left:auto;font-family:var(--data);font-size:9.5px;color:#4d5865}
+.grp{font-family:var(--data);font-size:9px;letter-spacing:.14em;text-transform:uppercase;
+  color:#4d5865;padding:12px 7px 5px}
+.mainc{flex:1;min-width:0;display:flex;flex-direction:column}
+.topb{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid #232C36}
+.srch{flex:1;max-width:330px;background:#0E1217;border:1px solid #33404e;border-radius:9px;
+  padding:7px 11px;font-size:12px;color:#5f6b78}
+.sp{flex:1}
+.icb{width:30px;height:30px;border-radius:9px;border:1px solid #33404e;display:grid;place-items:center;
+  color:#8B97A5;font-size:13px}
+.avt{width:28px;height:28px;border-radius:9px;background:linear-gradient(150deg,#F0873C,#b8551c);
+  display:grid;place-items:center;font-size:10px;font-weight:800;color:#150a02}
+.hero{padding:18px 16px;position:relative;min-height:150px;display:flex;align-items:flex-end;overflow:hidden}
+/* Motiv: hell und farbig — das ist das „Bild" */
+.hero::before{content:"";position:absolute;inset:0;
+  background:radial-gradient(105% 150% at 68% 6%,#5b86a8,transparent 62%),
+             radial-gradient(120% 140% at 78% 12%,#3f6787,transparent 58%),
+             linear-gradient(120deg,#1b2b3a,#233a4e)}
+/* Schleier NUR unter dem Text, weich auslaufend — dunkelt nichts anderes ab */
+.hero::after{content:"";position:absolute;left:0;top:0;bottom:0;width:62%;
+  background:linear-gradient(90deg,rgba(9,12,16,.88) 0%,rgba(9,12,16,.72) 42%,rgba(9,12,16,0) 100%)}
+/* z-index:2 — sonst malt der ::after-Schleier ÜBER den Text (JB-Fund 07.08.) */
+.hin{position:relative;z-index:2;max-width:46ch}
+.kick{font-family:var(--data);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;
+  color:#F0873C;font-weight:700;margin-bottom:6px}
+.hin h3{margin:0 0 4px;font-size:26px;line-height:1.1;letter-spacing:-.022em;font-weight:800}
+.hmeta{font-family:var(--data);font-size:10.5px;color:#8B97A5;margin-bottom:12px}
+.btn{border:0;border-radius:9px;padding:9px 18px;font-family:inherit;font-size:13.5px;font-weight:700;
+  background:#F0873C;color:#150a02}
+.btn.g{background:transparent;border:1px solid #33404e;color:#8B97A5;margin-left:8px}
+.shelf{padding:14px 16px;border-top:1px solid #232C36}
+.sh{display:flex;align-items:baseline;gap:10px;margin-bottom:10px;flex-wrap:nowrap;min-width:0}
+.sh h4{margin:0;font-size:14.5px;font-weight:700;letter-spacing:-.012em;white-space:nowrap}
+.sh span{font-family:var(--data);font-size:10px;color:#5f6b78;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis;min-width:0}
+.row5{display:grid;grid-template-columns:repeat(6,1fr);gap:12px}
+.row5 .poster{aspect-ratio:2/3}
+
+/* --- die Fortschrittsleiste --- */
+.cmdbar{margin-top:auto;border-top:1px solid #232C36;background:#12171e}
+.cmdrow{display:flex;align-items:center;gap:11px;padding:9px 16px}
+.cmdin{flex:1;background:#0E1217;border:1px solid #33404e;border-radius:9px;padding:7px 11px;
+  font-size:11.5px;color:#5f6b78}
+.qsum{display:flex;align-items:center;gap:8px;font-family:var(--data);font-size:10.5px;color:#8B97A5;
+  white-space:nowrap;cursor:pointer;padding:5px 9px;border-radius:9px;border:1px solid transparent}
+.qsum:hover{border-color:#33404e;background:#0E1217}
+.dot{width:7px;height:7px;border-radius:50%;background:#F0873C;animation:puls 1.9s ease-in-out infinite}
+@keyframes puls{0%,100%{opacity:1}50%{opacity:.3}}
+.mini{width:74px;height:3px;background:#232C36;border-radius:2px;overflow:hidden}
+.mini i{display:block;height:100%;width:68%;background:#F0873C}
+.qpanel{border-top:1px solid #232C36;padding:11px 16px 13px;background:#0E1217}
+.qh{font-family:var(--data);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;
+  color:#5f6b78;margin-bottom:9px;display:flex;gap:10px;align-items:baseline}
+.qh em{font-style:normal;color:#F0873C;margin-left:auto;letter-spacing:0;text-transform:none;font-size:10.5px}
+.qi{display:flex;align-items:center;gap:10px;padding:5px 0;font-size:11.5px}
+.qi .ty{font-family:var(--data);font-size:9px;padding:2px 7px;border-radius:6px;
+  background:#1c242d;color:#8B97A5;white-space:nowrap;width:78px;text-align:center}
+.qi .nm{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#E4E9EF}
+.qi .pb{width:100px;height:3px;background:#232C36;border-radius:2px;overflow:hidden;flex:0 0 auto}
+.qi .pb i{display:block;height:100%;background:#F0873C}
+.qi .pc2{font-family:var(--data);font-size:10px;color:#8B97A5;width:38px;text-align:right;
+  font-variant-numeric:tabular-nums}
+.qi.wait .pb i{background:#33404e}
+.qi.wait .pc2{color:#5f6b78}
+.qi.done .pb i{background:#5fd07a;width:100%}
+.qi.done .pc2{color:#5fd07a}
+
+/* ---------- Fernseher ---------- */
+.tv{position:relative;min-height:520px;display:flex;flex-direction:column}
+.tvhero{position:relative;height:290px;display:flex;align-items:flex-end;padding:34px;overflow:hidden}
+.tvhero::before{content:"";position:absolute;inset:0;
+  background:radial-gradient(95% 130% at 70% 2%,#6d9ac0,transparent 60%),
+             radial-gradient(110% 130% at 82% 16%,#41688a,transparent 56%),
+             linear-gradient(120deg,#1d2f40,#274257)}
+.tvhero::after{content:"";position:absolute;left:0;top:0;bottom:0;width:66%;
+  background:linear-gradient(90deg,rgba(8,11,15,.9) 0%,rgba(8,11,15,.7) 46%,rgba(8,11,15,0) 100%)}
+.tvin{position:relative;z-index:2;max-width:56%}
+.tvkick{font-family:var(--data);font-size:11px;letter-spacing:.2em;text-transform:uppercase;
+  color:#F0873C;font-weight:800;margin-bottom:10px}
+.tvin h3{margin:0 0 8px;font-size:42px;line-height:1.03;letter-spacing:-.03em;font-weight:800}
+.tvmeta{font-size:15px;color:#b8c3ce;margin-bottom:18px}
+.tvbtn{border:0;border-radius:12px;padding:14px 30px;font-family:inherit;font-size:17px;font-weight:800;
+  background:#F0873C;color:#150a02}
+.tvbtn.g{background:rgba(255,255,255,.08);color:#E4E9EF;margin-left:10px;
+  border:2px solid transparent}
+.tvrows{padding:0 34px 30px;display:flex;flex-direction:column;gap:24px;margin-top:-14px;position:relative}
+.tvsh{font-size:19px;font-weight:800;letter-spacing:-.015em;margin:0 0 12px}
+.tvrow{display:grid;grid-template-columns:repeat(6,1fr);gap:16px}
+.tvrow .poster{aspect-ratio:16/10;border-radius:10px}
+.tvrow .poster b{font-size:12.5px}
+.foc{outline:3px solid #F0873C;outline-offset:3px;transform:scale(1.04)}
+/* Feste Kopfzeile statt Symbolstreifen — wie in SyncYouTubes TV-Modus:
+   nur die Reihen bewegen sich, der Kopf bleibt (Anti-Scroll). */
+.tvtabs{position:absolute;left:0;right:0;top:0;z-index:7;display:flex;align-items:center;
+  gap:6px;padding:16px 34px;background:linear-gradient(rgba(10,13,17,.92) 60%,transparent)}
+.tvtab{font-size:14px;color:#b3b3b3;padding:6px 14px;border-radius:999px;
+  border:2px solid transparent;white-space:nowrap}
+.tvtab.on{color:#fff;font-weight:700}
+.tvtab.fok{border-color:#fff}
+.tvsp{flex:1}
+.tvtab.zart{color:#8b97a5}
+.tvside span.on{color:#F0873C}
+
+/* ---------- Handheld ---------- */
+.hh{max-width:520px;margin:0 auto;min-height:470px;display:flex;flex-direction:column;
+  border-left:1px solid #232C36;border-right:1px solid #232C36}
+.hhtop{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid #232C36}
+.hhtop b{font-size:15px;letter-spacing:-.015em}
+.hhtop .sp{flex:1}
+.hhtop small{font-family:var(--data);font-size:10px;color:#5f6b78}
+/* Sammlungen umbrechen statt seitwärts scrollen — die Seite scrollt NIE waagerecht */
+.hhcoll{display:flex;gap:8px;padding:12px 16px;flex-wrap:wrap}
+.hhc{font-family:var(--data);font-size:11px;padding:8px 15px;border-radius:999px;
+  border:1px solid #33404e;color:#8B97A5;white-space:nowrap}
+.hhc.on{background:#F0873C;color:#150a02;border-color:#F0873C}
+.hhbody{flex:1;padding:6px 16px 16px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px;
+  align-content:start}
+.hhbody .poster{aspect-ratio:2/3;border-radius:10px}
+.hhnow{padding:11px 16px;border-top:1px solid #232C36;background:#12171e;display:flex;
+  align-items:center;gap:11px}
+.hhnow .cover{width:34px;height:34px;border-radius:8px;background:linear-gradient(150deg,#4a3a52,#1e1820);flex:0 0 auto}
+.hhnow .t{flex:1;min-width:0}
+.hhnow .t b{display:block;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hhnow .t small{font-family:var(--data);font-size:9.5px;color:#5f6b78}
+.hhkeys{display:flex;gap:14px;padding:9px 16px;border-top:1px solid #232C36;background:#0b0f14;
+  font-family:var(--data);font-size:10px;color:#5f6b78}
+.hhkeys b{display:inline-grid;place-items:center;width:16px;height:16px;border-radius:50%;
+  background:#33404e;color:#E4E9EF;font-size:9px;margin-right:5px;vertical-align:-3px}
+
+/* Erklärkarten */
+.karten{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:13px;margin-top:20px}
+.k{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:17px}
+.k .n{font-family:var(--data);font-size:10px;color:var(--akz);letter-spacing:.13em;
+  text-transform:uppercase;display:block;margin-bottom:8px}
+.k b{display:block;font-size:14px;margin-bottom:6px;letter-spacing:-.01em}
+.k p{margin:0;font-size:13.5px;color:var(--tx2);line-height:1.58}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.001ms!important;transition-duration:.001ms!important}}
+@media (max-width:760px){
+  .row5,.tvrow{grid-template-columns:repeat(3,1fr)}
+  .tvin h3{font-size:28px}.tvhero{height:auto;padding:20px}.tvrows{padding:0 18px 20px}
+  .side{width:140px}
+}
+</style>
+
+<div class="wrap">
+
+<p class="eyebrow">SyncFindus · die Oberflächen</p>
+<h1>Ein Modell.<br>Drei Bedienformen.</h1>
+<p class="lede">Nicht drei Programme — dieselben Regale, dieselben Merkmale, dieselbe Rangfolge.
+Was sich ändert, ist wie man sie anfasst. Unten umschalten.</p>
+
+<div class="switch" role="group" aria-label="Oberfläche wählen">
+  <button class="sw" data-v="pc" aria-pressed="true">🖥 PC</button>
+  <button class="sw" data-v="tv" aria-pressed="false">📺 Fernseher</button>
+  <button class="sw" data-v="hh" aria-pressed="false">📱 Handy / Tablet</button>
+</div>
+<p class="note" id="note">Maus und Tastatur · dicht · Befehlsleiste nimmt jeden Link</p>
+
+<div class="stage">
+
+  <!-- ============ PC ============ -->
+  <div class="view on" id="v-pc"><div class="pc">
+    <aside class="side">
+      <div class="logo">Sync<em>Fundus</em></div>
+      <div class="nv on">▸ Start</div>
+      <div class="nv">◷ Angefangen <small>23</small></div>
+      <div class="nv">✦ Neu <small>7</small></div>
+      <div class="grp">Regale</div>
+      <div class="nv">▤ Anime <small>412</small></div>
+      <div class="nv">▤ Novels <small>88</small></div>
+      <div class="nv">▤ Musik <small>3.1k</small></div>
+      <div class="nv">⋯ Mehr</div>
+      <div class="grp">&nbsp;</div>
+      <div class="nv">⚠ Braucht Hilfe <small>4</small></div>
+    </aside>
+    <div class="mainc">
+      <div class="topb">
+        <div class="srch">⌕ Suchen — oder etwas anfordern…</div>
+        <span class="sp"></span><span class="icb">⚙</span><span class="avt">JB</span>
+      </div>
+      <section class="hero"><div class="hin">
+        <div class="kick">Weiter, wo du warst</div>
+        <h3>Frieren — Nach dem Ende der Reise</h3>
+        <div class="hmeta">Anime · Staffel 1 · Folge 14 · noch 17 Min · lokal 1080p</div>
+        <div><button class="btn">▶ Weitersehen</button><button class="btn g">Etwas anderes</button></div>
+      </div></section>
+      <section class="shelf">
+        <div class="sh"><h4>Angefangen</h4><span>gemischt · 23 Werke</span></div>
+        <div class="row5" id="pcrow"></div>
+      </section>
+
+      <div class="cmdbar">
+        <div class="cmdrow">
+          <div class="cmdin">Link, Magnet oder Titel einfügen…</div>
+          <div class="qsum"><span class="dot"></span><span>3&nbsp;in&nbsp;Arbeit</span><span class="mini"><i></i></span><span>68&nbsp;%</span></div>
+        </div>
+        <div class="qpanel">
+          <div class="qh">Warteschlange <em>▲ einklappen</em></div>
+          <div class="qi"><span class="ty">laden</span><span class="nm">Vinland Saga · S02E19 · 1080p</span><span class="pb"><i style="width:68%"></i></span><span class="pc2">68 %</span></div>
+          <div class="qi"><span class="ty">vertonen</span><span class="nm">Lord of the Mysteries · Kap. 415–418</span><span class="pb"><i style="width:31%"></i></span><span class="pc2">31 %</span></div>
+          <div class="qi"><span class="ty">anreichern</span><span class="nm">Junk the Black Shadow · Cover + Tags</span><span class="pb"><i style="width:88%"></i></span><span class="pc2">88 %</span></div>
+          <div class="qi wait"><span class="ty">übersetzen</span><span class="nm">Reverend Insanity · Kap. 1204</span><span class="pb"><i style="width:0"></i></span><span class="pc2">wartet</span></div>
+          <div class="qi done"><span class="ty">prüfen</span><span class="nm">Dune Part Two · Echtheit ✓</span><span class="pb"><i></i></span><span class="pc2">fertig</span></div>
+        </div>
+      </div>
+    </div>
+  </div></div>
+
+  <!-- ============ Fernseher ============ -->
+  <div class="view" id="v-tv"><div class="tv">
+    <div class="tvtabs"><span class="tvtab on">Start</span><span class="tvtab">Serien</span>
+      <span class="tvtab">Filme</span><span class="tvtab">Anime</span><span class="tvtab">Meine Liste</span>
+      <span class="tvsp"></span><span class="tvtab zart">Suchen</span></div>
+    <div class="tvhero"><div class="tvin">
+      <div class="tvkick">Weiter, wo du warst</div>
+      <h3>Vinland Saga</h3>
+      <div class="tvmeta">Staffel 2 · Folge 19 · noch 8 Minuten · auf diesem Fernseher begonnen</div>
+      <div><button class="tvbtn">▶ Weitersehen</button><button class="tvbtn g">Info</button></div>
+    </div></div>
+    <div class="tvrows">
+      <div>
+        <h4 class="tvsh">Weil du <em style="color:#F0873C;font-style:normal">Frieren</em> abgeschlossen hast</h4>
+        <div class="tvrow" id="tvrow1"></div>
+      </div>
+      <div>
+        <h4 class="tvsh">Melancholische Fantasy · ruhiges Tempo</h4>
+        <div class="tvrow" id="tvrow2"></div>
+      </div>
+    </div>
+  </div></div>
+
+  <!-- ============ Handheld ============ -->
+  <div class="view" id="v-hh"><div class="hh">
+    <div class="hhtop"><b>Sync<span style="color:#F0873C">Fundus</span></b><span class="sp"></span>
+      <small>offline 42 GB</small></div>
+    <div class="hhcoll">
+      <span class="hhc on">Angefangen</span><span class="hhc">Anime</span><span class="hhc">Novels</span>
+      <span class="hhc">Hörbücher</span><span class="hhc">Musik</span>
+    </div>
+    <div class="hhbody" id="hhbody"></div>
+    <div class="hhnow"><span class="cover"></span><div class="t">
+      <b>Lord of the Mysteries — Kap. 412</b><small>Hörbuch · 08:14 / 21:37 · offline</small></div>
+      <span style="color:#F0873C;font-size:17px">⏸</span></div>
+    <div class="hhkeys"><span>Tippen&nbsp;=&nbsp;Starten</span><span>Wischen&nbsp;=&nbsp;Blättern</span>
+      <span>Lang&nbsp;drücken&nbsp;=&nbsp;Auswahl</span><span>Mit&nbsp;Gamepad:&nbsp;A&nbsp;/&nbsp;B&nbsp;/&nbsp;L&nbsp;R</span></div>
+  </div></div>
+
+</div>
+
+<hr class="rule">
+
+<h2 id="ttl">Die Fortschrittsleiste</h2>
+<p class="sub">Genau wie im YouTube-Downloader: <b>klein, ruhig, informativ</b> — und ausklappbar,
+wenn man mehr wissen will. Kein Ort, den man besucht.</p>
+
+<div class="karten">
+  <div class="k"><span class="n">Eingeklappt</span><b>Eine Zeile, drei Angaben</b>
+    <p>Pulsender Punkt (etwas läuft) · „3 in Arbeit" · ein 74 px breiter Balken · Prozent.
+    Mehr nicht. Wer nichts wissen will, sieht nur den Punkt.</p></div>
+  <div class="k"><span class="n">Ausgeklappt</span><b>Auftragsart zuerst</b>
+    <p>Jede Zeile beginnt mit der Art — <code style="font-family:var(--data);font-size:11px">laden</code>,
+    <code style="font-family:var(--data);font-size:11px">vertonen</code>,
+    <code style="font-family:var(--data);font-size:11px">übersetzen</code>. So sieht man auf
+    einen Blick, <em>was</em> das Programm gerade tut, nicht nur <em>dass</em> es etwas tut.</p></div>
+  <div class="k"><span class="n">Zustände</span><b>Farbe kodiert Zustand</b>
+    <p>Orange läuft · Grau wartet · Grün fertig. Dieselbe Regel wie im Regal — Farbe hat im
+    ganzen Programm genau eine Bedeutung.</p></div>
+  <div class="k"><span class="n">Nie</span><b>Kein Popup, kein Wechsel</b>
+    <p>Nichts springt auf, nichts stiehlt den Platz. Die Leiste ist eine <em>Tafel</em>, keine
+    Ebene — Escape und du bist, wo du warst.</p></div>
+</div>
+
+<h2 style="margin-top:38px">Was sich zwischen den Formen ändert</h2>
+<div class="tbl" style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:13.5px">
+  <tr><th style="text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);font-family:var(--data);font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--tx3);font-weight:400"></th>
+      <th style="text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);font-family:var(--data);font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--tx3);font-weight:400">PC</th>
+      <th style="text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);font-family:var(--data);font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--tx3);font-weight:400">Fernseher</th>
+      <th style="text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);font-family:var(--data);font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--tx3);font-weight:400">Handheld</th></tr>
+  <tr><td style="padding:9px 12px;border-bottom:1px solid var(--line);font-weight:700">Navigation</td><td style="padding:9px 12px;border-bottom:1px solid var(--line)">feste Seitenleiste</td><td style="padding:9px 12px;border-bottom:1px solid var(--line)">Symbolstreifen, fährt aus</td><td style="padding:9px 12px;border-bottom:1px solid var(--line)">Sammlungen als Reiterzeile, L/R</td></tr>
+  <tr><td style="padding:9px 12px;border-bottom:1px solid var(--line);font-weight:700">Schriftgröße</td><td style="padding:9px 12px;border-bottom:1px solid var(--line)">schrift-4…7</td><td style="padding:9px 12px;border-bottom:1px solid var(--line)">schrift-6…9</td><td style="padding:9px 12px;border-bottom:1px solid var(--line)">schrift-3…6</td></tr>
+  <tr><td style="padding:9px 12px;border-bottom:1px solid var(--line);font-weight:700">Fokus</td><td style="padding:9px 12px;border-bottom:1px solid var(--line)">Zeiger</td><td style="padding:9px 12px;border-bottom:1px solid var(--line)"><b style="color:var(--akz)">3 px Rahmen + Vergrößerung</b></td><td style="padding:9px 12px;border-bottom:1px solid var(--line)"><b style="color:var(--akz)">3 px Rahmen</b></td></tr>
+  <tr><td style="padding:9px 12px;border-bottom:1px solid var(--line);font-weight:700">Befehlsleiste</td><td style="padding:9px 12px;border-bottom:1px solid var(--line)">voll</td><td style="padding:9px 12px;border-bottom:1px solid var(--line)">keine</td><td style="padding:9px 12px;border-bottom:1px solid var(--line)">als „läuft gerade"</td></tr>
+  <tr><td style="padding:9px 12px;border-bottom:1px solid var(--line);font-weight:700">Was führt</td><td style="padding:9px 12px;border-bottom:1px solid var(--line)">alles</td><td style="padding:9px 12px;border-bottom:1px solid var(--line)">Video, erzeugte Reihen</td><td style="padding:9px 12px;border-bottom:1px solid var(--line)">Hören, Lesen, Offline</td></tr>
+  <tr><td style="padding:9px 12px;border-bottom:1px solid var(--line);font-weight:700">Tastenhilfe</td><td style="padding:9px 12px;border-bottom:1px solid var(--line)">nein</td><td style="padding:9px 12px;border-bottom:1px solid var(--line)">nein</td><td style="padding:9px 12px;border-bottom:1px solid var(--line)"><b>Fußzeile mit A/B/X/Y</b></td></tr>
+</table></div>
+
+<div class="karten" style="margin-top:20px">
+  <div class="k"><span class="n">Fernseher</span><b>Erzeugte Reihen statt starrer Regale</b>
+    <p>„Weil du <em>Frieren</em> abgeschlossen hast" · „Melancholische Fantasy · ruhiges Tempo".
+    Die Namen entstehen aus AniList-Tags, TMDB-Stichwörtern und deinem Profil — das ist es,
+    was Jellyfin fehlt und Netflix hat.</p></div>
+  <div class="k"><span class="n">Fernseher</span><b>Der Fokus ist unübersehbar</b>
+    <p>3 px Rahmen <em>und</em> Vergrößerung. Der häufigste Fehler in Fernsehoberflächen ist ein
+    Fokus, den man aus drei Metern nicht findet.</p></div>
+  <div class="k"><span class="n">Handheld</span><b>Zwei Achsen, vier Tasten</b>
+    <p>L/R wechselt die Sammlung, das Kreuz blättert, A startet, Y zeigt Infos. Vorbild ist die
+    Steam-Deck-Oberfläche und EmulationStation — <em>nicht</em> Big Picture.</p></div>
+</div>
+
+</div>
+
+<script>
+const T=["Frieren","Vinland Saga","Lord of the Mysteries","Junk the Black Shadow","Der Wüstenplanet",
+  "Omniscient Reader","Dungeon Meshi","Solo Leveling","Reverend Insanity","One Piece","Blue Giant","Apothecary Diaries"];
+const H=[172,210,268,22,34,198,126,246,288,8,216,158];
+const F=[31,68,44,12,55,81,22,0,0,0,0,0];
+const g=h=>`linear-gradient(150deg,hsl(${h} 34% 31%),hsl(${(h+30)%360} 28% 13%))`;
+const tile=(i,foc)=>`<div class="poster${foc?" foc":""}" style="background:${g(H[i%12])}">
+  ${F[i%12]?`<i class="bar" style="width:${F[i%12]}%"></i>`:""}<b>${T[i%12]}</b></div>`;
+
+document.getElementById("pcrow").innerHTML=[0,1,2,3,4,5].map(i=>tile(i)).join("");
+document.getElementById("tvrow1").innerHTML=[6,7,8,9,10,11].map((v,i)=>tile(v,i===1)).join("");
+document.getElementById("tvrow2").innerHTML=[2,5,4,0,3,1].map(v=>tile(v)).join("");
+document.getElementById("hhbody").innerHTML=[0,1,2,3,4,5,6,7,8].map((v,i)=>tile(v,i===0)).join("");
+
+const NOTE={
+  pc:"Maus und Tastatur · dicht · Befehlsleiste nimmt jeden Link",
+  tv:"Aus drei Metern · Fernbedienung · erzeugte Reihen · keine Eingabe",
+  hh:"Eine Hand · Gamepad · Hören und Lesen führen · offline"
+};
+document.querySelectorAll(".sw").forEach(b=>b.addEventListener("click",()=>{
+  const v=b.dataset.v;
+  document.querySelectorAll(".sw").forEach(x=>x.setAttribute("aria-pressed",String(x===b)));
+  document.querySelectorAll(".view").forEach(x=>x.classList.remove("on"));
+  document.getElementById("v-"+v).classList.add("on");
+  document.getElementById("note").textContent=NOTE[v];
+}));
+</script>

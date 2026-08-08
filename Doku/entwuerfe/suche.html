@@ -1,0 +1,923 @@
+<title>SyncFindus — Die Suche</title>
+<style>
+:root{
+  --bg:#0E1217; --panel:#161C23; --panel2:#1c242d; --line:#232C36; --line2:#33404e;
+  --tx:#E4E9EF; --tx2:#8B97A5; --tx3:#5f6b78; --akz:#F0873C; --onA:#150a02;
+  --grün:#5fd07a; --gelb:#d8b64a; --rot:#e06a5a; --türkis:#5fd0c4; --blau:#7d9ab5;
+  --disp:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --data:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  --serif:Literata,"Source Serif 4","Iowan Old Style",Georgia,serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark}}
+@media (prefers-color-scheme:light){
+  :root:not([data-theme="dark"]){--bg:#eff1f4;--panel:#fff;--panel2:#f4f6f8;--line:#dde2e8;--line2:#c3ccd6;
+    --tx:#1a1f26;--tx2:#5a6672;--tx3:#8592a0;--akz:#b8551c;--onA:#fff;
+    --grün:#237a42;--gelb:#8a6410;--rot:#b13a28;--türkis:#1a7f74;--blau:#41617f}
+}
+:root[data-theme="light"]{--bg:#eff1f4;--panel:#fff;--panel2:#f4f6f8;--line:#dde2e8;--line2:#c3ccd6;
+  --tx:#1a1f26;--tx2:#5a6672;--tx3:#8592a0;--akz:#b8551c;--onA:#fff;
+  --grün:#237a42;--gelb:#8a6410;--rot:#b13a28;--türkis:#1a7f74;--blau:#41617f}
+
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:var(--disp);font-size:16px;
+  line-height:1.6;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1120px;margin:0 auto;padding:34px 18px 90px}
+.eyebrow{font-family:var(--data);font-size:11px;letter-spacing:.17em;text-transform:uppercase;
+  color:var(--akz);margin:0 0 11px}
+h1{font-size:clamp(27px,4.2vw,42px);line-height:1.06;letter-spacing:-.028em;font-weight:800;
+  margin:0 0 13px;text-wrap:balance}
+.lede{font-size:17px;color:var(--tx2);max-width:66ch;margin:0}
+h2{font-size:22px;font-weight:800;letter-spacing:-.022em;margin:0 0 6px}
+h3{font-size:15px;font-weight:800;letter-spacing:-.01em;margin:0 0 5px}
+.sub{color:var(--tx2);margin:0 0 18px;max-width:70ch;font-size:15px}
+hr.rule{height:1px;background:var(--line);border:0;margin:44px 0}
+b.a{color:var(--akz)}
+
+/* ══════════ Die Bühne: das echte Suchfeld ══════════ */
+.stage{border:1px solid var(--line2);border-radius:16px;background:var(--panel);
+  overflow:hidden;margin-top:20px;box-shadow:0 18px 50px -22px rgba(0,0,0,.55)}
+
+.sfeld{display:flex;align-items:center;gap:12px;padding:16px 18px;border-bottom:1px solid var(--line);
+  background:var(--panel2)}
+.sfeld svg{flex:0 0 auto;color:var(--tx3)}
+#q{flex:1;min-width:0;background:transparent;border:0;outline:none;color:var(--tx);
+  font-family:var(--disp);font-size:21px;font-weight:600;letter-spacing:-.01em;padding:2px 0;
+  caret-color:var(--akz)}
+#q::placeholder{color:var(--tx3);font-weight:400}
+kbd{font-family:var(--data);font-size:10.5px;color:var(--tx3);border:1px solid var(--line2);
+  border-radius:6px;padding:2px 6px;background:var(--panel);white-space:nowrap}
+
+/* Filterleiste */
+.fbar{display:flex;align-items:center;gap:7px;flex-wrap:wrap;padding:11px 18px;
+  border-bottom:1px solid var(--line);background:var(--panel2)}
+.chip{font-family:var(--data);font-size:11px;letter-spacing:.03em;border:1px solid var(--line2);
+  background:transparent;color:var(--tx2);border-radius:999px;padding:4px 11px;cursor:pointer;
+  min-height:24px;display:inline-flex;align-items:center;gap:5px;transition:.13s}
+.chip:hover{border-color:var(--tx3);color:var(--tx)}
+.chip.ein{background:var(--akz);border-color:var(--akz);color:var(--onA);font-weight:700}
+.chip.aus{border-color:var(--rot);color:var(--rot);text-decoration:line-through;
+  text-decoration-thickness:1.5px;opacity:.85}
+.chip.aus::before{content:"−";font-weight:800;text-decoration:none;display:inline-block}
+.chip.ein::before{content:"+";font-weight:800;display:inline-block}
+.fsep{width:1px;height:17px;background:var(--line2);margin:0 4px}
+.chip.sw{border-style:dashed}
+.chip.sw.on{border-style:solid;border-color:var(--türkis);color:var(--türkis)}
+.fhint{margin-left:auto;font-family:var(--data);font-size:10px;color:var(--tx3)}
+.chip.mehr{border-color:var(--tx3);color:var(--tx)}
+.chip.mehr.on{background:var(--panel);border-color:var(--akz);color:var(--akz);font-weight:700}
+.chip .zahl{background:var(--akz);color:var(--onA);border-radius:999px;font-size:9.5px;
+  padding:0 5px;font-weight:700;margin-left:2px}
+
+/* ── Erweiterte Suche ── */
+.erw{border-bottom:1px solid var(--line);background:var(--bg);padding:14px 18px 15px}
+.erwgit{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:15px 22px}
+.ef{min-width:0}
+.ef h6{margin:0 0 7px;font-family:var(--data);font-size:9.5px;letter-spacing:.17em;
+  text-transform:uppercase;color:var(--tx3);font-weight:400}
+.spanne{display:flex;align-items:center;gap:7px}
+.spanne input{width:100%;min-width:0;background:var(--panel);border:1px solid var(--line2);
+  border-radius:8px;color:var(--tx);font-family:var(--data);font-size:12px;padding:6px 9px;
+  min-height:30px;outline:none}
+.spanne input:focus{border-color:var(--akz)}
+.spanne span{color:var(--tx3);font-family:var(--data);font-size:11px;flex:0 0 auto}
+.minis{display:flex;gap:5px;flex-wrap:wrap}
+.mini{font-family:var(--data);font-size:10.5px;border:1px solid var(--line2);background:transparent;
+  color:var(--tx2);border-radius:7px;padding:3px 9px;cursor:pointer;min-height:24px;
+  display:inline-flex;align-items:center;gap:4px}
+.mini:hover{border-color:var(--tx3);color:var(--tx)}
+.mini.ein{background:var(--akz);border-color:var(--akz);color:var(--onA);font-weight:700}
+.mini.ein::before{content:"+";font-weight:800}
+.mini.aus{border-color:var(--rot);color:var(--rot);text-decoration:line-through;
+  text-decoration-thickness:1.5px}
+.mini.aus::before{content:"−";font-weight:800;text-decoration:none;display:inline-block}
+.erwfuss{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:14px;
+  border-top:1px solid var(--line);padding-top:12px}
+.erwfuss .satz{font-size:12.5px;color:var(--tx2);min-width:0}
+.erwfuss .satz b{color:var(--akz)}
+.erwfuss .rechts{margin-left:auto;display:flex;gap:7px}
+.eb{font-family:var(--disp);font-size:12.5px;font-weight:700;border-radius:8px;padding:6px 13px;
+  min-height:30px;border:1px solid var(--line2);background:transparent;color:var(--tx2);cursor:pointer}
+.eb:hover{border-color:var(--tx3);color:var(--tx)}
+.eb.pri{background:var(--akz);border-color:var(--akz);color:var(--onA)}
+
+/* Gruppen */
+.grp{padding:0 0 4px}
+.ghead{display:flex;align-items:baseline;gap:9px;padding:15px 18px 7px;position:sticky;top:0;
+  background:linear-gradient(var(--panel) 72%,transparent);z-index:3}
+.ghead h4{margin:0;font-family:var(--data);font-size:10.5px;letter-spacing:.19em;
+  text-transform:uppercase;color:var(--tx2);font-weight:400}
+.gcount{font-family:var(--data);font-size:10.5px;color:var(--tx3)}
+.ghead .gnote{margin-left:auto;font-family:var(--data);font-size:10px;color:var(--tx3)}
+.grp+.grp{border-top:1px solid var(--line)}
+
+/* Trefferzeile */
+.row{display:grid;grid-template-columns:22px 40px 1fr auto;gap:13px;align-items:start;
+  padding:10px 18px;cursor:pointer;border-left:2px solid transparent}
+.row.cur{background:var(--panel2);border-left-color:var(--akz)}
+.row:hover{background:var(--panel2)}
+.zst{font-size:15px;line-height:1.5;text-align:center;font-weight:700}
+.zst.r{color:var(--grün)}
+.zst.k{color:var(--gelb)}
+.zst.n{color:var(--tx3)}
+.cov{width:40px;height:57px;border-radius:5px;position:relative;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;flex:0 0 auto;
+  font-family:var(--data);font-size:11px;font-weight:700;color:rgba(255,255,255,.86);
+  letter-spacing:.04em;text-shadow:0 1px 3px rgba(0,0,0,.5)}
+.mid{min-width:0}
+.tl{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.tl b{font-size:15.5px;font-weight:700;letter-spacing:-.012em}
+.tl mark{background:transparent;color:var(--akz);font-weight:800}
+.med{font-family:var(--data);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--tx2);border:1px solid var(--line2);border-radius:5px;padding:1px 6px}
+.ri{font-family:var(--data);font-size:11px;color:var(--tx3);border:1px solid var(--line);
+  border-radius:5px;padding:0 5px;line-height:1.45}
+.alt{font-size:12.5px;color:var(--tx3);margin-top:1px;overflow:hidden;text-overflow:ellipsis;
+  white-space:nowrap}
+.alt em{font-style:normal;color:var(--tx2)}
+.line2{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-top:5px;font-size:12.5px;
+  color:var(--tx2)}
+/* Einzelzeile, nichts zum Ausrichten: das Trio steht eng, der Trenner traegt die Luft. */
+.kapg{display:inline-flex;align-items:baseline;white-space:pre;
+  font-family:var(--data);font-size:12.5px;font-variant-numeric:tabular-nums}
+.kapg .g{font-weight:800}
+.kapg .u{color:var(--tx2)}
+.kapg .t{color:var(--tx3)}
+.kapg .sep{color:var(--tx3);opacity:.65;padding:0 .5ch}
+.bal{width:74px;height:5px;border-radius:999px;background:var(--line2);overflow:hidden;flex:0 0 auto}
+.bal i{display:block;height:100%;background:var(--grün);border-radius:999px}
+.qb{font-family:var(--data);font-size:10px;color:var(--tx3);border:1px solid var(--line);
+  border-radius:4px;padding:0 5px;line-height:1.6}
+.hist{color:var(--gelb)}
+.act{display:flex;align-items:center;gap:7px;align-self:center}
+.btn{font-family:var(--disp);font-size:12.5px;font-weight:700;border-radius:8px;padding:6px 12px;
+  min-height:28px;border:1px solid var(--line2);background:transparent;color:var(--tx2);
+  cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{border-color:var(--tx3);color:var(--tx)}
+.btn.pri{background:var(--akz);border-color:var(--akz);color:var(--onA)}
+.btn.pri:hover{filter:brightness(1.08)}
+.btn svg{flex:0 0 auto}
+.mrg{font-family:var(--data);font-size:10px;color:var(--tx3);border:0;background:transparent;
+  cursor:pointer;padding:2px 4px;text-decoration:underline;text-underline-offset:2px}
+.mrgbox{grid-column:3 / -1;margin:7px 0 3px;border:1px dashed var(--line2);border-radius:8px;
+  padding:9px 11px;background:var(--bg)}
+.mrgbox div{font-family:var(--data);font-size:11px;color:var(--tx2);display:flex;gap:9px;
+  padding:2px 0}
+.mrgbox div span:first-child{color:var(--tx3);width:11ch;flex:0 0 auto}
+.leer{padding:26px 18px 30px;text-align:center;color:var(--tx3);font-size:14px}
+.leer b{display:block;color:var(--tx2);font-size:15px;margin-bottom:4px}
+.sfoot{display:flex;gap:14px;flex-wrap:wrap;align-items:center;padding:11px 18px;
+  border-top:1px solid var(--line);background:var(--panel2);
+  font-family:var(--data);font-size:10.5px;color:var(--tx3)}
+.sfoot b{color:var(--tx2);font-weight:400}
+
+/* ══════════ Erklärkästen ══════════ */
+.karten{display:grid;grid-template-columns:repeat(auto-fit,minmax(255px,1fr));gap:14px;margin-top:18px}
+.karte{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 17px}
+.karte .gl{font-size:26px;line-height:1;margin-bottom:9px;font-weight:700}
+.karte p{margin:6px 0 0;font-size:13.5px;color:var(--tx2)}
+.karte .wo{margin-top:9px;font-family:var(--data);font-size:10px;color:var(--tx3);
+  border-top:1px solid var(--line);padding-top:8px}
+
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:14px}
+th{text-align:left;font-family:var(--data);font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--tx3);font-weight:400;padding:0 12px 7px 0;border-bottom:1px solid var(--line)}
+td{padding:9px 12px 9px 0;border-bottom:1px solid var(--line);vertical-align:top;color:var(--tx2)}
+td:first-child{color:var(--tx);font-weight:600;white-space:nowrap}
+td b{color:var(--tx)}
+.gly{font-family:var(--data);font-size:17px;color:var(--akz)}
+
+ol.regeln{margin:14px 0 0;padding-left:0;list-style:none;counter-reset:r}
+ol.regeln li{counter-increment:r;position:relative;padding:11px 0 11px 42px;
+  border-bottom:1px solid var(--line);font-size:14px;color:var(--tx2)}
+ol.regeln li::before{content:counter(r);position:absolute;left:0;top:10px;width:26px;height:26px;
+  border-radius:8px;background:var(--panel2);border:1px solid var(--line2);color:var(--akz);
+  font-family:var(--data);font-size:11px;display:flex;align-items:center;justify-content:center}
+ol.regeln li b{color:var(--tx)}
+
+/* Weiterlesen-Zeichen */
+.zeichen{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px}
+.zk{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:15px 16px;
+  min-width:180px;flex:1}
+.zk .pv{display:flex;align-items:center;gap:10px;margin-bottom:11px;min-height:38px}
+.zk .pv .nur{width:34px;height:34px;border-radius:9px;border:1px solid var(--line2);
+  display:flex;align-items:center;justify-content:center;color:var(--akz)}
+.zk .pv .mit{display:inline-flex;align-items:center;gap:7px;background:var(--akz);color:var(--onA);
+  border-radius:9px;padding:7px 13px;font-size:13px;font-weight:700}
+.zk h3{margin:0 0 3px}
+.zk p{margin:0;font-size:12.5px;color:var(--tx2)}
+.zk .ur{margin-top:9px;font-family:var(--data);font-size:10px;color:var(--tx3)}
+.zk.sieger{border-color:var(--akz)}
+.zk.sieger .ur{color:var(--akz)}
+
+/* Schriftproben */
+.proben{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;margin-top:16px}
+.probe{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:17px 18px}
+.probe .nm{font-family:var(--data);font-size:10px;letter-spacing:.15em;text-transform:uppercase;
+  color:var(--akz);margin-bottom:9px}
+.probe .txt{font-size:15.5px;line-height:1.62;color:var(--tx);margin:0}
+.probe .zf{margin-top:11px;font-size:12px;color:var(--tx3);border-top:1px solid var(--line);
+  padding-top:9px}
+.probe .zif{font-variant-numeric:tabular-nums;font-size:14px;color:var(--tx2);letter-spacing:.02em}
+.p-serif .txt{font-family:var(--serif)}
+.p-sans .txt{font-family:Inter,"Inter Variable",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.p-dys .txt{font-family:"Atkinson Hyperlegible",Verdana,Tahoma,sans-serif;letter-spacing:.015em;
+  word-spacing:.1em}
+.p-mono .txt{font-family:var(--data);font-size:14px}
+
+.merk{border-left:3px solid var(--akz);background:var(--panel);border-radius:0 10px 10px 0;
+  padding:13px 16px;margin-top:16px;font-size:14px;color:var(--tx2)}
+.merk b{color:var(--tx)}
+@media (max-width:620px){
+  .row{grid-template-columns:20px 34px 1fr;gap:10px}
+  .act{grid-column:3;justify-content:flex-start;margin-top:6px}
+  .cov{width:34px;height:48px}
+}
+</style>
+
+<div class="wrap">
+
+<p class="eyebrow">SyncFindus · Bauteil 07</p>
+<h1>Ein Feld. Zwei Gruppen. Drei Zustände.</h1>
+<p class="lede">Du tippst einmal. Links oben steht, was dir schon gehört — darunter, was die Welt
+sonst noch hat. Und dazwischen der Zustand, den kein anderes Programm kennt:
+<b class="a">das hast du gelesen, aber es steht nirgends im Regal.</b></p>
+
+<div class="stage">
+
+  <div class="sfeld">
+    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <circle cx="11" cy="11" r="7"/><path d="M16.5 16.5 21 21" stroke-linecap="round"/></svg>
+    <input id="q" value="solo" placeholder="Titel, Autor, Studio, Charakter …" autocomplete="off" spellcheck="false">
+    <kbd>Strg K</kbd>
+  </div>
+
+  <div class="fbar" id="fbar"></div>
+  <div class="erw" id="erw" hidden></div>
+
+  <div id="erg"></div>
+
+  <div class="sfoot">
+    <span><b>↑ ↓</b> wählen</span>
+    <span><b>⏎</b> öffnen</span>
+    <span><b>⇧ ⏎</b> ins Regal</span>
+    <span><b>Tab</b> nächste Gruppe</span>
+    <span><b>Esc</b> schließen</span>
+    <span style="margin-left:auto" id="stat"></span>
+  </div>
+</div>
+
+<p class="sub" style="margin-top:14px;font-size:13.5px">
+Tipp etwas anderes: <b>solo</b>, <b>level</b>, <b>tower</b>, <b>chugong</b>, <b>나 혼자</b> —
+alle Nebentitel und der Urheber suchen mit. Die Filterknöpfe haben drei Stufen:
+einmal klicken heißt <b>nur das</b>, zweimal heißt <b>das nicht</b>.
+</p>
+
+<hr class="rule">
+
+<h2>Erweitert — wenn die Knöpfe oben nicht reichen</h2>
+<p class="sub">Die Leiste oben beantwortet die häufige Frage („nur Manga"). Alles Genauere lebt
+eine Etage tiefer und bleibt <b>zugeklappt, bis du es brauchst</b> — mit einer Zahl am Knopf,
+damit man nie vergisst, dass ein Filter noch scharf ist. Das ist der häufigste Fehler
+in erweiterten Suchen: unsichtbare aktive Kriterien, und dann wundert man sich über leere Ergebnisse.</p>
+
+<div class="karten">
+  <div class="karte">
+    <h3>Spannen statt Menüs</h3>
+    <p><em>Umfang ab 100</em>, <em>bis 2020</em> — zwei Felder, beide dürfen leer bleiben.
+    Ein Aufklappmenü mit „100–200, 200–500, 500+" ist immer falsch geschnitten.</p>
+    <div class="wo">leer = keine Grenze</div>
+  </div>
+  <div class="karte">
+    <h3>Dieselbe Dreistufigkeit</h3>
+    <p>Genre, Herkunft und Serienzustand haben genau die gleiche Bedienung wie die Medienknöpfe
+    oben: <b>einmal = nur das</b>, <b>zweimal = das nicht</b>. Eine Geste, überall.</p>
+    <div class="wo">E55, jetzt auch hier</div>
+  </div>
+  <div class="karte">
+    <h3>Der Satz unten</h3>
+    <p>Was du eingestellt hast, steht in einem Satz: <em>Gesucht wird: Umfang 100–∞ · Korea ·
+    nicht Isekai</em>. Kein Ratespiel, welche Knöpfe noch gedrückt sind.</p>
+    <div class="wo">§5.6 — nichts entscheidet stumm</div>
+  </div>
+  <div class="karte tipp" style="border-color:var(--akz)">
+    <h3>Als Regal merken</h3>
+    <p>Der eigentliche Gewinn: eine Suche, die du dreimal tippst, wird ein <b>Regal</b>.
+    „Koreanische Manhwa, abgeschlossen, über 100 Kapitel, kein Isekai" steht dann dauerhaft
+    auf der Startseite und füllt sich von selbst.</p>
+    <div class="wo" style="color:var(--akz)">wird zu E78 — das kluge Regal</div>
+  </div>
+</div>
+
+<hr class="rule">
+
+<h2>Warum keine zwei Reiter</h2>
+<p class="sub">Ein Reiter zwingt dich zu einer Entscheidung, bevor du das Ergebnis kennst:
+„Suche ich im Regal oder draußen?" Du weißt es aber oft nicht — genau deshalb suchst du ja.
+Zwei Gruppen untereinander beantworten die Frage, statt sie zu stellen.
+Nielsen Norman nennt das <em>recognition rather than recall</em>; die Regalgruppe steht immer oben,
+weil das Ding, das dir schon gehört, in über 80 % der Fälle das gesuchte ist.</p>
+
+<div class="karten">
+  <div class="karte">
+    <div class="gl" style="color:var(--grün)">●</div>
+    <h3>Im Regal</h3>
+    <p>Du besitzt es oder verfolgst es. Der Fortschritt ist bekannt, die Aktion heißt
+    <b>Weiterlesen</b> oder <b>Weitersehen</b> — nie „Öffnen".</p>
+    <div class="wo">Quelle: unsere eigene Datenbank</div>
+  </div>
+  <div class="karte">
+    <div class="gl" style="color:var(--gelb)">◐</div>
+    <h3>Gekannt, nicht im Regal</h3>
+    <p>Der Browserverlauf sagt: du warst dort. 63 Kapitel auf einer Seite, seit Februar nicht mehr.
+    Kein anderes Programm der Welt zeigt dir diesen Zustand.</p>
+    <div class="wo">Quelle: Verlauf + Erweiterung, lokal</div>
+  </div>
+  <div class="karte">
+    <div class="gl" style="color:var(--tx3)">○</div>
+    <h3>Neu für dich</h3>
+    <p>Existiert in den Katalogen, du hast es nie berührt. Ein Klick legt es an —
+    und die Beschaffung darf sofort loslaufen.</p>
+    <div class="wo">Quelle: MangaBaka, AniList, TMDB …</div>
+  </div>
+</div>
+
+<div class="merk">
+  <b>Die Regel:</b> Zustand ist eine Eigenschaft des Werks, keine Gruppe.
+  Deshalb sitzen <b>◐</b> und <b>○</b> zusammen in „Draußen gefunden" — die zwei Gruppen bleiben zwei,
+  die drei Zustände bleiben drei. <b>◐</b> sortiert immer über <b>○</b>, weil eine halbe Erinnerung
+  mehr wert ist als ein fremder Titel.
+</div>
+
+<hr class="rule">
+
+<h2>Zusammenführen statt dreimal dasselbe</h2>
+<p class="sub">Drei Kataloge kennen <em>Solo Farming in the Tower</em>. Drei Treffer wären drei Zeilen —
+und die Frage „welche nehme ich?", die dich nichts angeht. Wir führen zusammen und zeigen die Herkunft
+nur noch als Kürzel. Klick auf <b>zusammengeführt</b> in der Bühne oben: dann siehst du, was wir verbergen.</p>
+
+<table>
+  <tr><th style="width:24%">Zusammengeführt wenn</th><th>Prüfung</th></tr>
+  <tr><td>Gleiche fremde ID</td><td>AniList-ID, MAL-ID, TMDB-ID, ISBN, MangaUpdates-ID stimmen überein — sofort sicher.</td></tr>
+  <tr><td>Titel + Urheber</td><td>Normalisierter Titel (Groß/Klein, Satzzeichen, Romanisierung weg) <b>und</b> mindestens ein gleicher Urheber.</td></tr>
+  <tr><td>Nebentitel trifft</td><td><em>Only I Level Up</em> ist in AniList ein Synonym von <em>Solo Leveling</em> — wir kennen die Synonymliste und suchen darin mit.</td></tr>
+  <tr><td>Jahr ± 1</td><td>Nur als Zusatzbedingung, nie allein. Erstveröffentlichung wird je nach Katalog anders gezählt.</td></tr>
+  <tr><td style="color:var(--rot)">Nie zusammengeführt</td><td>Verschiedene <b>Medien</b>. <em>Solo Leveling</em> als Manhwa, als Anime und als Novel sind drei Werke —
+    weil der Fortschritt getrennt zählt. Das ist die alte Regel, und sie gilt auch in der Suche.</td></tr>
+</table>
+
+<hr class="rule">
+
+<h2>Die Entnerv-Regeln</h2>
+<p class="sub">Suche wird nicht durch mehr Treffer besser, sondern durch weniger falsche.
+Diese sieben Regeln laufen still im Hintergrund.</p>
+
+<ol class="regeln">
+  <li><b>Nichts erfinden.</b> Wenn die Gesamtzahl der Kapitel unbekannt ist, steht dort <b class="a">?</b> —
+    nicht die Zahl des letzten bekannten Kapitels. Ein <b>?</b> heißt: die Serie läuft, niemand weiß das Ende.</li>
+  <li><b>Ein Werk, eine Zeile.</b> Egal wie viele Kataloge es kennen.</li>
+  <li><b>Was du schon hast, kommt nicht als Neuvorschlag.</b> Ein Titel steht entweder oben oder unten, nie doppelt.</li>
+  <li><b>Archiv bleibt still.</b> Abgelegte Werke tauchen nur auf, wenn du <b>Auch Archiv</b> einschaltest —
+    oder wenn du den Titel exakt tippst. Der Friedhof antwortet, wenn man ihn beim Namen ruft.</li>
+  <li><b>Erwachsenes bleibt aus,</b> bis du es einmal einschaltest. Danach nie wieder fragen.</li>
+  <li><b>Keine leeren Kataloge.</b> Eine Quelle, die nichts geliefert hat, wird nicht als Reiter, Zeile oder Fehler erwähnt.
+    Sie war einfach nicht dabei.</li>
+  <li><b>Tippfehler kosten nichts.</b> <em>vinlnad</em> findet <em>Vinland Saga</em> (Levenshtein ≤ 2 ab vier Zeichen),
+    aber nur, wenn die exakte Suche leer bleibt — sonst verwässert es die guten Treffer.</li>
+</ol>
+
+<hr class="rule">
+
+<h2>Die Leserichtung — und warum sie am Werk hängt</h2>
+<p class="sub">Du hast recht: das ist regional verschieden, und es ist ein Fehler mit Folgen.
+Wer eine japanische Seite von links nach rechts blättert, liest den Dialog rückwärts.
+Deshalb ist die Richtung keine Einstellung im Leser, sondern eine <b>Eigenschaft der Ausgabe</b> —
+sie kommt mit dem Werk mit und steht in jeder Trefferzeile.</p>
+
+<table>
+  <tr><th style="width:14%">Zeichen</th><th style="width:20%">Richtung</th><th>Standard bei</th></tr>
+  <tr><td class="gly">↤</td><td>rechts nach links<br><span style="font-weight:400;color:var(--tx3);font-size:12px">Doppelseiten, rechte Seite zuerst</span></td>
+    <td>Japanische Manga (JP), japanische Lizenzausgaben, die das Original spiegeln — <em>Vinland Saga</em>, <em>Soloist in a Cage</em>.</td></tr>
+  <tr><td class="gly">↦</td><td>links nach rechts</td>
+    <td>Westliche Comics, OEL-Manga, gespiegelte Altlizenzen, offizielle Manhua-Bände, alle Bild-Novels.</td></tr>
+  <tr><td class="gly">↧</td><td>vertikal, endlos<br><span style="font-weight:400;color:var(--tx3);font-size:12px">kein Blättern, ein Streifen</span></td>
+    <td>Koreanische Manhwa und Webtoons (KR), chinesische Kuaikan-Ausgaben — <em>Solo Leveling</em>, <em>Solo Farming in the Tower</em>.</td></tr>
+</table>
+
+<div class="merk">
+  <b>Wie wir sie bestimmen — in dieser Reihenfolge:</b><br>
+  1. Steht sie in der Datei? (ComicInfo.xml <code>Manga=YesAndRightToLeft</code>, EPUB <code>page-progression-direction</code>) → nehmen.<br>
+  2. Sagt der Katalog ein Format? (AniList <code>MANHWA</code> → vertikal, <code>MANGA</code> + Land JP → ↤) → nehmen.<br>
+  3. Sonst: <b>messen</b>. Sind die Bilder im Schnitt dreimal höher als breit, ist es ein Streifen. Punkt.<br>
+  4. Deine Korrektur schlägt alles und gilt für das ganze Werk, nicht für das Kapitel.<br><br>
+  <b>Und weil die Richtung am Werk hängt,</b> drehen sich mit ihr auch die Pfeiltasten, die Wischgeste,
+  der Fortschrittsbalken und die Doppelseiten-Paarung. Nie halb.
+</div>
+
+<hr class="rule">
+
+<h2>Reicht ein Zeichen für „Weiterlesen"?</h2>
+<p class="sub">Nein — aber nicht, weil das Zeichen schlecht wäre. Ein Symbol ohne Wort ist nur dann
+verständlich, wenn es entweder universell ist (Play, Pause, Kreuz) oder oft genug wiederholt wird.
+„Weiterlesen" ist keins von beidem. Also: <b>im Regal mit Wort, in der Kachel ohne</b> —
+dort steht der Titel ja daneben und erklärt den Rest.</p>
+
+<div class="zeichen">
+  <div class="zk">
+    <div class="pv">
+      <span class="nur"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M6 4h9a3 3 0 0 1 3 3v13l-4.5-3L9 20V4"/><path d="M6 4a2 2 0 0 0-2 2v12"/></svg></span>
+      <span class="mit"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M6 4h9a3 3 0 0 1 3 3v13l-4.5-3L9 20V4"/><path d="M6 4a2 2 0 0 0-2 2v12"/></svg>Weiterlesen</span>
+    </div>
+    <h3>A · Das Lesezeichen</h3>
+    <p>Ein Band mit Kerbe, halb aus dem Buch. Sagt „hier war ich", nicht „starte".</p>
+    <div class="ur">Verwechselt sich mit „Merken" — genau der Fehler, den Kindle macht.</div>
+  </div>
+
+  <div class="zk sieger">
+    <div class="pv">
+      <span class="nur"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 5.5h6.5a2.5 2.5 0 0 1 2.5 2.5v10a2 2 0 0 0-2-2H4z"/>
+        <path d="M15.5 9.5h5"/><path d="M18 7l2.5 2.5L18 12"/>
+        <path d="M15.5 15.5H20a1 1 0 0 0 1-1V6"/></svg></span>
+      <span class="mit"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 5.5h6.5a2.5 2.5 0 0 1 2.5 2.5v10a2 2 0 0 0-2-2H4z"/>
+        <path d="M15.5 9.5h5"/><path d="M18 7l2.5 2.5L18 12"/></svg>Weiterlesen</span>
+    </div>
+    <h3>B · Die halbe Seite mit Pfeil</h3>
+    <p>Links die gelesene Hälfte, rechts der Pfeil in die ungelesene. Der Pfeil <b>dreht sich mit
+    der Leserichtung</b> — bei ↤ zeigt er nach links, bei ↧ nach unten.</p>
+    <div class="ur">Gewählt. Es ist das einzige Zeichen, das die Richtung mitträgt.</div>
+  </div>
+
+  <div class="zk">
+    <div class="pv">
+      <span class="nur"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="8.5"/><path d="M10 8.5l5.5 3.5-5.5 3.5z" fill="currentColor" stroke="none"/></svg></span>
+      <span class="mit"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7">
+        <circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor"/><path d="M10 8.5l5.5 3.5-5.5 3.5z" fill="currentColor" stroke="none"/></svg>Weiterlesen</span>
+    </div>
+    <h3>C · Play</h3>
+    <p>Universell verstanden — aber es sagt „abspielen". Für Anime, Film und Hörbuch richtig,
+    für Text falsch.</p>
+    <div class="ur">Bleibt reserviert für alles, was von selbst weiterläuft.</div>
+  </div>
+</div>
+
+<div class="merk">
+  <b>Zwei Zeichen, klare Grenze:</b> <b>▶</b> für alles mit Laufzeit (Anime, Film, Serie, Musik, Hörbuch, DJ-Set),
+  <b>B</b> für alles, was du selbst weiterschaltest (Manga, Manhwa, Novel, Comic).
+  Ein Programm, das beides kann, muss beides unterscheiden — sonst fühlt sich Lesen an wie Fernsehen.
+</div>
+
+<hr class="rule">
+
+<h2>Die Schrift</h2>
+<p class="sub">Bisher lief alles auf <code>system-ui</code> — schnell, kostenlos, aber auf jedem Rechner anders.
+Für ein Programm, in dem man Stunden liest, ist das zu wenig Kontrolle. Mein Vorschlag: <b>drei Schnitte
+mitliefern</b>, alle frei lizenziert (SIL OFL), zusammen unter 900 kB als variable Dateien.
+Unten siehst du sie mit deinen Systemschriften als Rückfall — im Programm liegt die echte Datei bei.</p>
+
+<div class="proben">
+  <div class="probe p-sans">
+    <div class="nm">Oberfläche · Inter</div>
+    <p class="txt">Kapitel 88 wartet. Zwölf Werke haben neue Kapitel, drei Übersetzungen laufen gerade durch.</p>
+    <div class="zf"><span class="zif">0123456789 · 132 / 179 / 179</span><br>
+      Riesige x-Höhe, echte Tabellenziffern, 9 Strichstärken. Für Knöpfe, Listen und alles Kurze.</div>
+  </div>
+  <div class="probe p-serif">
+    <div class="nm">Leser · Literata</div>
+    <p class="txt">Der Regen hatte aufgehört, aber die Dachrinnen tropften noch, als hätte die Stadt vergessen, dass es vorbei war.</p>
+    <div class="zf">Von Google für Play Books gezeichnet, auf E-Ink und LCD getestet.
+      Serifen halten die Zeile zusammen — genau das, was auf Bildschirmen lange bezweifelt und
+      inzwischen widerlegt wurde (die Serif-vs-Sans-Studien finden keinen Lesetempo-Unterschied,
+      wohl aber einen bei <em>ermüdungsfreiem Langlesen</em>).</div>
+  </div>
+  <div class="probe p-dys">
+    <div class="nm">Barrierefrei · Atkinson Hyperlegible</div>
+    <p class="txt">Der Regen hatte aufgehört, aber die Dachrinnen tropften noch, als hätte die Stadt vergessen.</p>
+    <div class="zf">Vom Braille Institute für Menschen mit Sehbehinderung gezeichnet: I, l und 1
+      sind unverwechselbar, ebenso O und 0. Kostenlos. Ersetzt das bisherige Verdana-Provisorium.</div>
+  </div>
+  <div class="probe p-mono">
+    <div class="nm">Zahlen &amp; Technik · JetBrains Mono</div>
+    <p class="txt">88 / 122 / 187 · 2160p · HEVC · 07.08.2026</p>
+    <div class="zf">Nur für Zahlen, Zeitstempel, Dateinamen und Protokoll. Nie für Fließtext.
+      Gleiche Breite heißt: Zahlen springen beim Zählen nicht.</div>
+  </div>
+</div>
+
+<div class="merk">
+  <b>Und was du im Leser selbst umstellen darfst:</b> Serif ↔ Sans ↔ Barrierefrei, Größe, Zeilenhöhe,
+  Zeilenlänge. Was du <b>nicht</b> umstellen kannst, ist die Oberfläche — die bleibt Inter,
+  damit ein Knopf überall gleich aussieht. Schriftwahl im Text ist Komfort,
+  Schriftwahl in der Oberfläche ist Chaos.
+</div>
+
+</div>
+
+<script>
+/* ═════════ Der Index ═════════ */
+var IDX = [
+ {id:"sl-m", t:"Solo Leveling", alt:["Only I Level Up","나 혼자만 레벨업","Ore dake Level Up na Ken"],
+  med:"Manga", form:"Manhwa", ri:"↧", jahr:2018, von:"Chugong · DUBU", zu:"regal",
+  regal:{g:132,u:179,ges:179,qual:"Offiziell",zuletzt:"vorgestern"},
+  qn:["MangaBaka","AniList","MangaUpdates"], c1:"#20304f", c2:"#6b3f8f", ini:"SL"},
+
+ {id:"sl-a", t:"Solo Leveling", alt:["俺だけレベルアップな件","Ore dake Level Up na Ken"],
+  med:"Anime", form:"TV · 2 Staffeln", ri:"", jahr:2024, von:"A-1 Pictures", zu:"regal",
+  regal:{f:8,fges:12,zuletzt:"Sonntag",qual:"1080p · JP + DE-Sub"},
+  qn:["AniList","TMDB","AniDB"], c1:"#3a2140", c2:"#a4552a", ini:"SL"},
+
+ {id:"slr", t:"Solo Leveling: Ragnarök", alt:["나 혼자만 레벨업: 라그나로크","Solo Leveling Ragnarok"],
+  med:"Manga", form:"Manhwa", ri:"↧", jahr:2024, von:"Chugong · Dumangbyeol", zu:"regal",
+  regal:{g:41,u:52,ges:null,qual:"Fan",zuletzt:"gestern"},
+  qn:["MangaBaka","MangaUpdates"], c1:"#1e3a3a", c2:"#4f8f6b", ini:"SR"},
+
+ {id:"smln", t:"Solo Max-Level Newbie", alt:["나 혼자 만렙 뉴비","Solo Leveling Newbie"],
+  med:"Manga", form:"Manhwa", ri:"↧", jahr:2020, von:"Maslow · Warak", zu:"gekannt",
+  verlauf:{kap:63,seite:"asuracomic.net",tag:"14.02.",letzt:"Kapitel 63"},
+  qn:["MangaBaka","AniList"], c1:"#4a2a20", c2:"#c2703a", ini:"SM"},
+
+ {id:"sbp", t:"Solo Bug Player", alt:["나 홀로 버그 플레이어"],
+  med:"Manga", form:"Manhwa", ri:"↧", jahr:2020, von:"Jeonhwa", zu:"gekannt",
+  verlauf:{kap:3,seite:"mangabuddy.com",tag:"02.11.",letzt:"Kapitel 3"},
+  qn:["MangaUpdates"], c1:"#243a2a", c2:"#4f8f5a", ini:"SB"},
+
+ {id:"sl-n", t:"Solo Leveling", alt:["Na Honjaman Level Up — Web-Novel","I Level Up Alone"],
+  med:"Novel", form:"Web-Novel · 270 Kapitel", ri:"↦", jahr:2016, von:"Chugong", zu:"neu",
+  info:"abgeschlossen · EN offiziell bei Yen Press · DE nur Fan",
+  qn:["NovelUpdates","AniList"], c1:"#2b2b3f", c2:"#5a5a8f", ini:"SL"},
+
+ {id:"sft", t:"Solo Farming in the Tower", alt:["나 혼자 탑에서 농사","Farming in the Tower Alone"],
+  med:"Manga", form:"Manhwa", ri:"↧", jahr:2022, von:"Beolgom · Sancheon", zu:"neu",
+  info:"187 Kapitel · läuft · wöchentlich donnerstags",
+  qn:["MangaBaka","AniList","MangaUpdates"], c1:"#1f3326", c2:"#7f9f3a", ini:"SF",
+  roh:[["MangaBaka","Solo Farming in the Tower","187 Kap · 2022 · Beolgom"],
+       ["AniList","Solo Farming In The Tower","MANHWA · RELEASING · id 148291"],
+       ["MangaUpdates","나 혼자 탑에서 농사","Korean · Ongoing · Beolgom (Story)"]]},
+
+ {id:"sic", t:"Soloist in a Cage", alt:["籠の中のソリスト","Kago no Naka no Solist"],
+  med:"Manga", form:"Manga", ri:"↤", jahr:2018, von:"Shiro Moriya", zu:"neu",
+  info:"41 Kapitel · abgeschlossen · rechts nach links",
+  qn:["MangaBaka","AniList"], c1:"#2b1f2b", c2:"#8f5a7f", ini:"SC"},
+
+ {id:"sofilm", t:"Solo: A Star Wars Story", alt:["Solo","Han Solo"],
+  med:"Film", form:"Kino · 135 Min", ri:"", jahr:2018, von:"Ron Howard", zu:"neu",
+  info:"2160p HDR verfügbar · DE + EN Tonspur",
+  qn:["TMDB"], c1:"#141c2b", c2:"#3a5f8f", ini:"SO"},
+
+ {id:"vin", t:"Vinland Saga", alt:["ヴィンランド・サガ"],
+  med:"Manga", form:"Manga", ri:"↤", jahr:2005, von:"Makoto Yukimura", zu:"regal",
+  regal:{g:88,u:122,ges:187,qual:"Fan",zuletzt:"vorgestern"},
+  qn:["MangaBaka","AniList","MangaUpdates"], c1:"#2a2118", c2:"#8f6b3a", ini:"VS"},
+
+ {id:"lvup", t:"The Max Level Hero", alt:["레벨업 히어로"],
+  med:"Manga", form:"Manhwa", ri:"↧", jahr:2021, von:"Yaho", zu:"neu",
+  info:"92 Kapitel · abgebrochen seit 2024",
+  qn:["MangaUpdates"], c1:"#33202a", c2:"#8f4a5f", ini:"MH"},
+
+ {id:"tower", t:"Tower of God", alt:["신의 탑","Kami no Tou"],
+  med:"Manga", form:"Manhwa", ri:"↧", jahr:2010, von:"SIU", zu:"gekannt",
+  verlauf:{kap:214,seite:"webtoons.com",tag:"29.06.",letzt:"Staffel 3, Kapitel 214"},
+  qn:["MangaBaka","AniList","MangaUpdates"], c1:"#1a2438", c2:"#4a6f9f", ini:"TG"}
+];
+
+/* Zusatzmerkmale — nur für die erweiterte Suche. Im echten Programm kommen sie
+   aus der Anreicherung, hier von Hand, damit die Filter wirklich filtern. */
+var X = {
+ "sl-m":  {kap:179, ser:"fertig",  land:"KR", gen:["Action","Fantasy","Isekai"]},
+ "sl-a":  {kap:25,  ser:"laeuft",  land:"JP", gen:["Action","Fantasy"]},
+ "slr":   {kap:52,  ser:"laeuft",  land:"KR", gen:["Action","Fantasy"]},
+ "smln":  {kap:121, ser:"laeuft",  land:"KR", gen:["Action","Fantasy","Comedy"]},
+ "sbp":   {kap:96,  ser:"abbruch", land:"KR", gen:["Action","Isekai"]},
+ "sl-n":  {kap:270, ser:"fertig",  land:"KR", gen:["Action","Fantasy","Isekai"]},
+ "sft":   {kap:187, ser:"laeuft",  land:"KR", gen:["Slice of Life","Fantasy"]},
+ "sic":   {kap:41,  ser:"fertig",  land:"JP", gen:["Drama","Mystery"]},
+ "sofilm":{kap:1,   ser:"fertig",  land:"US", gen:["Action","Sci-Fi"]},
+ "vin":   {kap:214, ser:"laeuft",  land:"JP", gen:["Drama","Historisch","Action"]},
+ "lvup":  {kap:92,  ser:"abbruch", land:"KR", gen:["Action","Comedy"]},
+ "tower": {kap:614, ser:"laeuft",  land:"KR", gen:["Action","Fantasy","Mystery"]}
+};
+var GENRES = ["Action","Fantasy","Drama","Comedy","Isekai","Mystery","Slice of Life","Historisch","Sci-Fi"];
+var LAENDER = {JP:"Japan", KR:"Korea", CN:"China", US:"West"};
+var SERZ = {laeuft:"läuft", fertig:"abgeschlossen", hiatus:"Hiatus", abbruch:"abgebrochen"};
+
+var MEDIEN = ["Manga","Anime","Novel","Film","Serie","Musik","Hörbuch","Spiel"];
+var fzu = {};                     /* 0 neutral, 1 nur das, 2 nicht das */
+var schalt = {archiv:false, ab18:false};
+var cur = 0, offen = {}, erwAuf = false;
+var E = {kapVon:"", kapBis:"", jahrVon:"", jahrBis:"", gen:{}, ser:{}, land:{}};
+
+function eAnzahl(){
+  var n = 0;
+  if(E.kapVon !== "" || E.kapBis !== "") n++;
+  if(E.jahrVon !== "" || E.jahrBis !== "") n++;
+  ["gen","ser","land"].forEach(function(k){
+    n += Object.keys(E[k]).filter(function(x){ return E[k][x]; }).length;
+  });
+  return n;
+}
+function eLeeren(){ E = {kapVon:"", kapBis:"", jahrVon:"", jahrBis:"", gen:{}, ser:{}, land:{}}; }
+
+/* ═════════ Filterleiste ═════════ */
+function bauFilter(){
+  var b = document.getElementById("fbar");
+  var h = "";
+  MEDIEN.forEach(function(m){
+    var z = fzu[m] || 0;
+    h += '<button class="chip ' + (z===1?"ein":z===2?"aus":"") + '" data-m="' + m + '">' + m + '</button>';
+  });
+  h += '<span class="fsep"></span>';
+  h += '<button class="chip sw ' + (schalt.archiv?"on":"") + '" data-s="archiv">Auch Archiv</button>';
+  h += '<button class="chip sw ' + (schalt.ab18?"on":"") + '" data-s="ab18">Auch 18+</button>';
+  h += '<span class="fsep"></span>';
+  var n = eAnzahl();
+  h += '<button class="chip mehr ' + (erwAuf||n?"on":"") + '" id="mehrknopf">Erweitert'
+     + (n ? '<span class="zahl">' + n + '</span>' : '') + '</button>';
+  h += '<span class="fhint">klick = nur das · nochmal = das nicht</span>';
+  b.innerHTML = h;
+  b.querySelectorAll("[data-m]").forEach(function(c){
+    c.addEventListener("click", function(){
+      var m = c.dataset.m; fzu[m] = ((fzu[m]||0) + 1) % 3; bauFilter(); zeichne();
+    });
+  });
+  b.querySelectorAll("[data-s]").forEach(function(c){
+    c.addEventListener("click", function(){
+      schalt[c.dataset.s] = !schalt[c.dataset.s]; bauFilter(); zeichne();
+    });
+  });
+  document.getElementById("mehrknopf").addEventListener("click", function(){
+    erwAuf = !erwAuf; bauErw(); bauFilter();
+  });
+}
+
+/* ── Erweiterte Suche ── */
+function stufe(obj, k){ return obj[k] || 0; }
+function minis(art, liste, beschriftung){
+  return liste.map(function(k){
+    var z = stufe(E[art], k);
+    return '<button class="mini ' + (z===1?"ein":z===2?"aus":"") + '" data-art="' + art
+         + '" data-k="' + k + '">' + (beschriftung ? beschriftung[k] : k) + '</button>';
+  }).join("");
+}
+function bauErw(){
+  var el = document.getElementById("erw");
+  el.hidden = !erwAuf;
+  if(!erwAuf) return;
+  el.innerHTML =
+    '<div class="erwgit">'
+    + '<div class="ef"><h6>Umfang · Kapitel oder Folgen</h6><div class="spanne">'
+    +   '<input id="kapVon" inputmode="numeric" placeholder="ab" value="' + E.kapVon + '">'
+    +   '<span>bis</span>'
+    +   '<input id="kapBis" inputmode="numeric" placeholder="ohne Grenze" value="' + E.kapBis + '">'
+    + '</div></div>'
+    + '<div class="ef"><h6>Erschienen</h6><div class="spanne">'
+    +   '<input id="jahrVon" inputmode="numeric" placeholder="ab" value="' + E.jahrVon + '">'
+    +   '<span>bis</span>'
+    +   '<input id="jahrBis" inputmode="numeric" placeholder="heute" value="' + E.jahrBis + '">'
+    + '</div></div>'
+    + '<div class="ef"><h6>Zustand der Serie</h6><div class="minis">' + minis("ser", Object.keys(SERZ), SERZ) + '</div></div>'
+    + '<div class="ef"><h6>Herkunft</h6><div class="minis">' + minis("land", Object.keys(LAENDER), LAENDER) + '</div></div>'
+    + '<div class="ef" style="grid-column:1/-1"><h6>Genre — klick = nur das · nochmal = das nicht</h6>'
+    +   '<div class="minis">' + minis("gen", GENRES, null) + '</div></div>'
+    + '</div>'
+    + '<div class="erwfuss">'
+    +   '<span class="satz" id="esatz"></span>'
+    +   '<span class="rechts">'
+    +     '<button class="eb" id="eleeren">Zurücksetzen</button>'
+    +     '<button class="eb pri" id="emerken">Als Regal merken</button>'
+    +   '</span>'
+    + '</div>';
+
+  ["kapVon","kapBis","jahrVon","jahrBis"].forEach(function(id){
+    document.getElementById(id).addEventListener("input", function(){
+      E[id] = this.value.replace(/[^0-9]/g,"");
+      this.value = E[id];
+      bauFilter(); satz(); zeichne();
+    });
+  });
+  el.querySelectorAll("[data-art]").forEach(function(b){
+    b.addEventListener("click", function(){
+      var a = b.dataset.art, k = b.dataset.k;
+      E[a][k] = (stufe(E[a], k) + 1) % 3;
+      bauErw(); bauFilter(); zeichne();
+    });
+  });
+  document.getElementById("eleeren").addEventListener("click", function(){
+    eLeeren(); bauErw(); bauFilter(); zeichne();
+  });
+  document.getElementById("emerken").addEventListener("click", function(){
+    var b = this;
+    if(!eAnzahl()){ b.textContent = "Erst etwas eingrenzen"; }
+    else { b.textContent = "Als Regal angelegt ✓"; }
+    setTimeout(function(){ b.textContent = "Als Regal merken"; }, 2200);
+  });
+  satz();
+}
+function satz(){
+  var el = document.getElementById("esatz"); if(!el) return;
+  var t = [];
+  if(E.kapVon || E.kapBis) t.push("Umfang " + (E.kapVon||"0") + "–" + (E.kapBis||"∞"));
+  if(E.jahrVon || E.jahrBis) t.push("Jahr " + (E.jahrVon||"…") + "–" + (E.jahrBis||"heute"));
+  ["ser","land","gen"].forEach(function(a){
+    Object.keys(E[a]).forEach(function(k){
+      if(E[a][k] === 1) t.push(k);
+      if(E[a][k] === 2) t.push("nicht " + k);
+    });
+  });
+  el.innerHTML = t.length
+    ? "Gesucht wird: <b>" + t.join("</b> · <b>") + "</b>"
+    : "Noch nichts eingegrenzt. Jede Angabe hier gilt <b>zusätzlich</b> zu den Knöpfen oben.";
+}
+
+/* ═════════ Suche ═════════ */
+function norm(s){
+  return s.toLowerCase().replace(/[·:!?,.'’\-–—]/g," ").replace(/\s+/g," ").trim();
+}
+function trifft(w, f){
+  if(!f) return true;
+  var heu = [w.t].concat(w.alt || []).concat([w.von, w.med, w.form || ""]);
+  return heu.some(function(s){ return norm(s).indexOf(f) >= 0; });
+}
+function filtern(){
+  var f = norm(document.getElementById("q").value);
+  var ein = MEDIEN.filter(function(m){ return fzu[m]===1; });
+  var aus = MEDIEN.filter(function(m){ return fzu[m]===2; });
+  return IDX.filter(function(w){
+    if(!trifft(w, f)) return false;
+    if(aus.indexOf(w.med) >= 0) return false;
+    if(ein.length && ein.indexOf(w.med) < 0) return false;
+
+    var x = X[w.id] || {kap:0, ser:"", land:"", gen:[]};
+    if(E.kapVon !== "" && x.kap < +E.kapVon) return false;
+    if(E.kapBis !== "" && x.kap > +E.kapBis) return false;
+    if(E.jahrVon !== "" && w.jahr < +E.jahrVon) return false;
+    if(E.jahrBis !== "" && w.jahr > +E.jahrBis) return false;
+
+    /* Dreistufig, überall gleich: was auf 1 steht muss dabei sein, was auf 2 steht darf nicht. */
+    function pruef(art, hat){
+      var ein = [], aus = [];
+      Object.keys(E[art]).forEach(function(k){
+        if(E[art][k] === 1) ein.push(k);
+        if(E[art][k] === 2) aus.push(k);
+      });
+      if(aus.some(hat)) return false;
+      if(ein.length && !ein.some(hat)) return false;
+      return true;
+    }
+    if(!pruef("ser",  function(k){ return x.ser === k; })) return false;
+    if(!pruef("land", function(k){ return x.land === k; })) return false;
+    if(!pruef("gen",  function(k){ return (x.gen||[]).indexOf(k) >= 0; })) return false;
+    return true;
+  });
+}
+
+function hervor(t, f){
+  if(!f) return t;
+  var i = norm(t).indexOf(f);
+  if(i < 0) return t;
+  return t.slice(0,i) + "<mark>" + t.slice(i, i+f.length) + "</mark>" + t.slice(i+f.length);
+}
+
+function deckel(w){
+  return '<div class="cov" style="background:linear-gradient(145deg,' + w.c1 + ',' + w.c2 + ')">' + w.ini + '</div>';
+}
+
+var PFEIL = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5h6.5a2.5 2.5 0 0 1 2.5 2.5v10a2 2 0 0 0-2-2H4z"/><path d="M15.5 9.5h5"/><path d="M18 7l2.5 2.5L18 12"/></svg>';
+var PLAY  = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="8.5"/><path d="M10 8.5l5.5 3.5-5.5 3.5z" fill="currentColor" stroke="none"/></svg>';
+var PLUS  = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>';
+
+function zeile(w, f, k){
+  var zk = w.zu === "regal" ? "r" : w.zu === "gekannt" ? "k" : "n";
+  var zg = w.zu === "regal" ? "●" : w.zu === "gekannt" ? "◐" : "○";
+  var lauf = w.med === "Anime" || w.med === "Film" || w.med === "Serie";
+  var h = '<div class="row ' + (k===cur?"cur":"") + '" data-k="' + k + '">';
+  h += '<div class="zst ' + zk + '" title="' + (w.zu==="regal"?"im Regal":w.zu==="gekannt"?"gekannt, nicht im Regal":"neu für dich") + '">' + zg + '</div>';
+  h += deckel(w);
+  h += '<div class="mid">';
+  h +=   '<div class="tl"><b>' + hervor(w.t, f) + '</b>';
+  h +=     '<span class="med">' + w.med + '</span>';
+  if(w.ri) h += '<span class="ri" title="Leserichtung">' + w.ri + '</span>';
+  h +=   '</div>';
+  if(w.alt && w.alt.length)
+    h += '<div class="alt">auch: <em>' + w.alt.slice(0,3).join('</em> · <em>') + '</em></div>';
+  h += '<div class="line2">';
+
+  if(w.zu === "regal"){
+    var r = w.regal;
+    if(r.g !== undefined){
+      var p = Math.round(r.g / r.u * 100);
+      h += '<span class="kapg"><span class="g">' + r.g + '</span><span class="sep">/</span>'
+         + '<span class="u">' + r.u + '</span><span class="sep">/</span>'
+         + '<span class="t">' + (r.ges === null ? "…" : r.ges) + '</span></span>';
+      h += '<span class="bal"><i style="width:' + p + '%"></i></span>';
+    } else {
+      h += '<span class="kapg" style="grid-template-columns:auto"><span class="g">Folge ' + r.f + ' / ' + r.fges + '</span></span>';
+      h += '<span class="bal"><i style="width:' + Math.round(r.f/r.fges*100) + '%"></i></span>';
+    }
+    h += '<span class="qb">' + r.qual + '</span>';
+    h += '<span style="color:var(--tx3)">zuletzt ' + r.zuletzt + '</span>';
+  }
+  else if(w.zu === "gekannt"){
+    var v = w.verlauf;
+    h += '<span class="hist">' + v.letzt + ' auf ' + v.seite + '</span>';
+    h += '<span style="color:var(--tx3)">zuletzt ' + v.tag + ' · ' + v.kap + ' Kapitel besucht</span>';
+  }
+  else {
+    h += '<span>' + w.jahr + ' · ' + w.von + '</span>';
+    h += '<span style="color:var(--tx3)">' + w.info + '</span>';
+  }
+
+  if(w.zu !== "regal"){
+    h += '<span style="display:inline-flex;gap:5px">';
+    w.qn.forEach(function(q){ h += '<span class="qb">' + q + '</span>'; });
+    h += '</span>';
+    if(w.qn.length > 1)
+      h += '<button class="mrg" data-mrg="' + w.id + '">' + w.qn.length + ' zusammengeführt</button>';
+  }
+  h += '</div></div>';
+
+  h += '<div class="act">';
+  if(w.zu === "regal")
+    h += '<button class="btn pri">' + (lauf ? PLAY + "Weitersehen" : PFEIL + "Weiterlesen") + '</button>';
+  else
+    h += '<button class="btn">' + PLUS + 'Ins Regal</button>';
+  h += '</div>';
+
+  if(offen[w.id] && w.roh){
+    h += '<div class="mrgbox">';
+    w.roh.forEach(function(z){
+      h += '<div><span>' + z[0] + '</span><span style="color:var(--tx)">' + z[1] + '</span><span>' + z[2] + '</span></div>';
+    });
+    h += '<div style="border-top:1px solid var(--line);margin-top:6px;padding-top:6px">'
+       + '<span>zusammen</span><span style="color:var(--akz)">1 Werk</span>'
+       + '<span>gleicher Urheber + Nebentitel getroffen</span></div>';
+    h += '</div>';
+  }
+  h += '</div>';
+  return h;
+}
+
+function zeichne(){
+  var f = norm(document.getElementById("q").value);
+  var tr = filtern();
+  var regal  = tr.filter(function(w){ return w.zu === "regal"; });
+  var aussen = tr.filter(function(w){ return w.zu !== "regal"; })
+                 .sort(function(a,b){ return (a.zu==="gekannt"?0:1) - (b.zu==="gekannt"?0:1); });
+  var alle = regal.concat(aussen);
+  if(cur >= alle.length) cur = Math.max(0, alle.length - 1);
+
+  var h = "", k = 0;
+  if(!alle.length){
+    h = '<div class="leer"><b>Nichts gefunden.</b>'
+      + 'Weder im Regal noch bei MangaBaka, AniList, MangaUpdates, TMDB.<br>'
+      + 'Vielleicht ein Nebentitel? Oder <span style="color:var(--akz)">von Hand anlegen</span>.</div>';
+  } else {
+    h += '<div class="grp"><div class="ghead"><h4>In deinem Regal</h4>'
+       + '<span class="gcount">' + regal.length + '</span>'
+       + '<span class="gnote">' + (regal.length ? "sofort weiter" : "nichts davon hast du") + '</span></div>';
+    if(regal.length) regal.forEach(function(w){ h += zeile(w, f, k++); });
+    else h += '<div class="leer" style="padding:14px 18px 18px;text-align:left">'
+            + 'Nichts davon steht bei dir. Alles unten ist neu.</div>';
+    h += '</div>';
+
+    h += '<div class="grp"><div class="ghead"><h4>Draußen gefunden</h4>'
+       + '<span class="gcount">' + aussen.length + '</span>'
+       + '<span class="gnote">4 Kataloge · 210 ms</span></div>';
+    if(aussen.length) aussen.forEach(function(w){ h += zeile(w, f, k++); });
+    else h += '<div class="leer" style="padding:14px 18px 18px;text-align:left">'
+            + 'Die Kataloge kennen nichts, was du nicht schon hast.</div>';
+    h += '</div>';
+  }
+  document.getElementById("erg").innerHTML = h;
+  document.getElementById("stat").textContent = alle.length + " Treffer";
+
+  document.querySelectorAll("#erg .row").forEach(function(r){
+    r.addEventListener("mouseenter", function(){
+      cur = +r.dataset.k;
+      document.querySelectorAll("#erg .row").forEach(function(x){ x.classList.remove("cur"); });
+      r.classList.add("cur");
+    });
+  });
+  document.querySelectorAll("#erg [data-mrg]").forEach(function(b){
+    b.addEventListener("click", function(e){
+      e.stopPropagation();
+      offen[b.dataset.mrg] = !offen[b.dataset.mrg];
+      zeichne();
+    });
+  });
+}
+
+document.getElementById("q").addEventListener("input", function(){ cur = 0; zeichne(); });
+document.addEventListener("keydown", function(e){
+  var n = document.querySelectorAll("#erg .row").length;
+  if(!n) return;
+  if(e.key === "ArrowDown"){ e.preventDefault(); cur = (cur + 1) % n; zeichne(); }
+  if(e.key === "ArrowUp"){ e.preventDefault(); cur = (cur - 1 + n) % n; zeichne(); }
+});
+
+bauFilter();
+zeichne();
+document.getElementById("q").focus();
+</script>

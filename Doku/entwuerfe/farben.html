@@ -1,0 +1,370 @@
+<title>SyncRegal — Vier Farbrichtungen zur Abstimmung</title>
+<style>
+/* ---------- Studio-Chrome (bewusst neutral, damit die Entwürfe fair wirken) ---------- */
+:root{
+  --s-bg:#131211; --s-bg2:#0c0b0b; --s-panel:#1b1a18; --s-line:#2b2926; --s-line2:#3a3733;
+  --s-tx:#eae7e2; --s-tx2:#9d968d; --s-tx3:#6e6862; --s-akz:#c9952b;
+  --disp:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --data:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+}
+@media (prefers-color-scheme:light){
+  :root{--s-bg:#f4f1ec;--s-bg2:#e9e4dc;--s-panel:#fffdfa;--s-line:#dfd8cd;--s-line2:#c8bfb2;
+    --s-tx:#23201c;--s-tx2:#655d54;--s-tx3:#8b8278;--s-akz:#8f6410}
+}
+:root[data-theme="light"]{--s-bg:#f4f1ec;--s-bg2:#e9e4dc;--s-panel:#fffdfa;--s-line:#dfd8cd;--s-line2:#c8bfb2;
+  --s-tx:#23201c;--s-tx2:#655d54;--s-tx3:#8b8278;--s-akz:#8f6410}
+:root[data-theme="dark"]{--s-bg:#131211;--s-bg2:#0c0b0b;--s-panel:#1b1a18;--s-line:#2b2926;--s-line2:#3a3733;
+  --s-tx:#eae7e2;--s-tx2:#9d968d;--s-tx3:#6e6862;--s-akz:#c9952b}
+
+*{box-sizing:border-box}
+body{margin:0;background:var(--s-bg);color:var(--s-tx);font-family:var(--disp);font-size:16px;
+  line-height:1.6;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1080px;margin:0 auto;padding:40px 22px 90px}
+.eyebrow{font-family:var(--data);font-size:11px;letter-spacing:.17em;text-transform:uppercase;
+  color:var(--s-akz);margin:0 0 11px}
+h1{font-size:clamp(31px,4.7vw,47px);line-height:1.05;letter-spacing:-.028em;font-weight:800;
+  margin:0 0 14px;text-wrap:balance}
+.lede{font-size:17.5px;color:var(--s-tx2);max-width:64ch;margin:0}
+h2{font-size:25px;font-weight:800;letter-spacing:-.022em;margin:0 0 8px;text-wrap:balance}
+.sub{color:var(--s-tx2);margin:0 0 22px;max-width:66ch}
+hr.rule{height:1px;background:var(--s-line);border:0;margin:52px 0}
+
+/* ---------- Wissenschaft ---------- */
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(252px,1fr));gap:14px}
+.fact{background:var(--s-panel);border:1px solid var(--s-line);border-radius:13px;padding:18px}
+.fact b{display:block;font-size:14.5px;margin-bottom:6px;letter-spacing:-.01em}
+.fact p{margin:0;font-size:13.5px;color:var(--s-tx2);line-height:1.58}
+.fact .n{font-family:var(--data);font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--s-akz);display:block;margin-bottom:9px}
+
+.thesis{background:var(--s-panel);border:1px solid var(--s-line2);border-left:3px solid var(--s-akz);
+  border-radius:0 13px 13px 0;padding:22px 24px;margin:26px 0 0}
+.thesis p{margin:0;font-size:16.5px;line-height:1.62}
+.thesis p+p{margin-top:11px;color:var(--s-tx2);font-size:14.5px}
+
+/* ---------- Entwurf ---------- */
+.entwurf{margin-top:40px;border:1px solid var(--s-line);border-radius:17px;overflow:hidden;
+  background:var(--s-panel)}
+.e-kopf{display:flex;align-items:flex-start;gap:16px;padding:20px 22px;border-bottom:1px solid var(--s-line);
+  flex-wrap:wrap}
+.e-nr{font-family:var(--data);font-size:11px;letter-spacing:.15em;color:var(--s-tx3);padding-top:5px}
+.e-tit{flex:1;min-width:200px}
+.e-tit h3{margin:0 0 3px;font-size:21px;font-weight:800;letter-spacing:-.02em}
+.e-tit p{margin:0;font-size:14px;color:var(--s-tx2)}
+.swatches{display:flex;gap:0;border-radius:9px;overflow:hidden;border:1px solid var(--s-line2);flex:0 0 auto}
+.sw{width:46px;height:46px;display:block;position:relative}
+.sw span{position:absolute;bottom:2px;left:0;right:0;text-align:center;font-family:var(--data);
+  font-size:7.5px;color:rgba(255,255,255,.72);letter-spacing:.02em}
+.sw.lt span{color:rgba(0,0,0,.55)}
+
+.flaechen{display:grid;grid-template-columns:1fr;gap:0}
+@media(min-width:830px){.flaechen{grid-template-columns:1.25fr 1fr 1fr}}
+.fl{padding:18px;border-top:1px solid var(--s-line)}
+@media(min-width:830px){.fl{border-top:0;border-left:1px solid var(--s-line)}.fl:first-child{border-left:0}}
+.fl-lbl{font-family:var(--data);font-size:9.5px;letter-spacing:.15em;text-transform:uppercase;
+  color:var(--s-tx3);margin-bottom:10px}
+
+/* Muster-Flächen benutzen die Entwurfs-Variablen */
+.demo{border-radius:11px;overflow:hidden;border:1px solid rgba(128,128,128,.22)}
+
+.d-regal{background:var(--g);padding:12px}
+.d-hero{border-radius:8px;padding:11px 12px;margin-bottom:10px;background:var(--p);
+  border:1px solid var(--l);display:flex;align-items:center;gap:10px}
+.d-hero .play{width:26px;height:26px;border-radius:7px;background:var(--a);flex:0 0 auto;
+  display:grid;place-items:center;font-size:11px;color:var(--onA)}
+.d-hero div{min-width:0}
+.d-hero b{display:block;font-size:11.5px;color:var(--t);letter-spacing:-.01em;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.d-hero i{font-style:normal;font-family:var(--data);font-size:9px;color:var(--t2)}
+.d-tiles{display:flex;gap:8px}
+.d-tile{flex:1;aspect-ratio:2/3;border-radius:7px;position:relative;border:1px solid var(--l)}
+.d-tile::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;background:var(--a);
+  border-radius:0 0 6px 6px}
+.d-tile:nth-child(2)::after{width:38%}
+.d-tile:nth-child(3)::after{width:0}
+.d-row{display:flex;gap:7px;margin-top:9px;align-items:center}
+.d-chip{font-family:var(--data);font-size:8.5px;padding:2px 6px;border-radius:99px;
+  border:1px solid var(--l);color:var(--t2)}
+.d-chip.on{background:var(--a);color:var(--onA);border-color:var(--a)}
+
+.d-leser{background:var(--rb);padding:15px 16px}
+.d-leser h5{margin:0 0 7px;font-size:12px;color:var(--rt);letter-spacing:-.01em;opacity:.62;
+  font-family:var(--data);font-weight:400}
+.d-leser p{margin:0;font-size:13px;line-height:1.72;color:var(--rt);
+  font-family:Georgia,"Iowan Old Style",serif}
+.d-leser .bar{margin-top:11px;height:2px;background:color-mix(in srgb,var(--rt) 18%,transparent);border-radius:2px}
+.d-leser .bar i{display:block;height:100%;width:44%;background:var(--a);border-radius:2px}
+
+.d-spieler{background:var(--sb);padding:0}
+.d-still{height:88px;background:var(--still)}
+.d-ctrl{padding:11px 13px;display:flex;align-items:center;gap:9px}
+.d-ctrl .pl{width:24px;height:24px;border-radius:50%;background:var(--a);flex:0 0 auto;
+  display:grid;place-items:center;font-size:10px;color:var(--onA)}
+.d-ctrl .track{flex:1;height:3px;background:color-mix(in srgb,var(--st) 22%,transparent);border-radius:2px;position:relative}
+.d-ctrl .track i{position:absolute;left:0;top:0;bottom:0;width:62%;background:var(--a);border-radius:2px}
+.d-ctrl .tm{font-family:var(--data);font-size:9px;color:var(--st);opacity:.72;font-variant-numeric:tabular-nums}
+
+.e-fuss{padding:16px 22px;border-top:1px solid var(--s-line);display:grid;gap:9px;
+  grid-template-columns:1fr;font-size:13.5px}
+@media(min-width:700px){.e-fuss{grid-template-columns:1fr 1fr}}
+.e-fuss div{color:var(--s-tx2)}
+.e-fuss b{color:var(--s-tx);font-weight:700}
+.e-fuss .gut b{color:#5fb87a}
+.e-fuss .risk b{color:#d68a56}
+@media (prefers-color-scheme:light){.e-fuss .gut b{color:#26773f}.e-fuss .risk b{color:#a5551f}}
+
+/* ---------- Vier Entwurfs-Paletten ---------- */
+.e1{--g:#16110E;--p:#1F1813;--l:#322820;--a:#D9922E;--onA:#1a1206;--t:#F0E7DB;--t2:#A99A88;
+    --rb:#1C1611;--rt:#E3D8C6;--sb:#0B0908;--st:#EDE6DA;
+    --still:linear-gradient(140deg,#5a3520,#241611 70%)}
+.e2{--g:#0E1217;--p:#161C23;--l:#232C36;--a:#F0873C;--onA:#160b03;--t:#E4E9EF;--t2:#8B97A5;
+    --rb:#131920;--rt:#D3DAE3;--sb:#06080B;--st:#E8EDF3;
+    --still:linear-gradient(140deg,#1d3d5c,#0d1a26 70%)}
+.e3{--g:#F1EAE0;--p:#FBF6EE;--l:#DED2C2;--a:#B4551A;--onA:#fff8f0;--t:#241E17;--t2:#6B5F51;
+    --rb:#F6EFE3;--rt:#2B241C;--sb:#0C0B0A;--st:#F0EBE3;
+    --still:linear-gradient(140deg,#8a5a33,#2a1d13 70%)}
+.e4{--g:#121213;--p:#1B1B1D;--l:#2A2A2D;--a:#FF8A3D;--onA:#180a02;--t:#F2F2F3;--t2:#96969B;
+    --rb:#17171A;--rt:#DFDFE2;--sb:#0A0A0B;--st:#F2F2F3;
+    --still:linear-gradient(140deg,#3a3a40,#141416 70%)}
+
+/* ---------- Abschluss ---------- */
+.mix{background:var(--s-panel);border:1px solid var(--s-line);border-radius:15px;padding:24px;margin-top:38px}
+.mix h3{margin:0 0 10px;font-size:19px;font-weight:800;letter-spacing:-.02em}
+.mix p{margin:0 0 14px;color:var(--s-tx2);font-size:15px}
+.mix ul{margin:0;padding-left:19px;color:var(--s-tx2);font-size:14.5px}
+.mix li{margin-bottom:7px}
+.mix li b{color:var(--s-tx)}
+table{width:100%;border-collapse:collapse;font-size:14px;margin-top:6px}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--s-line)}
+th{font-family:var(--data);font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--s-tx3);font-weight:400}
+td b{font-weight:700}
+.tbl-wrap{overflow-x:auto}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.001ms!important;transition-duration:.001ms!important}}
+</style>
+
+<div class="wrap">
+
+<p class="eyebrow">SyncRegal · Farbwerkstatt</p>
+<h1>Vier Richtungen.<br>Jede auf drei Flächen geprüft.</h1>
+<p class="lede">Regal, Leser und Spieler wollen nicht dasselbe — deshalb zeigt jeder Entwurf alle drei.
+Orange bleibt überall gesetzt, aber es sitzt nirgends dort, wo dein Auge lange verweilt.</p>
+
+<hr class="rule">
+
+<h2>Was die Forschung sagt</h2>
+<p class="sub">Fünf Befunde, die die Entscheidung tatsächlich einengen — der Rest ist Geschmack.</p>
+
+<div class="facts">
+  <div class="fact"><span class="n">Halation</span><b>Kein reines Schwarz mit reinem Weiß</b>
+    <p>21:1 Kontrast lässt helle Schrift auf schwarzem Grund ausfransen und glühen. Rund die Hälfte
+    aller Menschen mit Astigmatismus trifft das spürbar. Empfohlen wird dunkelgrau — etwa #121212
+    bis #1E1E1E — statt #000000.</p></div>
+
+  <div class="fact"><span class="n">Kontrast</span><b>Mehr ist nicht besser</b>
+    <p>Für kurze Blicke ist hoher Kontrast gut, für Stunden am Text nicht. Gedämpfte Textfarbe auf
+    gedämpftem Grund ermüdet messbar weniger als das Maximum.</p></div>
+
+  <div class="fact"><span class="n">Lesen</span><b>Für Langtext ist Hell im Vorteil</b>
+    <p>Der unbequeme Befund: bei ausdauerndem Lesen schneidet heller Grund besser ab — besonders bei
+    Astigmatismus. Dunkelmodus ist für Stöbern und Medien gut. Also braucht der Leser eigene
+    Papier-Modi, unabhängig davon, wie der Rest der App gestimmt ist.</p></div>
+
+  <div class="fact"><span class="n">Abend</span><b>Warm stört den Schlaf am wenigsten</b>
+    <p>Lange Wellenlängen — Bernstein, Rot — unterdrücken Melatonin am schwächsten. Genau darauf
+    beruhen Night Shift und f.lux. Deine Lieblingsfarbe ist bei Nacht die physiologisch beste Wahl,
+    solange sie nicht flächig leuchtet.</p></div>
+
+  <div class="fact"><span class="n">Spieler</span><b>Dunkel, damit das Bild die Farbe stellt</b>
+    <p>Streamingdienste sind dunkel-zuerst, weil der Rahmen nicht mit dem Bild konkurrieren darf.
+    Spotify begründet seinen Dauer-Dunkelmodus ausdrücklich mit dem Kinosaal: alles Unwichtige
+    verschwindet, damit Cover und Bild die einzigen Farbquellen sind.</p></div>
+
+  <div class="fact"><span class="n">Apple</span><b>Bedeutung statt Dekoration</b>
+    <p>Apples Linie sind semantische Farben, die sich selbst umstellen, plus Materialien und
+    Vibrancy statt Schmuckfarbe. Die Oberfläche tritt zurück, der Inhalt trägt die Farbe. Genau
+    darum wirkt sie in beiden Modi gleich stimmig.</p></div>
+</div>
+
+<div class="thesis">
+  <p><b>Daraus folgt die eine Entscheidung, die vor der Farbwahl steht:</b> ein einziges Farbschema
+  für Regal, Leser und Spieler macht alle drei schlechter. Der Spieler will verschwinden. Der Leser
+  will eine ruhige, konstante Fläche, weil der Text keine eigene Farbe mitbringt. Das Regal will
+  Cover-Kunst zum Leuchten bringen.</p>
+  <p>Also: <b>drei Flächen, drei Regeln, eine Identität</b> — zusammengehalten von einem Akzent, der
+  überall derselbe ist. Und Orange wird genau dieser Akzent: nie Fläche, immer Zeichen.</p>
+</div>
+
+<hr class="rule">
+
+<h2>Die vier Richtungen</h2>
+<p class="sub">Alle vier sind vollständig durchdacht und würden funktionieren. Sie unterscheiden sich
+nicht in der Qualität, sondern im Charakter.</p>
+
+<!-- 1 -->
+<div class="entwurf e1">
+  <div class="e-kopf">
+    <span class="e-nr">01</span>
+    <div class="e-tit"><h3>Glut</h3>
+      <p>Deine Terracotta-Welt, zu Ende gedacht. Warmes Fast-Schwarz, Bernstein als Akzent.</p></div>
+    <div class="swatches">
+      <i class="sw" style="background:#16110E"><span>16110E</span></i>
+      <i class="sw" style="background:#1F1813"><span>1F1813</span></i>
+      <i class="sw" style="background:#D9922E"><span>D9922E</span></i>
+      <i class="sw" style="background:#D67756"><span>D67756</span></i>
+      <i class="sw lt" style="background:#F0E7DB"><span>F0E7DB</span></i>
+    </div>
+  </div>
+  <div class="flaechen">
+    <div class="fl"><div class="fl-lbl">Regal</div>
+      <div class="demo d-regal">
+        <div class="d-hero"><span class="play">▶</span><div><b>Frieren — Nach dem Ende der Reise</b><i>S1 · Folge 14 · noch 17 Min</i></div></div>
+        <div class="d-tiles"><span class="d-tile" style="background:linear-gradient(150deg,#4a3a52,#1e1820)"></span><span class="d-tile" style="background:linear-gradient(150deg,#54402a,#221a12)"></span><span class="d-tile" style="background:linear-gradient(150deg,#2e4440,#141e1c)"></span></div>
+        <div class="d-row"><span class="d-chip on">Angefangen</span><span class="d-chip">Neu</span><span class="d-chip">Alles</span></div>
+      </div></div>
+    <div class="fl"><div class="fl-lbl">Leser</div>
+      <div class="demo d-leser"><h5>Kapitel 412 · 44 %</h5>
+        <p>Der Regen hatte aufgehört, doch die Dachrinnen tropften noch. Klein stand am Fenster und
+        zählte die Sekunden zwischen den Tropfen, als ließe sich daraus etwas ablesen.</p>
+        <div class="bar"><i></i></div></div></div>
+    <div class="fl"><div class="fl-lbl">Spieler</div>
+      <div class="demo d-spieler"><div class="d-still"></div>
+        <div class="d-ctrl"><span class="pl">▶</span><span class="track"><i></i></span><span class="tm">17:04</span></div></div></div>
+  </div>
+  <div class="e-fuss">
+    <div class="gut"><b>Stärke</b> — vertraut, abendtauglich, warm ohne kitschig zu sein. Deine Nutzer erkennen es sofort wieder.</div>
+    <div class="risk"><b>Risiko</b> — warmer Grund färbt Cover-Kunst leicht ein; kühle Poster wirken minimal fahl.</div>
+  </div>
+</div>
+
+<!-- 2 -->
+<div class="entwurf e2">
+  <div class="e-kopf">
+    <span class="e-nr">02</span>
+    <div class="e-tit"><h3>Tinte</h3>
+      <p>Kühler blauschwarzer Grund — Orange ist die einzige Wärme im ganzen Bild.</p></div>
+    <div class="swatches">
+      <i class="sw" style="background:#0E1217"><span>0E1217</span></i>
+      <i class="sw" style="background:#161C23"><span>161C23</span></i>
+      <i class="sw" style="background:#F0873C"><span>F0873C</span></i>
+      <i class="sw" style="background:#8B97A5"><span>8B97A5</span></i>
+      <i class="sw lt" style="background:#E4E9EF"><span>E4E9EF</span></i>
+    </div>
+  </div>
+  <div class="flaechen">
+    <div class="fl"><div class="fl-lbl">Regal</div>
+      <div class="demo d-regal">
+        <div class="d-hero"><span class="play">▶</span><div><b>Frieren — Nach dem Ende der Reise</b><i>S1 · Folge 14 · noch 17 Min</i></div></div>
+        <div class="d-tiles"><span class="d-tile" style="background:linear-gradient(150deg,#4a3a52,#1e1820)"></span><span class="d-tile" style="background:linear-gradient(150deg,#54402a,#221a12)"></span><span class="d-tile" style="background:linear-gradient(150deg,#2e4440,#141e1c)"></span></div>
+        <div class="d-row"><span class="d-chip on">Angefangen</span><span class="d-chip">Neu</span><span class="d-chip">Alles</span></div>
+      </div></div>
+    <div class="fl"><div class="fl-lbl">Leser</div>
+      <div class="demo d-leser"><h5>Kapitel 412 · 44 %</h5>
+        <p>Der Regen hatte aufgehört, doch die Dachrinnen tropften noch. Klein stand am Fenster und
+        zählte die Sekunden zwischen den Tropfen, als ließe sich daraus etwas ablesen.</p>
+        <div class="bar"><i></i></div></div></div>
+    <div class="fl"><div class="fl-lbl">Spieler</div>
+      <div class="demo d-spieler"><div class="d-still"></div>
+        <div class="d-ctrl"><span class="pl">▶</span><span class="track"><i></i></span><span class="tm">17:04</span></div></div></div>
+  </div>
+  <div class="e-fuss">
+    <div class="gut"><b>Stärke</b> — der kühle Grund lässt Orange und Cover-Kunst regelrecht aufleuchten. Wirkt am teuersten.</div>
+    <div class="risk"><b>Risiko</b> — kühles Blau ist abends anregender als Bernstein; man verliert einen Teil des Gemütlichkeits-Vorteils.</div>
+  </div>
+</div>
+
+<!-- 3 -->
+<div class="entwurf e3">
+  <div class="e-kopf">
+    <span class="e-nr">03</span>
+    <div class="e-tit"><h3>Papier</h3>
+      <p>Hell zuerst. Eine Bibliothek, kein Kinosaal — nur der Spieler bricht bewusst aus.</p></div>
+    <div class="swatches">
+      <i class="sw lt" style="background:#F1EAE0"><span>F1EAE0</span></i>
+      <i class="sw lt" style="background:#FBF6EE"><span>FBF6EE</span></i>
+      <i class="sw" style="background:#B4551A"><span>B4551A</span></i>
+      <i class="sw lt" style="background:#DED2C2"><span>DED2C2</span></i>
+      <i class="sw" style="background:#241E17"><span>241E17</span></i>
+    </div>
+  </div>
+  <div class="flaechen">
+    <div class="fl"><div class="fl-lbl">Regal</div>
+      <div class="demo d-regal">
+        <div class="d-hero"><span class="play">▶</span><div><b>Frieren — Nach dem Ende der Reise</b><i>S1 · Folge 14 · noch 17 Min</i></div></div>
+        <div class="d-tiles"><span class="d-tile" style="background:linear-gradient(150deg,#6b5a75,#3b3141)"></span><span class="d-tile" style="background:linear-gradient(150deg,#7a5f3f,#42331f)"></span><span class="d-tile" style="background:linear-gradient(150deg,#48645e,#283834)"></span></div>
+        <div class="d-row"><span class="d-chip on">Angefangen</span><span class="d-chip">Neu</span><span class="d-chip">Alles</span></div>
+      </div></div>
+    <div class="fl"><div class="fl-lbl">Leser</div>
+      <div class="demo d-leser"><h5>Kapitel 412 · 44 %</h5>
+        <p>Der Regen hatte aufgehört, doch die Dachrinnen tropften noch. Klein stand am Fenster und
+        zählte die Sekunden zwischen den Tropfen, als ließe sich daraus etwas ablesen.</p>
+        <div class="bar"><i></i></div></div></div>
+    <div class="fl"><div class="fl-lbl">Spieler</div>
+      <div class="demo d-spieler"><div class="d-still"></div>
+        <div class="d-ctrl"><span class="pl">▶</span><span class="track"><i></i></span><span class="tm">17:04</span></div></div></div>
+  </div>
+  <div class="e-fuss">
+    <div class="gut"><b>Stärke</b> — die einzige Richtung, die tagsüber am hellen Schreibtisch wirklich angenehm ist. Und Lesen ist auf Papier nachweislich im Vorteil.</div>
+    <div class="risk"><b>Risiko</b> — der Bruch zum dunklen Spieler ist hart. Abends auf dem Sofa blendet es. Braucht zwingend eine Tag/Nacht-Automatik.</div>
+  </div>
+</div>
+
+<!-- 4 -->
+<div class="entwurf e4">
+  <div class="e-kopf">
+    <span class="e-nr">04</span>
+    <div class="e-tit"><h3>Bühne</h3>
+      <p>Fast farblos. Die Cover sind die Palette, Orange nur noch Zustand und Handlung.</p></div>
+    <div class="swatches">
+      <i class="sw" style="background:#121213"><span>121213</span></i>
+      <i class="sw" style="background:#1B1B1D"><span>1B1B1D</span></i>
+      <i class="sw" style="background:#FF8A3D"><span>FF8A3D</span></i>
+      <i class="sw" style="background:#96969B"><span>96969B</span></i>
+      <i class="sw lt" style="background:#F2F2F3"><span>F2F2F3</span></i>
+    </div>
+  </div>
+  <div class="flaechen">
+    <div class="fl"><div class="fl-lbl">Regal</div>
+      <div class="demo d-regal">
+        <div class="d-hero"><span class="play">▶</span><div><b>Frieren — Nach dem Ende der Reise</b><i>S1 · Folge 14 · noch 17 Min</i></div></div>
+        <div class="d-tiles"><span class="d-tile" style="background:linear-gradient(150deg,#4a3a52,#1e1820)"></span><span class="d-tile" style="background:linear-gradient(150deg,#54402a,#221a12)"></span><span class="d-tile" style="background:linear-gradient(150deg,#2e4440,#141e1c)"></span></div>
+        <div class="d-row"><span class="d-chip on">Angefangen</span><span class="d-chip">Neu</span><span class="d-chip">Alles</span></div>
+      </div></div>
+    <div class="fl"><div class="fl-lbl">Leser</div>
+      <div class="demo d-leser"><h5>Kapitel 412 · 44 %</h5>
+        <p>Der Regen hatte aufgehört, doch die Dachrinnen tropften noch. Klein stand am Fenster und
+        zählte die Sekunden zwischen den Tropfen, als ließe sich daraus etwas ablesen.</p>
+        <div class="bar"><i></i></div></div></div>
+    <div class="fl"><div class="fl-lbl">Spieler</div>
+      <div class="demo d-spieler"><div class="d-still"></div>
+        <div class="d-ctrl"><span class="pl">▶</span><span class="track"><i></i></span><span class="tm">17:04</span></div></div></div>
+  </div>
+  <div class="e-fuss">
+    <div class="gut"><b>Stärke</b> — die diszipliniertste Lösung. Cover-Kunst wird nie verfälscht, jedes Medium sieht gleich gut aus, altert am langsamsten.</div>
+    <div class="risk"><b>Risiko</b> — ohne eigene Farbwelt. Leer wirkt es kühl, und es verzichtet auf den Wiedererkennungswert, den du dir aufgebaut hast.</div>
+  </div>
+</div>
+
+<hr class="rule">
+
+<div class="mix">
+  <h3>Man muss sich nicht für eine entscheiden</h3>
+  <p>Weil die drei Flächen ohnehin getrennt gestimmt werden, lassen sie sich mischen. Diese Kombination
+  würde ich wählen, wenn du mich fragst:</p>
+  <div class="tbl-wrap"><table>
+    <tr><th>Fläche</th><th>Richtung</th><th>Warum</th></tr>
+    <tr><td><b>Regal</b></td><td><b>Glut</b></td><td>Wiedererkennung, warm, abendtauglich — und es bleibt deins</td></tr>
+    <tr><td><b>Leser</b></td><td><b>Papier</b>, mit Nacht-Variante aus Glut</td><td>Langtext braucht helle Fläche; abends kippt sie warm-dunkel</td></tr>
+    <tr><td><b>Spieler</b></td><td><b>Bühne</b></td><td>Neutrales Fast-Schwarz verfälscht kein Bild — der Rahmen verschwindet</td></tr>
+  </table></div>
+  <p style="margin-top:16px">Das ist kein Kompromiss, sondern die logische Folge daraus, dass die drei
+  Flächen verschiedene Aufgaben haben. Zusammengehalten wird alles durch denselben Bernstein-Akzent —
+  und der ist überall dasselbe Orange, nur nie als Fläche.</p>
+  <ul style="margin-top:18px">
+    <li><b>Regel 1</b> — Orange markiert immer nur: was läuft, was neu ist, was du anklicken sollst. Nie ein Hintergrund.</li>
+    <li><b>Regel 2</b> — Kein reines Schwarz, kein reines Weiß. Nirgends.</li>
+    <li><b>Regel 3</b> — Zustand wird durch Farbe kodiert, Medium durch Form und Kürzel. Farbe hat nur eine Bedeutung.</li>
+    <li><b>Regel 4</b> — Der Leser hat immer eigene Modi (Papier, Sepia, Nacht, Schwarz) — unabhängig davon, wie der Rest gestimmt ist.</li>
+  </ul>
+</div>
+
+</div>

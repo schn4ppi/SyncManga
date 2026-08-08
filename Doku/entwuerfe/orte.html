@@ -1,0 +1,624 @@
+<title>SyncFindus — Ein Werk liegt woanders</title>
+<style>
+:root{
+  --bg:#0E1217; --panel:#161C23; --panel2:#1c242d; --line:#232C36; --line2:#33404e;
+  --tx:#E4E9EF; --tx2:#8B97A5; --tx3:#5f6b78; --akz:#F0873C; --onA:#150a02;
+  --grün:#5fd07a; --gelb:#d8b64a; --rot:#e06a5a; --türkis:#5fd0c4; --lila:#a98fe0;
+  --disp:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --data:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+}
+@media (prefers-color-scheme:light){
+  :root:not([data-theme="dark"]){--bg:#eff1f4;--panel:#fff;--panel2:#f4f6f8;--line:#dde2e8;--line2:#c3ccd6;
+    --tx:#1a1f26;--tx2:#5a6672;--tx3:#8592a0;--akz:#b8551c;--onA:#fff;
+    --grün:#237a42;--gelb:#8a6410;--rot:#b13a28;--türkis:#1a7f74;--lila:#6b4fa8}
+}
+:root[data-theme="light"]{--bg:#eff1f4;--panel:#fff;--panel2:#f4f6f8;--line:#dde2e8;--line2:#c3ccd6;
+  --tx:#1a1f26;--tx2:#5a6672;--tx3:#8592a0;--akz:#b8551c;--onA:#fff;
+  --grün:#237a42;--gelb:#8a6410;--rot:#b13a28;--türkis:#1a7f74;--lila:#6b4fa8}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:var(--disp);font-size:16px;
+  line-height:1.6;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1120px;margin:0 auto;padding:34px 18px 90px}
+.eyebrow{font-family:var(--data);font-size:11px;letter-spacing:.17em;text-transform:uppercase;
+  color:var(--akz);margin:0 0 11px}
+h1{font-size:clamp(27px,4.2vw,42px);line-height:1.06;letter-spacing:-.028em;font-weight:800;
+  margin:0 0 13px;text-wrap:balance}
+.lede{font-size:17px;color:var(--tx2);max-width:68ch;margin:0}
+h2{font-size:23px;font-weight:800;letter-spacing:-.022em;margin:0 0 6px}
+h3{font-size:16px;font-weight:800;letter-spacing:-.012em;margin:26px 0 6px}
+.sub{color:var(--tx2);margin:0 0 16px;max-width:74ch;font-size:14.5px}
+hr.rule{height:1px;background:var(--line);border:0;margin:40px 0}
+b.a{color:var(--akz)}
+code{font-family:var(--data);font-size:.86em;background:var(--panel2);border:1px solid var(--line);
+  border-radius:4px;padding:1px 5px}
+svg{display:block}
+
+.reiter{display:flex;gap:6px;margin:26px 0 16px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.reiter button{appearance:none;background:none;border:0;border-bottom:2px solid transparent;
+  color:var(--tx2);font:inherit;font-weight:700;font-size:14px;padding:9px 14px;cursor:pointer;
+  min-height:24px;margin-bottom:-1px}
+.reiter button.on{color:var(--akz);border-bottom-color:var(--akz)}
+.reiter button:hover{color:var(--tx)}
+
+.bild{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--panel);
+  container-type:inline-size;margin:16px 0}
+.bildkopf{display:flex;align-items:center;gap:9px;padding:8px 13px;border-bottom:1px solid var(--line);
+  background:var(--panel2);font-family:var(--data);font-size:10px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--tx3)}
+.bildkopf .pkt{width:8px;height:8px;border-radius:50%;background:var(--akz)}
+.bildkopf .re{margin-left:auto;text-transform:none;letter-spacing:0;font-size:11px}
+.inn{background:var(--bg);padding:15px 16px 17px}
+
+.knopf{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line2);border-radius:8px;
+  background:var(--panel);color:var(--tx);font:inherit;font-size:12.5px;font-weight:600;
+  padding:6px 12px;cursor:pointer;min-height:30px}
+.knopf.haupt{background:var(--akz);border-color:var(--akz);color:var(--onA);font-weight:700}
+.knopf.klein{font-size:11.5px;padding:4px 9px;min-height:26px}
+.knopf.gut{border-color:var(--grün);color:var(--grün)}
+.knopf.schlecht{border-color:var(--rot);color:var(--rot)}
+.marke{display:inline-flex;align-items:center;gap:5px;font-family:var(--data);font-size:9.5px;
+  letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--line2);border-radius:5px;
+  padding:2px 6px;color:var(--tx2);white-space:nowrap}
+.marke.g{border-color:var(--grün);color:var(--grün)}
+.marke.ge{border-color:var(--gelb);color:var(--gelb)}
+.marke.r{border-color:var(--rot);color:var(--rot)}
+.marke.t{border-color:var(--türkis);color:var(--türkis)}
+.marke.a{border-color:var(--akz);color:var(--akz)}
+.marke.l{border-color:var(--lila);color:var(--lila)}
+.stufe{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;
+  border-radius:6px;font-family:var(--data);font-size:11px;font-weight:700;color:#150a02;flex:0 0 auto}
+.st-S{background:var(--türkis)} .st-A{background:var(--grün)} .st-B{background:var(--gelb)}
+.st-C{background:var(--akz)} .st-D{background:var(--rot)} .st-x{background:var(--line2);color:var(--tx3)}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]) .stufe{color:#fff}}
+:root[data-theme="light"] .stufe{color:#fff}
+
+/* ── Orte ── */
+.wkopf{display:flex;gap:15px;align-items:center;margin-bottom:15px;flex-wrap:wrap}
+.wcov{width:62px;flex:0 0 62px;aspect-ratio:2/3;border-radius:8px;
+  background:linear-gradient(150deg,#2c3b47,#8a5a35)}
+.wtx b{display:block;font-size:20px;font-weight:800;letter-spacing:-.024em;line-height:1.14}
+.wtx span{font-size:12.5px;color:var(--tx2)}
+.wtx .zei{margin-top:6px;display:flex;gap:6px;flex-wrap:wrap}
+
+.ort{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;
+  padding:11px 12px;border:1px solid var(--line);border-radius:11px;background:var(--panel);
+  margin-bottom:8px;position:relative;overflow:hidden}
+.ort::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px}
+.ort.o1::before{background:var(--grün)}
+.ort.o2::before{background:var(--türkis)}
+.ort.o3::before{background:var(--lila)}
+.ort.o4::before{background:var(--line2)}
+.ort.gewaehlt{border-color:var(--akz);background:rgba(240,135,60,.07)}
+.otx{min-width:0}
+.otx b{display:block;font-size:14px;font-weight:700;letter-spacing:-.012em;line-height:1.25}
+.otx .wo{font-size:12px;color:var(--tx2)}
+.otx .darf{font-size:11.5px;color:var(--tx3);margin-top:4px}
+.otx .darf em{font-style:normal;color:var(--rot)}
+.ore{display:flex;flex-direction:column;gap:5px;align-items:flex-end;flex:0 0 auto}
+
+/* ── Fortschritt: eine MENGE, keine Zahl ── */
+.seiten{display:grid;grid-template-columns:1fr;gap:12px;margin:14px 0}
+.seite{border:1px solid var(--line2);border-radius:12px;background:var(--panel);padding:13px 15px}
+.seite.hier{border-color:var(--akz)}
+.seite.fremd{border-style:dashed;opacity:.72}
+.seite .sk{font-family:var(--data);font-size:9.5px;letter-spacing:.15em;text-transform:uppercase;
+  color:var(--tx3);margin-bottom:9px;display:flex;align-items:center;gap:8px}
+.seite.hier .sk{color:var(--akz)}
+.seite .sk .re2{margin-left:auto;letter-spacing:0;text-transform:none;font-size:11px;
+  color:var(--tx2)}
+/* Je Folge ein Feld — daran sieht man sofort, dass es keine EINE Zahl ist. */
+.folgen2{display:flex;gap:3px;flex-wrap:wrap}
+.fg{width:26px;height:26px;border-radius:6px;background:var(--line);display:flex;
+  align-items:center;justify-content:center;font-family:var(--data);font-size:10px;
+  color:var(--tx3);flex:0 0 auto;transition:background .3s,color .3s,box-shadow .3s}
+.fg.gesehen{background:var(--grün);color:var(--onA);font-weight:700}
+.fg.drin{background:var(--akz);color:var(--onA);font-weight:700;
+  box-shadow:0 0 0 2px rgba(240,135,60,.32)}
+.fg.neu2{box-shadow:0 0 0 2px var(--türkis)}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]) .fg.gesehen,
+  :root:not([data-theme="dark"]) .fg.drin{color:#fff}}
+:root[data-theme="light"] .fg.gesehen,:root[data-theme="light"] .fg.drin{color:#fff}
+.legende{display:flex;gap:13px;flex-wrap:wrap;margin-top:10px;font-size:11.5px;color:var(--tx3)}
+.legende span{display:flex;align-items:center;gap:6px}
+.legende i{width:12px;height:12px;border-radius:4px;background:var(--line);display:block}
+.legende i.g2{background:var(--grün)} .legende i.a2{background:var(--akz)}
+.knr{display:flex;gap:7px;flex-wrap:wrap;margin:12px 0}
+.erg{border-left:3px solid var(--akz);background:var(--panel);border-radius:0 10px 10px 0;
+  padding:11px 14px;font-size:13.5px;min-height:86px}
+.erg b{color:var(--akz)}
+.erg .rg{font-family:var(--data);font-size:10px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--tx3);display:block;margin-bottom:4px}
+.erg em{font-style:normal;color:var(--rot)}
+.weiter{margin-top:11px;padding-top:10px;border-top:1px solid var(--line);
+  font-family:var(--data);font-size:11.5px;color:var(--tx2)}
+.weiter b{color:var(--akz)}
+
+/* ── Anfragen ── */
+.anf{display:flex;align-items:center;gap:12px;padding:11px 12px;border:1px solid var(--line);
+  border-radius:11px;background:var(--panel);margin-bottom:8px}
+.anf.rein{border-left:3px solid var(--akz)}
+.anf .av{width:30px;height:30px;border-radius:50%;flex:0 0 auto;display:flex;align-items:center;
+  justify-content:center;font-size:12px;font-weight:800;background:var(--panel2);color:var(--tx2)}
+.anf .av.k{background:#3f6a58;color:#fff} .anf .av.a{background:#7a4a5e;color:#fff}
+.anf .at{flex:1;min-width:0}
+.anf .at b{display:block;font-size:13.5px;font-weight:700;line-height:1.25}
+.anf .at span{display:block;font-size:12px;color:var(--tx2)}
+.anf .are{display:flex;gap:6px;flex:0 0 auto;flex-wrap:wrap;justify-content:flex-end}
+
+.spur{display:flex;align-items:center;gap:0;margin:14px 0;flex-wrap:wrap}
+.sp2{display:flex;align-items:center;gap:8px;border:1px solid var(--line2);border-radius:9px;
+  padding:7px 12px;font-size:12.5px;background:var(--panel);white-space:nowrap}
+.sp2.on{border-color:var(--akz);background:rgba(240,135,60,.1);font-weight:700}
+.sp2.aus{border-color:var(--rot);color:var(--rot)}
+.pf3{padding:0 6px;color:var(--tx3);display:flex;align-items:center}
+.pf3 svg{width:15px;height:15px}
+
+table.t{width:100%;border-collapse:collapse;font-size:13.5px;margin:14px 0}
+table.t th{text-align:left;font-size:10.5px;font-family:var(--data);letter-spacing:.1em;
+  text-transform:uppercase;color:var(--tx3);font-weight:400;padding:7px 9px;
+  border-bottom:1px solid var(--line2)}
+table.t td{padding:8px 9px;border-bottom:1px solid var(--line);vertical-align:top}
+table.t tr:last-child td{border-bottom:0}
+table.t td.nw{white-space:nowrap}
+
+.merk{border-left:3px solid var(--akz);background:var(--panel);border-radius:0 10px 10px 0;
+  padding:12px 15px;margin:16px 0;font-size:14px}
+.merk b{color:var(--akz)}
+.merk p{margin:0}
+.merk p+p{margin-top:7px}
+.merk.warn{border-left-color:var(--rot)}
+.merk.warn b{color:var(--rot)}
+
+.erkl{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:13px;margin-top:15px}
+.ek{border:1px solid var(--line);border-radius:11px;padding:12px 14px;background:var(--panel)}
+.ek.gut{border-color:var(--akz)}
+.ek h4{margin:0 0 5px;font-size:13.5px;font-weight:800}
+.ek p{margin:0;font-size:12.5px;color:var(--tx2)}
+.ek .ab{font-family:var(--data);font-size:9px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--tx3);display:block;margin-bottom:4px}
+.ek.gut .ab{color:var(--akz)}
+.ek b{color:var(--tx)}
+.ek em{font-style:normal;color:var(--rot)}
+
+@container (max-width:560px){
+  .ort{grid-template-columns:auto 1fr}
+  .ore{grid-column:2;flex-direction:row;align-items:center}
+}
+@media (max-width:600px){
+  .wrap{padding:26px 13px 70px}
+  .erkl{grid-template-columns:1fr}
+}
+</style>
+
+<div class="wrap">
+<p class="eyebrow">Entwurf 20 · §4.7 · E169–E183</p>
+<h1>Ein Werk liegt woanders</h1>
+<p class="lede">Der letzte Entwurf, der noch etwas beweisen muss: dass <b class="a">ein Werk an
+vier Orten gleichzeitig</b> liegen kann, ohne dass daraus vier Werke werden — und dass
+Fortschritt in beide Richtungen fließt, ohne sich selbst zu überschreiben. Dazu das Thema, das
+mit Jellyseerr aufgetaucht ist: <b class="a">Anfragen</b>.</p>
+
+<div class="reiter" id="rt">
+  <button class="on" data-t="ort">Die vier Orte</button>
+  <button data-t="fort">Fortschritt, beidseitig</button>
+  <button data-t="anf">Anfragen</button>
+</div>
+
+<!-- ════════ ORTE ════════ -->
+<section id="t-ort">
+  <div class="bild">
+    <div class="bildkopf"><span class="pkt"></span><span>Werk-Seite · Ausgaben</span>
+      <span class="re">ein Werk, vier Orte</span></div>
+    <div class="inn">
+      <div class="wkopf">
+        <div class="wcov"></div>
+        <div class="wtx"><b>Vinland Saga</b>
+          <span>Anime · JP · 2019 · Wit Studio · Folge 8 von 24</span>
+          <div class="zei"><span class="marke a">Folge 8</span>
+            <span class="marke t">4 Ausgaben</span>
+            <span class="marke">1 Werk</span></div></div>
+      </div>
+
+      <div class="ort o1 gewaehlt">
+        <span class="stufe st-A">A</span>
+        <div class="otx"><b>Auf deinem NAS</b>
+          <div class="wo">1080p · BDRip x265 · 9,4 GB · JP + Sub DE</div>
+          <div class="darf">lesen · abspielen · veredeln · umbenennen · löschen — <b>alles</b></div></div>
+        <div class="ore"><span class="marke g">lokal</span>
+          <button class="knopf klein haupt">Abspielen</button></div></div>
+
+      <div class="ort o2">
+        <span class="stufe st-S">S</span>
+        <div class="otx"><b>Auf deinem Jellyfin</b>
+          <div class="wo">2160p Remux · 78 GB · Atmos · JP + DE-Synchro</div>
+          <div class="darf">abspielen · <b>Fortschritt in beide Richtungen</b> · Merkliste teilen —
+            <em>nicht umbenennen, nicht veredeln: es ist nicht unser Ordner</em></div></div>
+        <div class="ore"><span class="marke t">fern &amp; eigen</span>
+          <button class="knopf klein">Abspielen</button></div></div>
+
+      <div class="ort o3">
+        <span class="stufe st-B">B</span>
+        <div class="otx"><b>Bei Kevin</b>
+          <div class="wo">1080p WEB-DL · 24 Folgen vollständig · im selben Netz</div>
+          <div class="darf">sehen · <b>anfragen</b> — <em>nie Fortschritt, nie veredeln,
+            nie ohne sein Ja</em></div></div>
+        <div class="ore"><span class="marke l">geliehen · LAN</span>
+          <button class="knopf klein">Anfragen</button></div></div>
+
+      <div class="ort o4">
+        <span class="stufe st-x">—</span>
+        <div class="otx"><b>Bei Crunchyroll</b>
+          <div class="wo">verfügbar in DE · in deinem Abo enthalten</div>
+          <div class="darf"><b>nur Wissen</b> (E129) — <em>kein Bild, kein Ton, keine
+            Datei. Widevine ist nicht zu knacken</em></div></div>
+        <div class="ore"><span class="marke">fern &amp; fremd</span>
+          <button class="knopf klein">Dort öffnen</button></div></div>
+
+      <p class="sub" style="margin:13px 0 0;font-size:12.5px"><b>Der Knopf oben in der
+      Werk-Seite wählt selbst</b> — nach deinem Güteprofil, nicht nach Zufall. „Nie unter B,
+      bevorzuge lokal" heißt hier: NAS. „Beste Güte, egal wo" heißt: Jellyfin. <b>Du siehst die
+      Wahl, du musst sie nicht treffen.</b></p>
+    </div>
+  </div>
+
+  <div class="merk">
+    <p>🔑 <b>E169 — ein Medienserver ist ein Ort, keine Quelle und kein Motor.</b> §4.6 sagte
+    immer <em>„Ort ≠ Werk"</em> — das galt nur für Platten. Es gilt genauso für Server, für
+    fremde Rechner im Netz und für Streaming-Dienste. <b>Vier Orte, ein Werk, ein
+    Fortschritt.</b></p>
+  </div>
+
+  <table class="t">
+    <tr><th>Ort</th><th>Sehen</th><th>Abspielen</th><th>Holen</th><th>Fortschritt</th><th>Veredeln</th></tr>
+    <tr><td class="nw"><b>Lokal</b> · NAS</td><td>✅</td><td>✅</td><td>—</td><td>✅ Quelle</td><td>✅</td></tr>
+    <tr><td class="nw"><b>Fern &amp; eigen</b> · Jellyfin</td><td>✅</td><td>✅</td>
+      <td>✅ als Kopie</td><td>✅ <b>beidseitig</b></td><td>❌ nicht unser Ordner</td></tr>
+    <tr><td class="nw"><b>Fern &amp; geliehen</b> · LAN</td><td>✅ auf Zuruf</td><td>❌</td>
+      <td>✅ <b>nur mit Ja</b></td><td>❌ <b>nie</b></td><td>❌</td></tr>
+    <tr><td class="nw"><b>Fern &amp; fremd</b> · Abo</td><td>✅ Verfügbarkeit</td><td>❌ Widevine</td>
+      <td>❌</td><td>🟡 nur lesen, wenn das Konto es hergibt</td><td>❌</td></tr>
+  </table>
+
+  <div class="erkl">
+    <div class="ek gut"><span class="ab">Die Probe aufs Modell</span><h4>Vier Ausgaben, kein Sonderfall</h4>
+      <p>Nichts hieran ist neu erfunden: <b>E03</b> sagt „ein Werk, mehrere Ausgaben", <b>E140</b>
+      gibt jeder eine Stufe, <b>E28</b> trennt Ort von Werk. Der Server passt hinein,
+      <b>ohne dass eine Regel gebogen werden musste.</b></p></div>
+    <div class="ek"><span class="ab">Ausfall</span><h4>Ein Ort darf sterben</h4>
+      <p>Jellyfin aus? Kevin geht nach Hause? <b>Das Werk bleibt</b> — mit Fortschritt,
+      Merkliste und allem. Es fehlt nur eine Ausgabe, und der Knopf wählt die nächstbeste.</p></div>
+    <div class="ek"><span class="ab">Identität</span><h4>Der Server hat keine Hoheit</h4>
+      <p>Seine ID ist ein <b>Fremdschlüssel</b> wie AniList-ID oder ISBN. Der Katalog wird
+      über einen Adapter <b>verschmolzen</b>, nicht danebengehängt (E11) — sonst hätten wir
+      zwei Register.</p></div>
+  </div>
+</section>
+
+<!-- ════════ FORTSCHRITT ════════ -->
+<section id="t-fort" hidden>
+  <div class="merk warn">
+    <p><b>JB, 08.08.2026:</b> <em>„Wenn ich an meinem PC nicht Episode 12 geguckt habe, bin ich
+    bei Folge 3. Ich sehe den Konflikt nicht. Wenn jemand von meinem PC streamt, dann hat das
+    nicht mit dem Programm zu tun — er ist in seinem Programm und guckt von da. Kannst du nicht
+    differenzieren zwischen einmal geöffnet und von wem?"</em></p>
+    <p><b>Doch. Und der Konflikt, den ich gezeichnet hatte, war ein Fehler in meinem Modell —
+    kein echtes Problem.</b> Ich hatte Fortschritt als <b>eine Zahl</b> modelliert („du bist bei
+    Folge 8"). Sobald man das tut, kollidieren zwei Zahlen, und man braucht eine Regel, welche
+    gewinnt. <b>Modelliert man ihn als das, was er ist — ein Zustand je Folge — gibt es nichts
+    zu entscheiden.</b> Zwei Mengen vereinigen sich, sie streiten nicht.</p>
+  </div>
+
+  <div class="bild">
+    <div class="bildkopf"><span class="pkt"></span><span>Abgleich</span>
+      <span class="re" id="lage">im Gleichstand</span></div>
+    <div class="inn">
+      <div class="seiten">
+        <div class="seite hier">
+          <div class="sk"><span>SyncFindus · Profil „JB"</span>
+            <span class="re2" id="uHier">zuletzt heute, 19:04</span></div>
+          <div class="folgen2" id="fHier"></div>
+        </div>
+        <div class="seite">
+          <div class="sk"><span>Jellyfin · <b style="color:var(--akz)">derselbe Benutzer</b></span>
+            <span class="re2" id="uDort">zuletzt heute, 19:04</span></div>
+          <div class="folgen2" id="fDort"></div>
+        </div>
+        <div class="seite fremd" id="sFremd" hidden>
+          <div class="sk"><span>Jellyfin · Benutzer „Kevin"</span>
+            <span class="re2">geht uns nichts an</span></div>
+          <div class="folgen2" id="fFremd"></div>
+        </div>
+      </div>
+
+      <div class="legende">
+        <span><i class="g2"></i> gesehen</span>
+        <span><i class="a2"></i> mittendrin, mit Marke</span>
+        <span><i></i> ungesehen</span>
+      </div>
+
+      <div class="knr">
+        <button class="knopf klein" data-f="hier">Hier Folge 9 zu Ende gesehen</button>
+        <button class="knopf klein" data-f="dort">Am Handy Folgen 9–12 gesehen</button>
+        <button class="knopf klein" data-f="nochmal">Von vorn: Folge 3 nochmal</button>
+        <button class="knopf klein" data-f="fremd">Kevin streamt von deinem Server</button>
+        <button class="knopf klein" data-f="reingeschaut">40 Sekunden reingeschaut</button>
+        <button class="knopf klein" data-f="offline">6 Tage ohne Netz</button>
+        <button class="knopf klein" data-f="reset">Von Hand zurückgesetzt</button>
+      </div>
+
+      <div class="erg" id="erg">
+        <span class="rg">Ausgangslage</span>
+        Folgen 1–8 gesehen, in Folge 8 steht noch eine Marke bei 12:07. <b>Beide Seiten wissen
+        dasselbe</b> — es passiert nichts, und das ist der häufigste Fall.
+        <div class="weiter">Weiter bei: <b id="wt">Folge 8 · 12:07</b></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="merk">
+    <p>🔑 <b>E182 — Fortschritt ist eine Menge, keine Zahl.</b> Je Einheit gibt es genau drei
+    Zustände: <b>ungesehen · mittendrin (mit Marke) · gesehen</b>. Daraus folgt alles:</p>
+    <p><b>Zwischen Einheiten wird vereinigt, nie verglichen.</b> „Gesehen" ist je Einheit
+    einbahnig — was einmal gesehen war, bleibt gesehen, bis es jemand ausdrücklich zurücknimmt.
+    Zwei Geräte können sich hier <b>gar nicht widersprechen</b>, sie können nur beide recht
+    haben.</p>
+    <p><b>Innerhalb einer Einheit gewinnt die neuere Marke.</b> Zurückspulen ist normal — wer
+    in Folge 8 von 12:07 auf 3:00 springt, hat das gemeint. <em>Genau hier hatte ich es vorher
+    umgekehrt und falsch.</em></p>
+    <p><b>„Weiter" ist eine Frage, keine Zahl.</b> Es ist die Einheit mit offener Marke — und
+    wenn es keine gibt, die erste ungesehene. Deshalb bringt dich Folge 12 von irgendwem
+    nirgendwohin.</p>
+  </div>
+
+  <div class="merk">
+    <p>🔑 <b>E181 — Fortschritt gehört einem Profil, nicht einem Ort.</b> Auf dem Server melden
+    wir uns als <b>ein bestimmter Benutzer</b> an und lesen und schreiben <b>nur dessen</b>
+    Daten. Kevin, der von deinem Server streamt, ist ein anderer Benutzer — <b>für uns existiert
+    er nicht</b>. Er ist in seinem Programm, und das bleibt so.</p>
+    <p>⚠️ <b>Die eine Bedingung dafür:</b> teile den <b>Server</b>, nicht das <b>Konto</b>.
+    Wer sein Jellyfin-Passwort weitergibt, hat keine zwei Benutzer, sondern einen mit zwei
+    Menschen — und dann kann kein Programm der Welt auseinanderhalten, wer gesehen hat.
+    SyncFindus merkt das immerhin: eine Sitzung von einem Gerät, das es nicht kennt, wird
+    <b>gefragt statt geglaubt</b>.</p>
+  </div>
+
+  <div class="merk">
+    <p>🔑 <b>E183 — geöffnet ist nicht gesehen.</b> Kurz reinschauen, jemandem etwas zeigen,
+    versehentlich starten — <b>das ist kein Fortschritt und schreibt gar nichts.</b></p>
+    <p><b>Die Schwellen:</b> unter <b>2 %</b> oder unter <b>60 Sekunden</b> passiert nichts.
+    Darüber entsteht eine <b>Marke</b> (mittendrin). Ab <b>90 %</b> oder mit dem Abspann gilt es
+    als <b>gesehen</b>. Beim Manga entsprechend: eine angetippte Seite ist nichts, die letzte
+    Seite eines Kapitels ist alles.</p>
+    <p><b>Und der Notausgang:</b> jeder Fortschrittseintrag hat <b>„das war ich nicht"</b> —
+    ein Griff, und er verschwindet, auf beiden Seiten. Weil es immer den Abend gibt, an dem
+    jemand anderes an deinem Rechner saß.</p>
+  </div>
+
+  <div class="merk warn">
+    <p><b>Und weil du es angesprochen hast:</b> <em>„Wenn jemand Folge 12 anfragt, dann bringt
+    mich das nicht auf Folge 12."</em> — Richtig, und das ist eine eigene Regel wert:
+    <b>eine Anfrage ist eine Absicht, kein Ereignis.</b> Anfragen, Wünsche, Merklisten,
+    Warteschlangen-Einträge — <b>nichts davon berührt jemals eine Position</b>. Fortschritt
+    entsteht ausschließlich durch <b>Abspielen</b>, und zwar durch deins.</p>
+  </div>
+</section>
+
+<!-- ════════ ANFRAGEN ════════ -->
+<section id="t-anf" hidden>
+  <div class="merk">
+    <p><b>Ja — Anfragen sind jetzt ein Thema.</b> Und das Schöne ist: sie sind <b>kein neues
+    System</b>. Jellyseerr, LANoMAT und der Haushalt sind dreimal dieselbe Sache.</p>
+    <p>🔑 <b>E180 — eine Anfrage ist ein Wunsch, der über eine Grenze geht.</b>
+    Ein <b>Wunsch</b> (E150) ist an mich selbst gerichtet: ich will das, und mein Programm
+    versucht es. Eine <b>Anfrage</b> ist an <em>jemand anderen</em> gerichtet: ich will das,
+    und ein Mensch muss zustimmen. <b>Gleiche Form, andere Grenze.</b></p>
+  </div>
+
+  <div class="spur">
+    <span class="sp2 on">Wunsch</span>
+    <span class="pf3"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+      stroke-linecap="round"><path d="M5 12h13"/><path d="M14 7l5 5-5 5"/></svg></span>
+    <span class="sp2">gestellt</span>
+    <span class="pf3"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+      stroke-linecap="round"><path d="M5 12h13"/><path d="M14 7l5 5-5 5"/></svg></span>
+    <span class="sp2">angenommen</span>
+    <span class="pf3"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+      stroke-linecap="round"><path d="M5 12h13"/><path d="M14 7l5 5-5 5"/></svg></span>
+    <span class="sp2">erfüllt</span>
+    <span class="pf3" style="opacity:.5">oder</span>
+    <span class="sp2 aus">abgelehnt → <b>Wunsch lauert weiter</b></span>
+  </div>
+
+  <div class="bild">
+    <div class="bildkopf"><span class="pkt"></span><span>Anfragen</span>
+      <span class="re">2 gestellt · 1 an dich</span></div>
+    <div class="inn">
+      <h3 style="margin:0 0 9px">Von dir gestellt</h3>
+      <div class="anf">
+        <span class="av">JF</span>
+        <div class="at"><b>Dune: Part Three</b>
+          <span>an deinen Jellyfin · über Jellyseerr · vor 2 Tagen</span></div>
+        <div class="are"><span class="marke g">angenommen</span>
+          <span class="marke a">wird geholt · 71 %</span></div></div>
+      <div class="anf">
+        <span class="av k">K</span>
+        <div class="at"><b>Vinland Saga · Folgen 9–24</b>
+          <span>an Kevin · im selben Netz · vor 4 Minuten</span></div>
+        <div class="are"><span class="marke ge">wartet auf Antwort</span>
+          <button class="knopf klein">Zurückziehen</button></div></div>
+
+      <h3 style="margin:18px 0 9px">An dich gerichtet</h3>
+      <div class="anf rein">
+        <span class="av a">A</span>
+        <div class="at"><b>Ann fragt nach One Piece · Kapitel 1–1140</b>
+          <span>4,1 GB · sie hat davon 0 · im selben Netz seit 20:12</span></div>
+        <div class="are">
+          <button class="knopf klein gut">Ja</button>
+          <button class="knopf klein schlecht">Nein</button>
+          <button class="knopf klein">Nur ansehen</button></div></div>
+
+      <p class="sub" style="margin:13px 0 0;font-size:12.5px"><b>Drei Antworten, nicht zwei.</b>
+      „Nur ansehen" heißt: sie darf lesen, aber nichts mitnehmen — die Zwischenstufe, die
+      man beim LAN-Abend fast immer will und die in keinem Programm existiert.</p>
+    </div>
+  </div>
+
+  <h3>Dreimal dieselbe Sache</h3>
+  <table class="t">
+    <tr><th>Wohin</th><th>Wer sagt Ja</th><th>Was danach passiert</th></tr>
+    <tr><td class="nw"><b>An deinen eigenen Server</b><br><span style="color:var(--tx3)">Jellyseerr</span></td>
+      <td>meistens <b>du selbst</b> — deshalb fühlt es sich wie ein Wunsch an</td>
+      <td>Der Server beschafft. Für uns ist er <b>ein Kandidat im Rennen</b> (E149), kein
+        Sonderweg — er tritt gegen Indexer und Direktlinks an und gewinnt, wenn er schneller ist</td></tr>
+    <tr><td class="nw"><b>An eine fremde Bibliothek</b><br><span style="color:var(--tx3)">LANoMAT, E179</span></td>
+      <td><b>ein anderer Mensch</b>, mit einer Karte und zwei Knöpfen</td>
+      <td>Bei Ja wird gezogen — nie geschoben. Die Datei geht durch dieselbe Erkennung wie jede
+        andere (§8.2)</td></tr>
+    <tr><td class="nw"><b>An jemanden im Haushalt</b><br><span style="color:var(--tx3)">familie.py</span></td>
+      <td><b>der Profilinhaber</b> — z. B. ein Elternteil bei einem Kinderprofil (E158)</td>
+      <td>Dasselbe. <b>Ein Kind fragt, statt heimlich zu suchen</b> — das ist die freundlichere
+        Form von Jugendschutz</td></tr>
+  </table>
+
+  <div class="merk">
+    <p><b>Vier Regeln, damit Anfragen nicht zu Bettelei werden:</b></p>
+    <p><b>1 · Eine Ablehnung ist ein Ergebnis, kein Fehler.</b> Sie ist nicht rot. Der Wunsch
+    bleibt bei dir und <b>lauert weiter</b> (E150) — vielleicht taucht das Werk woanders auf.
+    <b>Man fragt denselben Menschen nicht zweimal nach derselben Sache</b>: ein zweiter Versuch
+    braucht deine ausdrückliche Handlung, das Programm wiederholt ihn nie von selbst.</p>
+    <p><b>2 · Der Anfragende sieht nur „gestellt".</b> Nicht, ob der andere sie gelesen,
+    geöffnet oder ignoriert hat. <em>Kein Lesebestätigungs-Elend.</em></p>
+    <p><b>3 · Eine Anfrage trägt nie deinen Fortschritt.</b> Sie sagt „ich hätte gern X" —
+    nicht „ich bin bei Kapitel 63 und mir fehlen die davor". Das wäre eine Auskunft über dich,
+    die niemand angefordert hat (E179).</p>
+    <p><b>4 · Anfragen sind Post, kein Postfach.</b> Sie kommen nicht ins Postfach (E141) —
+    das ist für <b>Unklarheit</b>, und eine Anfrage ist das Gegenteil davon: völlig klar,
+    sie braucht nur eine Antwort. Sie stehen bei der Warteschlange, weil dort das Ergebnis
+    landet.</p>
+  </div>
+
+  <div class="erkl">
+    <div class="ek gut"><span class="ab">Warum das zusammenpasst</span><h4>Kein neuer Baustein</h4>
+      <p>Anfragen brauchen <b>keine eigene Maschinerie</b>: der Zustand hängt am Wunsch, der
+      Weg ist die Warteschlange, die Zustimmung ist eine Karte. <b>Drei Kontexte, ein
+      Mechanismus.</b></p></div>
+    <div class="ek"><span class="ab">Was neu ist</span><h4>Die Gegenrichtung</h4>
+      <p>Zum ersten Mal kann jemand <b>etwas von dir wollen</b>. Das ist die erste Stelle im
+      ganzen Programm, an der ein anderer Mensch auf deinem Bildschirm auftaucht — deshalb die
+      vier Regeln oben.</p></div>
+    <div class="ek"><span class="ab">Die Zwischenstufe</span><h4>„Nur ansehen"</h4>
+      <p>Zwischen Ja und Nein liegt das, was man beim LAN-Abend fast immer meint:
+      <b>lies es bei mir, nimm es nicht mit.</b> Kostet nichts und löst die meisten Fälle.</p></div>
+  </div>
+</section>
+
+<script>
+"use strict";
+document.getElementById("rt").addEventListener("click", function(e){
+  var b = e.target.closest("button"); if(!b) return;
+  this.querySelectorAll("button").forEach(function(x){ x.classList.toggle("on", x===b); });
+  ["ort","fort","anf"].forEach(function(t){
+    document.getElementById("t-"+t).hidden = (t !== b.dataset.t);
+  });
+});
+
+/* ── Abgleich: Fortschritt als MENGE je Folge, nicht als Zahl ──
+   Genau daran sieht man, dass es keinen Konflikt gibt: zwei Mengen
+   vereinigen sich. Streiten kann nur, wer eine einzige Zahl fuehrt. */
+var GES = 24;
+/* zustand[i]: 0 = ungesehen, 1 = mittendrin, 2 = gesehen; marke[i] = Text */
+function leer(){ var a = []; for(var i=0;i<GES;i++) a.push(0); return a; }
+function bis(n){ var a = leer(); for(var i=0;i<n;i++) a[i] = 2; return a; }
+
+function male(id, zust, marke, neu){
+  var el = document.getElementById(id); if(!el) return;
+  var h = "";
+  for(var i=0;i<GES;i++){
+    var k = zust[i] === 2 ? "gesehen" : (zust[i] === 1 ? "drin" : "");
+    if(neu && neu.indexOf(i) >= 0) k += " neu2";
+    var t = (zust[i] === 1 && marke) ? marke : String(i+1);
+    h += '<span class="fg ' + k + '" title="Folge ' + (i+1) + '">' + (i+1) + "</span>";
+  }
+  el.innerHTML = h;
+}
+
+var FAELLE = {
+  hier: { h:9, d:9, hm:0, dm:0, neu:[8], fremd:false,
+    lage:"→ nach rechts", wt:"Folge 10",
+    rg:"Der Normalfall",
+    txt:"Folge 9 zu Ende gesehen. <b>Wir schreiben zurück</b> — auf dem Handy steht sie gleich "
+      + "als gesehen. Keine Meldung: das ist kein Ereignis, das ist Selbstverständlichkeit." },
+  dort: { h:12, d:12, hm:0, dm:0, neu:[9,10,11], fremd:false,
+    lage:"← nach links", wt:"Folge 13",
+    rg:"Die Gegenrichtung",
+    txt:"Am Handy bis Folge 12 gesehen. Beim nächsten Abgleich <b>zieht SyncFindus nach</b> — "
+      + "die Startseite zeigt dir sofort Folge 13. <b>Das ist der Fall, für den es sich "
+      + "überhaupt lohnt.</b>" },
+  nochmal: { h:12, d:12, hm:3, dm:3, neu:[2], fremd:false,
+    lage:"kein Konflikt", wt:"Folge 3 · 4:12",
+    rg:"Der Fall, den ich vorher falsch hatte",
+    txt:"Du fängst von vorn an und siehst Folge 3 nochmal. <b>Folge 1–12 bleiben gesehen, und "
+      + "Folge 3 bekommt zusätzlich eine Marke.</b> Beides ist wahr, nichts widerspricht sich. "
+      + "<em>Vorher hätte meine Regel „die weitere Position gewinnt“ dich zurück auf Folge 13 "
+      + "gezerrt — genau das, was du nicht wolltest.</em>" },
+  fremd: { h:8, d:8, hm:8, dm:8, neu:[], fremd:true,
+    lage:"unbeteiligt", wt:"Folge 8 · 12:07",
+    rg:"Kevin streamt von deinem Server",
+    txt:"Kevin sieht Folge 1–20. <b>Bei dir passiert nichts.</b> Er ist ein anderer Benutzer "
+      + "auf demselben Server — wir lesen und schreiben ausschließlich die Daten <b>unseres</b> "
+      + "Benutzers. <b>Er ist in seinem Programm, und das bleibt so.</b>" },
+  reingeschaut: { h:8, d:8, hm:8, dm:8, neu:[], fremd:false,
+    lage:"nichts geschrieben", wt:"Folge 8 · 12:07",
+    rg:"40 Sekunden reingeschaut",
+    txt:"Du hast Folge 15 gestartet, um jemandem etwas zu zeigen, und nach 40 Sekunden "
+      + "geschlossen. <b>Es wird gar nichts geschrieben</b> — unter 60 Sekunden oder 2 % gibt "
+      + "es keinen Fortschritt. <b>Sonst wäre jedes Vorspulen ein Ereignis.</b>" },
+  offline: { h:15, d:9, hm:0, dm:0, neu:[9,10,11,12,13,14], fremd:false,
+    lage:"Nachreich-Schlange: 6", wt:"Folge 16",
+    rg:"Ohne Netz",
+    txt:"Sechs Tage Funkloch, sechs Folgen gesehen. Der Server weiß von nichts. <b>Die sechs "
+      + "Meldungen liegen in der Nachreich-Schlange</b> und gehen raus, sobald es wieder geht — "
+      + "einzeln und in der richtigen Reihenfolge. Das ist <b>E156 in klein</b>." },
+  reset: { h:0, d:0, hm:0, dm:0, neu:[], fremd:false,
+    lage:"Ansage", wt:"Folge 1",
+    rg:"Von Hand zurückgesetzt",
+    txt:"<b>Die einzige Handlung, die „gesehen“ zurücknimmt.</b> Sie ist ausdrücklich, sie "
+      + "gilt auf beiden Seiten, und sie ist der Grund, warum die Einbahnregel oben überhaupt "
+      + "sicher ist: <b>es gibt einen Weg zurück, aber nur über deine Hand.</b>" }
+};
+
+function zeigFall(k){
+  var f = FAELLE[k];
+  var zh = bis(f.h), zd = bis(f.d);
+  if(f.hm){ zh[f.hm - 1] = 1; }
+  if(f.dm){ zd[f.dm - 1] = 1; }
+  male("fHier", zh, null, f.neu);
+  male("fDort", zd, null, f.neu);
+  document.getElementById("sFremd").hidden = !f.fremd;
+  if(f.fremd) male("fFremd", bis(20), null, []);
+  document.getElementById("lage").textContent = f.lage;
+  document.getElementById("uHier").textContent =
+    (k === "offline") ? "zuletzt gerade eben" : "zuletzt heute, 19:04";
+  document.getElementById("uDort").textContent =
+    (k === "offline") ? "zuletzt vor 6 Tagen" : "zuletzt heute, 19:04";
+  document.getElementById("erg").innerHTML =
+    '<span class="rg">' + f.rg + "</span>" + f.txt
+    + '<div class="weiter">Weiter bei: <b>' + f.wt + "</b></div>";
+}
+zeigFall.start = function(){
+  var z = bis(8); z[7] = 1;
+  male("fHier", z, null, []); male("fDort", z, null, []);
+};
+zeigFall.start();
+
+document.querySelectorAll("[data-f]").forEach(function(b){
+  b.addEventListener("click", function(){
+    document.querySelectorAll("[data-f]").forEach(function(x){
+      x.classList.toggle("haupt", x === b); });
+    zeigFall(b.dataset.f);
+  });
+});
+</script>
+</div>
