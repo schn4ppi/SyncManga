@@ -1,6 +1,6 @@
 # Übernahme aus SyncYouTube — was wörtlich portiert wird
 
-> **Zweck:** SyncFundus wird von einer zweiten KI gebaut, die Zugriff auf **alle**
+> **Zweck:** SyncFindus wird von einer zweiten KI gebaut, die Zugriff auf **alle**
 > Sync-Programme hat. Dieses Dokument sagt ihr, **was sie nicht neu erfinden darf** —
 > mit Datei, Funktion und der Regel dahinter.
 >
@@ -52,7 +52,7 @@ das ist der eigentliche Wert, nicht der Code.
 | **Versatz je Titel** gemerkt | |
 | Alte 4 Presets werden beim Laden in Look-Felder übersetzt (`subPresetZuLook`) | Migration |
 
-**Ergänzungen für SyncFundus** (neu, nicht in SyncYouTube): Zeile **Ort** (unten/oben — wenn
+**Ergänzungen für SyncFindus** (neu, nicht in SyncYouTube): Zeile **Ort** (unten/oben — wenn
 unten Schilder im Bild stehen) und **Rand** (harte Kontur für helle Bilder).
 
 ---
@@ -77,7 +77,7 @@ Song**. Damit gehört er zur Gruppe, ohne eine eigene Sammlung zu sein.
 > Der Favorit ist der **Repräsentant**: er wird angezeigt, abgespielt und zählt im Zufall.
 > Reine Auslese, kein Seiteneffekt.
 
-**Für SyncFundus (E89):** ein Ausschnitt ist eine **Ausgabe** des Werks, nie ein neues Werk.
+**Für SyncFindus (E89):** ein Ausschnitt ist eine **Ausgabe** des Werks, nie ein neues Werk.
 Die Gruppe oben entspricht bei uns dem Werk, das `favorit`-Flag der **bevorzugten Ausgabe**.
 `clip_erstellen` bleibt **nicht-destruktiv** — das Original wird nie angefasst.
 
@@ -113,7 +113,7 @@ Die Gruppe oben entspricht bei uns dem Werk, das `favorit`-Flag der **bevorzugte
 
 ## 5 · Was die zweite KI zuerst lesen soll
 
-1. `Doku/VISION_SYNCFUNDUS.md` — vollständig, vor der ersten Zeile Code.
+1. `Doku/VISION_SYNCFINDUS.md` — vollständig, vor der ersten Zeile Code.
 2. **Dieses Dokument** — damit nichts doppelt gebaut wird.
 3. `SyncYouTube/System/_ARCHITEKTUR.md` und `MODULE.md` — die dortige Modulaufteilung.
 4. `SyncYouTube/System/oberflaeche.py` — der Kopfkommentar allein erspart einen Tag Fehlersuche.

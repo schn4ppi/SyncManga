@@ -1,12 +1,12 @@
 # Wöchentliche Pflege — was rostet, und wie man es merkt
 
-> Begleitmaterial zu `VISION_SYNCFUNDUS.md`.
+> Begleitmaterial zu `VISION_SYNCFINDUS.md`.
 > **JB-Vorgabe 08.08.2026:** *„Wir müssen ab und an immer wieder prüfen, was es Neues gibt, was
 > Altes ersetzt und was gestorben ist. Das gehört zur wöchentlichen Roadmap, egal in welchem
 > Chat ich bin."*
 >
 > **Darum steht es hier und nicht in einem Gespräch.** Ein Chat endet, diese Datei nicht.
-> Wer immer als Nächstes an SyncFundus arbeitet — Mensch oder KI — führt diese Liste aus und
+> Wer immer als Nächstes an SyncFindus arbeitet — Mensch oder KI — führt diese Liste aus und
 > trägt das Ergebnis unten ein.
 
 ---

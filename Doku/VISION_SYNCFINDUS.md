@@ -1,10 +1,10 @@
-# SyncFundus — Vision & Fundament
+# SyncFindus — Vision & Fundament
 
 > **Arbeitstitel.** Der Nachfolger von SyncManga und SyncYouTube: **ein** Programm für
 > Anime, Manga, Novels, Musik, Hörbücher, Filme und Serien — mit eigener Bibliothek,
 > eigenem Leser, eigener Bühne, eigener Veredelung.
 >
-> **Stand:** 2026-08-08 · **Fassung:** 1.10 · **Pflege:** JB + Claude
+> **Stand:** 2026-08-08 · **Fassung:** 1.11 · **Pflege:** JB + Claude
 
 ---
 
@@ -50,7 +50,7 @@ durch **Überarbeiten**. Wer etwas hinzufügt, räumt gleichzeitig auf.
 
 ---
 
-## 1. Was SyncFundus ist
+## 1. Was SyncFindus ist
 
 Ein **lokales, privates Medienregal** für alles, was man liest, sieht und hört.
 Es baut seine Bibliothek **aus dem eigenen Verhalten** (Browserverlauf, Erweiterung,
@@ -248,6 +248,18 @@ Novels oder Manga**. Genau dort ist SyncMangas Stärke.
 | E151 | Zustand | **Das Register ist die Wahrheit, die Anzeige eine Sicht** — nie ein Speicher | 🔑✅ |
 | E152 | Oberfläche | **Eine Leiste endet vor dem Streifen** — oben wie unten, nie darüber | ✅ |
 | E153 | Oberfläche | **Eine Tafel ist eine Tabelle** — beide Kanten stimmen, gleiche Zellen je Zeile | ✅ |
+| E154 | Ton | **Musik-Lücke = Zahl, Hörbuch-Lücke = Defekt** — zwei Regale, nicht eins | 🔑✅ |
+| E155 | Auslieferung | **Pflicht wird gezeigt, nicht versteckt** — Haken gesetzt und ausgegraut, mit Grund | 🔑✅ |
+| E156 | Netz | **Ohne Netz steht die Uhr** — bei Rückkehr läuft alles seit dem Bruch als Nachtrag | 🔑✅ |
+| E157 | Zeit | **Eine Uhr: deine** — alles nach Berliner Zeit, Herkunftszeit nur als Fußnote | ✅ |
+| E158 | Profile | **Das Alter entscheidet** — eine Zahl statt einer Häkchenliste | ✅ |
+| E159 | Spiele | **Die Einstellung gehört zum Spiel**, nicht zum Emulator — drei Ebenen mit Herkunft | 🔑✅ |
+| E160 | Empfehlung | **Die Lücken-Liste ist der Eingang zur Beschaffung**, kein Bericht | 🔑✅ |
+| E161 | Profile | **Ein Rechner hat Vorrang** — wer davorsitzt, gewinnt | ✅ |
+| E162 | Übernahme | **SyncManga ist Lehrer, nicht Vorgänger** — kein Umzug als Pflicht | 🔑✅ |
+| E163 | Quellen | **Der Katalog verlässt das öffentliche Repo** — F05 entschieden | 🔑✅ |
+| E164 | Meldung | **Es meldet sich nur, wenn du sonst etwas verlierst** — drei Anlässe, mehr nicht | ✅ |
+| E165 | Oberfläche | **Sofort der Rand, nach 400 ms das Band** — Hover hilft, drängt nicht | ✅ |
 
 ### Die Unverhandelbaren
 
@@ -457,6 +469,40 @@ Eine Playlist ist **kein Sonderfall**, sondern eine **Sammlung** — dieselbe Sp
 | **Exportiert** | `.m3u` — jedes Programm der Welt liest es (E06). Import genauso |
 | **Abgeglichen** | auf Wunsch gegen eine echte Playlist beim Anbieter, wie `playlist_sync()` es im Downloader schon tut |
 | ⚠️ **Nicht** | kein zweiter Ort für „meine Musik". Eine Playlist ist eine **Sicht** auf die Bibliothek, keine Kopie |
+
+#### E154 — Zwei Regale für Ton
+
+> **Entwurf:** `regale.html`, Reiter *Musik* und *Hörbuch*.
+
+**JB, 08.08.2026:** *„Es sollte zwei Regale geben. Musik ist nicht Hörbuch, auch wenn es Audio
+ist. Ein Hörbuch ist nur gesamt zu gebrauchen — ich brauche kein Hörbuch, wo der dritte Track
+fehlt. Bei Musik sind Alben nicht vollständig wichtig, das Lied zählt."*
+
+> 🔑 **In der Musik ist eine Lücke eine Zahl. Im Hörbuch ist eine Lücke ein Defekt.**
+> Aus diesem einen Satz folgt jede weitere Unterscheidung — es ist keine Geschmacksfrage,
+> sondern eine über die **Brauchbarkeit** des Gegenstands.
+
+| | Musik | Hörbuch |
+|---|---|---|
+| **Was zählt** | das **Lied** | das **ganze Werk** |
+| **Eine Lücke ist** | eine graue Zahl („9 von 14") | ein **Defekt** — rot, mit eigenem Knopf |
+| **Grundform** | quadratische Kacheln, dicht (132 px) | Zeilen mit 2:3-Rücken und Balken |
+| **Sortierung** | zuletzt gehört | angefangen zuerst |
+| **Reihenfolge** | egal — **Zufall ist ein Feature** | heilig — **es gibt keinen Zufall** |
+| **Fortschritt** | gibt es nicht (man hört Alben nicht „zu Ende") | der wichtigste Wert überhaupt (E117) |
+| **Gruppe** | Album = Sortierhilfe | Reihe/Band = echte Ordnung |
+| **Wer spricht** | Künstler | **Sprecher** — eigene Sortierung wert (E138) |
+| **Vorrat holen** | einzelne Lieder | **nie einzelne Kapitel** — immer der ganze Titel |
+
+**Der Vollständigkeitsbalken ist segmentiert, nicht prozentual.** Ein Prozentwert („92 %")
+verschweigt, **wo** das Loch sitzt. Ein Loch in Kapitel 3 von 12 ruiniert den Abend nach
+vierzig Minuten; ein Loch in Kapitel 47 von 48 ist ärgerlich, aber später. **Segmente zeigen
+den Unterschied, Prozente verstecken ihn.**
+
+**Folge für die Beschaffung:** Ein Hörbuch ist **ein** Wunsch (E149) — erfüllt erst, wenn
+*alle* Kapitel da sind; fehlt eines, lauert der Wunsch weiter (E150), auch bei 11 von 12. Bei
+Musik ist jedes Lied ein eigener Wunsch, und elf erfüllte von vierzehn sind schlicht elf
+erfüllte Wünsche.
 
 #### E108 — Hörbücher sind keine Musik
 
@@ -1209,6 +1255,29 @@ eine **vierte** Information — und die trägt bereits die Farbe (E62), nicht di
 nicht"* oder wie Hiatus. Drei Punkte lesen sich wie *„geht weiter, wir wissen es nur nicht"*.
 Und weil „erschienen" fast immer bekannt ist, tauchen sie ohnehin selten auf.
 
+### 5.9.1 Die Hover-Karte (E165)
+
+> **Entwurf:** `regale.html`, Reiter *Die Hover-Karte* — vier Möglichkeiten zum Anklicken.
+
+| | Was passiert | Urteil |
+|---|---|---|
+| **A · Die Kachel wächst** | 1,12× skaliert, Angaben darunter (Netflix' Weg) | vertraut — *schiebt aber die Nachbarn optisch weg und wächst am Regalrand aus dem Bild* |
+| **B · Karte daneben** | feste Karte rechts, Regal bleibt ruhig | viel Platz — *der Blick springt weit* |
+| **C · Die Reihe klappt auf** | Band **unterhalb** der Reihe | ✅ **nichts wird verdeckt, nichts springt** — und es ist der einzige Weg, der auf dem Handy identisch funktioniert |
+| **D · Nur der Rand** | Rahmen + voller Titel, sonst nichts | die ehrlichste Antwort — *sagt aber nichts Neues* |
+
+> 🔑 **C mit D als Sofortantwort.** Rand und voller Titel erscheinen bei **0 ms**, das Band nach
+> **400 ms**. Wer über das Regal streift, sieht nie ein Band; wer stehen bleibt, bekommt alles.
+> Das ist der ganze Unterschied zwischen *hilfsbereit* und *aufdringlich*.
+
+**Vier Regeln für jede Variante:**
+1. **Nichts erscheint unter dem Zeiger** — sonst klickt man versehentlich hinein.
+2. **200 ms Nachlauf beim Verlassen** — sonst flackert es beim Durchfahren.
+3. **Tastatur zeigt dasselbe wie Maus** (Fokus = Hover) — sonst gibt es zwei Programme.
+4. ⚠️ **Auf dem Handy gibt es keinen Zwischenschritt.** Der erste Tipp öffnet das Werk. *Eine
+   Hover-Karte, die auf Berührung reagiert, kostet jedem Handynutzer einen zusätzlichen Griff —
+   für immer.*
+
 ### 5.10.1 Die Kachelgrößen — und warum keine ohne Namen (E88)
 
 ⚠️ **Korrektur 07.08.2026.** Im ersten Entwurf gab es eine *Mini-Kachel*: nur Bild, kein Text,
@@ -1310,7 +1379,7 @@ erfunden. Die Übernahmeliste:
 | Playlists: Sync, .m3u, Smart-Playlists, Mixer (Radio, Meistgespielt, Zuletzt) · ✨ Entdecken · Abos mit Regeln · Autotag (MusicBrainz + iTunes) · Umbenennung mit **Probelauf und Rückgängig** · Dubletten-/Pfad-Heilung | gehört nicht in die Bühne, aber alles in §9/§10 — nichts davon neu erfinden |
 
 > **Der eine echte Unterschied:** im Downloader ist der Spieler **ein Fenster unter vielen**
-> (andockbar, herauslösbar, Layout-Editor). Bei SyncFundus ist die Bühne eine **Ebene** — man
+> (andockbar, herauslösbar, Layout-Editor). Bei SyncFindus ist die Bühne eine **Ebene** — man
 > geht hinein und wieder heraus (E38). Grund: hier wird auch gelesen, und ein Leser in einem
 > andockbaren Fensterchen ist kein Leser.
 
@@ -1352,7 +1421,7 @@ Vollbildsprung, kein Ladebild.
 
 ⚠️ **Was wir nicht bauen:** frei verschiebbare Fenster. SyncYouTube hat einen Layout-Editor mit
 andockbaren Panels — für einen **Downloader** richtig, weil man dort mehrere Listen gleichzeitig
-beobachtet. SyncFundus ist ein Ort zum **Lesen und Sehen**. Wer liest, will eine Fläche, nicht sechs.
+beobachtet. SyncFindus ist ein Ort zum **Lesen und Sehen**. Wer liest, will eine Fläche, nicht sechs.
 
 ### 5.12 Die Bühne (E72, E75, E77)
 
@@ -1640,6 +1709,36 @@ bewegt · beim Pausieren Empfehlungen über das Bild legen.
   Rollenverteilung wie Datei ↔ mpv.
   Von Steam übernehmen: **Big Picture ist die Vorlage für den Fernsehmodus** (nicht Netflix),
   und „Zuletzt gespielt" oben ist eine unabhängige Bestätigung unserer Startseite.
+
+#### E159 — Die Einstellung gehört zum Spiel, nicht zum Emulator
+
+> **Entwurf:** `erststart.html`, Reiter *Emulator-Einstellungen*.
+
+**JB, 08.08.2026:** *„Spiele-Regal finde ich gut, mir geht es sehr um die Settings für den
+Emulator."* — Das ist die richtige Frage, denn der übliche Weg geht immer schief: Man stellt
+RetroArch ein, und alles erbt es. Aber *Chrono Trigger* braucht einen anderen Shader als
+*Sonic*, und *Ocarina of Time* eine andere Auflösung als *Pokémon Rot*.
+
+> 🔑 **Drei Ebenen: Grundlage → System → Spiel. Und jede Zeile sagt, woher ihr Wert kommt.**
+> Was auf Spielebene gesetzt ist, steht in Akzentfarbe mit dem Wort **eigen**; alles andere ist
+> blass und trägt **geerbt · SNES**. So sieht man auf einen Blick, **was man selbst verstellt
+> hat** — die Frage, die man sich nach sechs Monaten stellt.
+
+Zwei Knöpfe schließen den Kreis: **„Auf SNES zurücksetzen"** macht ein Spiel wieder
+unauffällig, **„Als SNES-Standard übernehmen"** hebt eine gute Einstellung eine Ebene hoch.
+*Ohne den zweiten Knopf stellt man dieselbe Sache 41-mal ein.*
+
+| Gehört zum **Werk** | Gehört zum **System** | Gehört nirgends hin |
+|---|---|---|
+| Shader · Skalierung · Seitenverhältnis · Steuerungsbelegung · Schnellspeicher-Plätze · Regionsfassung (J/U/E) · Patches | Der Kern (welcher Emulator) · BIOS · Bildwiederholrate · Aufnahme | **Der Emulator selbst** — er ist ein Abspielweg wie mpv, austauschbar, ohne dass ein Spielstand verlorengeht |
+
+**ROM = Ausgabe, Spiel = Werk** (E03): die japanische, die amerikanische und die
+fan-übersetzte Fassung sind **drei Ausgaben eines Werks** mit **einem** gemeinsamen
+Spielstand-Verlauf und **einer** Spielzeit.
+**Spielstände liegen beim Werk im Register**, nicht im Emulator-Ordner — Emulator wechseln,
+Rechner wechseln, Fassung wechseln: der Stand bleibt.
+**Echtheit über Prüfsumme:** No-Intro und Redump führen Prüfsummen sauberer Abzüge — dieselbe
+Idee wie die Güteleiter, *gemessen statt geglaubt* (E140).
 - **Kein Medium, aber gebraucht:** Streaming-Abos als **Verfügbarkeitsquelle**
   („wo kann ich das sehen", JustWatch) — gehört zur Verfügbarkeit, nicht zur Zwiebel.
 
@@ -1677,7 +1776,7 @@ irgendwie locked?"*
 **Die Regel, die daraus folgt — und sie ist dieselbe wie bei Crunchyroll und Netflix:**
 
 > **Konten liefern Wissen, nicht Inhalt.** Deine Spotify-Bibliothek wird gelesen und wird zu
-> Regal-Einträgen im Zustand **◐ gekannt** (E54). SyncFundus sagt dir dann, was davon du
+> Regal-Einträgen im Zustand **◐ gekannt** (E54). SyncFindus sagt dir dann, was davon du
 > **wirklich** besitzt, was als Datei zu bekommen wäre, und wo eine Lücke ist.
 
 Das ist nicht der Trostpreis, sondern genau unser Alleinstellungsmerkmal: **kein anderes
@@ -1787,7 +1886,7 @@ Torrentseiten mit jedem erdenklichen Kram? … Lets look deep, far and wide."*
 **Die Antwort ist kein Verzeichnis, sondern eine Bauform** — und sie ist stärker als jedes
 Verzeichnis. Eine Liste von 200 Adressen ist in drei Monaten zu einem Drittel tot. Ein Adapter
 auf ein gepflegtes Protokoll ist in drei Monaten **mehr** wert, weil in der Zwischenzeit
-hunderte Leute nachgezogen haben. SyncFundus spricht deshalb die vier Sprachen, in denen
+hunderte Leute nachgezogen haben. SyncFindus spricht deshalb die vier Sprachen, in denen
 Quellenlisten überhaupt veröffentlicht werden:
 
 | Protokoll | Wer pflegt | Umfang | Was wir bauen |
@@ -2033,14 +2132,14 @@ kunmanga.com/nahonja-manleb-nyubi           ─┘        (Kapitel 63)
 > **die Adresse ist ein Hinweis, nie ein Beweis.**
 
 **E68 — die Adapterliste wohnt nicht in der Erweiterung**, sondern als kleine signierte
-JSON-Datei, die SyncFundus lokal ausliefert. Zwei Gründe: eine neue Seite ist dann eine Zeile
+JSON-Datei, die SyncFindus lokal ausliefert. Zwei Gründe: eine neue Seite ist dann eine Zeile
 Text statt zwei Wochen Store-Prüfung — und die Liste steht nirgends öffentlich im Paket
 (dieselbe Trennung wie **E12**).
 
 ⚠️ **Der ehrliche Haken.** Firefox erlaubt das alles; Chrome baut seit 2024 schrittweise ab,
 was wir brauchen, und mag Add-ons nicht, die mit `localhost` reden. Also **Firefox zuerst und
 ordentlich**, Chrome als Beipack. Für beide gilt: die Erweiterung ist **Zubehör**. Fällt sie
-weg, läuft SyncFundus weiter — dann eben nur mit der `places.sqlite`-Auswertung, die es
+weg, läuft SyncFindus weiter — dann eben nur mit der `places.sqlite`-Auswertung, die es
 ohnehin schon gibt.
 
 ### 8.5 Woher der Zustand kommt — sechs Zeugen (E145, E146)
@@ -2150,8 +2249,46 @@ offline. FAKKU ging 03/2026 gegen Mihon-Extension-Repos vor. Kakao drohte Tachiy
 Entwicklern persönlich — das Projekt wurde eingestellt.
 **Ziel war nie die Reader-Engine, immer der Quellenkatalog.**
 
-⚠️ `data/sources.json` und `data/readers_pattern.json` liegen heute **öffentlich** im
-SyncManga-Repo und sind genau diese Artefaktklasse. Vor dem Umzug zu entscheiden.
+#### E163 — Der Katalog verlässt das öffentliche Repo (F05 entschieden)
+
+**JB, 08.08.2026:** *„Ich würde sagen, du entscheidest mit den Dateien aus dem Repo. Ich weiß
+es nicht. Ich kann nicht einschätzen, wie wichtig das ist."*
+
+> 🔑 **Entscheidung: ja. `data/sources.json` und `data/readers_pattern.json` kommen aus dem
+> öffentlichen Repo heraus.**
+
+**Wie wichtig ist es wirklich?** Ehrlich abgewogen, beide Seiten:
+
+| Dafür, sie zu entfernen | Dagegen |
+|---|---|
+| Es ist **exakt** die Artefaktklasse, die Projekte tötet: Sony nahm 200 Aniyomi-Erweiterungen mit *einer* Meldung offline; FAKKU ging 03/2026 gegen Mihon-Repos vor; Kakao drohte Tachiyomis Entwicklern **persönlich**, bis das Projekt einging | Die Dateien enthalten **Domainnamen**, keine Inhalte — juristisch eine schwächere Angriffsfläche als eine Extension |
+| Ein Repo mit einer kuratierten Leseseiten-Liste ist **auffindbar** — genau danach wird gesucht | Bisher ist nichts passiert, und SyncManga nutzen zwei Leute |
+| Die Entfernung **kostet nichts**: E12 verlangt ohnehin abonnierbare Laufzeitlisten, und §7.5 hat vier gepflegte Protokolle, die es besser können | Es ist Arbeit, und die Historie behält die Dateien ohnehin |
+
+**Warum ich mich trotzdem klar entscheide:** Das Risiko ist **asymmetrisch**. Bleiben die
+Dateien liegen und nichts passiert, gewinnen wir *null*. Bleiben sie liegen und es passiert
+etwas, verlieren wir das Repo, den Namen und die Historie — und rückgängig machen lässt sich
+das nicht. **Bei so einem Verhältnis entscheidet man nicht nach Wahrscheinlichkeit, sondern
+nach Schadenshöhe.**
+
+⚠️ **Und ein Punkt, der oft übersehen wird:** Ein `git rm` reicht nicht — die Dateien bleiben in
+der **Historie** abrufbar. Wer sie wirklich entfernen will, muss die Historie umschreiben
+(`git filter-repo`) und einmal erzwungen pushen. Das ist ein echter Eingriff und braucht JBs
+ausdrückliche Zustimmung, weil es alle vorhandenen Kopien des Repos entwertet.
+
+**Der Weg, in dieser Reihenfolge:**
+
+1. **`readers_pattern.json` und `sources.json` aus dem Paket nehmen** und in eine
+   **Laufzeitliste** überführen (E12), die beim ersten Start aus einer abonnierbaren Adresse
+   geholt wird — oder eben nicht, wenn niemand eine einträgt.
+2. **Die eingebauten Verteidigungslisten bleiben**: `PAYWALL_SITES`, `UNSAFE_SITES`, die
+   Rausch-Sperrliste. Das sind **Schutzregeln**, keine Quellenliste — sie sagen, wo man *nicht*
+   hinsoll.
+3. **Der Rest von SyncManga bleibt öffentlich.** Die Reader-Engine, die Anreicherung, die
+   Parser — das ist der Teil, auf den wir stolz sein können, und **er war nie das Ziel von
+   Angriffen** (E12).
+4. **Historie erst umschreiben, wenn JB zustimmt** — bis dahin sind die Dateien wenigstens
+   nicht mehr im aktuellen Stand.
 
 **Bauform:** **abonnierbare Quellenlisten.** Adresse einfügen → wird regelmäßig geholt →
 Quellen erscheinen; Liste entfernen → weg. Wie uBlock seine Filterlisten und Mihon seine
@@ -2500,8 +2637,31 @@ ist **bayessche Überraschung** (unerwartet *und* voraussichtlich gut bewertet).
 in einen **eigenen** Topf.
 
 > 🔑 **E19: Das Profil ist lesbar und von Hand korrigierbar.** Eine Seite „Das denkt
-> SyncFundus über dich" — sichtbar, editierbar, exportierbar, löschbar. Netflix und Spotify
+> SyncFindus über dich" — sichtbar, editierbar, exportierbar, löschbar. Netflix und Spotify
 > verstecken das. Es ist die einzige ehrliche Antwort auf „wie schärfe ich meine Meinung".
+
+#### E160 — Die Lücken-Liste ist der Eingang zur Beschaffung
+
+> **Entwurf:** `regale.html`, Reiter *Die Lücken-Liste*.
+
+**JB, 08.08.2026:** *„Die Lückenliste ist also eine Art Download, oder?"* — **Ja, und genau das
+ist der Punkt.** Sie ist kein Bericht, den man liest und wegklickt, sondern der Ort, an dem aus
+**◐ gekannt** ein **Wunsch** wird (E150).
+
+Kein anderes Programm kann diese Liste bauen, weil kein anderes weiß, **was du gelesen hast,
+ohne es zu besitzen** — dafür gibt es die sechs Zeugen (§8.5).
+
+> 🔑 **Jede Zeile hat genau eine Tat: wünschen.** Der Wunsch geht in die Warteschlange (E149),
+> scheitert er, lauert er (E150) — und taucht Wochen später von selbst als fertiges Werk im
+> Regal auf. **Der Weg von „das kenne ich" zu „das habe ich" ist ein Klick und danach Geduld.**
+
+Drei Gestaltungsregeln, die den Unterschied machen:
+
+| Regel | Warum |
+|---|---|
+| **Sie beschämt nicht** | Die Zahl oben heißt *„du kennst 812 Werke"*, nicht *„dir fehlen 381"*. Dieselben Daten, ein anderes Programm |
+| **Erreichbarkeit steht dabei** | „Wünschen" ohne Aussicht ist eine Enttäuschung mit Verzögerung. Steht *nur Stufe C* dran, weißt du es **vorher** |
+| **Kein Abzeichen in der Seitenleiste** | Die Lücken-Liste ist ein Ort, den man **aufsucht** — kein Zähler, der ruft. *Das ist der Unterschied zum Postfach, das rufen **muss** (E141).* |
 
 **E148 — der Kalender empfiehlt, die Bilanz nicht.** Der Jahresrückblick („Wrapped") wurde
 verworfen: er sagt dir, was du schon weißt, einmal im Jahr, und ändert nichts. Der Kalender
@@ -2561,6 +2721,55 @@ trotzdem die Signatur. **Die Signatur ist der einzige Hebel.**
 (Korrektur einer früheren Einschätzung, 06.08.2026.)
 SyncManga hat den winget-Workflow (`schn4ppi.SyncManga`), **SyncYouTube hat gar keinen** —
 daher die Blockade bei Testnutzern.
+
+#### E155 — Pflicht wird gezeigt, nicht versteckt
+
+> **Entwurf:** `erststart.html`, Reiter *Der Installer*.
+
+**JB, 08.08.2026:** *„Installer und erster Start ist super wichtig. Es gibt bestimmt einiges an
+Fremdsoftware — wenn etwas Pflicht ist, dann sollte der Haken auf einem ausgegrauten Feld sein.
+Der User muss informiert sein, aber wissen, dass ohne das Programm nicht geht."*
+
+**Das ist genau richtig, und die meisten machen es falsch.** Zwei verbreitete Fehler:
+Pflichtbestandteile **gar nicht zeigen** (das Programm installiert heimlich etwas —
+Vertrauensbruch beim allerersten Kontakt) oder sie **abwählbar aussehen lassen** und dann
+meckern (der Nutzer wurde verarscht). **Gesetzt und ausgegraut** ist die einzige ehrliche Form:
+man sieht es, man versteht warum, und man merkt sofort, dass es nicht zur Debatte steht.
+
+> 🔑 **Drei Klassen, drei Sätze. Jeder Bestandteil hat genau einen davon.**
+
+| Klasse | Haken | Der Satz |
+|---|---|---|
+| **Pflicht** | gesetzt, **ausgegraut** | *„Ohne das gibt es **X** nicht."* |
+| **Empfohlen** | gesetzt, änderbar | *„Ohne das verlierst du **Y**."* |
+| **Optional** | leer, änderbar | *„Wenn du es einschaltest, bekommst du **Z**."* |
+
+**Pflicht** sind nach heutigem Stand vier: **mpv** (ohne Bild und Ton keine Bühne, E34) ·
+**ffmpeg/ffprobe** (ohne Messgerät keine Güteleiter, E140) · **yt-dlp** (ohne HTTP-Adapter
+bleibt genau ein Kandidat im Rennen, E149) · **SQLite** (das Register *ist* die Wahrheit, E151).
+
+**Bei jedem Bestandteil steht: Größe, Lizenz, Zweck in einem Satz.** Wer 4,1 GB für ein
+Übersetzungsmodell herunterlädt, darf das vorher wissen; wer GPL-3 nicht will, auch.
+
+⚠️ **Was nie passiert:** kein vorausgewähltes Extra, keine Symbolleiste, keine Suchmaschine,
+kein „auch installieren". *Der Installer ist der erste Vertrauensbeweis — und der einzige, den
+man nur einmal geben kann.*
+
+#### Der erste Start — das leere Programm
+
+Der **einzige Bildschirm, den jeder Nutzer sieht**, und der einzige, auf dem noch nichts da
+ist. Vier Kacheln, **jede ein vollständiger Weg, keine Reihenfolge**:
+
+| Weg | Was passiert |
+|---|---|
+| **Einen Ordner zeigen** | Was da liegt, wird zu Werken. Nichts wird verschoben oder umbenannt |
+| **Aus dem Browser lesen** | Verlauf und Lesezeichen einmal durchsehen — read-only (§8.5) |
+| **Ein Konto verbinden** | AniList/MAL/Trakt — die Listen kommen, der Inhalt nicht (E129) |
+| **Einfach umsehen** | Nichts einlesen. Suchen, stöbern, ein erstes Werk wünschen |
+
+Kein Assistent mit sieben Schritten — der erste Start hat in jedem Programm die höchste
+Abbruchrate. Und der wichtigste Satz steht ganz unten: **nichts wird gelöscht, umbenannt oder
+verschoben.** Wer 64 TB hat, klickt sonst nirgends drauf, zu Recht.
 
 ### 12.3 Neuerungen zeigen
 
@@ -2725,7 +2934,7 @@ Kenntnis genommen und für sein autarkes System entschieden** (06.08.2026).
 
 **Bauform — dieselbe Trennung wie beim Quellenkatalog (E12):**
 
-> **SyncFundus entschlüsselt nichts selbst.** Es ruft ein **externes Werkzeug** auf, das der
+> **SyncFindus entschlüsselt nichts selbst.** Es ruft ein **externes Werkzeug** auf, das der
 > Nutzer separat installiert — genau wie ffmpeg, VLC oder Deno.
 
 | Werkzeug | Rolle | Anmerkung |
@@ -2748,10 +2957,10 @@ mitgeliefert, nur erkannt und angebunden.
 | # | Frage | Blockiert |
 |---|---|---|
 | ~~F01~~ | ~~Oberflächentechnik~~ → **beantwortet, siehe §12.4** | — |
-| F02 | Endgültiger **Name** | Alles Sichtbare |
+| ~~F02~~ | ~~Endgültiger Name~~ → **beantwortet 08.08.2026: SyncFindus** (JB: *„Mein Kater heißt so, als Findus."*) | — |
 | ~~F03~~ | ~~Sprichwörter~~ → **beantwortet: E137** (drei Wege, die Verortung entscheidet) | — |
 | F04 | Wie stark **Namens-Verwestlichung** — Voreinstellung an oder aus? | §10.2 |
-| F05 | `data/sources.json` + `readers_pattern.json` aus dem öffentlichen Repo nehmen? | §9.2 |
+| ~~F05~~ | ~~Quellendateien aus dem öffentlichen Repo?~~ → **beantwortet: E163 — ja, sie kommen raus** (JB delegierte die Entscheidung; Begründung in §9.2) | — |
 | F06 | **Quellen-Späher**: halbautomatisch mit Vorschlagsliste, oder nur Meldung? | §7.3 |
 | F07 | **Text-Korrektur** schlecht lektorierter Verlagstexte — wie weit darf die KI eingreifen? | §10.2 |
 | F08 | **Eigene Werk-IDs** zusätzlich zu ASIN/ISBN/AniList — sinnvoll oder Ballast? | §4.4 |
@@ -2787,23 +2996,80 @@ mitgeliefert, nur erkannt und angebunden.
 **In Zahlen:** 153 Entscheidungen · 16 Regeln der Bauart und des Vertrauens · **9 offene
 Fragen** · 17 gelernte Fallen · 16 Entwürfe + 1 Beiblatt.
 
-### Ungeschriebene Lücken (Bestandsaufnahme 07.08.2026)
+### Die Lücken — Stand 08.08.2026
 
-Dinge, die im Pflichtenheft **fehlen** und beim Bauen weh tun werden — nach Schmerz sortiert.
-Sie werden in Phase 2 zu E-Nummern (siehe `fahrplan.html`).
+**Neun von zehn sind geschlossen.** JB hat sie am 08.08. in einem Zug beantwortet; hier stehen
+die Antworten mit ihren E-Nummern.
 
-| Lücke | Warum sie weh tut |
+| Lücke | Antwort |
 |---|---|
-| ~~Übernahme aus SyncManga~~ | ✅ **geschlossen 08.08.2026** — §16.5: drei Macken benannt, acht Beschlüsse gefasst, E151. Offen bleibt nur der **Entwurf des Prüflauf-Berichts** |
-| **Sicherung & Wiederherstellung** | Dateien lassen sich neu holen — **der Lesestand seit 2019 nicht.** Die Bibliotheksdatenbank ist das einzige Unersetzliche an 64 TB. ⚠️ Nach E151 ist das noch schärfer: **eine** Datei trägt alles |
-| **Wenn die Platte voll ist** | Was fliegt raus, wer entscheidet? Richtige Antwort wäre „Datei weg, **Werk bleibt**" — steht aber nirgends |
-| **Kein Internet** | §5.7 sagt „wartet nie aufs Netz". Was bei tagelangem Ausfall passiert (Anreicherung staut, RSS staut, Anmeldungen laufen ab), ist offen |
-| **Zwei Menschen gleichzeitig** | Ein Heimserver, zwei Profile. Wer bekommt die Grafikkarte? Was, wenn beide dasselbe Werk lesen? |
-| **Sprache der Oberfläche** | `i18n.py` existiert, der Text-Wächter auch — aber keine Entscheidung, welche Sprachen mitkommen |
-| **Benachrichtigungen** | „Nie nerven" ist zu wenig. Wann meldet sich das Programm von selbst, und wohin? |
-| **Ohne Maus bedienbar** | Gamepad und Fernbedienung sind durchdacht, die volle Tastaturbedienung am PC nie geprüft — Voraussetzung für Barrierefreiheit |
-| **Zeitzonen** | Kapitel erscheinen nach JST, Folgen nach KST. „Heute neu" ist eine Falle mit acht Stunden Versatz |
-| **Kinderprofil** | Profile sind entschieden, Alterssichtung nicht. FSK steht in den Metadaten und wird ignoriert |
+| ~~Übernahme aus SyncManga~~ | ✅ **E151 + E162** — §16.5. Und der Umzug ist gar keine Pflicht mehr, siehe unten |
+| ~~Wenn die Platte voll ist~~ | ✅ **JB: *„Wenn die Platte voll wird, dann erweitere ich."*** Keine Verdrängungslogik, kein Aufräum-Assistent, keine Regel, welche Datei fliegt. **Die einfachste denkbare Antwort, und sie ist richtig** — jede automatische Löschung wäre ein Risiko für Null Gewinn. Was bleibt: eine ehrliche Anzeige („noch 2,1 TB") und eine Warnung ab 95 %, sonst nichts |
+| ~~Kein Internet~~ | ✅ **E156** |
+| ~~Zwei Menschen gleichzeitig~~ | ✅ **E161** |
+| ~~Benachrichtigungen~~ | ✅ **E164** |
+| ~~Zeitzonen~~ | ✅ **E157** |
+| ~~Ohne Maus bedienbar~~ | ✅ **JB: *„Es wird bestimmt Bugs geben, doch das Grundgerüst muss stabil sein. Ich will reparieren, keine neuen Säulen ziehen."*** → Damit ist es keine Funktion, sondern eine **Bauvorgabe**: jedes Bedienelement ist von Anfang an ein echtes fokussierbares Element mit sichtbarem Fokusring und Beschriftung. Einzelne Tastenwege dürfen fehlen und werden repariert; **fehlende Fokussierbarkeit ist eine neue Säule und darf nie entstehen** |
+| ~~Kinderprofil~~ | ✅ **E158** |
+| **Sicherung & Wiederherstellung** | ⬜ **die letzte offene.** Dateien lassen sich neu holen — **der Lesestand nicht.** ⚠️ Nach E151 trägt **eine** Datei alles. JB: *„klingt vernünftig"* — aber vernünftig ist noch keine Regel. Braucht eine E-Nummer |
+| **Sprache der Oberfläche** | ⬜ `i18n.py` existiert, der Text-Wächter auch — aber keine Entscheidung, welche Sprachen mitkommen. Kleinste der offenen, blockiert nichts |
+
+#### Die sieben Antworten im Klartext
+
+**E156 — ohne Netz steht die Uhr.** JB: *„Das System merkt sich, wann ich kein Internet mehr
+hatte, und was ab dem Zeitpunkt neu rauskommt, wird als Update gefahren. Der Offline-Reader
+wird dann spannend."*
+
+> Das ist eine bessere Antwort als „es wartet". Beim Abriss wird ein **Zeitstempel** gesetzt.
+> Bei Rückkehr fragt SyncFindus jede Quelle nicht *„was gibt es?"*, sondern **„was gibt es seit
+> diesem Zeitpunkt?"** — ein Nachtrag, kein Neuaufbau. Das ist billiger, vollständiger und
+> nachvollziehbar (*„14 Kapitel, 3 Folgen und 2 Alben sind erschienen, während du weg warst"*).
+
+Was daraus folgt: **Vorrat ist keine Bequemlichkeit, sondern die Offline-Vorsorge.** Der Leser
+muss die nächsten N Einheiten immer schon auf der Platte haben — und die Warteschlange lauert
+weiter (E150), sie scheitert nicht. Wer zwei Wochen im Funkloch ist, liest zwei Wochen.
+
+**E157 — eine Uhr: deine.** JB: *„Wenn das Kapitel um 4:00 Uhr morgens in CEST erscheint und in
+Japan um 23:00 Uhr, dann sind es unterschiedliche Tage, doch wir gehen nach CEST (Berlin)."*
+
+> Alles Sichtbare rechnet in **deiner** Zeitzone. „Heute neu" heißt: heute, nach der Uhr an
+> deiner Wand. Die Herkunftszeit wird **gespeichert** (sonst kann man nicht sortieren) und
+> **nur auf Nachfrage** gezeigt: *„erschienen 09.08. 04:12 — in Japan war es der 8. um 23:12."*
+> Nie beide Daten gleichzeitig im Regal, das verwirrt mehr, als es klärt.
+
+**E161 — ein Rechner hat Vorrang.** JB: *„Zwei Menschen gleichzeitig ist doch ok. Abwechselnd.
+Wenn das nicht geht, ist die Prio bei diesem PC."*
+
+> Kein Warteschlangen-Verwalter, keine Anteilsberechnung, kein Zeitscheibenverfahren. **Wer
+> am Hauptrechner sitzt, gewinnt** — bei Grafikkarte, Bandbreite und Rechenzeit. Der zweite
+> Zugang läuft weiter, nur langsamer, und **sieht das auch** („Veredelung pausiert, der
+> Hauptrechner arbeitet"). Der Lesestand ist ohnehin je Profil getrennt.
+
+**E164 — es meldet sich nur, wenn du sonst etwas verlierst.** JB: *„Versteh das Problem
+nicht."* — Fair, das Problem ist unsichtbar, bis es da ist: Ein Programm, das alles Neue
+meldet, wird nach zwei Wochen stummgeschaltet. Ein Programm, das nie etwas meldet, verschweigt
+dir, dass etwas kaputt ist. **Die Antwort ist keine Einstellung, sondern eine kurze Liste.**
+
+> **Drei Anlässe, mehr gibt es nicht:**
+> **1.** Etwas ist **kaputt und du merkst es sonst nicht** — die Bibliotheksplatte antwortet
+> nicht, das Zertifikat läuft ab, eine Anmeldung ist abgelaufen.
+> **2.** Etwas **läuft weg** — eine Mediathek-Folge verschwindet in 3 Tagen und du hast sie
+> nicht geholt.
+> **3.** Du hast **ausdrücklich darum gebeten** — „sag mir, wenn Kapitel 1142 da ist".
+>
+> Alles andere — neue Kapitel, fertige Downloads, abgeschlossene Übersetzungen — steht im
+> Regal und **wartet dort**. ⚠️ Nie eine Meldung, die nur „gute Nachrichten" transportiert.
+
+**E158 — das Alter entscheidet.** JB: *„Wenn Kinderprofil, dann Alter eingeben, das entscheidet
+was angezeigt wird."*
+
+> **Eine Zahl statt einer Häkchenliste.** Aus dem Alter folgen FSK/USK/Altersfreigabe aus den
+> Metadaten und die Inhaltsmarken (`content_rating`, das SyncManga schon führt). Zwei Regeln
+> dazu: **Was nicht bewertet ist, gilt als nicht freigegeben** — im Zweifel unsichtbar, nicht
+> im Zweifel sichtbar. Und: **das Kind sieht nicht, dass etwas fehlt** — keine grauen Kacheln,
+> keine Schlösser, kein „ab 16". Ein leeres Regal ist besser als ein Regal voller Verbote.
+
+**E162 und E159** stehen in §16.5 bzw. §6.
 
 **Von den drei Ideen ohne E-Nummer:** der **Jahresrückblick** ist verworfen (JB: *„meh"*) und
 durch **E148** ersetzt — der Kalender empfiehlt ganzjährig, statt einmal Bilanz zu ziehen. Der
@@ -2844,6 +3110,7 @@ Ansicht — die Liste, die kein anderes Programm bauen kann) wartet weiter auf e
 
 | Datum | Was |
 |---|---|
+| 2026-08-08 | Fassung 1.11 — **Der Name steht, die Fessel fällt, neun Lücken schließen sich.** **F02 beantwortet: SyncFindus** (JB: *„Mein Kater heißt so, als Findus."*) — Dokument, Dateiname und alle Entwürfe umbenannt. **F05 beantwortet: E163, ja.** JB delegierte die Entscheidung; §9.2 wägt beide Seiten ab und entscheidet nach **Schadenshöhe statt Wahrscheinlichkeit** — bleiben die Dateien liegen und nichts passiert, gewinnen wir null; passiert etwas, ist das Repo weg. Dazu der ehrliche Hinweis, dass `git rm` nicht reicht (Historie) und ein Umschreiben JBs ausdrückliche Zustimmung braucht. **🔑 E162 — SyncManga ist Lehrer, nicht Vorgänger.** JB: *„Die Library ist egal, die sollten wir uns selber aufbauen … wir sind noch nicht so etabliert, dass wir nichts wagen können."* Damit fällt die größte Fessel des Vorhabens: die erste Fassung heißt nicht mehr *800 Werke drin*, sondern **ein Werk richtig**. Festgehalten bleibt die eine Asymmetrie — Dateien sind ersetzbar, **Lesestand nicht**; deshalb ein winziger Import von drei Feldern (Titel · letztes Kapitel · Datum) durch dieselbe Erkennung wie jede andere Quelle, als **Angebot ohne Zeitdruck**. **🔑 E154 — zwei Regale für Ton:** in der Musik ist eine Lücke eine **Zahl**, im Hörbuch ein **Defekt**. Neun Unterschiede tabellarisch, Vollständigkeitsbalken **segmentiert statt prozentual** (ein Prozentwert verschweigt, *wo* das Loch sitzt), und ein Hörbuch ist **ein** Wunsch, Musik viele. **🔑 E155 — Pflicht wird gezeigt, nicht versteckt:** Haken gesetzt und ausgegraut, drei Klassen mit je einem festen Satz, Größe/Lizenz/Zweck bei jedem Bestandteil, nie ein vorausgewähltes Extra. Dazu **der erste Start** als vier gleichwertige Wege ohne Reihenfolge. **🔑 E159 — die Einstellung gehört zum Spiel, nicht zum Emulator:** drei Ebenen mit sichtbarer Herkunft je Zeile, plus der Knopf *„als Systemstandard übernehmen"*, ohne den man dieselbe Sache 41-mal einstellt. **🔑 E160 — die Lücken-Liste ist der Eingang zur Beschaffung**, kein Bericht: eine Tat je Zeile, sie beschämt nicht, und sie hat bewusst **kein Abzeichen** — anders als das Postfach, das rufen muss. **E165 — sofort der Rand, nach 400 ms das Band** (vier Hover-Varianten verglichen, C gewinnt mit D als Sofortantwort). **Sieben Lücken geschlossen:** **E156** ohne Netz steht die Uhr, bei Rückkehr läuft alles seit dem Bruch als Nachtrag (JBs Antwort war besser als meine Frage) · **E157** eine Uhr, deine — alles nach Berliner Zeit, Herkunftszeit nur auf Nachfrage · **E158** das Alter entscheidet, und was nicht bewertet ist, gilt als nicht freigegeben; das Kind sieht keine Schlösser · **E161** ein Rechner hat Vorrang, wer davorsitzt gewinnt · **E164** es meldet sich nur bei drei Anlässen — kaputt, läuft weg, ausdrücklich gewünscht; nie eine reine Erfolgsmeldung · *Platte voll* („dann erweitere ich" — keine Verdrängungslogik, das ist die richtige Antwort) · *ohne Maus* (keine Funktion, sondern eine **Bauvorgabe**: fehlende Fokussierbarkeit ist eine neue Säule und darf nie entstehen). **Offen bleiben zwei:** Sicherung & Wiederherstellung — nach E151 trägt **eine** Datei alles — und die Sprache der Oberfläche. **Neu: Entwürfe `regale.html` und `erststart.html`.** |
 | 2026-08-08 | Fassung 1.10 — **Die wöchentliche Pflege wird dauerhaft.** JB-Vorgabe: *„Wir müssen ab und an immer wieder prüfen, was es Neues gibt, was Altes ersetzt und was gestorben ist — egal in welchem Chat ich bin."* → **Neu: `Doku/PFLEGE.md`** mit acht Prüfungen, jede mit einem **Fund-Auslöser** (nur wenn der eintritt, gibt es Arbeit): die vier Protokolle leben · Wissensketten antworten unverändert · Werkzeuge werden gepflegt · **der Friedhof** — wer ist gestorben, die Prüfung, die man am liebsten vergisst, weil nichts kaputtgeht, sondern nur etwas fehlt · Recht und Schlösser · neue Vorbilder · Browser-Änderungen · die eigene Baustelle. Dazu die **Halbwertszeit-Tabelle**, die begründet, warum ausgerechnet das nachgeprüft werden muss: Werk-Modell hält **Jahre**, Gestaltungsregeln **Jahre**, Werkzeuge **Monate**, Quellen **Wochen**. Neu in §0: **Pflegeregel 6** und die Tabelle der drei Begleitdateien. Ein Fund gehört in eine Datei, nie in ein Gespräch — *ein Chat endet, die Datei nicht*; auch „kein Fund" wird protokolliert, sonst weiß niemand, ob geprüft oder vergessen wurde. **§13.1 auf den echten Stand gebracht:** alle zehn Bausteine entschieden, neun von zehn gezeichnet, **kein fehlender Entwurf blockiert mehr einen Baustein**. Die Lücke *Übernahme aus SyncManga* ist geschlossen (§16.5), neun bleiben — mit dem Hinweis, dass **E151** die Sicherungsfrage und **E150** die Offline-Frage verschärft haben. Die nächsten Schritte sind neu sortiert, obenan die **drei Dinge, die auf JB warten**: **F05** (die zwei Dateien aus dem öffentlichen Repo — die einzige Frage, bei der Zögern selbst das Risiko ist), die **Token-Wahl bei Sectigo** (Vorlauf Wochen, nicht Tage) und **F02 der Name** (blockiert alles Sichtbare, steht auch im Zertifikat). **Entwurf 15 überarbeitet** zu *Was noch offen ist*. |
 | 2026-08-08 | Fassung 1.9 — **E149–E153, E139 überarbeitet, der SyncManga-Damm gebrochen.** **JB entschied drei Anordnungen:** Werk-Seite **A**, Postfach **C**, Warteschlange **A** — und überstimmte mich zweimal zu Recht. **E139 überarbeitet:** JBs Einwand *„wenn du sagst, wir sollen die gleiche Oberfläche haben, dann widersprichst du dir doch"* sitzt. *Dieselben Kästen über alle Medien* ist eine Aussage über das **Datenmodell** und kostet nichts; *verschiedene Anordnungen je Zustand* ist eine über das **Verhalten** und kostet Lernbarkeit — ich hatte die zweite mit der Autorität der ersten begründet. Jetzt: **eine Anordnung, ein Band das seinen Inhalt wechselt** — der Aufmacher bleibt immer stehen, nur eine Zeile darin wird vom Herkunftssatz zum Faden; beim Film trägt dieselbe Zeile die Zeitmarke. **§4.5.1 überarbeitet:** die Bahn gewinnt, weil die Warteschlange eine **Tafel zum Danebenschauen** ist und keine Arbeitsfläche (JB: *„es ist halt ein Progress"*) — mit farbiger **Umkreisung** statt Rahmenfarbe; die Zeilen werden ihre Notlage unter 640 px, die Bündelung nach Werk wird das Aufklappen. **Neu: §9.6 Das Rennen** — **E149 Beschaffung ist ein Rennen, kein Auftrag** (Vorprüfung kostet keine Bytes: Seederzahl aus dem DHT, `HEAD` auf `Accept-Ranges`; Ablösung statt Abbruch; Teildaten bleiben liegen; Geo-Sperre ist ein Schritt, kein Fehler) und **E150 der Wunsch stirbt nie** — ein Auftrag scheitert, ein Wunsch lauert und schlägt zu, sobald eine neue Quelle auftaucht. **Neu: §7.5 Vier Protokolle statt einer Liste** (Cardigann-YAML mit 500+ Indexern, `index.min.json` der Erweiterungsläden, ~1.800 yt-dlp-Extraktoren, MediathekView-Filmliste, BitTorrent als Protokoll ohne Anbieter) und **§7.6 Das Werkzeugfeld** — 14 quelloffene Werkzeuge mit ihrer Rolle, eingebunden statt nachgebaut, dazu MakeMKV für die eigene Scheibe mit der ehrlichen § 95a-Fußnote. Ausdrücklich **nicht** enthalten: eine kuratierte Seitenliste — genau das Artefakt, an dem Tachiyomi starb. **E151 Das Register ist die Wahrheit, die Anzeige eine Sicht** — acht konkrete Beschlüsse in §16.5 schließen alle drei ineinandergreifenden SyncManga-Macken auf einmal; `CACHE_VER` entfällt, jedes Feld trägt eigenes Alter und eigene Herkunft. **Behoben (JB-Funde 08.08.):** **E152** die Kopfzeile lief über den Kapitelstreifen — die untere Leiste kannte die Regel längst, die obere nicht (*ein reparierter Fehler mit einem unreparierten Zwilling*); **E122 gilt auch senkrecht** — Sprechermarken und der Weiterlesen-Knopf wuchsen aus der zentrierten Mitte heraus und waren unsichtbar, der Knopf steht jetzt nie in der Verzichtsreihe; **E153 eine Tafel ist eine Tabelle** — die Untertitel-Werkstatt war links bündig und rechts fransig, „Größe" und „Schrift" standen wegen 1 px Innenabstand nicht übereinander, vier Bedienelement-Gewichte in 32-px-Zeilen, dazu ein Pixel Randversatz gegen die eigene Tafel; **E82** die Pausenkarte hing mittig und ragte in die Bedienleiste — jetzt oben angeschlagen, höhenbegrenzt und gestuft nachgebend. |
 | 2026-08-07 | Fassung 1.8 — **E139–E148, vier blockierende Entwürfe erledigt.** **Neu: §4.2.1 Die Werk-Seite** mit dem Vier-Medien-Nachweis (dieselben Kästen für Manga, Anime, Film, Album — nur die Wörter wechseln) und **E139: zwei Gesichter, der Fortschritt entscheidet** — kein Fortschritt → Bild-Anordnung, Fortschritt → Faden-Anordnung, unter 700 px → Akte; **keine Einstellung**, eine Folge des Zustands. **E144** Beziehungen sind gerichtet und benannt. **Neu: §4.5.1** die Warteschlange sichtbar — **E142** bündeln nach Werk statt nach Auftrag, **E143** jede Zeile beantwortet drei Fragen (was tut sie, worauf wartet sie, was bei Fehlschlag), vier Zustände und **gelb ist kein Fehler**. **Neu: §8.6 Das Postfach** — der Trichter als Rahmen, der Stapel als Arbeitsmodus, **E141** (sichtbar · Standardausgang · Regel aus Wiederholung) und die **sechs geschlossenen Gründe**. **Neu: §7.4 Die Güteleiter** — **E140**, eine Stufenleiter S–D für alle Medien, **gemessen statt geglaubt**; dazu die recherchierte Liste legal beschaffbarer Quellen je Medium (Standard Ebooks, Baen, DTA, ARD Audiothek, Bandcamp, **Live Music Archive**, **MediathekView** als stärkster Einzelfund, Digital Comic Museum) und die ehrliche Grenze bei Widevine, AACS und § 95a UrhG. **Neu: §8.5 Sechs Zeugen** mit Gewichten und Sicherungen — **E145 der Browser ist ein Zeuge, kein Gedächtnis**, **E146 der Zustand hängt nie an der Identität**. **Neu: §16.5 Übernahme aus SyncManga** — alle 18 Module gelesen, **drei ineinandergreifende Macken** benannt (Zustand im localStorage · Titel als Schlüssel · Cache = Bibliothek) samt der einen Entscheidung, die alle drei auflöst, plus was durch Leser und Herunterladen jetzt möglich wird. **E147 Der Bruchtest** (§12.6) mit sechs Beispielregeln, **E148 der Kalender empfiehlt, die Bilanz nicht** (Jahresrückblick verworfen). **Neu: Entwürfe `werkseite.html` und `quellen.html`.** **Behoben:** fehlendes `</div>` in `.hlinks` (verschluckte die Bedienschicht — der Spieler verschwand bei Hörbüchern); Vorschaubild auf der Tonspur-Zeitleiste, wo es kein Video gibt; vierte Spulstufe 60× ab 3,4 s. |
@@ -2860,7 +3127,7 @@ Ansicht — die Liste, die kein anderes Programm bauen kann) wartet weiter auf e
 | 2026-08-07 | Fassung 0.7 — **E78–E88.** Neu: **§5.8.1 Titel sind vielsprachig** (kein „richtiger" Titel; Englisch ist keine Leitwährung; Romanisierungen normalisiert vergleichen; Titelvorrat wächst nur) und **E87 nie früh verwerfen** — Falsch-Behalten schlägt Richtig-Wegwerfen. **§5.10.1 Kachelgrößen:** die Mini-Kachel ohne Titel ist gestrichen (JB: „dann sehe ich nicht, welchen Manga ich lese") — Titel ist Rang 1 der Prioritätsleiter und fällt nie; stattdessen „Dicht" mit einzeiligem Titel. **Bühne erweitert:** 10 s tippen / halten spult mit 4×–12×–30× (Vergleich Netflix, Plex, Jellyfin, Kodi, Prime, VLC, mpv) · Bedienung liegt im Bild und blendet weich weg (420 ms raus, 120 ms rein) · Pausenkarte nach 12 s mit Rollenzeile, nie Empfehlungen · „Ton & Text" statt „Spuren", Einstellen vom Auswählen getrennt (Zahnrad) · Folgen unter der Bühne. **Suche:** erweiterte Suche zugeklappt mit Zähler, dieselbe Dreistufigkeit, und **das kluge Regal** (gespeicherte Suche wird Regal). **E85 Zahlentypografie:** die Luft gehört dem Trenner, ausgerichtet mit Ziffernleerzeichen, Füllbreite aus der aktuellen Ansicht — damit hören vierstellige Kapitel auf, am Schrägstrich zu kleben. **Neu: §13.1 Wie weit wir sind** und **`Doku/ENTWUERFE.md`** als Index der elf Entwürfe. Drei weitere Fallen in §5.11 (`visibility` reserviert Platz · Maßstab am falschen Element · Zellbreite trägt den Abstand). |
 | 2026-08-07 | Fassung 0.6 — **E72–E77.** Neu: **§5.12 Die Bühne** (Video, Musik, Hörbuch auf einer Fläche; die Leiste als Landkarte der Folge; wer welche Untertitel zeichnet; feste Gamepad-Belegung; der Übergang Hören ↔ Lesen). **§8.4 um E76 erweitert:** wie die Erweiterung dasselbe Werk auf verschiedenen Seiten, unter anderen Titeln, von anderen Gruppen und mit anderer Kapitelzählung wiedererkennt — die Adresse ist ein Hinweis, nie ein Beweis. **E58 verschärft:** Leserichtung hat zwei Achsen (Fluss + Achse); Chinesisch ist der Sonderfall, weil Webtoon und gebundener Band verschieden laufen. **JB-Funde:** „Spieler" war zweideutig → **Bühne**, das Wort kommt auf die Verbotsliste des Text-Wächters (Dokument durchgesehen und umgestellt) · „gesamt" hieß fälschlich Endstand → **erschienen**, drei Zahlen, alle echt · `…` statt `?` · Geführt-Modus zoomte nicht, sondern verkleinerte den Text (Einpassen hebt Zoom auf). Drei neue Fallen in §5.11. |
 | 2026-08-07 | Fassung 0.5 — **E53–E71.** Neu: **§5.8 Die Suche** (ein Feld, zwei Gruppen, drei Zustände, dreistufige Filter, Zusammenführungsregeln, die sieben Entnerv-Regeln) · **§5.9 Der Leser** (Leserichtung als Eigenschaft der Ausgabe, ein Griff mit zwei Gedächtnissen, keine Restzeit beim Lesen) · **§5.10 Schrift und Zeichen** (Inter/Literata/Atkinson/JetBrains Mono; ▶ vs. Lesezeichen-Pfeil; zwei Farbskalen; Wortabzeichen statt Emoji; die Kapitelzelle) · **§5.11 Gelernte Fallen** (sieben Fehler, die in dieser Sitzung wirklich passiert sind) · **§8.4 Die Browser-Erweiterung** (vier Knopfzustände, drei Eingriffe je Seite, nur `127.0.0.1`, Adapterliste lokal). Die „zehn unverhandelbaren" aufgeteilt in **zehn Regeln der Bauart** und **vier Regeln des Vertrauens** — die alte Zehnerliste bleibt unverändert. Entwürfe: `suche.html`, `erweiterung.html`; `leser.html` und `regal.html` überarbeitet. **JB-Funde:** geteilter Regler zwischen Zoom und Schriftgröße · „Kapitel 88 von 122" war zweideutig · 🖐-Emoji unlesbar · Restdauer beim Lesen setzt unter Druck. |
-| 2026-08-07 | Fassung 0.4 — **Name entschieden: SyncFundus** (der Fundus ist im Theater und Film der Bestand, aus dem man schöpft). Datei umbenannt. E46–E52: Meilensteine nur einmal · Blu-ray über externes Werkzeug einbinden statt selbst entschlüsseln · **genau ein Ausgang pro Datei** (JB-Einwand gegen kaskadierende Regeln — berechtigt, Modell vereinfacht) · Fehlerprotokoll lokal/verschlüsselt/opt-in · GPU nachgebend · Anmeldungen erneuern sich still · deterministischer Kern. Warteschlange um die drei Fehlerarten und vergiftete Aufträge erweitert. Qualitätsnetz um die extreme Stufe erweitert (JB: „machen"). **Neu: §16 Übergabe an eine zweite KI** mit verbindlicher Baureihenfolge. **Neu: die zehn unverhandelbaren.** Aufgeräumt: §12.6 war falsch eingerückt, §5.6/5.7 neu geordnet. |
+| 2026-08-07 | Fassung 0.4 — **Name entschieden: SyncFindus** (der Fundus ist im Theater und Film der Bestand, aus dem man schöpft). Datei umbenannt. E46–E52: Meilensteine nur einmal · Blu-ray über externes Werkzeug einbinden statt selbst entschlüsseln · **genau ein Ausgang pro Datei** (JB-Einwand gegen kaskadierende Regeln — berechtigt, Modell vereinfacht) · Fehlerprotokoll lokal/verschlüsselt/opt-in · GPU nachgebend · Anmeldungen erneuern sich still · deterministischer Kern. Warteschlange um die drei Fehlerarten und vergiftete Aufträge erweitert. Qualitätsnetz um die extreme Stufe erweitert (JB: „machen"). **Neu: §16 Übergabe an eine zweite KI** mit verbindlicher Baureihenfolge. **Neu: die zehn unverhandelbaren.** Aufgeräumt: §12.6 war falsch eingerückt, §5.6/5.7 neu geordnet. |
 | 2026-08-06 | Fassung 0.3 — E34–E45: **kein zweites Fenster** (der Motor liefert Pixel, wir liefern die Bedienung) · Navigation mit Seitenleiste, vier Sichtbarkeits-Stufen, Tiefenregel Ebene-vs-Tafel · Container ersetzt Ordner · Regal „Eigenes" · Vorschlagen statt Verändern · Qualitätsnetz mit Layout- und Text-Wächter · Titel-Schema als Rollen · Live-TV ja / Live-Sport nein · die Suche ist die Anforderung. Blu-ray-Playlist-Verschleierung dokumentiert. F11–F12 eröffnet. **JB-Korrektur:** Big Picture ist *nicht* die Vorlage für den Fernsehmodus — die Steam-Deck-Oberfläche und EmulationStation sind es. |
 | 2026-08-06 | Fassung 0.2 — E25–E33 ergänzt: Spieler-Motor (libmpv/libVLC), Plattform-Offenheit über HTTP-Schnittstelle, Ordnerkonventionen und Pfadhaltung, Umbenennungsregeln, Mängel-Deklaration, Titel-Zuordnung mit gewichteten Zeugen, Export als Grundrecht, Spiele über Playnite. **F01 beantwortet** (§12.4). Zwiebel um DJ-Sets, Sportevents, Spiele/Emulatoren, physische Sammlung erweitert. **Korrektur:** winget verleiht kein Vertrauen (§12.1). |
 | 2026-08-06 | Fassung 0.1 — Startschuss. E01–E24 festgehalten, F01–F10 eröffnet. Grundlage: Brainstorming-Sitzung JB + Claude, mit Recherche zu Marktlage, Farbforschung, WCAG, *arr-Stand, TTS-Stand, Signaturlage, MangaDex-Verfügbarkeit, Cloudflare-Umgehung. |
@@ -3007,7 +3274,7 @@ die den Rest des Programms überhaupt erst baubar macht.
 | Pfad zu `md_cache.json` sucht `../../../SyncDashTray/System/` | `readers.py:181` | Rest der Suite-Herkunft. **Muss weg** — Pfade kommen von außen herein, nie aus dem Modul |
 | Veraltete `sources.json` überschrieb die eingebaute Sperrliste → alle neuen Sperren wirkungslos | `config.py:159` | Repariert, aber ein Muster: **mitgelieferte Regeln und Nutzerdatei müssen sich vereinen, nicht ersetzen** |
 | `cp1252`-Konsole unter Windows | `common.py:26` | Verschwindet mit einer echten Oberfläche |
-| Ein Modul mit 1.644 Zeilen (`enrich.py`) | — | Erkennung, Anreicherung, Fortschrittsmeldung und Cache-Pflege in einer Datei. In SyncFundus sind das vier Auftragsarten (§4.5) |
+| Ein Modul mit 1.644 Zeilen (`enrich.py`) | — | Erkennung, Anreicherung, Fortschrittsmeldung und Cache-Pflege in einer Datei. In SyncFindus sind das vier Auftragsarten (§4.5) |
 | `data/sources.json`, `data/readers_pattern.json` **öffentlich im Repo** | `data/` | ⚠️ Genau die Artefaktklasse aus **E12**. Vor dem Umzug zu klären |
 | `overrides.json` hat 647 Zeilen Handkorrekturen | `data/` | **Das wertvollste Datenstück überhaupt** — Jahre an Handarbeit. Wandert 1:1, mit Herkunft „Hand" und höchster Rangstufe (E135) |
 
@@ -3025,10 +3292,52 @@ Kompromisse:
 | Bewertung = Median über Datenbanken | keine eigenen Daten | Bleibt — **und bekommt das eigene Lesetempo daneben** (Startseite, E19) |
 | Ausgabe = eine HTML-Datei | kein eigenes Fenster | Die HTML-Ausgabe bleibt als **Export** (E14, Grundrecht), ist aber nicht mehr die Anwendung |
 
-#### Die Migration selbst
+#### E162 — SyncManga ist Lehrer, nicht Vorgänger
 
-⚠️ **Höchstes Risiko im ganzen Vorhaben** (§13.1): 800 Werke mit Lesestand seit 2019. Sind sie
-am ersten Tag nicht drin, wird SyncFundus nicht benutzt.
+**JB, 08.08.2026:** *„Ich finde das System hinter SyncManga gut, aber ich finde die Library ist
+egal. Die sollten wir uns selber aufbauen. Bisher nutzt nur eine weitere Person SyncManga. Ich
+habe viel aus dem Programm gelernt, doch hier sollten wir einen Neuanfang riskieren — wir sind
+noch nicht so etabliert, dass wir nichts wagen können. Vielleicht können wir so alte Fehler
+besser schließen."*
+
+> 🔑 **Damit fällt die größte Fessel des ganzen Vorhabens.** Bis heute stand über allem: *„800
+> Werke müssen am ersten Tag drin sein, sonst wird das Programm nicht benutzt."* Dieser Satz
+> hat das Datenmodell mitgeformt — jede Entscheidung musste rückwärtskompatibel zu einer
+> Struktur sein, die wir gerade erst als dreifach fehlerhaft beschrieben haben.
+
+**Was das konkret ändert:**
+
+| Vorher | Jetzt |
+|---|---|
+| Migration ist **Voraussetzung** für die erste Fassung | Migration ist ein **Werkzeug**, das später kommen darf |
+| Das neue Modell muss das alte abbilden können | Das neue Modell muss **nur richtig sein** |
+| Der Prüflauf-Bericht ist der riskanteste Entwurf | Er ist ein normaler Entwurf ohne Zeitdruck |
+| Erste Fassung = „800 Werke drin" | Erste Fassung = **„ein Werk richtig"** |
+
+**Und hier die eine Sache, die ich trotzdem festhalten will** — nicht als Widerspruch, sondern
+weil sie sonst später schmerzt:
+
+⚠️ **Dateien sind ersetzbar, Lesestand nicht.** Ein Regal baut man in Wochen neu auf; *„ich war
+bei Kapitel 1141"* mal 800 baut niemand neu auf. Das ist der einzige Teil von SyncManga, der
+sich nicht wiederbeschaffen lässt — und es sind ein paar hundert Kilobyte.
+
+> **Der Kompromiss, der beides erfüllt:** Wir bauen die Bibliothek **komplett neu**, ohne
+> Rücksicht auf die alte Struktur. Aber wir bauen **einen einzigen kleinen Leser** für
+> `md_cache.json` + `list_state.json`, der genau **drei Felder** herausholt: *Werk-Titel ·
+> zuletzt gelesenes Kapitel · Datum*. Kein Overrides-Umzug, keine Linkgesundheit, keine
+> Reservequellen, kein Prüflauf-Zeremoniell. Diese drei Felder gehen durch **dieselbe
+> Erkennung wie jede andere Quelle** (§8.2) — was eindeutig ist, wird übernommen, der Rest geht
+> ins Postfach.
+>
+> **Das ist kein Umzug, das ist ein Import wie jeder andere** — und genau deshalb passt er zum
+> Neuanfang statt ihn zu behindern. Aufwand: ein Nachmittag. Nutzen, falls du ihn brauchst:
+> sieben Jahre.
+
+Ob du ihn ausführst, entscheidest du am Tag der ersten Fassung. **Es blockiert nichts.**
+
+#### Falls doch migriert wird: die Regeln
+
+⚠️ Diese Regeln gelten weiterhin — aber sie beschreiben jetzt ein **Angebot**, keine Pflicht.
 
 1. **Lesen, nicht anfassen.** `md_cache.json` + `list_state.json` + `overrides.json` +
    `series_overrides.json` werden gelesen; SyncManga läuft unverändert weiter, bis JB selbst
