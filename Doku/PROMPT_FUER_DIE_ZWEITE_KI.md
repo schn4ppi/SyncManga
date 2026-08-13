@@ -62,6 +62,8 @@ Schreib mir am Ende in eine Zeile, wo du was gefunden hast.
 
 In dieser Reihenfolge. Überspring nichts, fass nichts zusammen.
 
+  0. SyncManga/CLAUDE.md                   ← wie hier gearbeitet wird.
+     Kurz. Vier harte Leitplanken, vier Faustregeln. Lies das zuerst.
   1. SyncManga/Doku/VISION_SYNCFINDUS.md   ← das Pflichtenheft, ~3.900
      Zeilen, 183 nummerierte Entscheidungen (E001–E183). Das ist der
      Bauplan. Alles andere ist Beiwerk.
@@ -75,6 +77,9 @@ In dieser Reihenfolge. Überspring nichts, fass nichts zusammen.
      soll. Wenn Text und Entwurf sich widersprechen, gilt der TEXT —
      und du schreibst den Widerspruch ins Protokoll.
   6. SyncManga/Doku/PFLEGE.md              ← die wiederkehrende Prüfung
+  6b. SyncManga/Doku/LEHRBUCH.md           ← zehn Lehren aus dem Bau,
+     jede mit ihrem Vorfall. Besonders L2 (wenn du eine Konfliktregel
+     brauchst, ist das Modell zu grob) und L10 (sag nie "vollständig").
   7. Den Quelltext beider Vorgänger, mindestens die Kopfkommentare
      jeder Datei.
 

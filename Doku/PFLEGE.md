@@ -108,9 +108,8 @@ kommen Monate vorher, und wer sie verpasst, steht plötzlich ohne Zustandsquelle
 
 ### 9 · Die drei Suchen im eigenen Dokument
 
-⚠️ **Am 08.08.2026 hinzugefügt, nachdem sie drei Lücken auf einmal fanden.** Wiederlesen
-findet die Fehler nicht, die man beim Schreiben gemacht hat — diese drei mechanischen Suchen
-schon:
+⚠️ **Am 08.08.2026 hinzugefügt, nachdem sie drei Lücken auf einmal fanden.**
+Das **Warum** steht als **L4** in `LEHRBUCH.md`; hier steht nur, **wie** man es ausführt.
 
 | Suche | Was sie findet | Fundbeispiel |
 |---|---|---|
