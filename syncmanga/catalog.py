@@ -26,7 +26,7 @@ from . import (
 from .common import Pacer, get_json
 from .parse import norm
 
-API_MB = "https://api.mangabaka.dev/v1/series"
+API_MB = "https://api.mangabaka.org/v1/series"  # K6 24.08.: .dev tot (HTTP 500, deprecated) -> .org; live gemessen: /series/1 = 200
 MB_PACER = Pacer(0.6)         # MangaBaka drosselt hart (~429 nach 5-6 schnellen Calls)
 MB_MAX_RETRY = 6              # 429 -> kurz warten und erneut (Cooldown real ~2s)
 SIM_WINDOW = 0.12            # Titel-Match-Fenster: nur so viel schlechter als der beste darf ein

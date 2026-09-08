@@ -74,18 +74,6 @@
       "chapter": "https://mangatx.cc/manga/{slug}/chapter-{n}/"
     },
     {
-      "name": "Manhuascan",
-      "host": "manhuascan.us",
-      "type": "manga",
-      "chapter": "https://manhuascan.us/manga/{slug}/chapter-{n}/"
-    },
-    {
-      "name": "Manhwaz",
-      "host": "manhwaz.com",
-      "type": "manga",
-      "chapter": "https://manhwaz.com/webtoon/{slug}/chapter-{n}/"
-    },
-    {
       "name": "Readberserk",
       "host": "readberserk.com",
       "type": "manga",
@@ -138,18 +126,6 @@
       "host": "ww3.readsololeveling.org",
       "type": "manhwa",
       "chapter": "https://ww3.readsololeveling.org/chapter/{slug}-chapter-{n}/"
-    },
-    {
-      "name": "En-thunderscans",
-      "host": "en-thunderscans.com",
-      "type": "manhwa",
-      "chapter": "https://en-thunderscans.com/chapter/{slug}-chapter-{n}/"
-    },
-    {
-      "name": "Mangabuddy1",
-      "host": "mangabuddy1.co.uk",
-      "type": "manga",
-      "chapter": "https://mangabuddy1.co.uk/series/{slug}/chapter-{n}/"
     },
     {
       "name": "Manganato",
@@ -206,10 +182,70 @@
       "chapter": "https://toonitube.com/read/{slug}/chapter-{n}/"
     },
     {
-      "name": "Pawmanga",
-      "host": "pawmanga.com",
+      "name": "Toontop",
+      "host": "toontop.io",
       "type": "manga",
-      "chapter": "https://pawmanga.com/{slug}-chapter-{n}/"
+      "chapter": "https://toontop.io/read/{slug}/chapter-{n}/"
+    },
+    {
+      "name": "Hentara",
+      "host": "hentara.com",
+      "type": "manhwa",
+      "chapter": "https://hentara.com/comic/{slug}/chapter-{n}/"
+    },
+    {
+      "name": "En-hijala",
+      "host": "en-hijala.com",
+      "type": "manhwa",
+      "chapter": "https://en-hijala.com/series/{slug}/chapter-{n}/"
+    },
+    {
+      "name": "Madarascans",
+      "host": "madarascans.org",
+      "type": "manhwa",
+      "chapter": "https://madarascans.org/chapter/{slug}-chapter-{n}/"
+    },
+    {
+      "name": "En-thunderscans",
+      "host": "en-thunderscans.com",
+      "type": "manhwa",
+      "chapter": "https://en-thunderscans.com/chapter/{slug}-chapter-{n}/"
+    },
+    {
+      "name": "Ravenscans",
+      "host": "ravenscans.net",
+      "type": "manga",
+      "chapter": "https://ravenscans.net/chapter/{slug}-chapter-{n}/"
+    },
+    {
+      "name": "Ww13",
+      "host": "ww13.readonepiece.com",
+      "type": "manga",
+      "chapter": "https://ww13.readonepiece.com/chapter/{slug}-chapter-{n}/"
+    },
+    {
+      "name": "Ww4",
+      "host": "ww4.readsololeveling.org",
+      "type": "manhwa",
+      "chapter": "https://ww4.readsololeveling.org/chapter/{slug}-chapter-{n}/"
+    },
+    {
+      "name": "Ravenscans",
+      "host": "ravenscans.org",
+      "type": "manga",
+      "chapter": "https://ravenscans.org/chapter/{slug}-chapter-{n}/"
+    },
+    {
+      "name": "Genztoons",
+      "host": "genztoons.org",
+      "type": "manga",
+      "chapter": "https://genztoons.org/series/{slug}/chapter-{n}/"
+    },
+    {
+      "name": "Timelesstoons",
+      "host": "timelesstoons.org",
+      "type": "manga",
+      "chapter": "https://timelesstoons.org/series/{slug}/chapter-{n}/"
     }
   ]
 }

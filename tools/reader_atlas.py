@@ -36,7 +36,17 @@ if PKG not in sys.path:
     sys.path.insert(0, PKG)
 from syncmanga.parse import host as host_of  # noqa: E402
 
-INDEX_URL = "https://raw.githubusercontent.com/keiyoushi/extensions/repo/index.min.json"
+# JB/Claude 10.08.2026: Hier stand `index.min.json` — dieselbe tote Adresse, die am
+# 08.08. bereits in import_keiyoushi.py repariert wurde. Der Atlas hat die Reparatur
+# nie bekommen und lief seither ins Leere: Die alte Adresse antwortet weiterhin mit
+# HTTP 200, liefert aber nur 765 Byte mit zwei Grabstein-Eintraegen. Der letzte Lauf
+# vermass deshalb 2 Hosts statt 542 — nachzulesen in data/reader_atlas.json ("count": 2).
+#
+# ⚠️ Das ist dasselbe Fehlerbild wie damals bei MangaFire: Die Antwort ist heil, nur
+# leer. Ein Waechter auf den HTTP-Status haette nichts gemerkt — deshalb prueft auch
+# hier jetzt die ANZAHL der Eintraege, genau wie in import_keiyoushi.py.
+INDEX_URL = "https://raw.githubusercontent.com/keiyoushi/extensions/repo/index.json"
+MIN_EINTRAEGE = 50
 OUT = os.path.join(PKG, "data", "reader_atlas.json")
 _UA = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
                      "(KHTML, like Gecko) Chrome/124.0 Safari/537.36"}
@@ -66,10 +76,41 @@ _CF = ("just a moment", "checking your browser", "cf-chl", "attention required",
        "enable javascript and cookies", "ddos-guard")
 
 
+def _eintraege_aus(roh):
+    """Beide Formate des Keiyoushi-Index lesen.
+
+    ⚠️ Ab Repo-Fassung 0.20 ist der Index kein Array mehr, sondern ein Objekt:
+    {"name", "signingKey", …, "extensionList": {"extensions": [...]}}.
+    `import_keiyoushi.py` kennt das seit dem 08.08.2026 — dieses Werkzeug hier
+    nicht, es erwartete weiter eine Liste und haette selbst nach der URL-Reparatur
+    noch 0 Eintraege gesehen. Dieselbe Aufteilung, damit beide Werkzeuge dasselbe
+    verstehen.
+    """
+    if isinstance(roh, list):
+        return roh
+    if not isinstance(roh, dict):
+        return []
+    el = roh.get("extensionList")
+    if isinstance(el, dict):
+        return el.get("extensions") or []
+    return el or roh.get("extensions") or []
+
+
 def load_index():
     req = urllib.request.Request(INDEX_URL, headers=_UA)
     with urllib.request.urlopen(req, timeout=30) as r:
-        return json.load(r)
+        eintraege = _eintraege_aus(json.load(r))
+    # ⚠️ Nicht den Status pruefen, sondern die MENGE. Die alte Adresse antwortete mit
+    # HTTP 200 und zwei Grabsteinen — heil, aber leer. Wer nur auf 200 schaut, merkt
+    # nichts und schreibt ein leeres Ergebnis ueber ein gutes.
+    if not isinstance(eintraege, list) or len(eintraege) < MIN_EINTRAEGE:
+        raise SystemExit(
+            f"FEHLER: Der Keiyoushi-Index lieferte nur {len(eintraege) if isinstance(eintraege, list) else 0} "
+            f"Eintraege (erwartet >= {MIN_EINTRAEGE}).\n"
+            f"  Quelle: {INDEX_URL}\n"
+            f"  Der Atlas wird NICHT ueberschrieben — ein leeres Ergebnis waere "
+            f"schlimmer als ein veraltetes.")
+    return eintraege
 
 
 def _fetch(url, timeout=12, nbytes=220000):

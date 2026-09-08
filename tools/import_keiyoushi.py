@@ -33,17 +33,64 @@ from syncmanga.parse import host as host_of  # noqa: E402
 
 OUT = os.path.join(PKG, "data", "readers_pattern.json")
 # Offizieller, maschinenlesbarer Quellen-Index (Nachfolger der Tachiyomi-Extensions).
-INDEX_URL = "https://raw.githubusercontent.com/keiyoushi/extensions/repo/index.min.json"
+# JB 08.08.2026: URL von index.min.json auf index.json umgestellt. Der alte Pfad liefert
+# seit dem Mihon-0.20-Umbau nur noch 765 Byte mit zwei Grabstein-Eintraegen ("Outdated App",
+# "Update to Mihon 0.20.1+") -- und zwar weiter mit HTTP 200. Der Import zog seither still
+# null Reader. Genau das Fehlerbild wie damals bei MangaFire: die Antwort ist heil, aber leer.
+INDEX_URL = "https://raw.githubusercontent.com/keiyoushi/extensions/repo/index.json"
+# Untergrenze fuer den Wachposten. Der Katalog fuehrt >1300 Erweiterungen; faellt er unter
+# diesen Wert, ist etwas kaputt und NICHT die Welt geschrumpft.
+MIN_EINTRAEGE = 50
+
+
+def _eintraege(roh):
+    """Beide Katalog-Formen verstehen und die Erweiterungsliste zurueckgeben.
+
+    Alt (bis Mihon 0.19): die Wurzel IST die Liste.
+    Neu (ab 0.20):        {"name", "signingKey", ..., "extensionList": {"extensions": [...]}}
+    """
+    if isinstance(roh, list):
+        return roh
+    el = roh.get("extensionList")
+    if isinstance(el, dict):
+        return el.get("extensions") or []
+    return el or roh.get("extensions") or []
+
+
+def _quellen(ext):
+    """Quellen eines Eintrags, mit beiden Feld-Schreibweisen.
+
+    Umbenannt beim 0.20-Umbau: lang -> language, baseUrl -> homeUrl.
+    """
+    for src in (ext.get("sources") or []):
+        yield (src.get("language") or src.get("lang") or "",
+               src.get("homeUrl") or src.get("baseUrl") or "",
+               src.get("name") or "")
 
 
 def _load_index(path):
-    """Index laden: lokale Datei ODER (ohne Pfad) Auto-Pull vom offiziellen Repo."""
+    """Index laden: lokale Datei ODER (ohne Pfad) Auto-Pull vom offiziellen Repo.
+
+    Wachposten (JB 08.08.2026): Ein HTTP 200 beweist gar nichts -- geprueft wird die
+    ZAHL DER EINTRAEGE. Lieber laut abbrechen als still einen leeren Katalog verarbeiten
+    und "0 neue Kandidaten" melden, als waere alles in Ordnung.
+    """
     if path:
-        return json.load(open(path, encoding="utf-8"))
-    import urllib.request
-    req = urllib.request.Request(INDEX_URL, headers={"User-Agent": "SyncManga"})
-    with urllib.request.urlopen(req, timeout=30) as r:
-        return json.load(r)
+        roh = json.load(open(path, encoding="utf-8"))
+    else:
+        import urllib.request
+        req = urllib.request.Request(INDEX_URL, headers={"User-Agent": "SyncManga"})
+        with urllib.request.urlopen(req, timeout=30) as r:
+            roh = json.load(r)
+    eintraege = _eintraege(roh)
+    if len(eintraege) < MIN_EINTRAEGE:
+        raise SystemExit(
+            f"ABBRUCH: Keiyoushi-Katalog hat nur {len(eintraege)} Eintraege "
+            f"(erwartet >= {MIN_EINTRAEGE}).\n"
+            f"  Quelle: {path or INDEX_URL}\n"
+            f"  Das heisst fast immer: Schema oder Adresse haben sich geaendert.\n"
+            f"  Pruefen: liegt der Katalog jetzt unter index.pb (Protocol Buffers)?")
+    return eintraege
 
 
 def main():
@@ -55,17 +102,17 @@ def main():
     known = {r["host"] for r in existing}
     cands, seen = [], set()
     for ext in index:
-        for src in (ext.get("sources") or []):
-            if src.get("lang") not in ("en",):
+        for sprache, adresse, quellname in _quellen(ext):
+            if sprache != "en":
                 continue
-            h = host_of(src.get("baseUrl") or "")
+            h = host_of(adresse)
             # Paywall-Filter (JB Runde 38): "Volume 1 frei, Rest kaufen"-Plattformen raus.
             # (Frueh-Zugang wie asurascans ist ok — steht nicht in PAYWALL_SITES.)
             if (not h or h in seen or h in known or is_dead_reader(h) or is_paywall_site(h)
                     or any(u in h for u in UNSAFE_SITES)):
                 continue
             seen.add(h)
-            cands.append({"name": src.get("name") or h, "host": h, "tags": [],
+            cands.append({"name": quellname or h, "host": h, "tags": [],
                           "category": "manga"})
     if limit:
         cands = cands[:limit]

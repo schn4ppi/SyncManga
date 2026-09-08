@@ -582,8 +582,9 @@ class TrayApp:
         if not first:
             try:                                # UNFERTIGER Aufbau (JB: '417 in der Liste, aber
                 import json as _json  # nichts taucht auf') -> sofort weitermachen,
-                d = _json.load(open(os.path.join(self.data_dir, "data", "sync_progress.json"),
-                                    encoding="utf-8"))
+                with open(os.path.join(self.data_dir, "data", "sync_progress.json"),
+                          encoding="utf-8") as f:
+                    d = _json.load(f)
                 first = int(d.get("done") or 0) < int(d.get("total") or 0)
             except Exception:
                 pass

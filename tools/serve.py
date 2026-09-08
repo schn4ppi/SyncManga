@@ -4,7 +4,7 @@
 Winziger lokaler Webserver fuer SyncManga: serviert die Manga-Liste (+ PWA) ueber HTTP.
 
 Zweck:
-  - Die Liste vom HANDY im selben WLAN oeffnen (http://<PC-IP>:8765/Manga_Leseliste.html).
+  - Die Liste vom HANDY im selben WLAN oeffnen (http://<PC-IP>:8766/Manga_Leseliste.html).
   - Die PWA aktiviert sich nur ueber http(s) -> hier installierbar (Homescreen-Icon, offline).
   - Basis fuer die SERVER-MIGRATION: dasselbe Skript laeuft spaeter auf dem HomeServer
     (mit Firefox-Sync als Datenquelle), das Handy greift direkt darauf zu.
@@ -21,7 +21,7 @@ import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.normpath(os.path.join(HERE, "..", "..", "Erstellt"))  # enthaelt Leseliste-HTML + manifest + sw + icons
-DEFAULT_PORT = 8765
+DEFAULT_PORT = 8766   # NICHT 8765: der gehört dem Tray-Einstellungs-Server (test_port_hoheit)
 
 
 def _lan_ip():

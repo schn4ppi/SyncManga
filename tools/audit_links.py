@@ -8,7 +8,7 @@ geleert (read_chap=None -> der naechste Manga-Lauf baut sie frisch und verifizie
 anderes wird angefasst. Report -> data/link_audit.json.
 
 Aufruf:  python -m tools.audit_links [pfad/zu/md_cache.json] [--limit N]
-Default-Cache: ../Core/md_cache.json (JBs Vollsuite).
+Default-Cache: ../../SyncDashTray/System/md_cache.json (JBs Vollsuite).
 """
 import json
 import os

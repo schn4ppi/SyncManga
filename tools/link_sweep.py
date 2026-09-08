@@ -31,7 +31,7 @@ from syncmanga import linkhealth as lh  # noqa: E402
 
 
 def find_cache():
-    """Cache-Ort: Suite (Core/md_cache.json) oder Standalone (%LOCALAPPDATA%/SyncManga bzw. cwd)."""
+    """Cache-Ort: Suite (SyncDashTray/System/md_cache.json) oder Standalone (%LOCALAPPDATA%/SyncManga bzw. cwd)."""
     for p in (os.path.join(PKG, "..", "..", "SyncDashTray", "System", "md_cache.json"),
               os.path.join(os.getcwd(), "cache", "md_cache.json"),
               os.path.join(os.getcwd(), "md_cache.json")):

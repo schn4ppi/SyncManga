@@ -38,6 +38,19 @@ MF_PACER = Pacer(1.0)    # MangaFire: hoeflich (Bot-Schutz), interne JSON-API
 #   1. /api/titles?keyword=  -> hid (opake Serien-ID) + slug + Titel (fuer den Match-Waechter)
 #   2. /api/titles/{hid}/chapters?language=en -> je Kapitelnummer die opake Kapitel-ID
 #   3. Lese-Link  https://mangafire.to/title/{hid}-{slug}/read/en/{chapterId}  (direkt, kein Redirect)
+# Letzter Fehler je Quelle (Schluessel wie in enrich.probe_sources: anilist, mangaupdates,
+# kitsu, myanimelist). Die Lookups liefern bei Ausfall bewusst ein LEERES Ergebnis, damit die
+# Kette weiterlaeuft - aber der GRUND darf nicht verloren gehen: am 06.09.2026 waren AniList
+# (HTTP 403, »API temporarily disabled«) und Jikan (HTTP 504) tot, und nichts sagte warum (P5).
+LETZTER_FEHLER = {}
+
+
+def _fehler_merken(quelle, e):
+    """Ausnahme einer Quelle als Kurztext festhalten (Typ + Meldung, max. 200 Zeichen)."""
+    LETZTER_FEHLER[quelle] = f"{type(e).__name__}: {e}"[:200]
+
+
+
 API_MF = "https://mangafire.to/api"
 _MF_HEAD = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
                           "(KHTML, like Gecko) Chrome/124.0 Safari/537.36",
@@ -737,8 +750,8 @@ def al_lookup(name):
             if nm and ("story" in role or "art" in role) and nm not in anames:
                 anames.append(nm)
         out["author"] = ", ".join(anames[:2])
-    except Exception:
-        pass
+    except Exception as e:
+        _fehler_merken("anilist", e)    # leer zurueckgeben, aber den Grund behalten
     return out
 
 
@@ -778,8 +791,8 @@ def mu_rating(name):
             out["pub_status"] = "Abgeschlossen"
         elif rc.get("completed") is False:
             out["pub_status"] = "Laufend"
-    except Exception:
-        pass
+    except Exception as e:
+        _fehler_merken("mangaupdates", e)    # leer zurueckgeben, aber den Grund behalten
     return out
 
 
@@ -849,9 +862,15 @@ def _mu_updated_ts(rec):
 
 
 def mu_detail(series_id):
-    """MangaUpdates-Series-GET -> {authors, trans, trans_ts}. EIN Abruf fuer Autoren UND den
-    Uebersetzungs-Stand (latest_chapter + last_updated). Im Such-Ergebnis fehlen diese Felder."""
-    out = {"authors": "", "trans": None, "trans_ts": None}
+    """MangaUpdates-Series-GET -> {authors, trans, trans_ts, recs}. EIN Abruf fuer Autoren UND
+    den Uebersetzungs-Stand (latest_chapter + last_updated). Im Such-Ergebnis fehlen diese Felder.
+
+    26.08. (SyncFindus Motor-Stufe 1, JB-Go): Derselbe Response traegt
+    `recommendations` — gewichtete Nutzer-Empfehlungen (live gemessen:
+    Berserk -> Shin Angyo Onshi w=163, Uebel Blatt 151, Vinland Saga 141).
+    Die wurden hier jahrelang verworfen; jetzt kommen die Top 8 mit
+    (name, id, gewicht, cover) heraus — null zusaetzliche Abrufe."""
+    out = {"authors": "", "trans": None, "trans_ts": None, "recs": []}
     if not series_id:
         return out
     try:
@@ -863,9 +882,45 @@ def mu_detail(series_id):
         out["authors"] = ", ".join([x for x in dict.fromkeys(auths) if x][:2])
         out["trans"] = _mu_latest_chapter(rec)
         out["trans_ts"] = _mu_updated_ts(rec)
+        for r in (rec.get("recommendations") or [])[:8]:
+            name = (r.get("series_name") or "").strip()
+            if not name:
+                continue
+            bild = (((r.get("series_image") or {}).get("url") or {})
+                    .get("original") or "")
+            out["recs"].append({"name": name,
+                                "id": r.get("series_id"),
+                                "gewicht": int(r.get("weight") or 0),
+                                "cover": bild})
     except Exception:
         pass
     return out
+
+
+def mu_suche_id(titel):
+    """MangaUpdates-Suche -> (series_id, gefundener_titel) | (None, "").
+    Fuer die Anker-Ernte des SyncFindus-Empfehlungs-Motors: der md_cache
+    speichert die MU-ID nicht, also EIN Such-POST je Anker-Serie."""
+    if not titel:
+        return None, ""
+    try:
+        import json as _json
+        import urllib.request as _ur
+        req = _ur.Request(
+            "https://api.mangaupdates.com/v1/series/search",
+            data=_json.dumps({"search": titel, "perpage": 5}).encode("utf-8"),
+            headers={**UA, "Accept": "application/json",
+                     "Content-Type": "application/json"},
+            method="POST")
+        with _ur.urlopen(req, timeout=25) as r:
+            daten = _json.load(r)
+        for treffer in (daten.get("results") or []):
+            rec = treffer.get("record") or {}
+            if rec.get("series_id"):
+                return rec.get("series_id"), (rec.get("title") or "")
+    except Exception:
+        pass
+    return None, ""
 
 
 def mu_authors(series_id):
@@ -921,8 +976,8 @@ def kitsu_rating(name):
         rating = round(float(ar) / 10.0, 1) if ar else None
         return {"rating": rating, "votes": int(at.get("userCount") or 0), "title": title,
                 "pub_status": KITSU_STATUS.get(at.get("status") or "", "")}
-    except Exception:
-        pass
+    except Exception as e:
+        _fehler_merken("kitsu", e)    # leer zurueckgeben, aber den Grund behalten
     return None
 
 
@@ -951,8 +1006,8 @@ def jikan_lookup(name):
         if sc:
             out["rating"] = round(float(sc), 1)       # MAL-Score ist schon 0-10
             out["votes"] = best.get("scored_by") or 0
-    except Exception:
-        pass
+    except Exception as e:
+        _fehler_merken("myanimelist", e)    # leer zurueckgeben, aber den Grund behalten
     return out
 
 

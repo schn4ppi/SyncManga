@@ -426,7 +426,8 @@ def recommendations_panel(rows, s):
     als Links auf die externe Seite; nichts, was schon in der Liste steht. Liest NUR den vom
     Update-Lauf gefuellten Cache (recs_refresh) — kein Netz beim Rendern."""
     meta, items = _enrich.recs_load(rows=rows)
-    if not items:
+    mu_anker = (meta or {}).get("mu_anker") or []
+    if not items and not mu_anker:
         return ""
     def _rchip(r):
         # 📖 = verifizierter Kapitel-1-Link (JB Runde 38, Feature 4) NEBEN dem DB-Verweis;
@@ -437,6 +438,40 @@ def recommendations_panel(rows, s):
                 f'title="{html.escape(", ".join(r.get("genres") or []))}">'
                 f'{html.escape(str(r["title"])[:38])} <b>⭐{r.get("score") or "?"}</b></a>{rd}</span>')
     chips = "".join(_rchip(r) for r in items[:12])
+    # Punkt 5 (27.08.): „Leser deiner Reihen empfehlen“ — der
+    # SyncFindus-Anker-Weg fuer die Leseliste. Grund je Chip als
+    # title (▲Stimmen · Leser von X +n), MU-Link ueber die
+    # base36-Kennung. E98: ohne Daten (mu_recs fuellen sich erst
+    # mit dem CACHE_VER-33-Lauf) existiert die Zeile nicht.
+    def _mu_link(mu_id):
+        try:
+            n = int(mu_id)
+        except (TypeError, ValueError):
+            return ""
+        ziffern = "0123456789abcdefghijklmnopqrstuvwxyz"
+        b36 = ""
+        while n:
+            n, rest = divmod(n, 36)
+            b36 = ziffern[rest] + b36
+        return f"https://www.mangaupdates.com/series/{b36 or '0'}"
+    def _achip(z):
+        grund = f"\u25b2{z['gewicht']} \u00b7 " + s["recs_anker_grund"].format(
+            w=z.get("grund") or "?")
+        if (z.get("anker_n") or 0) > 1:
+            grund += f" +{z['anker_n'] - 1}"
+        url = _mu_link(z.get("mu_id"))
+        if not url:
+            return ""
+        return (f'<span class=rwrap><a class=stile href="{html.escape(url)}" '
+                f'target=_blank rel=noopener title="{html.escape(grund)}">'
+                f'{html.escape(str(z["name"])[:38])} '
+                f'<b>\u25b2{z["gewicht"]}</b></a></span>')
+    anker_zeile = ""
+    if mu_anker:
+        achips = "".join(_achip(z) for z in mu_anker[:12])
+        anker_zeile = (f'<div class="muted" style="margin:6px 0 4px;'
+                       f'font-size:12px">{s["recs_anker_titel"]}</div>'
+                       f'<div class=statgrid>{achips}</div>')
     def _slim(r):
         return {"t": str(r["title"])[:38], "u": r["url"], "s": r.get("score") or "?",
                 "g": ", ".join(r.get("genres") or []), "r": r.get("read") or ""}
@@ -456,6 +491,7 @@ def recommendations_panel(rows, s):
             f'<div class="muted" style="margin:0 0 6px;font-size:12px">'
             f'{s["recs_hint"].format(g=", ".join(meta.get("genres") or []))} '
             f'<button class=btn onclick="shuffleRecs()" title="{html.escape(s["recs_shuffle_title"])}">{s["recs_shuffle"]}</button></div>'
+            f'{anker_zeile}'
             f'{gbar}'
             f'<div id=recsgrid class=statgrid>{chips}</div></div>'
             f'<script>var RECSPOOL={pool},RECSBG={bg},RECSTOP={top};</script></details>')
@@ -730,6 +766,9 @@ def _pause_menu(s, rows=None):
 
 
 def render(rows, out_dir, out_html, namelen=NAMELEN, lang="de", readers_snap=None):
+    # readers_snap: von manga_update.render() uebergeben, hier bewusst ungenutzt - der
+    # Reader-Stand wird unten frisch aus reader_status.json gelesen (eine Quelle). Bleibt
+    # in der Signatur, damit der Fassaden-Aufruf nicht bricht (vulture-Befund 06.09.2026).
     s = i18n.strings(lang)
     # Auto-Pausen aus dem letzten Reader-Check laden (falls refresh_status nicht in DIESEM
     # Prozess lief) — down/Wartungs-Seiten weichen dann sofort auf Reserven aus (Runde 38).

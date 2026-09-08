@@ -3,7 +3,7 @@
 Standalone-Einstieg der App „SyncManga": scan -> enrich -> render.
 
 Aufruf:
-    python -m syncmanga [DATENORDNER] [--lang de|en] [--full]
+    python -m syncmanga [DATENORDNER] [--lang de|en] [--full] [--force]   (-h zeigt die Hilfe)
 
 DATENORDNER (Default: aktuelles Verzeichnis) enthaelt config.json, overrides.json,
 cache/ und die Ausgabe Manga_Leseliste.html. Dieser Einstieg ist NUR fuer die
@@ -42,10 +42,27 @@ def resolve_paths(data_dir):
     }
 
 
+USAGE = ("Aufruf: python -m syncmanga [DATENORDNER] [--lang de|en] [--full] [--force]\n"
+         "  DATENORDNER  Ordner mit config.json, overrides.json, cache/ und der Ausgabe "
+         "(Default: aktuelles Verzeichnis)\n"
+         "  --lang       Sprache der Liste (de|en); sonst config.json bzw. OS-Locale\n"
+         "  --full       alle Serien anreichern statt der ersten 80\n"
+         "  --force      alle Titel komplett neu anreichern (impliziert --full)\n"
+         "  -h, --help   diese Hilfe (startet KEINEN Lauf)")
+
+
 def parse_args(argv):
     """argv -> (data_dir, lang, full, force). Reihenfolge der Flags egal (rein, testbar).
-    --force = alle Titel komplett neu anreichern (impliziert vollen Lauf)."""
+    --force = alle Titel komplett neu anreichern (impliziert vollen Lauf).
+
+    Befund 06.09.2026: Frueher wurde JEDES unbekannte Argument als Datenordner genommen;
+    »--help« legte den Ordner »--help« an und startete einen echten Lauf mit Netzabrufen.
+    Jetzt: --help/-h zeigt die Nutzung (Exit 0), ein unbekanntes Flag (fuehrendes »-«)
+    ist ein Fehler (Exit 2) – ein Hilfe-Aufruf darf nie etwas veraendern (P7)."""
     argv = list(argv)
+    if "--help" in argv or "-h" in argv:
+        print(USAGE)
+        sys.exit(0)
     force = "--force" in argv
     full = "--full" in argv or force
     argv = [a for a in argv if a not in ("--full", "--force")]
@@ -57,6 +74,10 @@ def parse_args(argv):
             del argv[i:i + 2]
         else:
             del argv[i]
+    unbekannt = [a for a in argv if a.startswith("-")]
+    if unbekannt:
+        print(f"SyncManga: unbekanntes Argument {' '.join(unbekannt)}\n{USAGE}", file=sys.stderr)
+        sys.exit(2)
     data_dir = argv[0] if argv else os.getcwd()
     return data_dir, lang, full, force
 
@@ -113,7 +134,7 @@ def run(data_dir, lang=None, full=False, force=False):
         pass
     try:                                             # externe Empfehlungen erneuern (best-effort)
         from .enrich import recs_refresh as _recs_refresh
-        _recs_refresh(rows)
+        _recs_refresh(rows, md_cache_path=paths["cache"])
     except Exception:
         pass
     n = render(rows, paths["out_dir"], paths["out_html"], lang=lang)

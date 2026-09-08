@@ -187,7 +187,48 @@ def recs_top_genres(rows, n=3, min_chap=20):
     return [g for g, _ in cnt.most_common(n)]
 
 
-def recs_refresh(rows, cache_path=RECS_CACHE, ttl=RECS_TTL, fetch=None):
+def mu_anker_buendeln(md_cache, rows, limit=30):
+    """Werk-Anker fuer die Leseliste (Punkt 5, 27.08. — dasselbe
+    Rezept wie der SyncFindus-Motor): alle mu_recs des Caches
+    buendeln (dasselbe Ziel aus mehreren Reihen steigt, Gewichte
+    addieren sich), gegen die AKTUELLE Liste sieben, staerkster
+    Anker wird der Grund („Leser von X“). Pure Funktion — die
+    Waechter mocken nichts."""
+    known = _known_titles(rows)
+    anker_namen = {}
+    for r in rows or []:
+        n = norm(r.get("name") or "")
+        if n:
+            anker_namen.setdefault(n, r.get("name"))
+    ziele = {}
+    for key, item in (md_cache or {}).items():
+        recs = (item or {}).get("mu_recs") or []
+        if not recs:
+            continue
+        anker = anker_namen.get(key, key)
+        for r in recs:
+            name = (r.get("name") or "").strip()
+            zn = norm(name)
+            if not zn or zn in known:
+                continue
+            z = ziele.setdefault(zn, {"name": name, "gewicht": 0,
+                                      "anker": [], "cover": "",
+                                      "mu_id": r.get("id")})
+            z["gewicht"] += int(r.get("gewicht") or 0)
+            if anker and anker not in z["anker"]:
+                z["anker"].append(anker)
+            if not z["cover"] and r.get("cover"):
+                z["cover"] = r["cover"]
+    top = sorted(ziele.values(), key=lambda z: -z["gewicht"])[:limit]
+    for z in top:
+        z["anker_n"] = len(z["anker"])
+        z["grund"] = z["anker"][0] if z["anker"] else ""
+        z["anker"] = z["anker"][:3]
+    return top
+
+
+def recs_refresh(rows, cache_path=RECS_CACHE, ttl=RECS_TTL, fetch=None,
+                 md_cache_path=None):
     """Empfehlungs-Cache erneuern (im Update-Lauf, best-effort). Ueberspringt bei frischem Cache.
 
     v2 (JB 10.07.2026, 'Empfehlungen mehr steuern'): zusaetzlich zum gemischten Top-3-Pool
@@ -196,6 +237,31 @@ def recs_refresh(rows, cache_path=RECS_CACHE, ttl=RECS_TTL, fetch=None):
     ~19 gepacte AniList-Abfragen 1x pro WOCHE (AL_PACER drosselt) — bewusst kein Dauerfeuer.
     `fetch(genres_list)` ist injizierbar -> ohne Netz testbar."""
     try:
+        # Punkt 5 (27.08.): Der MU-ANKER-Teil ist netzfrei (liest nur
+        # den md_cache) und rechnet bei JEDEM Lauf — die 7-Tage-TTL
+        # unten schuetzt nur die teuren AniList-Abfragen. Sonst
+        # laege der Anker-Teil eine Woche hinter der Leseliste.
+        if md_cache_path and os.path.exists(md_cache_path):
+            try:
+                with open(md_cache_path, encoding="utf-8") as f:
+                    mdc = json.load(f)
+                anker = mu_anker_buendeln(mdc, rows)
+                if os.path.exists(cache_path):
+                    with open(cache_path, encoding="utf-8") as f:
+                        alt_daten = json.load(f)
+                else:
+                    alt_daten = {}
+                if anker or alt_daten.get("mu_anker"):
+                    alt_daten["mu_anker"] = anker
+                    alt_daten.setdefault("ts", 0)
+                    # Erst in eine Nebendatei, dann atomar tauschen: ein Absturz mitten im
+                    # Schreiben hinterlaesst so nie einen halben Cache (Befund 06.09.2026).
+                    tmp = cache_path + ".tmp"
+                    with open(tmp, "w", encoding="utf-8") as f:
+                        json.dump(alt_daten, f, ensure_ascii=False, indent=1)
+                    os.replace(tmp, cache_path)
+            except Exception:
+                pass
         if os.path.exists(cache_path) and time.time() - os.path.getmtime(cache_path) < ttl:
             return
         gs = recs_top_genres(rows)
@@ -229,8 +295,15 @@ def recs_refresh(rows, cache_path=RECS_CACHE, ttl=RECS_TTL, fetch=None):
             if pool:
                 by_genre[g] = pool
         if recs:
-            json.dump({"ts": time.time(), "genres": gs, "order": order,
-                       "recs": recs, "by_genre": by_genre},
+            neu_daten = {"ts": time.time(), "genres": gs, "order": order,
+                         "recs": recs, "by_genre": by_genre}
+            try:                       # mu_anker nicht wegwerfen
+                alt_daten = json.load(open(cache_path, encoding="utf-8"))
+                if alt_daten.get("mu_anker"):
+                    neu_daten["mu_anker"] = alt_daten["mu_anker"]
+            except Exception:
+                pass
+            json.dump(neu_daten,
                       open(cache_path, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     except Exception:
         pass
@@ -641,22 +714,27 @@ def probe_sources(health_dir):
               ("MangaUpdates", lambda: S.mu_rating("one piece").get("mu_id")),
               ("Kitsu", lambda: S.kitsu_rating("one piece").get("title")),
               ("MyAnimeList", lambda: S.jikan_lookup("one piece").get("title"))]
-    parts, dead = [], []
+    parts, dead, grund = [], [], {}
     for nm, fn in checks:
         t0 = time.time()
+        S.LETZTER_FEHLER.pop(nm.lower(), None)   # nur der Fehler DIESER Probe zaehlt
         ok = probe_once(fn)          # zweiter Versuch bei Aussetzer -> weniger Fehlalarme
-        srcstatus.record(nm.lower(), ok, "" if ok else "Probe ohne Treffer", latency=time.time() - t0)
+        # Befund 06.09.2026: »Probe ohne Treffer« verschwieg den Grund (AniList 403, Jikan 504).
+        warum = "" if ok else (S.LETZTER_FEHLER.get(nm.lower()) or "Probe ohne Treffer")
+        srcstatus.record(nm.lower(), ok, warum, latency=time.time() - t0)
         parts.append(f"{nm} {time.time() - t0:.1f}s{'' if ok else ' !!TOT'}")
         if not ok:
             dead.append(nm)
+            grund[nm] = warum
     print("  [Quellen-Check] " + " | ".join(parts), flush=True)
     try:                                  # Gesundheit fuer den Tray hinterlegen (Icon-Farbe)
         with open(os.path.join(health_dir, "source_health.json"), "w", encoding="utf-8") as f:
-            json.dump({"ts": datetime.now().isoformat(timespec="seconds"), "dead": dead}, f)
-    except Exception:
-        pass
+            json.dump({"ts": datetime.now().isoformat(timespec="seconds"), "dead": dead,
+                       "grund": grund}, f, ensure_ascii=False)
+    except Exception as e:                # Stille waere ein zweiter Ausfall (P5)
+        print(f"  ⚠ source_health.json nicht schreibbar: {type(e).__name__}: {e}", flush=True)
     if dead:
-        print(f"  ⚠ QUELLE(N) TOT: {', '.join(dead)}", flush=True)
+        print("  ⚠ QUELLE(N) TOT: " + ", ".join(f"{n} ({grund[n]})" for n in dead), flush=True)
     return dead
 
 
@@ -1023,6 +1101,414 @@ def _save_cache(cache, cache_path):
     os.replace(tmp, cache_path)
 
 
+def _relink_eintrag(e, c):
+    """SCHNELL-PFAD `--relink` (herausgeloest aus enrich_one, 07.09.2026 — Verhalten unveraendert).
+
+    Metadaten aus dem Cache-Eintrag `c` behalten, NUR den Weiterlesen-Link neu aufloesen.
+    Liefert den neuen Cache-Eintrag; das Eintragen in den Cache (unter Sperre) bleibt beim
+    Aufrufer, damit diese Funktion rein rechnend und einzeln pruefbar ist."""
+    # Schnell-Pfad: Metadaten aus dem Cache behalten, nur den Reader-Link neu aufloesen.
+    nc = dict(c)
+    if not nc.get("novel"):
+        # GLEICHE Ziel-Logik wie der Vollpfad (Bug-Fix: hier stand noch chap+1 hartcodiert ->
+        # relinkte Serien zeigten aufs naechste statt aktuelle Kapitel): Ziel = aktuelles, gedeckelt.
+        next_chap = int(e["chap"]) if e.get("chap") else 1
+        _lat = nc.get("latest")
+        if _lat and next_chap > _lat and (nc.get("conf") or 0) >= 0.7:
+            next_chap = int(_lat)
+        links = _live_links(c.get("read_urls"))
+        _chap_known = bool(e.get("chap"))
+        # Override VORAB (alle Titelvarianten, engl. Alt-Namen!) -> Seiten-Overrides
+        # werden zu Ernte-Kandidaten (JB Runde 32: comix/In-Spectre).
+        ov_cand = [c.get("title_en"), c.get("title_romaji"), c.get("title"), e.get("name")] + (c.get("alt_titles") or [])
+        ov_url, ov_site, _ov_tpl, _ov_pin = readerlink.override_info([x for x in ov_cand if x], next_chap)
+        # mangadex-SEITEN-Override -> exaktes Kapitel (JB-Regel 14.07. 'Kapitel vor Seite')
+        ov_url, ov_site = _resolve_md_page_override(ov_url, ov_site, _ov_tpl,
+                                                    next_chap, not _chap_known)
+        if not links or (links and readerlink.is_chapter_url(links[0][0]) != _chap_known):
+            # Reparatur-Pass (JB Runde 27/31/32), SYMMETRISCH: repariert Serien OHNE
+            # Link, Serien-SEITEN trotz bekanntem Lesestand (Jigokuraku-Klasse) UND
+            # Kapitel-Links trotz '?' (Bookworm/gilgamesh-Klasse -> Serien-Seite).
+            # Ersetzt wird nur, wenn die Suche etwas Passenderes findet.
+            _ts = [t for t in ([c.get("title"), e.get("name"), c.get("title_romaji"),
+                                c.get("title_native")] + (c.get("alt_titles") or [])) if t]
+            _hosts = [r.get("host") for r in sorted(e.get("readers") or [],
+                                                    key=lambda r: -(r.get("visits") or 0))
+                      if r.get("host")]
+            _pages = _harvest_pages(e, ov_url, ov_site, no_prog=not _chap_known)
+            neu = []
+            if _chap_known:
+                bm_url, bm_site = _bookmark_link(e, next_chap, _ts)   # Stufe 0
+                if bm_url:
+                    neu = [[bm_url, bm_site]]
+            if not neu:
+                neu = _live_links(find_read_links(_ts, next_chap, mtype=c.get("type"),
+                                                  prefer_hosts=_hosts,
+                                                  prefer_page=not _chap_known,
+                                                  extra_pages=_pages,
+                                                  adult=(c.get("adult_kind") == "sexual")))
+            # (MangaDex-Lese-Fallback entfernt, JB 14.07.: 'mangadex ist tot' zum Lesen.)
+            if neu:
+                links = neu
+        # MangaFire-API-Upgrade (JB-Goal 14.07.): kein echter Kapitel-Link vorn +
+        # bekannter Lesestand -> exaktes Kapitel aus MangaFires JSON-API (Serien-Seite raus).
+        if (_chap_known and not (links and readerlink.is_chapter_url(links[0][0]))):
+            _mf_ts = [t for t in ([c.get("title"), c.get("title_en"), c.get("title_romaji"),
+                                   c.get("title_native"), e.get("name")]
+                                  + (c.get("alt_titles") or [])) if t]
+            try:
+                u_mf, s_mf = mf_chapter_link(_mf_ts, next_chap)
+                if u_mf:
+                    links = [[u_mf, s_mf]] + [l for l in (links or []) if l[0] != u_mf]
+            except Exception:
+                pass
+        # Override-Vorrang dreistufig (siehe Vollpfad; JB-Wurzelfund Runde 32:
+        # auto-{n}-Overrides erzwangen bei '?' wieder chapter-1). Kapitel-Override =
+        # {n}-Vorlage ODER Kapitel-URL (Runde 35: arenascan-Muster traegt kein Token).
+        # "pin": true schlaegt alle Stufen NUR noch als KAPITEL-Override (JB-Regel
+        # 14.07. 'Kapitel vor Seite'); eine gepinnte SEITE macht Kapitel-Links Platz.
+        _ov_chap = bool(ov_url) and (_ov_tpl or readerlink.is_chapter_url(ov_url))
+        ov_used = bool(ov_url) and (
+            (_ov_pin and _ov_chap)
+            or (_ov_chap and _chap_known)
+            or (not _ov_chap and (not links
+                                  or not readerlink.is_chapter_url(links[0][0])))
+            or (_ov_chap and not _chap_known and not links))
+        if ov_used:                             # JBs Override -> als Primaerlink
+            links = [[ov_url, ov_site]] + [l for l in links if l[0] != ov_url]
+        elif ov_url and all(l[0] != ov_url for l in links):
+            links = links + [[ov_url, ov_site]]  # kuratierter Link bleibt Reserve (+Alt)
+        # RATCHET (Bug-Fix 14.07.: ein Voll-Relink degradierte 65 mangafire-Kapitel-Links
+        # zurueck auf Serienseiten, als die API unter Throttling nichts lieferte). Wie im
+        # Voll-Pfad: hatte der Cache einen KAPITEL-Link und die neue Aufloesung endet auf
+        # einer Serien-Seite, den gecachten Kapitel-Link zurueckholen — nur besser, nie
+        # schlechter. AUSSER ein kuratierter Override steht bewusst vorn (ov_used).
+        if _chap_known and not ov_used and not (links and readerlink.is_chapter_url(links[0][0])):
+            alt = _live_links(c.get("read_urls"))
+            if alt and readerlink.is_chapter_url(alt[0][0]):
+                links = alt + [l for l in links if l[0] != alt[0][0]]
+        links = keep_last_good(links, c)         # FAILSAFE (s. Voll-Pfad)
+        links = [l for l in links if not is_no_read(host(l[0]))]  # mangadex nie als Lese-Link
+        nc["read_urls"] = links
+        nc["read_url"], nc["read_site"] = (tuple(links[0]) if links else ("", ""))
+        nc["read_chap"] = next_chap
+        nc["ov"] = ov_used                  # kuratierter Override -> Vorrang vor Bookmark
+    # "Hilfe" nur bei echtem Problem: mit funktionierendem Weiterlesen-Link keine Hilfe noetig.
+    nc["needs_help"] = bool(nc.get("needs_help")) and not nc.get("read_urls")
+    return nc
+
+
+def _metadaten_eintrag(k, e, c, stale, name_fix, cache_ver):
+    """KATALOG-AUFLOESUNG + METADATEN (herausgeloest aus enrich_one, 07.09.2026).
+
+    Sucht die Serie im Katalog, baut daraus den neuen Cache-Eintrag `nc` (Titel, Typ, Flagge,
+    Bewertung, Uebersetzungs-Stand, Cover, Autor). Der Weiterlesen-Link kommt danach in
+    `_lese_links_setzen`. Rueckgabe: (nc, rec, conf, typ) — genau das, was der Link-Schritt
+    zusaetzlich braucht."""
+    tries = (c.get("tries", 0) + 1) if c else 1
+    prev_link = c.get("link_ok") if c else None
+    fix = name_fix.get(k)
+    slugs = slugs_for(e)
+    # Ein Override steuert das MATCHING nur mit Pin/Suchbegriff; reine Daten-Overrides
+    # (z.B. nur "author") laufen durch die normale Aufloesung.
+    if fix and (fix.get("mb_id") or fix.get("search")):
+        if fix.get("mb_id"):                # Ground-Truth-Pin: Match FEST auf diese MangaBaka-ID
+            rec, conf, src = catalog.lookup_id(fix["mb_id"])
+        else:
+            rc_fix, pref_fix = read_hints(e)
+            rec, conf, src = catalog.lookup(fix["search"], slugs, read_chap=rc_fix, prefer_novel=pref_fix)
+        needs_help = not rec
+    else:
+        # Beim Retry eines ungematchten/Fallback-Eintrags auch mit dem zuletzt aufgeloesten,
+        # SAUBEREN Titel gegen MangaBaka suchen (der rohe Scan-Name ist oft verrauscht).
+        extra = [c["title"]] if (c and c.get("title") and not str(c.get("md_id") or "").startswith("mb:")) else []
+        rec, conf, src, needs_help = resolve(e, extra)
+    if src == "error":          # R6 (JB 07.07.2026): transienter Quellen-Fehler (429/Netz) verbraucht
+        tries = c.get("tries", 0) if c else 0   # KEINEN Retry -> Serie bleibt dran, bis MangaBaka echt antwortet
+    rec = rec or {}
+    mb_id = rec.get("mb_id")
+    did = (f"mb:{mb_id}" if isinstance(mb_id, int) else mb_id) if mb_id else None
+    typ = (rec.get("type") or (fix.get("type") if fix else "") or "").lower()
+    # LETZTE Instanz (JB-Regel): die Serie wird auf webtoons.com gelesen und keine DB kennt
+    # den Typ (oder nennt ihn nur 'oel' = Original English) -> es IST ein Webtoon (Room of
+    # Swords, Ordeal, ...). Bei 'oel' bleibt die US-Flagge (englisches Original, kein KR).
+    wt_url = next((r.get("url") for r in (e.get("readers") or [])
+                   if "webtoons.com" in (r.get("url") or "")), "")
+    _oel = typ == "oel"
+    if wt_url and typ in ("", "oel"):
+        typ = "webtoon"
+    flag, country = TYPE_FLAG.get(typ, ("", ""))
+    if _oel:
+        flag, country = TYPE_FLAG["oel"]
+    link = prev_link if (stale and prev_link is not None) else link_ok(e.get("url"))
+    agg = combine_ratings(rec.get("ratings") or [])
+    # Titel-Kaskade (JB Runde 40): 1. JBs fix-Override, 2. ANILIST-FIRST (redaktioneller
+    # EN-Titel per ID — beendet die Fremdsprachen-Raterei), 3. MangaBaka-Wahl (en-Label +
+    # gefilterte unknown), 4. Haupttitel/Rohname. Nachbrenner (MangaDex) nur, wenn der
+    # gewaehlte Titel weiter Romaji klingt.
+    _title = ((fix.get("name") if fix else "") or _al_first_title(rec)
+              or _english_title(rec) or rec.get("title_en") or e["name"])
+    if (not (fix and fix.get("name")) and _title
+            and _jap_ratio(_title.translate(_TYPO)) >= 0.5):
+        _title = _en_second_source(rec) or _title
+    nc = {
+        "title": _title,
+        "title_native": rec.get("title_native") or rec.get("title_romaji") or "",
+        # Romaji + Zweittitel persistieren -> Discovery-Tools (MangaFire/mangaread) koennen auch
+        # romaji-Slugs treffen (toaru-majutsu-no-index, raise-wa-tanin-ga-ii, kumo-desu-ga-nani-ka).
+        "title_romaji": rec.get("title_romaji") or "",
+        "alt_titles": [t for t in (rec.get("alt_titles") or []) if t][:8],
+        "genres": [g for g in (rec.get("genres") or []) if g][:12],   # fuer Genre-Filter + Empfehlungen
+        "type": typ,
+        "flag": flag, "country": country,
+        "pub_status": STATUS_DE.get((rec.get("status") or "").lower(), ""),
+        "latest": rec.get("total_chapters"),
+        "author": (rec.get("authors") or [""])[0] if rec.get("authors") else "",
+        "md_id": did,
+        # MangaDex-UUID PERSISTIEREN (Runde 29): --relink kann damit ohne MangaBaka die
+        # MD-Ruecklage bauen; vorher war die UUID nur waehrend der Voll-Anreicherung greifbar.
+        "mdx": (rec.get("source_ids") or {}).get("mangadex")
+               or (did if isinstance(did, str) and "-" in did else None),
+        # Plattform-IDs fuer den Listen-Export (3b): MAL-XML braucht die MyAnimeList-ID; AniList-ID
+        # dient dem DB-Link + kuenftigem Account-Sync. Kommen beide aus dem MangaBaka-Record.
+        "mal_id": (rec.get("source_ids") or {}).get("my_anime_list"),
+        "al_id": (rec.get("source_ids") or {}).get("anilist"),
+        # DB-Link: MangaBaka hat keine oeffentliche Serien-Webseite (alles 404) -> auf AniList
+        # verlinken (echte, funktionierende DB-Seite), wenn die AniList-ID bekannt ist.
+        "md_url": (f"https://anilist.co/manga/{rec['source_ids']['anilist']}"
+                   if (rec.get("source_ids") or {}).get("anilist") else ""),
+        "adult_kind": adult_kind(rec),
+        "cover": rec.get("cover") or "",   # Cover-URL -> Hover-Vorschau (laedt NUR bei Hover)
+        "novel": typ in NOVEL_TYPES,
+        "conf": round(conf, 2), "src": src, "needs_help": needs_help,
+        "link_ok": link, "tries": tries, "v": cache_ver,
+    }
+    # Aktueller Stand fuer LAUFENDE Serien: kennt die DB keine total_chapters, das live-Kapitel
+    # von MangaDex holen (Aggregate) -> "aktueller Stand"/"neu" bleiben nicht leer. Nur mit
+    # bekannter MangaDex-UUID (kein Fehlmatch). Systemisch: greift auch fuer alle kuenftigen Serien.
+    if not nc.get("latest") and not nc.get("novel"):
+        mdx = (rec.get("source_ids") or {}).get("mangadex")
+        if not mdx and did and "-" in str(did):        # md_id ist bereits eine MangaDex-UUID
+            mdx = did
+        if mdx:
+            lt = md_latest(mdx)
+            if lt:
+                nc["latest"] = lt
+    if agg:
+        nc["rating"], nc["rating_n"], nc["ratings"] = agg
+    # Uebersetzungs-Stand (JB 20.07.2026): eigene Spalte "Uebersetzt" = letztes ONLINE
+    # verfuegbares EN-Kapitel + Alter. total_chapters (latest) ist das GESAMTwerk (Junk
+    # the Black Shadow 343), aber uebersetzt sind nur 36 — MangaUpdates.latest_chapter ist
+    # dieser Scanlation-Stand. MangaBaka liefert die MU-ID (base36) mit -> EIN Detail-Abruf
+    # gibt trans (Kapitel) + trans_ts (Datum). Nur Nicht-Novels; fehlt die ID, bleibt leer.
+    if not nc.get("novel"):
+        from . import sources as S
+        mu_id = S.mu_api_id((rec.get("source_ids") or {}).get("manga_updates"))
+        if mu_id:
+            mud = S.mu_detail(mu_id)
+            if mud.get("trans") is not None:
+                nc["trans"] = mud["trans"]
+            if mud.get("trans_ts"):
+                nc["trans_ts"] = mud["trans_ts"]
+            if not nc.get("author") and mud.get("authors"):   # MangaBaka-Autor leer -> MU
+                nc["author"] = mud["authors"]
+            # 26.08. (SyncFindus Motor-Stufe 1): die Nutzer-Empfehlungen
+            # aus DEMSELBEN Abruf mitnehmen — der Empfehlungs-Motor
+            # baut daraus "Leser von X empfehlen"-Reihen.
+            if mud.get("recs"):
+                nc["mu_recs"] = mud["recs"]
+    # Cover-Fallback-Kette (JB: 'wenn eine Quelle kein Bild hat, nimm die naechste'):
+    # MangaBaka -> MangaDex ueber bekannte UUID -> MangaDex ueber STRENGE Titelsuche
+    # (>=0.8, sonst falsches Bild) -> AniList. Der MangaDex-Treffer fuellt nebenbei ein
+    # fehlendes Land auf (JB: Soul Anomaly hat einen japanischen Titel -> 🇯🇵 statt leer).
+    if not nc["cover"] and not nc["novel"]:
+        try:
+            from . import sources as S
+            mdx2 = (rec.get("source_ids") or {}).get("mangadex")
+            if not mdx2 and did and "-" in str(did):
+                mdx2 = did
+            if not mdx2:
+                import difflib as _dl
+                hit = S.md_lookup(nc["title"]) or {}
+                if hit.get("md_id") and _dl.SequenceMatcher(
+                        None, norm(nc["title"]), norm(hit.get("title") or "")).ratio() >= 0.8:
+                    mdx2 = hit["md_id"]
+                    # MangaDex liefert Flagge/Land/Autor gleich mit -> Luecken auffuellen
+                    # (JB-Fall Soul Anomaly: laut MD ein ENGLISCHES Original -> 🇺🇸, nicht JP)
+                    if hit.get("country") and not nc["country"]:
+                        nc["flag"], nc["country"] = hit.get("flag") or "", hit["country"]
+                    if hit.get("author") and not nc["author"]:
+                        nc["author"] = hit["author"]
+            if mdx2:
+                nc["cover"] = S.md_cover(mdx2) or ""
+            if not nc["cover"] and nc.get("al_id"):
+                nc["cover"] = S.al_cover(nc["al_id"]) or ""
+        except Exception:
+            pass
+    # Webtoon-Originale: Autor steht auf der webtoons.com-Serienseite (JB: Enjelicious, Mongie,
+    # Zogarth, ... - die Manga-DBs kennen diese Werke/Autoren nicht). Best-effort, nie stoerend.
+    if not nc["author"] and wt_url:
+        try:
+            from .sources import webtoon_author
+            nc["author"] = webtoon_author(wt_url) or ""
+        except Exception:
+            pass
+    # Autor als Override-DATUM (Serien, die von der Plattform verschwunden sind, z.B. Room of
+    # Swords: webtoons-Seite 404 -> kein Fetch der Welt hilft; JB kennt den Autor).
+    if fix and fix.get("author") and not nc["author"]:
+        nc["author"] = fix["author"]
+    return nc, rec, conf, typ
+
+
+def _lese_links_setzen(e, c, nc, rec, conf, typ, force):
+    """WEITERLESEN-LINK (herausgeloest aus enrich_one, 07.09.2026).
+
+    Bestimmt Ziel-Kapitel + Link-Kaskade (Bookmark, Suche, Override, MangaFire, Dynasty,
+    Ratchet, Failsafe) und traegt read_url/read_urls/read_chap/ov/needs_help in `nc` ein.
+    Aendert `nc` an Ort und Stelle, gibt nichts zurueck."""
+    # "weiterlesen" = verifizierter Reader-Kapitel-Link (konstruiert + per echtem 404 geprueft).
+    # Ziel = dein AKTUELLES Kapitel (JB: man hoert oft MITTEN im Kapitel auf — und der Klick auf
+    # Kapitel N+1 wuerde den Verlauf/Zaehler faelschlich hochzaehlen). Backlog (nichts gelesen) -> 1.
+    next_chap = int(e["chap"]) if e.get("chap") else 1
+    # JB-Entscheidung (Kapitel-Deckelung auch fuers LINK-Ziel): stammt der Lesestand aus einer
+    # aufgeblaehten Zaehlung (alte asuracomic-IDs: 160 statt 100), wuerde chapter-161 konstruiert
+    # -> existiert nicht (toongod leitet auf die Serienseite um). Bei sicherem Match deshalb aufs
+    # letzte EXISTIERENDE Kapitel (DB-Gesamt) deckeln -> aufgeholt = Link zum neuesten Kapitel.
+    _lat_cap = nc.get("latest")
+    if _lat_cap and next_chap > _lat_cap and (conf or 0) >= 0.7 and not nc["novel"]:
+        next_chap = int(_lat_cap)
+    if nc["novel"]:
+        nc["read_url"], nc["read_site"], nc["read_urls"], nc["read_chap"] = "", "", [], None
+    elif (not force) and c and c.get("read_chap") == next_chap and c.get("read_urls") is not None:
+        nc["read_urls"] = _live_links(c.get("read_urls"))
+        nc["read_url"], nc["read_site"] = (tuple(nc["read_urls"][0]) if nc["read_urls"] else ("", ""))
+        nc["read_chap"] = next_chap
+        nc["ov"] = bool(c.get("ov"))    # Override-Vorrang MIT-kopieren (BUG-Fix: ging beim
+                                        # Wiederverwenden verloren -> Bookmark schlug den Override)
+    else:
+        # Titel-Varianten fuer die Slug-Suche: Katalog (EN/romaji/native/alt) + Roh-Name +
+        # MangaDex-Recovery-Titel. JB-Funde: der ROH-Name aus dem Verlauf ('Love Revolution')
+        # und das ROMAJI ('Kono Yuusha ga …') fehlten hier — genau die treffen die
+        # MangaFire-Sitemap-Keys, waehrend title_native (Kanji) im Slug zu nichts wird.
+        titles = ([rec.get("title_en") or e["name"], e.get("name"), rec.get("title_romaji"),
+                   rec.get("title_native")]
+                  + (rec.get("alt_titles") or []) + (e.get("md_titles") or []))
+        # Reader-Praeferenz (JB): DEINE Lese-Seiten dieser Serie zuerst (meistbesuchte vorn).
+        my_hosts = [r.get("host") for r in sorted(e.get("readers") or [],
+                                                  key=lambda r: -(r.get("visits") or 0)) if r.get("host")]
+        # Unbekannter Lesestand ('?', JB Runde 31 Hinamatsuri/Kengan): Serien-SEITE statt
+        # geratenem 'Kapitel 1' — dort entscheidet der Leser selbst, wo er einsteigt.
+        no_prog = not e.get("chap")
+        # JBs Override VORAB aufloesen (Runde 32): ein SEITEN-Override (comix/In-Spectre)
+        # wird zur obersten Ernte-Kandidatin — aus JBs kuratierter Seite wird so das
+        # exakte Kapitel gezogen; ALLE Titelvarianten anbieten (engl. Alt-Namen!).
+        # Runde 35: nc['title'] (finaler ANZEIGE-Titel aus alt_en) + alt_en dazu — JBs
+        # Override-Keys sind nach dem Handelstitel benannt ('topdungeonfarmer'), waehrend
+        # title_en oft das Romaji/Original ist ('Solo Farming in the Tower').
+        ov_cand = ([nc.get("title"), rec.get("title_en"), rec.get("title_romaji"), e.get("name")]
+                   + (rec.get("alt_en") or []) + (rec.get("alt_titles") or []))
+        ov_url, ov_site, _ov_tpl, _ov_pin = readerlink.override_info([x for x in ov_cand if x], next_chap)
+        # mangadex-SEITEN-Override -> exaktes Kapitel (JB-Regel 14.07. 'Kapitel vor Seite')
+        ov_url, ov_site = _resolve_md_page_override(ov_url, ov_site, _ov_tpl,
+                                                    next_chap, no_prog)
+        extra_pages = _harvest_pages(e, ov_url, ov_site, no_prog=no_prog)
+        links = []
+        if not no_prog:
+            bm_url, bm_site = _bookmark_link(e, next_chap, titles)   # Stufe 0: DEINE Seite
+            if bm_url:
+                links = [[bm_url, bm_site]]
+        if not links:
+            links = find_read_links(titles, next_chap, mtype=typ, prefer_hosts=my_hosts,
+                                    prefer_page=no_prog, extra_pages=extra_pages,
+                                    adult=(nc.get("adult_kind") == "sexual"))
+        if not links:
+            # Miss -> nach dem japanischen/Romaji-Titel suchen (JBs Idee): AniList kennt oft den
+            # Reader-Slug ("Dungeon Meshi" statt MangaBakas "Danjon Meshi") + ein Synonym.
+            a = al_lookup(rec.get("title_en") or e["name"])
+            extra = [x for x in (a.get("title_romaji"), a.get("title_alt")) if x]
+            if extra:
+                links = find_read_links(titles + extra, next_chap, mtype=typ,
+                                        prefer_hosts=my_hosts, prefer_page=no_prog,
+                                        extra_pages=extra_pages,
+                                        adult=(nc.get("adult_kind") == "sexual"))
+        if not links and nc.get("mdx"):
+            # 2. Retry (JB Runde 29, Assassin/Memories): MangaDex-AltTitles nachladen —
+            # MangaBakas Romaji weicht oft komplett ab ('Ansatsu Kizoku'), erst MangaDex
+            # listet die Reader-Schreibweisen ('Sekai Saikyou no Assassin …', 'Her Memories').
+            md_ts = md_titles_from_url(f"https://mangadex.org/title/{nc['mdx']}")
+            if md_ts:
+                links = find_read_links(titles + md_ts, next_chap, mtype=typ,
+                                        prefer_hosts=my_hosts, prefer_page=no_prog,
+                                        extra_pages=extra_pages,
+                                        adult=(nc.get("adult_kind") == "sexual"))
+        links = _live_links(links)          # Sperrliste auch auf frische Treffer (Pattern-Reader)
+        # Override-Vorrang (JB Runden 31+32, dreistufig):
+        #   Kapitel-Override + ECHTER Lesestand  -> schlaegt alles.
+        #   Kapitel-Override + '?'               -> NICHT vorstellen ('?' will die Serien-
+        #       Seite; die ~600 auto-mangafire-{n}-Overrides erzwangen sonst 'chapter-1'
+        #       direkt NACH der Reparatur — Runde-32-Wurzelfund) — nur wenn sonst NICHTS da.
+        #   Seiten-Override                      -> verdraengt keinen Kapitel-Link.
+        # Kapitel-Override = {n}-Vorlage ODER Kapitel-URL (Runde 35: arenascan ohne Token).
+        # "pin": true schlaegt alle Stufen NUR noch als KAPITEL-Override (JB-Regel 14.07.
+        # 'Kapitel vor Seite', Runde 36 Proto-Eye bleibt: dort IST der Pin ein Kapitel);
+        # eine gepinnte SEITE macht verifizierten Kapitel-Links Platz und bleibt Reserve.
+        _ov_chap = bool(ov_url) and (_ov_tpl or readerlink.is_chapter_url(ov_url))
+        ov_used = bool(ov_url) and (
+            (_ov_pin and _ov_chap)
+            or (_ov_chap and not no_prog)
+            or (not _ov_chap and (not links or not readerlink.is_chapter_url(links[0][0])))
+            or (_ov_chap and no_prog and not links))
+        if ov_used:
+            links = [[ov_url, ov_site]] + [l for l in links if l[0] != ov_url]
+        elif ov_url and all(l[0] != ov_url for l in links):
+            links = links + [[ov_url, ov_site]]      # kuratierter Link bleibt Reserve (+Alt)
+        # MangaFire-API (JB-Goal 14.07., GitHub-Fund): steht noch KEIN echter Kapitel-Link
+        # vorn (leer oder nur Serien-Seite), loest MangaFires interne JSON-API das exakte
+        # Kapitel auf — genau JBs Klage 'viele mangafire-Links fuehren zur Mangaseite'.
+        # Nur bei bekanntem Lesestand; der Treffer wird als Kapitel-Link vorangestellt.
+        if (not no_prog and not ov_used
+                and not (links and readerlink.is_chapter_url(links[0][0]))):
+            try:
+                u_mf, s_mf = mf_chapter_link([t for t in titles if t], next_chap)
+                if u_mf:
+                    links = [[u_mf, s_mf]] + [l for l in links if l[0] != u_mf]
+            except Exception:
+                pass
+        # Dynasty Reader (Guya-API, JB-Goal 14.07.): Doujin/Yuri, die die grossen DBs oft
+        # nicht fuehren -> echte Zusatz-Abdeckung. Nur wenn immer noch kein Kapitel-Link da.
+        if (not no_prog and not ov_used
+                and not (links and readerlink.is_chapter_url(links[0][0]))):
+            try:
+                u_dy, s_dy = dy_chapter_link([t for t in titles if t], next_chap)
+                if u_dy:
+                    links = [[u_dy, s_dy]] + [l for l in links if l[0] != u_dy]
+            except Exception:
+                pass
+        # (MangaDex-LESE-Ruecklage entfernt, JB 14.07.2026: 'mangadex ist tot' zum Lesen —
+        #  Kapitel laden ewig/gar nicht. Bleibt Datenquelle. Ohne anderen Link -> ehrliche
+        #  Suche statt eines mangadex-Links, der ins Leere laedt.)
+        # RATCHET (JB Runde 35, 'wieder und wieder'): ein frueher gefundener KAPITEL-Link
+        # darf NIE durch eine blosse Serien-Seite ersetzt werden, nur weil eine Netz-
+        # Stufe unter Parallel-Last scheiterte — Links werden nur besser, nie schlechter.
+        # AUSSER JBs kuratierter Override steht vorn: der gilt auch dann, wenn sein
+        # URL-Muster kein erkennbares Kapitel-Token traegt (arenascan 'solo-leveling-109/'
+        # — sonst holte der Ratchet die alte Spam-Seite aus dem Cache zurueck).
+        if c and e.get("chap") and c.get("read_chap") == next_chap and not ov_used:
+            alt_links = _live_links(c.get("read_urls"))
+            if (alt_links and readerlink.is_chapter_url(alt_links[0][0])
+                    and not (links and readerlink.is_chapter_url(links[0][0]))):
+                links = alt_links
+        links = keep_last_good(links, c)     # FAILSAFE: nie durch einen Fehl-Lauf verlieren
+        links = [l for l in links if not is_no_read(host(l[0]))]  # mangadex nie als Lese-Link
+        nc["read_urls"] = links
+        nc["read_url"], nc["read_site"] = (links[0] if links else ("", ""))
+        nc["read_chap"] = next_chap
+        nc["ov"] = ov_used                      # kuratierter Override -> Vorrang vor Bookmark
+    # "Hilfe" nur bei echtem Problem: wer einen funktionierenden Weiterlesen-Link hat, braucht
+    # keine Hilfe (Haikyu/Jujutsu Kaisen 0 waren so faelschlich geflaggt, obwohl alles ging).
+    nc["needs_help"] = bool(nc.get("needs_help")) and not nc.get("read_urls")
+
+
 def enrich(items, cache_path, health_dir, cap, name_fix=None, cache_ver=CACHE_VER, force=False,
            relink=False, progress_dir=None, checkpoint_render=None):
     name_fix = name_fix or {}
@@ -1077,388 +1563,15 @@ def enrich(items, cache_path, health_dir, cap, name_fix=None, cache_ver=CACHE_VE
 
     def enrich_one(k, e, c, stale):
         if relink and c:
-            # Schnell-Pfad: Metadaten aus dem Cache behalten, nur den Reader-Link neu aufloesen.
-            nc = dict(c)
-            if not nc.get("novel"):
-                # GLEICHE Ziel-Logik wie der Vollpfad (Bug-Fix: hier stand noch chap+1 hartcodiert ->
-                # relinkte Serien zeigten aufs naechste statt aktuelle Kapitel): Ziel = aktuelles, gedeckelt.
-                next_chap = int(e["chap"]) if e.get("chap") else 1
-                _lat = nc.get("latest")
-                if _lat and next_chap > _lat and (nc.get("conf") or 0) >= 0.7:
-                    next_chap = int(_lat)
-                links = _live_links(c.get("read_urls"))
-                _chap_known = bool(e.get("chap"))
-                # Override VORAB (alle Titelvarianten, engl. Alt-Namen!) -> Seiten-Overrides
-                # werden zu Ernte-Kandidaten (JB Runde 32: comix/In-Spectre).
-                ov_cand = [c.get("title_en"), c.get("title_romaji"), c.get("title"), e.get("name")] + (c.get("alt_titles") or [])
-                ov_url, ov_site, _ov_tpl, _ov_pin = readerlink.override_info([x for x in ov_cand if x], next_chap)
-                # mangadex-SEITEN-Override -> exaktes Kapitel (JB-Regel 14.07. 'Kapitel vor Seite')
-                ov_url, ov_site = _resolve_md_page_override(ov_url, ov_site, _ov_tpl,
-                                                            next_chap, not _chap_known)
-                if not links or (links and readerlink.is_chapter_url(links[0][0]) != _chap_known):
-                    # Reparatur-Pass (JB Runde 27/31/32), SYMMETRISCH: repariert Serien OHNE
-                    # Link, Serien-SEITEN trotz bekanntem Lesestand (Jigokuraku-Klasse) UND
-                    # Kapitel-Links trotz '?' (Bookworm/gilgamesh-Klasse -> Serien-Seite).
-                    # Ersetzt wird nur, wenn die Suche etwas Passenderes findet.
-                    _ts = [t for t in ([c.get("title"), e.get("name"), c.get("title_romaji"),
-                                        c.get("title_native")] + (c.get("alt_titles") or [])) if t]
-                    _hosts = [r.get("host") for r in sorted(e.get("readers") or [],
-                                                            key=lambda r: -(r.get("visits") or 0))
-                              if r.get("host")]
-                    _pages = _harvest_pages(e, ov_url, ov_site, no_prog=not _chap_known)
-                    neu = []
-                    if _chap_known:
-                        bm_url, bm_site = _bookmark_link(e, next_chap, _ts)   # Stufe 0
-                        if bm_url:
-                            neu = [[bm_url, bm_site]]
-                    if not neu:
-                        neu = _live_links(find_read_links(_ts, next_chap, mtype=c.get("type"),
-                                                          prefer_hosts=_hosts,
-                                                          prefer_page=not _chap_known,
-                                                          extra_pages=_pages,
-                                                          adult=(c.get("adult_kind") == "sexual")))
-                    # (MangaDex-Lese-Fallback entfernt, JB 14.07.: 'mangadex ist tot' zum Lesen.)
-                    if neu:
-                        links = neu
-                # MangaFire-API-Upgrade (JB-Goal 14.07.): kein echter Kapitel-Link vorn +
-                # bekannter Lesestand -> exaktes Kapitel aus MangaFires JSON-API (Serien-Seite raus).
-                if (_chap_known and not (links and readerlink.is_chapter_url(links[0][0]))):
-                    _mf_ts = [t for t in ([c.get("title"), c.get("title_en"), c.get("title_romaji"),
-                                           c.get("title_native"), e.get("name")]
-                                          + (c.get("alt_titles") or [])) if t]
-                    try:
-                        u_mf, s_mf = mf_chapter_link(_mf_ts, next_chap)
-                        if u_mf:
-                            links = [[u_mf, s_mf]] + [l for l in (links or []) if l[0] != u_mf]
-                    except Exception:
-                        pass
-                # Override-Vorrang dreistufig (siehe Vollpfad; JB-Wurzelfund Runde 32:
-                # auto-{n}-Overrides erzwangen bei '?' wieder chapter-1). Kapitel-Override =
-                # {n}-Vorlage ODER Kapitel-URL (Runde 35: arenascan-Muster traegt kein Token).
-                # "pin": true schlaegt alle Stufen NUR noch als KAPITEL-Override (JB-Regel
-                # 14.07. 'Kapitel vor Seite'); eine gepinnte SEITE macht Kapitel-Links Platz.
-                _ov_chap = bool(ov_url) and (_ov_tpl or readerlink.is_chapter_url(ov_url))
-                ov_used = bool(ov_url) and (
-                    (_ov_pin and _ov_chap)
-                    or (_ov_chap and _chap_known)
-                    or (not _ov_chap and (not links
-                                          or not readerlink.is_chapter_url(links[0][0])))
-                    or (_ov_chap and not _chap_known and not links))
-                if ov_used:                             # JBs Override -> als Primaerlink
-                    links = [[ov_url, ov_site]] + [l for l in links if l[0] != ov_url]
-                elif ov_url and all(l[0] != ov_url for l in links):
-                    links = links + [[ov_url, ov_site]]  # kuratierter Link bleibt Reserve (+Alt)
-                # RATCHET (Bug-Fix 14.07.: ein Voll-Relink degradierte 65 mangafire-Kapitel-Links
-                # zurueck auf Serienseiten, als die API unter Throttling nichts lieferte). Wie im
-                # Voll-Pfad: hatte der Cache einen KAPITEL-Link und die neue Aufloesung endet auf
-                # einer Serien-Seite, den gecachten Kapitel-Link zurueckholen — nur besser, nie
-                # schlechter. AUSSER ein kuratierter Override steht bewusst vorn (ov_used).
-                if _chap_known and not ov_used and not (links and readerlink.is_chapter_url(links[0][0])):
-                    alt = _live_links(c.get("read_urls"))
-                    if alt and readerlink.is_chapter_url(alt[0][0]):
-                        links = alt + [l for l in links if l[0] != alt[0][0]]
-                links = keep_last_good(links, c)         # FAILSAFE (s. Voll-Pfad)
-                links = [l for l in links if not is_no_read(host(l[0]))]  # mangadex nie als Lese-Link
-                nc["read_urls"] = links
-                nc["read_url"], nc["read_site"] = (tuple(links[0]) if links else ("", ""))
-                nc["read_chap"] = next_chap
-                nc["ov"] = ov_used                  # kuratierter Override -> Vorrang vor Bookmark
-            # "Hilfe" nur bei echtem Problem: mit funktionierendem Weiterlesen-Link keine Hilfe noetig.
-            nc["needs_help"] = bool(nc.get("needs_help")) and not nc.get("read_urls")
+            nc = _relink_eintrag(e, c)
             with lock:
                 cache[k] = nc
                 done[0] += 1
                 if done[0] % 100 == 0:
                     print(f"  ... relink {done[0]}/{len(todo)} ({int(time.time() - t_start)}s)", flush=True)
             return
-        tries = (c.get("tries", 0) + 1) if c else 1
-        prev_link = c.get("link_ok") if c else None
-        fix = name_fix.get(k)
-        slugs = slugs_for(e)
-        # Ein Override steuert das MATCHING nur mit Pin/Suchbegriff; reine Daten-Overrides
-        # (z.B. nur "author") laufen durch die normale Aufloesung.
-        if fix and (fix.get("mb_id") or fix.get("search")):
-            if fix.get("mb_id"):                # Ground-Truth-Pin: Match FEST auf diese MangaBaka-ID
-                rec, conf, src = catalog.lookup_id(fix["mb_id"])
-            else:
-                rc_fix, pref_fix = read_hints(e)
-                rec, conf, src = catalog.lookup(fix["search"], slugs, read_chap=rc_fix, prefer_novel=pref_fix)
-            needs_help = not rec
-        else:
-            # Beim Retry eines ungematchten/Fallback-Eintrags auch mit dem zuletzt aufgeloesten,
-            # SAUBEREN Titel gegen MangaBaka suchen (der rohe Scan-Name ist oft verrauscht).
-            extra = [c["title"]] if (c and c.get("title") and not str(c.get("md_id") or "").startswith("mb:")) else []
-            rec, conf, src, needs_help = resolve(e, extra)
-        if src == "error":          # R6 (JB 07.07.2026): transienter Quellen-Fehler (429/Netz) verbraucht
-            tries = c.get("tries", 0) if c else 0   # KEINEN Retry -> Serie bleibt dran, bis MangaBaka echt antwortet
-        rec = rec or {}
-        mb_id = rec.get("mb_id")
-        did = (f"mb:{mb_id}" if isinstance(mb_id, int) else mb_id) if mb_id else None
-        typ = (rec.get("type") or (fix.get("type") if fix else "") or "").lower()
-        # LETZTE Instanz (JB-Regel): die Serie wird auf webtoons.com gelesen und keine DB kennt
-        # den Typ (oder nennt ihn nur 'oel' = Original English) -> es IST ein Webtoon (Room of
-        # Swords, Ordeal, ...). Bei 'oel' bleibt die US-Flagge (englisches Original, kein KR).
-        wt_url = next((r.get("url") for r in (e.get("readers") or [])
-                       if "webtoons.com" in (r.get("url") or "")), "")
-        _oel = typ == "oel"
-        if wt_url and typ in ("", "oel"):
-            typ = "webtoon"
-        flag, country = TYPE_FLAG.get(typ, ("", ""))
-        if _oel:
-            flag, country = TYPE_FLAG["oel"]
-        link = prev_link if (stale and prev_link is not None) else link_ok(e.get("url"))
-        agg = combine_ratings(rec.get("ratings") or [])
-        # Titel-Kaskade (JB Runde 40): 1. JBs fix-Override, 2. ANILIST-FIRST (redaktioneller
-        # EN-Titel per ID — beendet die Fremdsprachen-Raterei), 3. MangaBaka-Wahl (en-Label +
-        # gefilterte unknown), 4. Haupttitel/Rohname. Nachbrenner (MangaDex) nur, wenn der
-        # gewaehlte Titel weiter Romaji klingt.
-        _title = ((fix.get("name") if fix else "") or _al_first_title(rec)
-                  or _english_title(rec) or rec.get("title_en") or e["name"])
-        if (not (fix and fix.get("name")) and _title
-                and _jap_ratio(_title.translate(_TYPO)) >= 0.5):
-            _title = _en_second_source(rec) or _title
-        nc = {
-            "title": _title,
-            "title_native": rec.get("title_native") or rec.get("title_romaji") or "",
-            # Romaji + Zweittitel persistieren -> Discovery-Tools (MangaFire/mangaread) koennen auch
-            # romaji-Slugs treffen (toaru-majutsu-no-index, raise-wa-tanin-ga-ii, kumo-desu-ga-nani-ka).
-            "title_romaji": rec.get("title_romaji") or "",
-            "alt_titles": [t for t in (rec.get("alt_titles") or []) if t][:8],
-            "genres": [g for g in (rec.get("genres") or []) if g][:12],   # fuer Genre-Filter + Empfehlungen
-            "type": typ,
-            "flag": flag, "country": country,
-            "pub_status": STATUS_DE.get((rec.get("status") or "").lower(), ""),
-            "latest": rec.get("total_chapters"),
-            "author": (rec.get("authors") or [""])[0] if rec.get("authors") else "",
-            "md_id": did,
-            # MangaDex-UUID PERSISTIEREN (Runde 29): --relink kann damit ohne MangaBaka die
-            # MD-Ruecklage bauen; vorher war die UUID nur waehrend der Voll-Anreicherung greifbar.
-            "mdx": (rec.get("source_ids") or {}).get("mangadex")
-                   or (did if isinstance(did, str) and "-" in did else None),
-            # Plattform-IDs fuer den Listen-Export (3b): MAL-XML braucht die MyAnimeList-ID; AniList-ID
-            # dient dem DB-Link + kuenftigem Account-Sync. Kommen beide aus dem MangaBaka-Record.
-            "mal_id": (rec.get("source_ids") or {}).get("my_anime_list"),
-            "al_id": (rec.get("source_ids") or {}).get("anilist"),
-            # DB-Link: MangaBaka hat keine oeffentliche Serien-Webseite (alles 404) -> auf AniList
-            # verlinken (echte, funktionierende DB-Seite), wenn die AniList-ID bekannt ist.
-            "md_url": (f"https://anilist.co/manga/{rec['source_ids']['anilist']}"
-                       if (rec.get("source_ids") or {}).get("anilist") else ""),
-            "adult_kind": adult_kind(rec),
-            "cover": rec.get("cover") or "",   # Cover-URL -> Hover-Vorschau (laedt NUR bei Hover)
-            "novel": typ in NOVEL_TYPES,
-            "conf": round(conf, 2), "src": src, "needs_help": needs_help,
-            "link_ok": link, "tries": tries, "v": cache_ver,
-        }
-        # Aktueller Stand fuer LAUFENDE Serien: kennt die DB keine total_chapters, das live-Kapitel
-        # von MangaDex holen (Aggregate) -> "aktueller Stand"/"neu" bleiben nicht leer. Nur mit
-        # bekannter MangaDex-UUID (kein Fehlmatch). Systemisch: greift auch fuer alle kuenftigen Serien.
-        if not nc.get("latest") and not nc.get("novel"):
-            mdx = (rec.get("source_ids") or {}).get("mangadex")
-            if not mdx and did and "-" in str(did):        # md_id ist bereits eine MangaDex-UUID
-                mdx = did
-            if mdx:
-                lt = md_latest(mdx)
-                if lt:
-                    nc["latest"] = lt
-        if agg:
-            nc["rating"], nc["rating_n"], nc["ratings"] = agg
-        # Uebersetzungs-Stand (JB 20.07.2026): eigene Spalte "Uebersetzt" = letztes ONLINE
-        # verfuegbares EN-Kapitel + Alter. total_chapters (latest) ist das GESAMTwerk (Junk
-        # the Black Shadow 343), aber uebersetzt sind nur 36 — MangaUpdates.latest_chapter ist
-        # dieser Scanlation-Stand. MangaBaka liefert die MU-ID (base36) mit -> EIN Detail-Abruf
-        # gibt trans (Kapitel) + trans_ts (Datum). Nur Nicht-Novels; fehlt die ID, bleibt leer.
-        if not nc.get("novel"):
-            from . import sources as S
-            mu_id = S.mu_api_id((rec.get("source_ids") or {}).get("manga_updates"))
-            if mu_id:
-                mud = S.mu_detail(mu_id)
-                if mud.get("trans") is not None:
-                    nc["trans"] = mud["trans"]
-                if mud.get("trans_ts"):
-                    nc["trans_ts"] = mud["trans_ts"]
-                if not nc.get("author") and mud.get("authors"):   # MangaBaka-Autor leer -> MU
-                    nc["author"] = mud["authors"]
-        # Cover-Fallback-Kette (JB: 'wenn eine Quelle kein Bild hat, nimm die naechste'):
-        # MangaBaka -> MangaDex ueber bekannte UUID -> MangaDex ueber STRENGE Titelsuche
-        # (>=0.8, sonst falsches Bild) -> AniList. Der MangaDex-Treffer fuellt nebenbei ein
-        # fehlendes Land auf (JB: Soul Anomaly hat einen japanischen Titel -> 🇯🇵 statt leer).
-        if not nc["cover"] and not nc["novel"]:
-            try:
-                from . import sources as S
-                mdx2 = (rec.get("source_ids") or {}).get("mangadex")
-                if not mdx2 and did and "-" in str(did):
-                    mdx2 = did
-                if not mdx2:
-                    import difflib as _dl
-                    hit = S.md_lookup(nc["title"]) or {}
-                    if hit.get("md_id") and _dl.SequenceMatcher(
-                            None, norm(nc["title"]), norm(hit.get("title") or "")).ratio() >= 0.8:
-                        mdx2 = hit["md_id"]
-                        # MangaDex liefert Flagge/Land/Autor gleich mit -> Luecken auffuellen
-                        # (JB-Fall Soul Anomaly: laut MD ein ENGLISCHES Original -> 🇺🇸, nicht JP)
-                        if hit.get("country") and not nc["country"]:
-                            nc["flag"], nc["country"] = hit.get("flag") or "", hit["country"]
-                        if hit.get("author") and not nc["author"]:
-                            nc["author"] = hit["author"]
-                if mdx2:
-                    nc["cover"] = S.md_cover(mdx2) or ""
-                if not nc["cover"] and nc.get("al_id"):
-                    nc["cover"] = S.al_cover(nc["al_id"]) or ""
-            except Exception:
-                pass
-        # Webtoon-Originale: Autor steht auf der webtoons.com-Serienseite (JB: Enjelicious, Mongie,
-        # Zogarth, ... - die Manga-DBs kennen diese Werke/Autoren nicht). Best-effort, nie stoerend.
-        if not nc["author"] and wt_url:
-            try:
-                from .sources import webtoon_author
-                nc["author"] = webtoon_author(wt_url) or ""
-            except Exception:
-                pass
-        # Autor als Override-DATUM (Serien, die von der Plattform verschwunden sind, z.B. Room of
-        # Swords: webtoons-Seite 404 -> kein Fetch der Welt hilft; JB kennt den Autor).
-        if fix and fix.get("author") and not nc["author"]:
-            nc["author"] = fix["author"]
-        # "weiterlesen" = verifizierter Reader-Kapitel-Link (konstruiert + per echtem 404 geprueft).
-        # Ziel = dein AKTUELLES Kapitel (JB: man hoert oft MITTEN im Kapitel auf — und der Klick auf
-        # Kapitel N+1 wuerde den Verlauf/Zaehler faelschlich hochzaehlen). Backlog (nichts gelesen) -> 1.
-        next_chap = int(e["chap"]) if e.get("chap") else 1
-        # JB-Entscheidung (Kapitel-Deckelung auch fuers LINK-Ziel): stammt der Lesestand aus einer
-        # aufgeblaehten Zaehlung (alte asuracomic-IDs: 160 statt 100), wuerde chapter-161 konstruiert
-        # -> existiert nicht (toongod leitet auf die Serienseite um). Bei sicherem Match deshalb aufs
-        # letzte EXISTIERENDE Kapitel (DB-Gesamt) deckeln -> aufgeholt = Link zum neuesten Kapitel.
-        _lat_cap = nc.get("latest")
-        if _lat_cap and next_chap > _lat_cap and (conf or 0) >= 0.7 and not nc["novel"]:
-            next_chap = int(_lat_cap)
-        if nc["novel"]:
-            nc["read_url"], nc["read_site"], nc["read_urls"], nc["read_chap"] = "", "", [], None
-        elif (not force) and c and c.get("read_chap") == next_chap and c.get("read_urls") is not None:
-            nc["read_urls"] = _live_links(c.get("read_urls"))
-            nc["read_url"], nc["read_site"] = (tuple(nc["read_urls"][0]) if nc["read_urls"] else ("", ""))
-            nc["read_chap"] = next_chap
-            nc["ov"] = bool(c.get("ov"))    # Override-Vorrang MIT-kopieren (BUG-Fix: ging beim
-                                            # Wiederverwenden verloren -> Bookmark schlug den Override)
-        else:
-            # Titel-Varianten fuer die Slug-Suche: Katalog (EN/romaji/native/alt) + Roh-Name +
-            # MangaDex-Recovery-Titel. JB-Funde: der ROH-Name aus dem Verlauf ('Love Revolution')
-            # und das ROMAJI ('Kono Yuusha ga …') fehlten hier — genau die treffen die
-            # MangaFire-Sitemap-Keys, waehrend title_native (Kanji) im Slug zu nichts wird.
-            titles = ([rec.get("title_en") or e["name"], e.get("name"), rec.get("title_romaji"),
-                       rec.get("title_native")]
-                      + (rec.get("alt_titles") or []) + (e.get("md_titles") or []))
-            # Reader-Praeferenz (JB): DEINE Lese-Seiten dieser Serie zuerst (meistbesuchte vorn).
-            my_hosts = [r.get("host") for r in sorted(e.get("readers") or [],
-                                                      key=lambda r: -(r.get("visits") or 0)) if r.get("host")]
-            # Unbekannter Lesestand ('?', JB Runde 31 Hinamatsuri/Kengan): Serien-SEITE statt
-            # geratenem 'Kapitel 1' — dort entscheidet der Leser selbst, wo er einsteigt.
-            no_prog = not e.get("chap")
-            # JBs Override VORAB aufloesen (Runde 32): ein SEITEN-Override (comix/In-Spectre)
-            # wird zur obersten Ernte-Kandidatin — aus JBs kuratierter Seite wird so das
-            # exakte Kapitel gezogen; ALLE Titelvarianten anbieten (engl. Alt-Namen!).
-            # Runde 35: nc['title'] (finaler ANZEIGE-Titel aus alt_en) + alt_en dazu — JBs
-            # Override-Keys sind nach dem Handelstitel benannt ('topdungeonfarmer'), waehrend
-            # title_en oft das Romaji/Original ist ('Solo Farming in the Tower').
-            ov_cand = ([nc.get("title"), rec.get("title_en"), rec.get("title_romaji"), e.get("name")]
-                       + (rec.get("alt_en") or []) + (rec.get("alt_titles") or []))
-            ov_url, ov_site, _ov_tpl, _ov_pin = readerlink.override_info([x for x in ov_cand if x], next_chap)
-            # mangadex-SEITEN-Override -> exaktes Kapitel (JB-Regel 14.07. 'Kapitel vor Seite')
-            ov_url, ov_site = _resolve_md_page_override(ov_url, ov_site, _ov_tpl,
-                                                        next_chap, no_prog)
-            extra_pages = _harvest_pages(e, ov_url, ov_site, no_prog=no_prog)
-            links = []
-            if not no_prog:
-                bm_url, bm_site = _bookmark_link(e, next_chap, titles)   # Stufe 0: DEINE Seite
-                if bm_url:
-                    links = [[bm_url, bm_site]]
-            if not links:
-                links = find_read_links(titles, next_chap, mtype=typ, prefer_hosts=my_hosts,
-                                        prefer_page=no_prog, extra_pages=extra_pages,
-                                        adult=(nc.get("adult_kind") == "sexual"))
-            if not links:
-                # Miss -> nach dem japanischen/Romaji-Titel suchen (JBs Idee): AniList kennt oft den
-                # Reader-Slug ("Dungeon Meshi" statt MangaBakas "Danjon Meshi") + ein Synonym.
-                a = al_lookup(rec.get("title_en") or e["name"])
-                extra = [x for x in (a.get("title_romaji"), a.get("title_alt")) if x]
-                if extra:
-                    links = find_read_links(titles + extra, next_chap, mtype=typ,
-                                            prefer_hosts=my_hosts, prefer_page=no_prog,
-                                            extra_pages=extra_pages,
-                                            adult=(nc.get("adult_kind") == "sexual"))
-            if not links and nc.get("mdx"):
-                # 2. Retry (JB Runde 29, Assassin/Memories): MangaDex-AltTitles nachladen —
-                # MangaBakas Romaji weicht oft komplett ab ('Ansatsu Kizoku'), erst MangaDex
-                # listet die Reader-Schreibweisen ('Sekai Saikyou no Assassin …', 'Her Memories').
-                md_ts = md_titles_from_url(f"https://mangadex.org/title/{nc['mdx']}")
-                if md_ts:
-                    links = find_read_links(titles + md_ts, next_chap, mtype=typ,
-                                            prefer_hosts=my_hosts, prefer_page=no_prog,
-                                            extra_pages=extra_pages,
-                                            adult=(nc.get("adult_kind") == "sexual"))
-            links = _live_links(links)          # Sperrliste auch auf frische Treffer (Pattern-Reader)
-            # Override-Vorrang (JB Runden 31+32, dreistufig):
-            #   Kapitel-Override + ECHTER Lesestand  -> schlaegt alles.
-            #   Kapitel-Override + '?'               -> NICHT vorstellen ('?' will die Serien-
-            #       Seite; die ~600 auto-mangafire-{n}-Overrides erzwangen sonst 'chapter-1'
-            #       direkt NACH der Reparatur — Runde-32-Wurzelfund) — nur wenn sonst NICHTS da.
-            #   Seiten-Override                      -> verdraengt keinen Kapitel-Link.
-            # Kapitel-Override = {n}-Vorlage ODER Kapitel-URL (Runde 35: arenascan ohne Token).
-            # "pin": true schlaegt alle Stufen NUR noch als KAPITEL-Override (JB-Regel 14.07.
-            # 'Kapitel vor Seite', Runde 36 Proto-Eye bleibt: dort IST der Pin ein Kapitel);
-            # eine gepinnte SEITE macht verifizierten Kapitel-Links Platz und bleibt Reserve.
-            _ov_chap = bool(ov_url) and (_ov_tpl or readerlink.is_chapter_url(ov_url))
-            ov_used = bool(ov_url) and (
-                (_ov_pin and _ov_chap)
-                or (_ov_chap and not no_prog)
-                or (not _ov_chap and (not links or not readerlink.is_chapter_url(links[0][0])))
-                or (_ov_chap and no_prog and not links))
-            if ov_used:
-                links = [[ov_url, ov_site]] + [l for l in links if l[0] != ov_url]
-            elif ov_url and all(l[0] != ov_url for l in links):
-                links = links + [[ov_url, ov_site]]      # kuratierter Link bleibt Reserve (+Alt)
-            # MangaFire-API (JB-Goal 14.07., GitHub-Fund): steht noch KEIN echter Kapitel-Link
-            # vorn (leer oder nur Serien-Seite), loest MangaFires interne JSON-API das exakte
-            # Kapitel auf — genau JBs Klage 'viele mangafire-Links fuehren zur Mangaseite'.
-            # Nur bei bekanntem Lesestand; der Treffer wird als Kapitel-Link vorangestellt.
-            if (not no_prog and not ov_used
-                    and not (links and readerlink.is_chapter_url(links[0][0]))):
-                try:
-                    u_mf, s_mf = mf_chapter_link([t for t in titles if t], next_chap)
-                    if u_mf:
-                        links = [[u_mf, s_mf]] + [l for l in links if l[0] != u_mf]
-                except Exception:
-                    pass
-            # Dynasty Reader (Guya-API, JB-Goal 14.07.): Doujin/Yuri, die die grossen DBs oft
-            # nicht fuehren -> echte Zusatz-Abdeckung. Nur wenn immer noch kein Kapitel-Link da.
-            if (not no_prog and not ov_used
-                    and not (links and readerlink.is_chapter_url(links[0][0]))):
-                try:
-                    u_dy, s_dy = dy_chapter_link([t for t in titles if t], next_chap)
-                    if u_dy:
-                        links = [[u_dy, s_dy]] + [l for l in links if l[0] != u_dy]
-                except Exception:
-                    pass
-            # (MangaDex-LESE-Ruecklage entfernt, JB 14.07.2026: 'mangadex ist tot' zum Lesen —
-            #  Kapitel laden ewig/gar nicht. Bleibt Datenquelle. Ohne anderen Link -> ehrliche
-            #  Suche statt eines mangadex-Links, der ins Leere laedt.)
-            # RATCHET (JB Runde 35, 'wieder und wieder'): ein frueher gefundener KAPITEL-Link
-            # darf NIE durch eine blosse Serien-Seite ersetzt werden, nur weil eine Netz-
-            # Stufe unter Parallel-Last scheiterte — Links werden nur besser, nie schlechter.
-            # AUSSER JBs kuratierter Override steht vorn: der gilt auch dann, wenn sein
-            # URL-Muster kein erkennbares Kapitel-Token traegt (arenascan 'solo-leveling-109/'
-            # — sonst holte der Ratchet die alte Spam-Seite aus dem Cache zurueck).
-            if c and e.get("chap") and c.get("read_chap") == next_chap and not ov_used:
-                alt_links = _live_links(c.get("read_urls"))
-                if (alt_links and readerlink.is_chapter_url(alt_links[0][0])
-                        and not (links and readerlink.is_chapter_url(links[0][0]))):
-                    links = alt_links
-            links = keep_last_good(links, c)     # FAILSAFE: nie durch einen Fehl-Lauf verlieren
-            links = [l for l in links if not is_no_read(host(l[0]))]  # mangadex nie als Lese-Link
-            nc["read_urls"] = links
-            nc["read_url"], nc["read_site"] = (links[0] if links else ("", ""))
-            nc["read_chap"] = next_chap
-            nc["ov"] = ov_used                      # kuratierter Override -> Vorrang vor Bookmark
-        # "Hilfe" nur bei echtem Problem: wer einen funktionierenden Weiterlesen-Link hat, braucht
-        # keine Hilfe (Haikyu/Jujutsu Kaisen 0 waren so faelschlich geflaggt, obwohl alles ging).
-        nc["needs_help"] = bool(nc.get("needs_help")) and not nc.get("read_urls")
+        nc, rec, conf, typ = _metadaten_eintrag(k, e, c, stale, name_fix, cache_ver)
+        _lese_links_setzen(e, c, nc, rec, conf, typ, force)
         old_latest = c.get("latest") if c else None             # neue Kapitel seit letztem Lauf?
         if old_latest and nc.get("latest") and nc["latest"] > old_latest and not nc.get("novel"):
             new_chaps.append(nc["title"])

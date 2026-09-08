@@ -9,7 +9,8 @@ unveraendert weiterlaeuft; die Standalone-App setzt sie spaeter selbst (Phase 5/
 
 # Datenversion: hochzaehlen erzwingt beim naechsten Lauf eine vollstaendige Neu-Anreicherung
 # (Titel/Flaggen/Bewertung/Autor), sonst nur fehlende/veraltete Eintraege ("resume").
-CACHE_VER = 32         # 32: Uebersetzt-Stand (trans/trans_ts via MangaUpdates) fuer ALLE Serien
+CACHE_VER = 33         # 33: mu_recs (MangaUpdates-Empfehlungs-Paare) fuer ALLE Serien
+                       # 32: Uebersetzt-Stand (trans/trans_ts via MangaUpdates)
                        #     nachladen (JB 20.07.: 'gelesen / übersetzt / gesamt' in der Kapitel-
                        #     Zelle); 31: Titelwahl NUR aus alt_en (JB Runde 35)
 NAMELEN = 40           # ab hier Anzeige-Titel mit … kuerzen
