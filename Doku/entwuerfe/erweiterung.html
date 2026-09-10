@@ -1,0 +1,423 @@
+<title>SyncFindus — Die Browser-Erweiterung</title>
+<style>
+:root{
+  --bg:#0E1217; --panel:#161C23; --panel2:#1c242d; --line:#232C36; --line2:#33404e;
+  --tx:#E4E9EF; --tx2:#8B97A5; --tx3:#5f6b78; --akz:#F0873C; --onA:#150a02;
+  --grün:#5fd07a; --gelb:#d8b64a; --rot:#e06a5a; --türkis:#5fd0c4;
+  --disp:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --data:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  /* Fremde Seite — bewusst hässlich, so sehen Aggregatoren aus */
+  --f-bg:#1b1b1f; --f-pan:#252529; --f-line:#33333a; --f-tx:#d8d8dc; --f-tx2:#8a8a94; --f-akz:#5a9fd4;
+}
+@media (prefers-color-scheme:light){
+  :root:not([data-theme="dark"]){--bg:#eff1f4;--panel:#fff;--panel2:#f4f6f8;--line:#dde2e8;--line2:#c3ccd6;
+    --tx:#1a1f26;--tx2:#5a6672;--tx3:#8592a0;--akz:#b8551c;--onA:#fff;
+    --grün:#237a42;--gelb:#8a6410;--rot:#b13a28;--türkis:#1a7f74}
+}
+:root[data-theme="light"]{--bg:#eff1f4;--panel:#fff;--panel2:#f4f6f8;--line:#dde2e8;--line2:#c3ccd6;
+  --tx:#1a1f26;--tx2:#5a6672;--tx3:#8592a0;--akz:#b8551c;--onA:#fff;
+  --grün:#237a42;--gelb:#8a6410;--rot:#b13a28;--türkis:#1a7f74}
+
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:var(--disp);font-size:16px;
+  line-height:1.6;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1120px;margin:0 auto;padding:34px 18px 90px}
+.eyebrow{font-family:var(--data);font-size:11px;letter-spacing:.17em;text-transform:uppercase;
+  color:var(--akz);margin:0 0 11px}
+h1{font-size:clamp(27px,4.2vw,42px);line-height:1.06;letter-spacing:-.028em;font-weight:800;
+  margin:0 0 13px;text-wrap:balance}
+.lede{font-size:17px;color:var(--tx2);max-width:66ch;margin:0}
+h2{font-size:22px;font-weight:800;letter-spacing:-.022em;margin:0 0 6px}
+h3{font-size:15px;font-weight:800;margin:0 0 5px}
+.sub{color:var(--tx2);margin:0 0 18px;max-width:70ch;font-size:15px}
+hr.rule{height:1px;background:var(--line);border:0;margin:44px 0}
+b.a{color:var(--akz)}
+code{font-family:var(--data);font-size:.88em;background:var(--panel2);border:1px solid var(--line);
+  border-radius:4px;padding:1px 5px}
+
+/* ══════ Browser-Rahmen ══════ */
+.brow{border:1px solid var(--line2);border-radius:14px;overflow:hidden;background:var(--f-bg);
+  box-shadow:0 18px 50px -22px rgba(0,0,0,.6);margin-top:20px}
+.chrome{display:flex;align-items:center;gap:10px;padding:9px 12px;background:#101014;
+  border-bottom:1px solid #000}
+.ampeln{display:flex;gap:6px}
+.ampeln i{width:10px;height:10px;border-radius:50%;display:block}
+.url{flex:1;min-width:0;background:#1e1e24;border:1px solid #2c2c34;border-radius:999px;
+  padding:5px 13px;font-family:var(--data);font-size:11.5px;color:#9a9aa4;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.url b{color:#d8d8dc;font-weight:500}
+/* unser Knopf in der Leiste */
+.tb{display:flex;align-items:center;gap:5px}
+.tbtn{width:30px;height:30px;border-radius:8px;border:1px solid transparent;background:#1e1e24;
+  display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer}
+.tbtn.on{border-color:var(--akz);background:rgba(240,135,60,.13)}
+.tbtn .pill{position:absolute;bottom:-3px;right:-4px;font-family:var(--data);font-size:8.5px;
+  line-height:1;padding:2px 3.5px;border-radius:4px;background:var(--akz);color:var(--onA);font-weight:700}
+
+/* Fremde Seite */
+.site{padding:0;min-height:220px;color:var(--f-tx);font-size:14px}
+.sitebar{display:flex;align-items:center;gap:14px;padding:11px 16px;background:#141418;
+  border-bottom:1px solid var(--f-line);font-size:13px}
+.sitebar .lg{font-weight:800;letter-spacing:-.02em;color:var(--f-akz);font-size:15px}
+.sitebar span{color:var(--f-tx2)}
+.sitebody{padding:16px}
+
+/* Serienkopf der fremden Seite */
+.fkopf{display:flex;gap:16px;align-items:flex-start}
+.fcov{width:88px;height:124px;border-radius:5px;flex:0 0 auto;
+  background:linear-gradient(145deg,#4a2a20,#c2703a);display:flex;align-items:flex-end;
+  justify-content:center;padding-bottom:7px;font-family:var(--data);font-size:11px;
+  color:rgba(255,255,255,.85)}
+.fkopf h3{color:var(--f-tx);font-size:19px;margin:0 0 4px;letter-spacing:-.02em}
+.fmeta{color:var(--f-tx2);font-size:12.5px}
+.ftag{display:inline-block;border:1px solid var(--f-line);border-radius:4px;padding:1px 7px;
+  font-size:11px;color:var(--f-tx2);margin:6px 6px 0 0}
+
+/* ★ unsere eingesetzte Leiste ★ */
+.sf{margin-top:12px;border:1px solid var(--akz);border-left-width:3px;border-radius:0 10px 10px 0;
+  background:linear-gradient(90deg,rgba(240,135,60,.13),rgba(240,135,60,.03));
+  padding:10px 13px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  font-family:var(--disp)}
+.sf .mark{display:flex;align-items:center;gap:7px;font-weight:800;font-size:12.5px;color:var(--akz);
+  letter-spacing:-.01em}
+.sf .zst{font-size:14px}
+.sf .txt{font-size:13px;color:#e6e6ea}
+.sf .txt b{color:#fff}
+.sf .kapg{font-family:var(--data);font-size:12.5px;font-variant-numeric:tabular-nums;color:#e6e6ea}
+.sf .kapg b{font-weight:800}
+.sf .kapg i{font-style:normal;color:#9a9aa4}
+.sf .act{margin-left:auto;display:flex;gap:7px}
+.sfb{font-size:12.5px;font-weight:700;border-radius:8px;padding:6px 12px;min-height:28px;
+  border:1px solid rgba(255,255,255,.22);background:transparent;color:#e6e6ea;cursor:pointer;
+  display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.sfb.pri{background:var(--akz);border-color:var(--akz);color:var(--onA)}
+.sfb:hover{filter:brightness(1.1)}
+
+/* Kapitelliste der fremden Seite */
+.kl{margin-top:14px;border-top:1px solid var(--f-line)}
+.kz{display:flex;align-items:center;gap:12px;padding:8px 10px 8px 0;border-bottom:1px solid var(--f-line);
+  position:relative;padding-left:13px}
+.kz a{color:var(--f-akz);text-decoration:none;font-size:13.5px}
+.kz .dat{margin-left:auto;font-size:11.5px;color:var(--f-tx2);font-family:var(--data)}
+/* ★ unsere Markierung ★ */
+.kz.gel{background:rgba(95,208,122,.05)}
+.kz.gel::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--grün);
+  opacity:.55}
+.kz.gel a{color:var(--f-tx2)}
+.kz.gel .hak{color:var(--grün);font-size:12px}
+.kz.hier::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--akz)}
+.kz.hier{background:rgba(240,135,60,.09)}
+.kz.hier a{color:#fff;font-weight:700}
+.hierlbl{font-family:var(--data);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--akz);border:1px solid var(--akz);border-radius:4px;padding:1px 6px}
+.kz .neu{font-family:var(--data);font-size:9.5px;letter-spacing:.1em;color:var(--türkis);
+  border:1px solid var(--türkis);border-radius:4px;padding:1px 5px}
+
+/* Raster mit Ecken-Zeichen */
+.raster{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:11px;margin-top:4px}
+.rk{position:relative;border-radius:6px;overflow:hidden}
+.rk .b{aspect-ratio:2/3;border-radius:6px;display:flex;align-items:flex-end;padding:6px;
+  font-size:10.5px;color:rgba(255,255,255,.9);font-family:var(--data);line-height:1.25}
+.rk .ecke{position:absolute;top:5px;right:5px;width:19px;height:19px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;
+  background:rgba(8,8,10,.78);backdrop-filter:blur(3px);border:1px solid rgba(255,255,255,.14)}
+.ecke.r{color:var(--grün)} .ecke.k{color:var(--gelb)} .ecke.n{color:#8a8a94}
+.rk .fort{position:absolute;left:0;right:0;bottom:0;height:3px;background:rgba(0,0,0,.5)}
+.rk .fort i{display:block;height:100%;background:var(--grün)}
+
+/* ══════ Popup ══════ */
+.pop{width:330px;border:1px solid var(--line2);border-radius:12px;background:var(--panel);
+  overflow:hidden;box-shadow:0 20px 46px -18px rgba(0,0,0,.65)}
+.pophd{display:flex;align-items:center;gap:9px;padding:12px 14px;border-bottom:1px solid var(--line);
+  background:var(--panel2)}
+.pophd .nm{font-weight:800;font-size:13.5px;letter-spacing:-.01em}
+.pophd .amp{margin-left:auto;font-family:var(--data);font-size:10px;color:var(--grün);
+  display:inline-flex;align-items:center;gap:5px}
+.pophd .amp::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--grün)}
+.popbd{padding:13px 14px}
+.erk{display:flex;gap:11px;align-items:flex-start}
+.erk .c{width:44px;height:62px;border-radius:5px;flex:0 0 auto;
+  background:linear-gradient(145deg,#4a2a20,#c2703a)}
+.erk b{font-size:14px;display:block;letter-spacing:-.01em}
+.erk .m{font-size:12px;color:var(--tx2);margin-top:2px}
+.sicher{margin-top:11px;display:flex;align-items:center;gap:8px;font-family:var(--data);font-size:10.5px;
+  color:var(--tx3)}
+.sicher .bar{flex:1;height:4px;border-radius:999px;background:var(--line2);overflow:hidden}
+.sicher .bar i{display:block;height:100%;background:var(--türkis)}
+.popz{margin-top:12px;border-top:1px solid var(--line);padding-top:11px;display:grid;gap:7px}
+.pz{display:flex;align-items:center;gap:9px;font-size:12.5px;color:var(--tx2)}
+.pz .k{font-family:var(--data);font-size:10px;color:var(--tx3);width:12ch;flex:0 0 auto}
+.pz b{color:var(--tx)}
+.popact{display:flex;gap:7px;padding:12px 14px;border-top:1px solid var(--line);background:var(--panel2)}
+.pb{flex:1;font-size:12.5px;font-weight:700;border-radius:8px;padding:7px 10px;min-height:30px;
+  border:1px solid var(--line2);background:transparent;color:var(--tx2);cursor:pointer}
+.pb.pri{background:var(--akz);border-color:var(--akz);color:var(--onA)}
+.popfz{padding:9px 14px;border-top:1px solid var(--line);font-family:var(--data);font-size:10px;
+  color:var(--tx3);display:flex;align-items:center;gap:7px}
+.popfz svg{color:var(--türkis);flex:0 0 auto}
+
+/* Knopfzustände */
+.zust{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-top:16px}
+.zc{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:15px 16px}
+.zc .pv{height:44px;display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.zc p{margin:0;font-size:12.5px;color:var(--tx2)}
+.zc .wo{margin-top:8px;font-family:var(--data);font-size:10px;color:var(--tx3)}
+
+.spalten{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px;
+  align-items:start;margin-top:18px}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:14px}
+th{text-align:left;font-family:var(--data);font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--tx3);font-weight:400;padding:0 12px 7px 0;border-bottom:1px solid var(--line)}
+td{padding:9px 12px 9px 0;border-bottom:1px solid var(--line);vertical-align:top;color:var(--tx2)}
+td:first-child{color:var(--tx);font-weight:600;white-space:nowrap}
+td b{color:var(--tx)}
+.merk{border-left:3px solid var(--akz);background:var(--panel);border-radius:0 10px 10px 0;
+  padding:13px 16px;margin-top:16px;font-size:14px;color:var(--tx2)}
+.merk b{color:var(--tx)}
+.merk.warn{border-left-color:var(--rot)}
+.cap{font-family:var(--data);font-size:10px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--tx3);margin:22px 0 0}
+</style>
+
+<div class="wrap">
+
+<p class="eyebrow">SyncFindus · Bauteil 08</p>
+<h1>Die Erweiterung markiert. Sie fragt nicht.</h1>
+<p class="lede">Sie ist das Auge im Browser: sie sieht, was du liest, schreibt es ins Regal —
+und malt umgekehrt dein Regal zurück auf die fremde Seite.
+<b class="a">Kein Popup, kein Ton, kein Fragen.</b> Nur ein Streifen Farbe an der Stelle,
+wo du aufgehört hast.</p>
+
+<p class="cap">A · Serienseite mit Kapitelliste</p>
+<div class="brow">
+  <div class="chrome">
+    <div class="ampeln"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i></div>
+    <div class="url">asuracomic.net<b>/series/solo-max-level-newbie</b></div>
+    <div class="tb">
+      <div class="tbtn on" title="SyncFindus — gekannt, nicht im Regal">
+        <svg width="17" height="17" viewBox="0 0 40 40"><path d="M20 5.5 34.5 30.5H5.5Z" fill="none" stroke="#F0873C" stroke-width="3.4" stroke-linejoin="round"/></svg>
+        <span class="pill" style="background:#d8b64a;color:#150a02">63</span>
+      </div>
+    </div>
+  </div>
+  <div class="site">
+    <div class="sitebar"><span class="lg">AsuraComic</span><span>Home</span><span>Bookmarks</span><span>Series</span></div>
+    <div class="sitebody">
+      <div class="fkopf">
+        <div class="fcov">Cover</div>
+        <div style="min-width:0">
+          <h3>Solo Max-Level Newbie</h3>
+          <div class="fmeta">나 혼자 만렙 뉴비 · Maslow, Warak · Ongoing</div>
+          <span class="ftag">Action</span><span class="ftag">Fantasy</span><span class="ftag">Manhwa</span>
+        </div>
+      </div>
+
+      <!-- ★ EINGESETZT VON SYNCFUNDUS ★ -->
+      <div class="sf">
+        <span class="mark">
+          <svg width="14" height="14" viewBox="0 0 40 40"><path d="M20 5.5 34.5 30.5H5.5Z" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/></svg>
+          FUNDUS
+        </span>
+        <span class="zst" style="color:var(--gelb)">◐</span>
+        <span class="txt">Du warst hier — <b>nicht im Regal</b></span>
+        <span class="kapg"><b>63</b> <i>von</i> <b>121</b> <i>Kapiteln besucht · zuletzt 14.02.</i></span>
+        <span class="act">
+          <button class="sfb">Nur merken</button>
+          <button class="sfb pri">＋ Ins Regal &amp; ab 64 holen</button>
+        </span>
+      </div>
+
+      <div class="kl">
+        <div class="kz gel"><span class="hak">✓</span><a>Chapter 61</a><span class="dat">11 Feb 2026</span></div>
+        <div class="kz gel"><span class="hak">✓</span><a>Chapter 62</a><span class="dat">13 Feb 2026</span></div>
+        <div class="kz gel"><span class="hak">✓</span><a>Chapter 63</a><span class="dat">14 Feb 2026</span></div>
+        <div class="kz hier"><span class="hierlbl">Hier weiter</span><a>Chapter 64</a><span class="dat">18 Feb 2026</span></div>
+        <div class="kz"><a>Chapter 65</a><span class="dat">25 Feb 2026</span></div>
+        <div class="kz"><a>Chapter 66</a><span class="neu">nach deinem Besuch</span><span class="dat">03 Mär 2026</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+<p class="sub" style="margin-top:11px;font-size:13.5px">
+Drei Eingriffe, mehr nicht: ein Streifen links an gelesenen Kapiteln, eine Marke am nächsten,
+und <em>eine</em> Leiste über der Liste. Die Seite bleibt die Seite — wir überkleben sie nicht.</p>
+
+<hr class="rule">
+
+<p class="cap" style="margin-top:0">B · Übersicht — das Regal auf fremdem Grund</p>
+<div class="brow">
+  <div class="chrome">
+    <div class="ampeln"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i></div>
+    <div class="url">mangadex.org<b>/titles/latest</b></div>
+    <div class="tb"><div class="tbtn on">
+      <svg width="17" height="17" viewBox="0 0 40 40"><path d="M20 5.5 34.5 30.5H5.5Z" fill="none" stroke="#F0873C" stroke-width="3.4" stroke-linejoin="round"/></svg></div></div>
+  </div>
+  <div class="site"><div class="sitebody">
+    <div class="raster">
+      <div class="rk"><div class="b" style="background:linear-gradient(145deg,#20304f,#6b3f8f)">Solo Leveling</div>
+        <span class="ecke r">●</span><span class="fort"><i style="width:74%"></i></span></div>
+      <div class="rk"><div class="b" style="background:linear-gradient(145deg,#2a2118,#8f6b3a)">Vinland Saga</div>
+        <span class="ecke r">●</span><span class="fort"><i style="width:47%"></i></span></div>
+      <div class="rk"><div class="b" style="background:linear-gradient(145deg,#1a2438,#4a6f9f)">Tower of God</div>
+        <span class="ecke k">◐</span></div>
+      <div class="rk"><div class="b" style="background:linear-gradient(145deg,#1f3326,#7f9f3a)">Solo Farming</div>
+        <span class="ecke n">○</span></div>
+      <div class="rk"><div class="b" style="background:linear-gradient(145deg,#33202a,#8f4a5f)">Max Level Hero</div>
+        <span class="ecke n">○</span></div>
+      <div class="rk"><div class="b" style="background:linear-gradient(145deg,#2b1f2b,#8f5a7f)">Soloist in a Cage</div>
+        <span class="ecke n">○</span></div>
+      <div class="rk"><div class="b" style="background:linear-gradient(145deg,#1e3a3a,#4f8f6b)">SL: Ragnarök</div>
+        <span class="ecke r">●</span><span class="fort"><i style="width:79%"></i></span></div>
+      <div class="rk"><div class="b" style="background:linear-gradient(145deg,#4a2a20,#c2703a)">Max-Level Newbie</div>
+        <span class="ecke k">◐</span></div>
+    </div>
+  </div></div>
+</div>
+<p class="sub" style="margin-top:11px;font-size:13.5px">
+Dieselben drei Zeichen wie in der Suche — <b style="color:var(--grün)">●</b> im Regal,
+<b style="color:var(--gelb)">◐</b> gekannt, <b style="color:var(--tx3)">○</b> neu.
+Ein Balken unten, wenn du mittendrin bist. Du siehst auf einen Blick, was du beim Stöbern
+schon dreimal übersehen hast.</p>
+
+<hr class="rule">
+
+<h2>Das Fenster am Knopf</h2>
+<div class="spalten">
+  <div>
+    <div class="pop">
+      <div class="pophd">
+        <svg width="16" height="16" viewBox="0 0 40 40"><path d="M20 5.5 34.5 30.5H5.5Z" fill="none" stroke="#F0873C" stroke-width="3.6" stroke-linejoin="round"/></svg>
+        <span class="nm">SyncFindus</span>
+        <span class="amp">verbunden · 127.0.0.1</span>
+      </div>
+      <div class="popbd">
+        <div class="erk">
+          <div class="c"></div>
+          <div style="min-width:0">
+            <b>Solo Max-Level Newbie</b>
+            <div class="m">Manhwa · 2020 · Maslow, Warak · ↧ vertikal</div>
+            <div class="m" style="color:var(--gelb)">◐ gekannt · nicht im Regal</div>
+          </div>
+        </div>
+        <div class="sicher">
+          <span>Zuordnung</span>
+          <span class="bar"><i style="width:96%"></i></span>
+          <span style="color:var(--türkis)">sicher</span>
+        </div>
+        <div class="popz">
+          <div class="pz"><span class="k">erkannt über</span><span>Nebentitel <b>나 혼자 만렙 뉴비</b> → MangaBaka #34812</span></div>
+          <div class="pz"><span class="k">Verlauf hier</span><span><b>63</b> Kapitel · 11.09.2025 bis 14.02.2026</span></div>
+          <div class="pz"><span class="k">draußen neu</span><span><b>58</b> Kapitel seit deinem letzten Besuch</span></div>
+          <div class="pz"><span class="k">diese Seite</span><span><b>mitzählen</b> · Adapter v14</span></div>
+        </div>
+      </div>
+      <div class="popact">
+        <button class="pb">Falsches Werk?</button>
+        <button class="pb pri">＋ Ins Regal</button>
+      </div>
+      <div class="popfz">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+          <rect x="4.5" y="10.5" width="15" height="9.5" rx="2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg>
+        Nichts verlässt diesen Rechner. Die Erweiterung spricht nur mit <code style="padding:0 3px">127.0.0.1</code>.
+      </div>
+    </div>
+  </div>
+  <div>
+    <h3>Was hier passiert</h3>
+    <p class="sub" style="margin-bottom:12px">Der Knopf ist kein Menü. Er ist eine Antwort auf eine Frage,
+    die du beim Anklicken schon im Kopf hast: <em>kenne ich das?</em></p>
+    <table style="margin-top:0">
+      <tr><th style="width:34%">Zeile</th><th>Wozu</th></tr>
+      <tr><td>Zuordnung</td><td>Wie sicher wir uns sind, dass diese Seite <b>dieses</b> Werk zeigt.
+        Unter 70 % fragt die Erweiterung nach, statt still das Falsche zu zählen.</td></tr>
+      <tr><td>erkannt über</td><td>Der Beweis. Wer nachvollziehen kann, warum die Maschine etwas glaubt,
+        korrigiert sie beim ersten Fehler statt beim zehnten.</td></tr>
+      <tr><td>draußen neu</td><td>Der eigentliche Wert: 58 Kapitel warten. Genau das findest du sonst nie.</td></tr>
+      <tr><td>Falsches Werk?</td><td>Öffnet die Suche mit dem Seitentitel vorgetippt. Deine Wahl gilt
+        ab sofort für die ganze Domain-Serie, nicht nur für diesen Tab.</td></tr>
+    </table>
+  </div>
+</div>
+
+<hr class="rule">
+
+<h2>Der Knopf hat vier Zustände — mehr nicht</h2>
+<div class="zust">
+  <div class="zc">
+    <div class="pv"><div class="tbtn" style="background:var(--panel2)">
+      <svg width="17" height="17" viewBox="0 0 40 40"><path d="M20 5.5 34.5 30.5H5.5Z" fill="none" stroke="#5f6b78" stroke-width="3.4" stroke-linejoin="round"/></svg></div></div>
+    <h3>Grau · schläft</h3>
+    <p>Kein Adapter für diese Seite, oder SyncFindus läuft nicht. Klick zeigt, warum.</p>
+    <div class="wo">99 % aller Seiten im Netz</div>
+  </div>
+  <div class="zc">
+    <div class="pv"><div class="tbtn on">
+      <svg width="17" height="17" viewBox="0 0 40 40"><path d="M20 5.5 34.5 30.5H5.5Z" fill="none" stroke="#F0873C" stroke-width="3.4" stroke-linejoin="round"/></svg>
+      <span class="pill" style="background:#5f6b78;color:#fff">○</span></div></div>
+    <h3>Orange · neu</h3>
+    <p>Seite erkannt, Werk erkannt, du hast es noch nie berührt. Ein Klick legt es an.</p>
+    <div class="wo">der Sammelmoment</div>
+  </div>
+  <div class="zc">
+    <div class="pv"><div class="tbtn on">
+      <svg width="17" height="17" viewBox="0 0 40 40"><path d="M20 5.5 34.5 30.5H5.5Z" fill="none" stroke="#F0873C" stroke-width="3.4" stroke-linejoin="round"/></svg>
+      <span class="pill" style="background:#d8b64a;color:#150a02">63</span></div></div>
+    <h3>Gelbe Zahl · gekannt</h3>
+    <p>Die Zahl ist, wie viele Kapitel du hier schon offen hattest. Ohne Regal-Eintrag.</p>
+    <div class="wo">der Zustand, den nur wir haben</div>
+  </div>
+  <div class="zc">
+    <div class="pv"><div class="tbtn on">
+      <svg width="17" height="17" viewBox="0 0 40 40"><path d="M20 5.5 34.5 30.5H5.5Z" fill="none" stroke="#F0873C" stroke-width="3.4" stroke-linejoin="round"/></svg>
+      <span class="pill">+58</span></div></div>
+    <h3>Orange Zahl · Nachschub</h3>
+    <p>Im Regal, und es gibt neue Kapitel. Die Zahl ist der Rückstand, nicht der Fortschritt.</p>
+    <div class="wo">der Grund, wiederzukommen</div>
+  </div>
+</div>
+
+<hr class="rule">
+
+<h2>Was sie tut und was sie nie tut</h2>
+<table>
+  <tr><th style="width:26%">Sie tut</th><th>Wie</th></tr>
+  <tr><td>Lesen erkennen</td><td>Kapitelseite offen, mehr als <b>60 %</b> gescrollt oder mehr als
+    <b>25 Sekunden</b> geblieben → gelesen. Beides zusammen, weil Langstreifen nie scrollen
+    und Doppelseiten nie dauern.</td></tr>
+  <tr><td>Werk zuordnen</td><td>Adapter liest Titel, Nebentitel, Autor und — wenn vorhanden — die fremde ID
+    aus der Seite. Dann dieselbe Zusammenführung wie in der Suche.</td></tr>
+  <tr><td>Zurückmalen</td><td>Regalzustand als Streifen, Ecken-Zeichen und Leiste. Höchstens drei Eingriffe pro Seite.</td></tr>
+  <tr><td>Übergeben</td><td>Ein Klick schickt die Kapitel-Liste an SyncFindus. Ab dort läuft die
+    Warteschlange: beschaffen, prüfen, veredeln.</td></tr>
+</table>
+
+<table>
+  <tr><th style="width:26%;color:var(--rot)">Sie tut nie</th><th>Warum</th></tr>
+  <tr><td>Auf allen Seiten laufen</td><td>Keine <code>&lt;all_urls&gt;</code>-Erlaubnis. Nur die Domains
+    aus deiner Adapterliste, einzeln von dir freigegeben. Alles andere sieht sie nicht einmal.</td></tr>
+  <tr><td>Nach draußen funken</td><td>Ein einziges Ziel: <code>127.0.0.1</code> mit einem Token,
+    das beim ersten Start erzeugt wird. Keine Telemetrie, kein Konto, kein Server.</td></tr>
+  <tr><td>Herunterladen</td><td>Die Erweiterung <b>meldet</b> nur. Geholt wird im Programm.
+    Ein Browser-Add-on, das Dateien zieht, fliegt aus jedem Store — und wäre auch das falsche Werkzeug.</td></tr>
+  <tr><td>Popups werfen</td><td>Kein Toast, kein Ton, kein Zähler, der hochspringt.
+    Wer beim Lesen unterbrochen wird, schaltet die Erweiterung ab. Dann ist alles umsonst.</td></tr>
+</table>
+
+<div class="merk">
+  <b>Die Adapterliste wohnt nicht in der Erweiterung.</b> Sie ist eine kleine, signierte JSON-Datei,
+  die SyncFindus lokal ausliefert — die Erweiterung fragt sie beim Start ab.
+  Zwei Gründe: eine neue Seite ist dann eine Zeile Text statt einer Store-Prüfung von zwei Wochen.
+  Und: die Liste, welche Seiten wir kennen, steht nirgends öffentlich im Store-Paket.
+</div>
+
+<div class="merk warn">
+  <b>Der ehrliche Haken.</b> Firefox erlaubt uns das alles (Manifest V3 mit
+  <code>browser.runtime</code> und freien Host-Berechtigungen). Chrome auch — aber Chrome
+  entfernt seit 2024 schrittweise, was wir brauchen, und die Store-Prüfung mag Add-ons nicht,
+  die mit <code>localhost</code> reden. Deshalb: <b>Firefox zuerst und ordentlich</b>,
+  Chrome danach als Beipack. Und für beide gilt: die Erweiterung ist Zubehör.
+  Fällt sie weg, funktioniert SyncFindus weiter — dann eben nur mit der
+  <code>places.sqlite</code>-Auswertung, die es sowieso schon gibt.
+</div>
+
+</div>

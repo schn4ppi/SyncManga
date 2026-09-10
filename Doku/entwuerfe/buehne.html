@@ -1,0 +1,2168 @@
+<title>SyncFindus — Die Bühne</title>
+<style>
+:root{
+  --bg:#0E1217; --panel:#161C23; --panel2:#1c242d; --line:#232C36; --line2:#33404e;
+  --tx:#E4E9EF; --tx2:#8B97A5; --tx3:#5f6b78; --akz:#F0873C; --onA:#150a02;
+  --grün:#5fd07a; --gelb:#d8b64a; --rot:#e06a5a; --türkis:#5fd0c4;
+  --disp:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --data:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  --serif:Literata,"Source Serif 4",Georgia,serif;
+  --bu:#0A0A0B; --butx:#E8E8EA; --butx2:#9A9AA2; --butx3:#6A6A72;
+}
+@media (prefers-color-scheme:light){
+  :root:not([data-theme="dark"]){--bg:#eff1f4;--panel:#fff;--panel2:#f4f6f8;--line:#dde2e8;--line2:#c3ccd6;
+    --tx:#1a1f26;--tx2:#5a6672;--tx3:#8592a0;--akz:#b8551c;--onA:#fff;
+    --grün:#237a42;--gelb:#8a6410;--rot:#b13a28;--türkis:#1a7f74}
+}
+:root[data-theme="light"]{--bg:#eff1f4;--panel:#fff;--panel2:#f4f6f8;--line:#dde2e8;--line2:#c3ccd6;
+  --tx:#1a1f26;--tx2:#5a6672;--tx3:#8592a0;--akz:#b8551c;--onA:#fff;
+  --grün:#237a42;--gelb:#8a6410;--rot:#b13a28;--türkis:#1a7f74}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:var(--disp);font-size:16px;
+  line-height:1.6;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1120px;margin:0 auto;padding:34px 18px 90px}
+.eyebrow{font-family:var(--data);font-size:11px;letter-spacing:.17em;text-transform:uppercase;
+  color:var(--akz);margin:0 0 11px}
+h1{font-size:clamp(27px,4.2vw,42px);line-height:1.06;letter-spacing:-.028em;font-weight:800;
+  margin:0 0 13px;text-wrap:balance}
+.lede{font-size:17px;color:var(--tx2);max-width:66ch;margin:0}
+h2{font-size:22px;font-weight:800;letter-spacing:-.022em;margin:0 0 6px}
+h3{font-size:15px;font-weight:800;letter-spacing:-.01em;margin:0 0 5px}
+.sub{color:var(--tx2);margin:0 0 18px;max-width:70ch;font-size:15px}
+hr.rule{height:1px;background:var(--line);border:0;margin:44px 0}
+b.a{color:var(--akz)}
+code{font-family:var(--data);font-size:.88em;background:var(--panel2);border:1px solid var(--line);
+  border-radius:4px;padding:1px 5px}
+
+.tabs{display:flex;gap:7px;flex-wrap:wrap;margin:22px 0 0;align-items:center}
+.tab{font-family:var(--data);font-size:11.5px;letter-spacing:.05em;border:1px solid var(--line2);
+  background:transparent;color:var(--tx2);border-radius:999px;padding:6px 15px;cursor:pointer;
+  min-height:28px;transition:.13s}
+.tab:hover{border-color:var(--tx3);color:var(--tx)}
+.tab.on{background:var(--akz);border-color:var(--akz);color:var(--onA);font-weight:700}
+.tabs .rechts{margin-left:auto;display:flex;gap:7px}
+.tab.ruhe.on{background:var(--türkis);border-color:var(--türkis);color:#04211e}
+
+/* ══════════════ DIE BÜHNE ══════════════ */
+.buehne{margin-top:14px;border:1px solid #26262b;border-radius:14px 14px 0 0;overflow:hidden;
+  background:var(--bu);color:var(--butx);position:relative;
+  box-shadow:0 22px 60px -24px rgba(0,0,0,.8);container-type:inline-size}
+.flaeche{position:relative;aspect-ratio:16/9;min-height:280px;display:flex;
+  align-items:center;justify-content:center;overflow:hidden;cursor:default}
+.flaeche.ruht{cursor:none}
+
+.motor{position:absolute;inset:0;
+  background:radial-gradient(115% 90% at 62% 34%,#2c3a4e 0%,#151d28 46%,#07090c 100%)}
+.motor::after{content:"";position:absolute;inset:0;
+  background:linear-gradient(102deg,rgba(240,135,60,.16),transparent 42%),
+             radial-gradient(58% 70% at 24% 78%,rgba(0,0,0,.55),transparent)}
+.motor.musik{background:radial-gradient(120% 110% at 30% 20%,#3a2140 0%,#1d1424 50%,#08070a 100%)}
+.motor.hoer{background:radial-gradient(120% 110% at 70% 25%,#2a2118 0%,#181309 55%,#08070a 100%)}
+.mlbl{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  font-family:var(--data);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;
+  color:rgba(255,255,255,.2);text-align:center;line-height:2}
+
+/* alles Bedienbare liegt IM Bild und blendet zusammen aus */
+.hud{position:absolute;inset:0;z-index:5;opacity:1;transition:opacity .42s ease}
+.flaeche.ruht .hud{opacity:0;pointer-events:none}
+
+.ut{position:absolute;left:0;right:0;bottom:96px;text-align:center;padding:0 12%;z-index:4;
+  font-family:var(--serif);line-height:1.35;color:#fff;
+  font-size:calc(clamp(13px,2.1cqw,19px) * var(--utgr,1));
+  text-shadow:0 2px 5px rgba(0,0,0,.9),0 0 2px rgba(0,0,0,.8);
+  transition:bottom .42s ease}
+.flaeche.ruht .ut{bottom:52px}
+.ut.obenrum{bottom:auto;top:74px}
+.flaeche.ruht .ut.obenrum{top:24px}
+.ut.kasten span{background:rgba(0,0,0,.62);border-radius:5px;padding:2px 9px;
+  box-decoration-break:clone;-webkit-box-decoration-break:clone;text-shadow:none}
+.ut.sans{font-family:var(--disp);font-weight:600}
+
+.btop{position:absolute;left:0;right:0;top:0;display:flex;align-items:center;gap:13px;
+  padding:13px 16px;background:linear-gradient(rgba(6,6,8,.86),transparent)}
+.zur{width:30px;height:30px;border-radius:9px;border:1px solid rgba(255,255,255,.16);
+  background:rgba(10,10,12,.5);display:flex;align-items:center;justify-content:center;
+  color:var(--butx);cursor:pointer;flex:0 0 auto}
+.btop .tt{min-width:0}
+.btop .tt b{display:block;font-size:14.5px;font-weight:700;letter-spacing:-.012em;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.btop .tt span{display:block;font-size:12px;color:var(--butx2);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* In Anordnung A traegt das Cover den Titel — oben steht dann nur die HERKUNFT,
+   und der Pfeil fuehrt genau dorthin zurueck. (JB-Fund 07.08.) */
+.btop .tt.herkunft b{font-weight:600;color:var(--butx2);font-size:12.5px}
+.btop .tt.herkunft span{color:var(--butx3);font-size:11px}
+.btop .rechts{margin-left:auto;display:flex;gap:7px;align-items:center}
+.pill{font-family:var(--data);font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;
+  border:1px solid rgba(255,255,255,.2);border-radius:5px;padding:2px 7px;color:var(--butx2);
+  white-space:nowrap}
+.pill.gut{border-color:rgba(95,208,196,.55);color:#7fdcd2}
+
+.skip{position:absolute;right:16px;bottom:104px;display:inline-flex;align-items:center;gap:8px;
+  background:rgba(12,12,14,.82);border:1px solid rgba(255,255,255,.3);color:var(--butx);
+  border-radius:10px;padding:9px 15px;font-size:13.5px;font-weight:700;cursor:pointer;
+  backdrop-filter:blur(5px)}
+.skip:hover{background:var(--akz);border-color:var(--akz);color:var(--onA)}
+.skip small{font-family:var(--data);font-size:10px;font-weight:400;opacity:.65}
+
+/* Kanonische Weiche: wenn laut Reihenfolge etwas ANDERES als die nächste Folge
+   dran ist (OVA, Film, Rückblick), wird gefragt statt automatisch gesprungen. */
+.weiche{position:absolute;right:16px;bottom:104px;width:330px;
+  background:rgba(12,12,14,.93);border:1px solid rgba(255,255,255,.16);border-radius:12px;
+  padding:13px;backdrop-filter:blur(6px)}
+.weiche .wk{font-family:var(--data);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--akz);margin-bottom:9px}
+.wopt{display:flex;align-items:center;gap:10px;padding:8px;border-radius:9px;cursor:pointer;
+  border:1px solid transparent}
+.wopt:hover{background:rgba(255,255,255,.07)}
+.wopt.empf{border-color:var(--akz);background:rgba(240,135,60,.1)}
+.wopt .kk2{width:52px;height:30px;border-radius:5px;flex:0 0 auto}
+.wopt .nn2{min-width:0}
+.wopt .nn2 b{display:block;font-size:12.5px;letter-spacing:-.01em}
+.wopt .nn2 span{display:block;font-size:11px;color:var(--butx3)}
+.wopt .zz{margin-left:auto;font-family:var(--data);font-size:10px;color:var(--akz);flex:0 0 auto}
+.weiche .fuss2{margin-top:8px;font-family:var(--data);font-size:9.5px;color:var(--butx3);
+  border-top:1px solid rgba(255,255,255,.1);padding-top:8px}
+.naechste{position:absolute;right:16px;bottom:104px;width:272px;
+  background:rgba(12,12,14,.9);border:1px solid rgba(255,255,255,.16);border-radius:12px;
+  padding:12px;backdrop-filter:blur(6px);display:flex;gap:11px}
+.naechste .k{width:64px;height:36px;border-radius:5px;flex:0 0 auto;
+  background:linear-gradient(135deg,#2a3448,#5a4a6e)}
+.naechste b{display:block;font-size:12.5px;letter-spacing:-.01em}
+.naechste span{display:block;font-size:11px;color:var(--butx2)}
+.naechste .bar{margin-top:6px;height:2.5px;border-radius:2px;background:rgba(255,255,255,.16)}
+.naechste .bar i{display:block;height:100%;width:58%;background:var(--akz);border-radius:2px}
+
+/* Pausenkarte — erscheint erst nach langer Pause, ohne das Bild zu verdecken.
+   ⚠️ JB-Fund 08.08.: „Die Pausenkarte sollte nicht über dem Player-Menü sein.
+   Weiter oben links und etwas kleiner, je nachdem wie klein der Player gezogen ist."
+   Sie hing bei top:50 % in der Mitte — bei kurzer Bühne ragte sie unten in die
+   Bedienleiste. Jetzt hängt sie OBEN unter der Kopfzeile, und ihre Höhe ist auf
+   den freien Raum zwischen Kopfzeile und Leiste geklammert. Beide Höhen werden
+   GEMESSEN, nicht geraten (E121: --kopfh und --barh). Wird der Raum eng, gibt sie
+   gestuft nach (E122) statt zu überlappen. */
+.pausekarte{position:absolute;left:0;top:calc(var(--kopfh,56px) + 10px);
+  max-width:min(430px,50%);
+  max-height:calc(100% - var(--kopfh,56px) - var(--barh,64px) - 22px);overflow:hidden;
+  z-index:8;background:linear-gradient(100deg,rgba(8,8,10,.72),rgba(8,8,10,.34) 78%,transparent);
+  border-left:3px solid var(--akz);border-radius:0 14px 14px 0;padding:16px 26px 16px 20px;
+  backdrop-filter:blur(3px)}
+.pausekarte .lbl{font-family:var(--data);font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--akz);margin-bottom:7px}
+.pausekarte h4{margin:0 0 3px;font-size:20px;font-weight:800;letter-spacing:-.024em;line-height:1.14}
+.pausekarte .meta{font-family:var(--data);font-size:10.5px;color:var(--butx3);margin-bottom:9px}
+.pausekarte p{margin:0;font-size:13.5px;color:var(--butx2);line-height:1.52;
+  display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+/* Kleiner werden statt überlaufen — dieselbe Reihenfolge wie überall:
+   erst der beschreibende Text, dann die Nebenangabe, zuletzt bleibt der Titel.
+   Container-Abfragen können hier NICHT helfen: die Bühne ist `inline-size`, und
+   eine Höhenabfrage bräuchte `size` — das würde die Höhe von ihrem Inhalt lösen.
+   Also wird gemessen (E121): das Skript setzt .kurz1/.kurz2/.kurz3 auf die Bühne. */
+.buehne.kurz1 .pausekarte{padding:13px 22px 13px 17px}
+.buehne.kurz1 .pausekarte h4{font-size:17px}
+.buehne.kurz1 .pausekarte p{-webkit-line-clamp:2;font-size:12.5px}
+.buehne.kurz2 .pausekarte p{display:none}
+.buehne.kurz2 .pausekarte .meta{margin-bottom:0}
+.buehne.kurz3 .pausekarte .meta,.buehne.kurz3 .pausekarte .rollen{display:none}
+.buehne.kurz3 .pausekarte h4{font-size:15px}
+.buehne.kurz2 .pausekarte .bes .bz:nth-of-type(n+3){display:none}
+.buehne.kurz3 .pausekarte .bes .bz:nth-of-type(n+2){display:none}
+/* Spiegelbild rechts: die Besetzungskarte. Links steht, WAS gerade läuft,
+   rechts WER gerade zu sehen ist — beide nur bei Pause, beide durchsichtig. */
+.pausekarte.rechtsrum{left:auto;right:0;border-left:0;border-right:3px solid var(--akz);
+  border-radius:14px 0 0 14px;padding:19px 20px 19px 26px;
+  background:linear-gradient(260deg,rgba(8,8,10,.72),rgba(8,8,10,.34) 78%,transparent)}
+.pausekarte.rechtsrum .lbl,.pausekarte.rechtsrum h4,
+.pausekarte.rechtsrum .meta{text-align:right}
+.bes{display:grid;gap:7px;margin-top:2px}
+.bz{display:flex;align-items:center;gap:10px}
+.pausekarte.rechtsrum .bz{flex-direction:row-reverse;text-align:right}
+.bz .kopf2{width:34px;height:34px;border-radius:50%;flex:0 0 auto;
+  box-shadow:0 0 0 1.5px rgba(255,255,255,.18)}
+.bz .nn3{min-width:0}
+.bz .nn3 b{display:block;font-size:12.5px;letter-spacing:-.01em;line-height:1.25}
+.bz .nn3 span{display:block;font-size:11px;color:var(--butx3)}
+.bz .jetzt2{width:6px;height:6px;border-radius:50%;background:var(--akz);flex:0 0 auto}
+.bes .mehr2{font-family:var(--data);font-size:10px;color:var(--butx3);margin-top:3px}
+.pausekarte.rechtsrum .bes .mehr2{text-align:right}
+.pausekarte .rollen{margin-top:11px;display:flex;flex-wrap:wrap;gap:6px}
+.rolle{display:inline-flex;align-items:center;gap:6px;border:1px solid rgba(255,255,255,.15);
+  border-radius:999px;padding:3px 9px 3px 3px;font-size:11.5px;color:var(--butx2)}
+.rolle i{width:19px;height:19px;border-radius:50%;display:block;flex:0 0 auto}
+
+/* Fußzeile */
+.bbot{position:absolute;left:0;right:0;bottom:0;padding:0 16px 12px;
+  background:linear-gradient(transparent,rgba(6,6,8,.9) 34%)}
+/* Bei Musik endet die Leiste VOR der Warteschlange — sonst liegt sie über
+   Zufall/Wiederholen/Als Playlist (JB-Fund 07.08.). */
+/* Bei Ton ohne Bild ist die Leiste TEIL DES RAUMS, kein Schleier darueber:
+   die Flaeche endet oberhalb, nichts rutscht darunter, nichts blendet weg.
+   Bei Film bleibt sie ein Ueberzug — dort darf sie das Bild nicht beschneiden.
+   (JB-Fund 07.08.: „es darf keine unsichtbare Barriere sein") */
+.buehne.musikmodus .bbot,.buehne.hoermodus .bbot{
+  background:var(--bu);border-top:1px solid rgba(255,255,255,.09);padding-top:8px}
+/* Keine geratene Zahl: die tatsächliche Höhe der Leiste wird gemessen und als
+   --barh gesetzt (siehe Skript). Damit rutscht nichts darunter, egal wie oft
+   die Knöpfe umbrechen. (JB-Fund 07.08.: „dann verschwindet was vom Bild") */
+/* Die Flaeche bleibt VOLL — nur der linke Teil macht der Leiste Platz.
+   So laeuft die Warteschlange bis an die Unterkante und es bleibt keine
+   tote Ecke rechts unten stehen. (JB-Fund 07.08.) */
+.buehne.musikmodus .muslinks{padding-bottom:calc(var(--barh,64px) + 14px)}
+.buehne.hoermodus .hlinks{padding-bottom:calc(var(--barh,64px) + 14px)}
+.buehne.musikmodus .wsl,.buehne.hoermodus .hwsl{padding-bottom:10px}
+.buehne.musikmodus .bbot{right:290px}
+.buehne.musikmodus.ohnewsl .bbot{right:0}
+.buehne.hoermodus .bbot{right:262px}
+/* Dasselbe gilt OBEN. JB-Fund 08.08.: „Kapitel usw. sind verdeckt von ‚von uns
+   vertont' und ‚Mitlesen an'." Die Kopfzeile lief über die volle Breite, ihre
+   rechten Marken lagen damit genau auf der Kopfzeile des Kapitelstreifens.
+   Eine Leiste, die einen Streifen hat, endet vor dem Streifen — oben wie unten. */
+.buehne.musikmodus .btop{right:290px}
+.buehne.musikmodus.ohnewsl .btop{right:0}
+.buehne.hoermodus .btop{right:262px}
+.buehne.hoermodus .flaeche.ruht .hud{opacity:1;pointer-events:auto}
+@container (max-width:700px){ .buehne.hoermodus .bbot,.buehne.hoermodus .btop{right:0} .hwsl{display:none} }
+/* Bei Musik gibt es nichts zu verdecken — die Leiste bleibt stehen.
+   Ausblenden ist etwas für Bilder, nicht für Ton. (JB-Fund 07.08.) */
+.buehne.musikmodus .flaeche.ruht .hud{opacity:1;pointer-events:auto}
+.buehne.musikmodus .flaeche.ruht{cursor:default}
+.mtaste{width:30px;height:30px;border-radius:8px;border:1px solid transparent;background:transparent;
+  color:var(--butx2);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;
+  flex:0 0 auto}
+.mtaste:hover{background:rgba(255,255,255,.1);color:var(--butx)}
+.mtaste.an{color:var(--akz)}
+/* Zustandsfarbe statt Beschriftung: aus = grau, an = Akzent, plus ein Punkt
+   darunter für alle, die Farben schlecht unterscheiden (Spotify-Prinzip,
+   aber barrierefrei ergänzt). */
+.mtaste .ikHaken{display:none}
+.mtaste.an .ikPlus{display:none}
+.mtaste.an .ikHaken{display:block}
+.buehne.musikmodus .flaeche{aspect-ratio:16/8}
+@container (max-width:700px){ .buehne.musikmodus .bbot,.buehne.musikmodus .btop{right:0} }
+.leiste{position:relative;height:22px;display:flex;align-items:center;cursor:pointer;margin-bottom:2px;
+  touch-action:none}
+.spur{position:absolute;left:0;right:0;height:4px;border-radius:3px;background:rgba(255,255,255,.16)}
+.leiste:hover .spur,.leiste.spult .spur{height:7px}
+.spur,.gepuffert,.gespielt{transition:height .12s}
+.gepuffert{position:absolute;left:0;height:100%;background:rgba(255,255,255,.26);border-radius:3px}
+.gespielt{position:absolute;left:0;height:100%;background:var(--akz);border-radius:3px}
+.griff{position:absolute;width:13px;height:13px;border-radius:50%;background:var(--akz);
+  border:2px solid rgba(10,10,12,.85);transform:translate(-50%,-50%);top:50%;
+  box-shadow:0 1px 4px rgba(0,0,0,.6)}
+.leiste.spult .griff{width:17px;height:17px}
+.band{position:absolute;height:100%;border-radius:2px;top:0}
+.band.op{background:rgba(95,208,196,.5)}
+.band.ed{background:rgba(125,154,181,.5)}
+.tick{position:absolute;width:2px;height:100%;background:rgba(255,255,255,.5);top:0}
+.vorschau{position:absolute;bottom:26px;transform:translateX(-50%);z-index:9;
+  border:1px solid rgba(255,255,255,.22);border-radius:7px;overflow:hidden;
+  background:#11141a;box-shadow:0 8px 22px -6px rgba(0,0,0,.7)}
+.vorschau .bild{width:132px;height:74px;background:linear-gradient(135deg,#26324a,#4d3f63);
+  position:relative}
+.vorschau .bild::after{content:"";position:absolute;inset:0;
+  background:radial-gradient(70% 90% at 40% 30%,rgba(255,255,255,.13),transparent)}
+.vorschau .zt{font-family:var(--data);font-size:10px;text-align:center;padding:3px 0;color:var(--butx2)}
+.vorschau .tempo{position:absolute;top:5px;right:5px;font-family:var(--data);font-size:10px;
+  font-weight:700;background:var(--akz);color:var(--onA);border-radius:4px;padding:1px 5px}
+
+.zeiten{display:flex;align-items:center;font-family:var(--data);font-size:11px;color:var(--butx2);
+  margin-bottom:4px}
+.zeiten .r{margin-left:auto}
+.zeiten em{font-style:normal;color:var(--butx);font-variant-numeric:tabular-nums}
+.zeiten .versatz{color:var(--akz);margin-left:12px}
+
+.reihe{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.kn{width:34px;height:34px;border-radius:9px;border:1px solid transparent;background:transparent;
+  color:var(--butx);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;
+  flex:0 0 auto;transition:.12s;position:relative}
+.kn:hover{background:rgba(255,255,255,.11)}
+.kn.gross{width:42px;height:42px;background:rgba(255,255,255,.1)}
+.kn.gross:hover{background:var(--akz);color:var(--onA)}
+.kn.on{color:var(--akz)}
+.kn .z{position:absolute;font-family:var(--data);font-size:8.5px;font-weight:700;
+  top:50%;left:50%;transform:translate(-50%,-42%)}
+.laut{display:flex;align-items:center;gap:7px;margin-left:4px}
+.lautspur{width:74px;height:4px;border-radius:3px;background:rgba(255,255,255,.2);position:relative}
+.lautspur i{position:absolute;left:0;top:0;bottom:0;width:64%;background:var(--butx);border-radius:3px}
+.lautspur u{position:absolute;left:64%;top:50%;width:10px;height:10px;border-radius:50%;
+  background:var(--butx);transform:translate(-50%,-50%)}
+.rechtsknoepfe{margin-left:auto;display:flex;gap:5px;align-items:center}
+.wahl{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 10px;border-radius:8px;
+  border:1px solid rgba(255,255,255,.18);background:transparent;color:var(--butx2);cursor:pointer;
+  font-family:var(--data);font-size:10.5px;letter-spacing:.05em;white-space:nowrap}
+.wahl:hover{color:var(--butx);border-color:rgba(255,255,255,.4)}
+.wahl.on{border-color:var(--akz);color:var(--akz)}
+.wahl b{color:var(--butx);font-weight:700}
+.wahl.on b{color:var(--akz)}
+
+/* Tafeln rechts */
+.tafel{position:absolute;right:0;top:0;bottom:0;width:302px;z-index:9;
+  background:rgba(9,9,11,.96);border-left:1px solid rgba(255,255,255,.11);
+  backdrop-filter:blur(9px);padding:13px 0;overflow:auto}
+.tafel h5{margin:0 0 8px;padding:0 15px;font-family:var(--data);font-size:9.5px;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--butx3);font-weight:400;display:flex;align-items:center}
+.tafel h5 .x{margin-left:auto;cursor:pointer;color:var(--butx2);font-size:14px;letter-spacing:0}
+.tz{display:flex;align-items:center;gap:10px;padding:8px 15px;cursor:pointer;font-size:13px}
+.tz:hover{background:rgba(255,255,255,.06)}
+.tz.on{background:rgba(240,135,60,.14);box-shadow:inset 2px 0 0 var(--akz)}
+.tz .t{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tz .d{margin-left:auto;font-family:var(--data);font-size:10.5px;color:var(--butx3)}
+.tsep{height:1px;background:rgba(255,255,255,.09);margin:11px 0}
+/* Untertitel-Werkstatt */
+.wz{padding:9px 15px}
+.wz .lb{display:flex;align-items:center;font-size:12.5px;color:var(--butx2);margin-bottom:6px}
+.wz .lb b{margin-left:auto;font-family:var(--data);font-size:11px;color:var(--butx)}
+.wz input[type=range]{width:100%;accent-color:var(--akz);height:20px;cursor:pointer;margin:0}
+.knr{display:flex;gap:5px;flex-wrap:wrap;margin-top:2px}
+.kb{font-family:var(--data);font-size:10.5px;border:1px solid rgba(255,255,255,.18);
+  background:transparent;color:var(--butx2);border-radius:7px;padding:4px 10px;cursor:pointer;
+  min-height:26px}
+.kb:hover{color:var(--butx);border-color:rgba(255,255,255,.42)}
+.kb.on{background:var(--akz);border-color:var(--akz);color:var(--onA);font-weight:700}
+/* Live-Vorschau mit FESTER Hoehe — SyncYouTube-Regel (JB 05.08.): „das Fenster
+   wird groesser und kleiner". Die Box bleibt gleich, der Text skaliert darin. */
+.probe{margin:10px 15px 4px;border:1px solid rgba(255,255,255,.10);border-radius:9px;
+  height:58px;display:flex;align-items:center;justify-content:center;overflow:hidden;
+  padding:0 8px;background:rgba(255,255,255,.045);text-align:center}
+.probe .pv2{display:inline-block;line-height:1.25}
+/* ══ Zeilenbau der Untertitel-Tafel ══
+   JB-Fund 08.08.: „Das Fenster sieht irgendwie falsch aus." Drei Ursachen, alle drei
+   hier behoben — sie sind der Grund, warum es sich falsch ANFUEHLT, ohne benennbar zu sein:
+
+   1. LINKS BUENDIG, RECHTS FRANSIG. Die Beschriftungen standen in einer festen Spalte,
+      die Knopfgruppen daneben waren jede unterschiedlich breit -> sieben Zeilen, sieben
+      verschiedene rechte Kanten. Das Auge liest links eine Tabelle und erwartet rechts
+      auch eine. Jetzt: die Wertespalte ist FEST BREIT und jede Gruppe teilt sie in
+      GLEICHE Zellen (grid-auto-columns:1fr). Beide Kanten stimmen, in jeder Zeile.
+   2. GLEICH AUSSEHENDE ZEILEN MIT VERSCHIEDENEM TAKT. „Groesse" und „Schrift" sind beide
+      Aa-Knoepfe, hatten aber verschiedene Innenabstaende (7 px / 6 px) und verschiedene
+      Schriftgroessen -> die Knoepfe standen nicht uebereinander. Jetzt gleiche Zellen.
+   3. VIER GEWICHTE IN 32-px-ZEILEN. 24-px-Knoepfe neben 15-px-Punkten neben 46-px-Feldern
+      neben 26-px-Pfeilen. Jetzt fuellt jedes Bedienelement seine Zelle, die Punkte sind
+      22 px und damit gleich schwer.
+   Dazu: die Tafel hat ueberall 15 px Rand, die Zeilen hatten 14 px -> ein Pixel Versatz
+   gegen Kopfzeile und Vorschau. Auch das ist jetzt einheitlich 15 px.
+   Bestand bleibt: jede Zeile passt in EINE Zeile, feste Zellbreite fuer wechselnde
+   Beschriftungen (E103) — der Umbruch springt nie. */
+.subz{display:grid;grid-template-columns:62px 202px;align-items:center;gap:8px;
+  padding:4px 15px;height:32px}
+.subz>span:first-child{font-size:11.5px;color:var(--butx3)}
+.subk{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:4px;min-width:0}
+.sb{font-family:var(--disp);font-size:11px;border:1px solid rgba(255,255,255,.18);
+  background:transparent;color:var(--butx2);border-radius:6px;padding:0 4px;cursor:pointer;
+  height:24px;line-height:22px;white-space:nowrap;width:100%;overflow:hidden;
+  display:flex;align-items:center;justify-content:center}
+.sb:hover{color:var(--butx);border-color:rgba(255,255,255,.45)}
+.sb.an{background:var(--akz);border-color:var(--akz);color:var(--onA);font-weight:700}
+.sb.fix{font-family:var(--data);font-size:10.5px;font-variant-numeric:tabular-nums}
+.sp{width:22px;height:22px;border-radius:50%;padding:0;border:1px solid #6a6a72;cursor:pointer;
+  justify-self:center;line-height:0}
+.sp.an{box-shadow:0 0 0 2px var(--akz)}
+.subwert{text-align:center;font-family:var(--data);font-size:11px;
+  color:var(--akz);font-weight:700;font-variant-numeric:tabular-nums;align-self:center}
+.subtr{height:1px;background:rgba(255,255,255,.08);margin:6px 15px}
+.subfuss{padding:11px 15px 2px}
+.subfuss .sb{opacity:.7;width:100%}
+
+/* Musik / Hörbuch */
+.mus{position:absolute;left:0;right:0;top:0;bottom:0;display:flex;align-items:stretch;z-index:3}
+.muslinks{flex:1;min-width:0;display:flex;align-items:center;gap:24px;padding:30px 30px 22px;overflow:hidden}
+.cover{width:min(34%,190px);aspect-ratio:1;border-radius:12px;flex:0 0 auto;position:relative;
+  background:linear-gradient(140deg,#5a3d6e,#c2703a);box-shadow:0 20px 44px -14px rgba(0,0,0,.8)}
+.mustx{min-width:0}
+.mustx{overflow:hidden}
+.mustx .lied{font-size:clamp(17px,2.5cqw,26px);font-weight:800;letter-spacing:-.028em;line-height:1.14;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mustx .kuenstler{font-size:14.5px;color:var(--butx2);margin-top:3px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mustx .alb{font-family:var(--data);font-size:11px;color:var(--butx3);margin-top:8px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mus.b .mustx .lied,.mus.b .mustx .kuenstler{white-space:normal}
+.welle{display:flex;align-items:flex-end;gap:2px;height:30px;margin-top:12px}
+.welle i{width:3px;border-radius:2px;background:rgba(255,255,255,.22)}
+.welle i.g{background:var(--akz)}
+/* Karaoke — dieselbe Bauart wie in SyncYouTube, wortweise mitlaufend */
+.karaoke{margin-top:13px;font-family:var(--serif);font-size:15px;line-height:1.6;max-width:44ch}
+.karaoke .zeile{color:var(--butx3);transition:color .25s}
+.karaoke .zeile.jetzt{color:#fff}
+.karaoke .zeile.jetzt w{color:var(--akz);font-style:normal}
+.karaoke .romaji{font-family:var(--data);font-size:11px;color:var(--butx3);margin-top:2px}
+/* Ausschnitt: A/B ziehen, Original bleibt. Der neue Ausschnitt wird Favorit
+   seiner Gruppe — genau die Regel aus SyncYouTube (_favorit_je_gruppe). */
+.schnitt{position:absolute;left:24px;right:24px;bottom:calc(var(--barh,64px) + 12px);z-index:18;
+  border:1px solid rgba(240,135,60,.5);border-radius:11px;padding:12px 14px;
+  background:rgba(14,12,10,.96);backdrop-filter:blur(6px);
+  box-shadow:0 16px 40px -14px rgba(0,0,0,.85);max-width:520px}
+.buehne.musikmodus .schnitt{right:auto;width:min(520px,calc(100% - 340px))}
+@container (max-width:700px){ .buehne.musikmodus .schnitt{right:24px;width:auto} }
+.schnitt .kopf{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--butx2);
+  margin-bottom:9px}
+.schnitt .kopf b{color:var(--akz)}
+.schnitt .kopf .zt2{margin-left:auto;font-family:var(--data);font-size:11px;color:var(--butx)}
+.abspur{position:relative;height:22px;display:flex;align-items:center;margin-bottom:9px}
+.abspur .grund{position:absolute;left:0;right:0;height:5px;border-radius:3px;
+  background:rgba(255,255,255,.16)}
+.abspur .aus{position:absolute;height:5px;border-radius:3px;background:var(--akz);
+  left:22%;right:41%}
+.abspur .m{position:absolute;top:50%;transform:translate(-50%,-50%);width:12px;height:20px;
+  border-radius:4px;background:var(--akz);cursor:ew-resize;
+  box-shadow:0 1px 4px rgba(0,0,0,.6)}
+.abspur .m::after{content:attr(data-l);position:absolute;top:-14px;left:50%;
+  transform:translateX(-50%);font-family:var(--data);font-size:9px;color:var(--akz)}
+.schnitt .fuss{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+.schnitt .fuss small{font-family:var(--data);font-size:10px;color:var(--butx3);margin-left:auto}
+/* ── Drei Anordnungen, jede nach einem echten Vorbild ──────────────────────
+   A · Bühne  — Cover links, Text daneben, Warteschlange rechts (Apple Music, Tidal)
+   B · Mitte  — Cover gross zentriert, alles darunter (Spotify Vollbild, YT Music)
+   C · Text   — Cover klein, der Liedtext fuellt die Flaeche (Apple Music Lyrics)  */
+.mwahl{position:absolute;right:14px;top:12px;z-index:16;display:flex;gap:4px}
+.buehne.musikmodus .mwahl{right:304px}
+@container (max-width:700px){ .buehne.musikmodus .mwahl{right:14px} }
+.mwb{width:30px;height:26px;border-radius:7px;border:1px solid rgba(255,255,255,.2);
+  background:rgba(10,10,12,.55);color:var(--butx3);cursor:pointer;display:inline-flex;
+  align-items:center;justify-content:center;font-family:var(--data);font-size:10px;font-weight:700}
+.mwb:hover{color:var(--butx);border-color:rgba(255,255,255,.45)}
+.mwb.an{background:var(--akz);border-color:var(--akz);color:var(--onA)}
+.buehne.ohnewsl .mwahl{right:14px}
+
+/* B · Mitte */
+.mus.b .muslinks{flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:0}
+.mus.b .cover{width:min(46%,214px);margin-bottom:18px}
+.mus.b .mustx{max-width:min(100%,460px)}
+.mus.b .welle{justify-content:center}
+.mus.b .karaoke{margin-left:auto;margin-right:auto;text-align:center}
+
+/* C · Text gross */
+.mus.c .muslinks{align-items:flex-start;gap:18px;padding-top:24px}
+.mus.c .cover{width:74px;margin-top:4px}
+.mus.c .mustx{flex:1;min-width:0}
+.mus.c .lied{font-size:clamp(15px,1.9cqw,20px)}
+.mus.c .kuenstler{font-size:12.5px}
+.mus.c .alb,.mus.c .welle{display:none}
+.mus.c .karaoke{margin-top:14px;font-size:clamp(17px,2.5cqw,26px);line-height:1.5;max-width:none}
+.mus.c .karaoke .zeile{margin-bottom:6px}
+.mus.c .karaoke .romaji{font-size:12.5px;margin-top:-2px;margin-bottom:10px}
+
+.muszeile{display:flex;gap:7px;flex-wrap:wrap;margin-top:13px}
+.msb{display:inline-flex;align-items:center;gap:6px;border:1px solid rgba(255,255,255,.2);
+  background:transparent;color:var(--butx2);border-radius:8px;padding:5px 11px;cursor:pointer;
+  font-size:12px;white-space:nowrap}
+.msb:hover{color:var(--butx);border-color:rgba(255,255,255,.45)}
+.msb.herz{color:var(--akz);border-color:var(--akz)}
+/* Warteschlange klebt rechts — sie ist bei Musik der Hauptinhalt, keine Tafel */
+.wsl{position:relative;width:290px;flex:0 0 auto;background:rgba(9,9,11,.72);
+  border-left:1px solid rgba(255,255,255,.1);display:flex;flex-direction:column;
+  padding:12px 0 10px}
+.wslkopf{display:flex;align-items:center;gap:8px;padding:0 14px 9px;
+  font-family:var(--data);font-size:9.5px;letter-spacing:.17em;text-transform:uppercase;
+  color:var(--butx3)}
+.wslkopf .n{margin-left:auto;color:var(--butx2)}
+.wsl .liste{overflow:auto;flex:1}
+.wz2{display:flex;align-items:center;gap:10px;padding:6px 14px;cursor:pointer;font-size:12.5px}
+.wz2:hover{background:rgba(255,255,255,.06)}
+.wz2.jetzt{background:rgba(240,135,60,.14);box-shadow:inset 2px 0 0 var(--akz)}
+.wz2 .griffpunkt{color:var(--butx3);font-size:12px;cursor:grab;flex:0 0 auto}
+.wz2 .kk{width:30px;height:30px;border-radius:5px;flex:0 0 auto}
+.wz2 .tt2{min-width:0}
+.wz2 .tt2 b{display:block;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wz2 .tt2 span{display:block;font-size:11px;color:var(--butx3);white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis}
+.wz2 .dd{margin-left:auto;font-family:var(--data);font-size:10.5px;color:var(--butx3)}
+.wslfuss{padding:9px 14px 0;border-top:1px solid rgba(255,255,255,.1);display:flex;gap:8px;
+  align-items:center}
+.wslinfo{font-family:var(--data);font-size:10.5px;color:var(--butx3)}
+.wslfuss .msb{margin-left:auto;padding:4px 11px;font-size:14px;line-height:1}
+.wslmenue{position:absolute;right:14px;bottom:48px;z-index:20;width:206px;background:var(--panel);
+  border:1px solid var(--line2);border-radius:11px;padding:5px;
+  box-shadow:0 16px 40px -12px rgba(0,0,0,.75)}
+.wslmenue div{padding:7px 10px;border-radius:7px;font-size:12.5px;color:var(--tx2);cursor:pointer}
+.wslmenue div:hover{background:var(--panel2);color:var(--tx)}
+.wslmenue .tr2{height:1px;background:var(--line);margin:5px 8px;padding:0}
+.hoerb{position:absolute;left:0;right:0;top:0;bottom:0;display:flex;align-items:stretch;z-index:3}
+.hlinks{flex:1;min-width:0;display:flex;align-items:center;gap:24px;padding:26px 28px 22px;overflow:hidden}
+/* Hoerbuecher haben Spuren, aber KEINE Lieder — sie tauchen nie im Musikregal auf. */
+.hwsl{width:262px;flex:0 0 auto;background:rgba(0,0,0,.3);
+  border-left:1px solid rgba(255,255,255,.1);padding:12px 0;overflow:auto}
+.hwsl h6{margin:0 0 8px;padding:0 14px;font-family:var(--data);font-size:9.5px;letter-spacing:.17em;
+  text-transform:uppercase;color:var(--butx3);font-weight:400;display:flex}
+.hwsl h6 span{margin-left:auto;color:var(--butx2)}
+.hz{display:flex;align-items:center;gap:10px;padding:6px 14px;cursor:pointer;font-size:12.5px}
+.hz:hover{background:rgba(255,255,255,.06)}
+.hz.jetzt{background:rgba(240,135,60,.14);box-shadow:inset 2px 0 0 var(--akz)}
+.hz .nr2{font-family:var(--data);font-size:10.5px;color:var(--butx3);width:2.6ch;flex:0 0 auto;
+  text-align:right;font-variant-numeric:tabular-nums}
+.hz .tt3{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hz.fertig .tt3{color:var(--butx3)}
+.hz .dd2{margin-left:auto;font-family:var(--data);font-size:10px;color:var(--butx3)}
+.hz .hak2{color:var(--grün);font-size:11px}
+.hcov{width:min(30%,160px);aspect-ratio:2/3;border-radius:9px;flex:0 0 auto;
+  background:linear-gradient(150deg,#2a2118,#8f6b3a);box-shadow:0 20px 44px -14px rgba(0,0,0,.8)}
+/* Titel und Kapitel stehen OBEN (E133) — hier unten ist Platz für den Text.
+   Bei mehreren Stimmen: farbige Marken je Sprecher, damit man beim Mitlesen
+   sieht, wer spricht. (JB-Fund 07.08.)
+
+   ⚠️ JB-Fund 08.08.: „Die Namen der Sprecher sind ausserhalb des Bildes" und
+   „Ich seh weiterlesen statt hören nicht, wenn es zu klein gezogen ist."
+   Ursache: .hlinks zentriert seine Kinder (align-items:center) und .htx war
+   INHALTSHOCH. Wurde der Inhalt höher als die Bühne, wuchs er nach OBEN UND
+   UNTEN aus der Mitte heraus — oben fielen die Sprechermarken raus, unten der
+   Knopf. Beides ausserhalb, beides unsichtbar, kein Hinweis.
+   Kur: .htx wird auf die Bühnenhöhe GEKLAMMERT (align-self:stretch + min-height:0)
+   und gibt gestuft nach (E122) — nie durch Herauswachsen, immer durch Weglassen.
+   Der Knopf steht NICHT in der Verzichtsreihe: er ist das Angebot, nicht die Zier. */
+.htx{overflow:hidden;flex:1;min-width:0;align-self:stretch;min-height:0;
+  display:flex;flex-direction:column;justify-content:center}
+/* Die Verzichtsreihe, von harmlos nach schmerzhaft. Der Knopf bleibt immer. */
+.htx.s1 .mitlesen p:nth-of-type(n+3){display:none}
+.htx.s2 .mitlesen p:nth-of-type(n+2){display:none}
+.htx.s3 .stimmen{flex-wrap:nowrap;overflow:hidden;margin-bottom:8px}
+.htx.s4 .mitlesen{display:none}
+.htx.s5 .stimmen{display:none}
+.htx>*{flex:0 0 auto}
+.stimmen{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px}
+.stm{display:inline-flex;align-items:center;gap:6px;border:1px solid rgba(255,255,255,.16);
+  border-radius:999px;padding:3px 10px 3px 4px;font-size:11.5px;color:var(--butx2);white-space:nowrap}
+.stm i{width:16px;height:16px;border-radius:50%;display:block;flex:0 0 auto}
+.stm b{color:var(--butx);font-weight:600}
+.stm.mehr{border-style:dashed;color:var(--butx3);padding-left:10px}
+.sp3{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:8px;
+  vertical-align:.12em;flex:0 0 auto}
+.sp3.erz{background:#6A6A72}
+.sp3.tho{background:#c2924a}
+.sp3.ein{background:#4a7a9a}
+.htx .buch{font-size:clamp(16px,2.4cqw,24px);font-weight:800;letter-spacing:-.024em;line-height:1.16;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.htx .kap{font-size:13.5px;color:var(--butx2);margin-top:3px;
+  overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.mitlesen{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.13);
+  border-radius:10px;padding:14px 16px;font-family:var(--serif);font-size:15px;line-height:1.62;
+  color:var(--butx3);max-width:58ch;overflow:hidden}
+.mitlesen p{margin:0 0 9px;display:flex;align-items:baseline}
+.mitlesen p:last-child{margin-bottom:0}
+.mitlesen mark{background:rgba(240,135,60,.2);color:#fff;border-radius:3px;padding:1px 3px;
+  box-decoration-break:clone;-webkit-box-decoration-break:clone}
+.mitlesen mark{background:rgba(240,135,60,.22);color:#fff;border-radius:3px;padding:1px 2px;
+  box-decoration-break:clone;-webkit-box-decoration-break:clone}
+.uebergang{margin-top:11px;display:inline-flex;align-items:center;gap:8px;border-radius:9px;
+  border:1px solid var(--akz);color:var(--akz);background:rgba(240,135,60,.09);
+  padding:7px 13px;font-size:12.5px;font-weight:700;cursor:pointer}
+.uebergang:hover{background:var(--akz);color:var(--onA)}
+
+/* ══ Folgen UNTER der Bühne ══ */
+.buehne.allein{border-radius:14px}
+.unten{position:relative;border:1px solid var(--line2);border-top:0;border-radius:0 0 14px 14px;background:var(--panel);
+  padding:15px 16px 17px}
+.unkopf{display:flex;align-items:center;gap:11px;margin-bottom:11px;flex-wrap:wrap}
+.unkopf h4{margin:0;font-size:15px;font-weight:800;letter-spacing:-.015em}
+.staffel{display:inline-flex;gap:4px;margin-left:auto;flex-wrap:wrap}
+.stb{font-family:var(--data);font-size:10.5px;border:1px solid var(--line2);background:transparent;
+  color:var(--tx2);border-radius:7px;padding:4px 10px;cursor:pointer;min-height:26px}
+.stb.on{background:var(--akz);border-color:var(--akz);color:var(--onA);font-weight:700}
+.folgen{display:grid;grid-template-columns:repeat(auto-fill,minmax(196px,1fr));gap:11px}
+/* Fernsehmodus: EINE Reihe nach rechts, größere Kacheln, Staffelwechsel als Wand */
+.unten.tv .folgen{display:flex;gap:14px;overflow-x:auto;padding-bottom:0;
+  scroll-snap-type:x mandatory;scrollbar-width:none;-ms-overflow-style:none}
+.unten.tv .folgen::-webkit-scrollbar{display:none}
+/* A UND B zusammen (JB 07.08.): der Randverlauf macht das Geheimnisvolle,
+   das Zaehlwerk die Orientierung. Sie stoeren sich nicht, weil das eine IM Bild
+   und das andere DARUNTER sitzt. */
+.folgenbox{position:relative}
+.unten.tv .folgen{mask-image:linear-gradient(90deg,transparent 0,#000 44px,#000 calc(100% - 44px),transparent 100%);
+  -webkit-mask-image:linear-gradient(90deg,transparent 0,#000 44px,#000 calc(100% - 44px),transparent 100%)}
+/* Die Pfeile flankieren die Reihe — links und rechts DANEBEN, nicht darueber.
+   Sie schweben ueber dem Randverlauf, dort wo das Bild ohnehin ausblendet. */
+.seitpfeil{position:absolute;top:50%;transform:translateY(-50%);z-index:6;
+  width:34px;height:56px;border-radius:11px;border:1px solid var(--line2);
+  background:var(--panel);color:var(--tx2);display:none;align-items:center;justify-content:center;
+  cursor:pointer;box-shadow:0 6px 18px -6px rgba(0,0,0,.6)}
+.seitpfeil:hover{border-color:var(--akz);color:var(--akz)}
+.seitpfeil.li{left:-6px}
+.seitpfeil.re{right:-6px}
+.unten.tv .seitpfeil{display:flex}
+.reihenfuss{display:none;align-items:center;gap:12px;margin-top:11px}
+.unten.tv .reihenfuss{display:flex}
+.rpfeil{width:30px;height:30px;border-radius:9px;border:1px solid var(--line2);background:transparent;
+  color:var(--tx2);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;
+  flex:0 0 auto}
+.rpfeil:hover{border-color:var(--akz);color:var(--akz)}
+.rzahl{font-family:var(--data);font-size:12px;color:var(--tx3);font-variant-numeric:tabular-nums}
+/* C · Punktespur: ein Punkt je Folge, gefuellt = gesehen, breit = hier */
+.punkte{display:flex;gap:5px;align-items:center;flex-wrap:wrap;margin-left:8px}
+.punkte i{width:7px;height:7px;border-radius:50%;background:var(--line2);display:block}
+.punkte i.ges{background:var(--tx3)}
+.punkte i.hier{width:22px;border-radius:99px;background:var(--akz)}
+.unten.tv .punkte{display:flex}
+.unten.tv .fk{flex:0 0 268px;scroll-snap-align:start}
+.unten.tv .fk.laeuft{transform:scale(1.045);box-shadow:0 12px 30px -12px rgba(0,0,0,.7)}
+.unten.tv .fk .txt b{font-size:15px}
+.unten.tv .staffel{display:none}
+/* Staffelwechsel am Fernseher: nicht scrollen, sondern ein Menue mit Liste. */
+/* Am PC klappt die Staffelwahl NACH UNTEN aus — kein Vollbild für vier Zeilen.
+   Am Fernseher bleibt die grosse Liste, weil vier Richtungstasten sie brauchen.
+   Dasselbe Bedienelement, andere Öffnungsart. (JB-Fund 07.08.) */
+.stmenue{position:absolute;left:14px;top:calc(100% + 6px);z-index:40;width:262px}
+.unten.tv .stmenue{position:absolute;inset:0;left:0;top:0;width:auto;
+  background:rgba(8,10,13,.9);backdrop-filter:blur(4px);
+  display:flex;align-items:center;justify-content:center;padding:22px}
+.reihenfuss{position:relative}
+.stk{width:min(360px,100%);background:var(--panel);border:1px solid var(--line2);border-radius:14px;
+  overflow:hidden;box-shadow:0 22px 55px -18px rgba(0,0,0,.8)}
+.stk h5{margin:0;padding:13px 16px;border-bottom:1px solid var(--line);font-family:var(--data);
+  font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--tx3);font-weight:400;
+  display:flex}
+.stk h5 span{margin-left:auto;cursor:pointer;color:var(--tx2);letter-spacing:0;font-size:13px}
+.stz{display:flex;align-items:center;gap:11px;padding:11px 16px;cursor:pointer;font-size:13.5px;
+  border-bottom:1px solid var(--line)}
+.stz:last-child{border-bottom:0}
+.stz:hover,.stz.fokus{background:var(--panel2);box-shadow:inset 2px 0 0 var(--akz)}
+.stz b{font-weight:700}
+.stz .g2{margin-left:auto;font-family:var(--data);font-size:10.5px;color:var(--tx3)}
+.stz .bal2{width:52px;height:4px;border-radius:3px;background:var(--line2);overflow:hidden}
+.stz .bal2 i{display:block;height:100%;background:var(--grün)}
+.stwand{flex:0 0 62px;align-self:stretch;display:flex;align-items:center;justify-content:center;
+  border-left:2px solid var(--akz);border-radius:0;background:linear-gradient(90deg,
+  rgba(240,135,60,.14),transparent);scroll-snap-align:start}
+.stwand span{writing-mode:vertical-rl;transform:rotate(180deg);font-family:var(--data);
+  font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--akz);font-weight:700}
+.unten:not(.tv) .stwand{display:none}
+.gsw{display:inline-flex;gap:4px;margin-left:auto}
+.gsb{font-family:var(--data);font-size:10.5px;border:1px solid var(--line2);background:transparent;
+  color:var(--tx2);border-radius:7px;padding:4px 11px;cursor:pointer;min-height:26px}
+.gsb.on{background:var(--akz);border-color:var(--akz);color:var(--onA);font-weight:700}
+.fk{border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--panel2);
+  cursor:pointer;transition:.14s;position:relative}
+.fk:hover{border-color:var(--line2);transform:translateY(-2px)}
+.fk.laeuft{border-color:var(--akz)}
+.fk .bild{aspect-ratio:16/9;position:relative;background:linear-gradient(135deg,#26324a,#4d3f63)}
+.fk.f2 .bild{background:linear-gradient(135deg,#3a2b28,#7a5340)}
+.fk.f3 .bild{background:linear-gradient(135deg,#22303a,#3f6b6b)}
+.fk.f4 .bild{background:linear-gradient(135deg,#2c2440,#5c4a7a)}
+.fk .bild .nr{position:absolute;left:8px;top:7px;font-family:var(--data);font-size:10.5px;
+  background:rgba(6,6,8,.72);border-radius:5px;padding:1px 6px;color:#fff}
+.fk .bild .dauer{position:absolute;right:8px;bottom:7px;font-family:var(--data);font-size:10.5px;
+  background:rgba(6,6,8,.72);border-radius:5px;padding:1px 6px;color:#fff}
+.fk .bild .fort{position:absolute;left:0;right:0;bottom:0;height:3px;background:rgba(0,0,0,.45)}
+.fk .bild .fort i{display:block;height:100%;background:var(--akz)}
+.fk .txt{padding:9px 11px 11px}
+.fk .txt b{display:block;font-size:13px;letter-spacing:-.01em;line-height:1.25}
+.fk .txt span{display:block;font-size:11.5px;color:var(--tx3);margin-top:3px}
+.fk.gesehen .txt b{color:var(--tx2)}
+.fk .hak{position:absolute;right:8px;top:7px;color:var(--grün);background:rgba(6,6,8,.72);
+  border-radius:5px;padding:0 5px;font-size:11px}
+
+/* Erklärstücke */
+.karten{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px;margin-top:18px}
+.karte{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 17px}
+.karte p{margin:6px 0 0;font-size:13.5px;color:var(--tx2)}
+.karte .wo{margin-top:9px;font-family:var(--data);font-size:10px;color:var(--tx3);
+  border-top:1px solid var(--line);padding-top:8px}
+.karte.tipp{border-color:var(--akz)}
+.karte.tipp .wo{color:var(--akz)}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:14px}
+th{text-align:left;font-family:var(--data);font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--tx3);font-weight:400;padding:0 12px 7px 0;border-bottom:1px solid var(--line)}
+td{padding:9px 12px 9px 0;border-bottom:1px solid var(--line);vertical-align:top;color:var(--tx2)}
+td:first-child{color:var(--tx);font-weight:600;white-space:nowrap}
+td b{color:var(--tx)}
+.merk{border-left:3px solid var(--akz);background:var(--panel);border-radius:0 10px 10px 0;
+  padding:13px 16px;margin-top:16px;font-size:14px;color:var(--tx2)}
+.merk b{color:var(--tx)}
+.merk.warn{border-left-color:var(--rot)}
+/* ── Rechtsklick-Menüs zum Ansehen ── */
+.kmwahl{display:flex;gap:6px;flex-wrap:wrap;margin:16px 0 0}
+.kmb{font-family:var(--data);font-size:11px;border:1px solid var(--line2);background:transparent;
+  color:var(--tx2);border-radius:999px;padding:5px 12px;cursor:pointer;min-height:26px}
+.kmb:hover{border-color:var(--tx3);color:var(--tx)}
+.kmb.an{background:var(--akz);border-color:var(--akz);color:var(--onA);font-weight:700}
+.kmbuehne{margin-top:14px;border:1px solid var(--line);border-radius:12px;background:var(--panel2);
+  min-height:250px;display:flex;align-items:flex-start;justify-content:center;padding:26px 18px;
+  background-image:radial-gradient(circle at 1px 1px,var(--line) 1px,transparent 0);
+  background-size:14px 14px}
+.km{width:246px;background:var(--panel);border:1px solid var(--line2);border-radius:11px;
+  padding:5px;box-shadow:0 18px 44px -14px rgba(0,0,0,.7)}
+.kmkopf{font-family:var(--data);font-size:9px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--tx3);padding:6px 10px 7px}
+.kmz{display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:7px;font-size:13px;
+  color:var(--tx2);cursor:pointer}
+.kmz:hover{background:var(--panel2);color:var(--tx)}
+.kmz.stark{color:var(--tx);font-weight:600}
+.kmz svg{flex:0 0 auto;opacity:.8}
+.kmz .kb2{margin-left:auto;font-family:var(--data);font-size:9.5px;color:var(--tx3)}
+.kmz.gefahr{color:var(--rot)}
+.kmz.gefahr:hover{background:rgba(224,106,90,.1)}
+.kmtr{height:1px;background:var(--line);margin:5px 8px}
+.tasten{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:9px;margin-top:14px}
+.tst{display:flex;align-items:center;gap:10px;background:var(--panel);border:1px solid var(--line);
+  border-radius:9px;padding:9px 12px;font-size:13px;color:var(--tx2)}
+.tst kbd{font-family:var(--data);font-size:10.5px;color:var(--tx);border:1px solid var(--line2);
+  border-radius:5px;padding:2px 7px;background:var(--panel2);flex:0 0 auto;min-width:34px;
+  text-align:center}
+
+/* Enger Rahmen: der Inhalt gibt in fester Reihenfolge auf, statt zu überlaufen.
+   Zuerst Karaoke, dann die Wellenform, dann wird das Cover klein, dann fällt
+   die Warteschlange weg — und erst ganz zuletzt stapelt es sich. */
+@container (max-width:1010px){
+  .karaoke .zeile:not(.jetzt){display:none}      /* nur noch die laufende Zeile */
+  .karaoke .romaji + .zeile{display:block}
+}
+@container (max-width:930px){
+  .karaoke .romaji{display:none}
+  .mustx .alb{font-size:10px}
+  .muslinks{gap:18px;padding:22px 24px 16px}
+}
+@container (max-width:850px){
+  .karaoke{display:none}
+  .welle{height:22px}
+  .cover{width:min(30%,150px)}
+}
+@container (max-width:760px){
+  .welle{display:none}
+  .cover{width:min(26%,120px)}
+  .hcov{width:min(24%,104px)}
+  .mustx .alb{display:none}
+  .mitlesen{display:none}
+  .hz .dd2{display:none}
+}
+@container (max-width:640px){
+  .cover{width:84px}
+  .hcov{width:72px}
+  .mustx .kuenstler,.htx .kap{font-size:12.5px}
+}
+@container (max-width:700px){
+  .tafel{width:100%}
+  .naechste{width:auto;left:16px}
+  .pausekarte{max-width:78%;left:5%}
+  .wsl,.hwsl{display:none}
+  .buehne.musikmodus .bbot,.buehne.hoermodus .bbot,
+  .buehne.musikmodus .btop,.buehne.hoermodus .btop{right:0}
+  .muslinks,.hlinks{flex-direction:column;align-items:flex-start;justify-content:center;gap:12px;padding:22px}
+  .cover{width:88px}.hcov{width:68px}
+}
+</style>
+
+<div class="wrap">
+
+<p class="eyebrow">SyncFindus · Bauteil 09 · zweiter Wurf</p>
+<h1>Die Bühne</h1>
+<p class="lede">Alles Bedienbare liegt <b class="a">im Bild</b>, nicht darunter — und blendet weg,
+wenn du nichts tust. Zehn Sekunden pro Tipp, und wer hält, spult immer schneller.
+Die Folgen wohnen <b class="a">unter</b> der Bühne, nicht in einem Menü.</p>
+
+<div class="tabs">
+  <button class="tab on" data-b="video">Anime · Film · Serie</button>
+  <button class="tab" data-b="musik">Musik · DJ-Set</button>
+  <button class="tab" data-b="hoer">Hörbuch</button>
+  <span class="rechts">
+    <button class="tab" id="weicheknopf" title="Zeigt die kanonische Weiche statt des einfachen Autostarts">Vorführen: Weiche</button>
+    <button class="tab ruhe" id="ruheknopf" title="Nur zum Vorführen: erzwingt sofort den Zustand, den die Bühne nach 2,5 s Nichtstun von selbst einnimmt">Vorführen: Ruhe</button>
+    <button class="tab" id="besknopf" title="Nur zum Vorführen: die Besetzungskarte, die bei Pause rechts erscheint">Vorführen: Besetzung</button>
+    <button class="tab" id="pauseknopf" title="Nur zum Vorführen: zeigt die Karte, die sonst nach 12 s Pause erscheint">Vorführen: Pausenkarte</button>
+  </span>
+</div>
+
+<div class="buehne">
+  <div class="flaeche" id="flaeche">
+    <div class="motor" id="motor"><div class="mlbl" id="mlbl">libmpv malt hier hinein<br>— und nichts sonst</div></div>
+
+    <div class="mus a" id="mus" hidden>
+      <div class="muslinks">
+        <div class="cover"></div>
+        <div class="mustx">
+          <div class="lied">Sakura, Sakura</div>
+          <div class="kuenstler">Kensuke Ushio</div>
+          <div class="alb">A Silent Voice · OST · 2016 · FLAC 24/96 · von YouTube</div>
+          <div class="welle" id="welle"></div>
+          <div class="karaoke">
+            <div class="zeile">かすかな音が、まだ残っている</div>
+            <div class="romaji">kasukana oto ga, mada nokotte iru</div>
+            <div class="zeile jetzt"><w>ひかりが</w> 水面に 落ちて いく</div>
+            <div class="romaji">hikari ga minamo ni ochite iku</div>
+            <div class="zeile">やがて 音は 消えて しまう</div>
+          </div>
+
+        </div>
+      </div>
+      <div class="wsl">
+        <div class="wslkopf">Warteschlange <span class="n" id="wslzahl">14 Titel · 52 Min</span></div>
+        <div class="wslmenue" id="wslmenue" hidden>
+          <div>Als Playlist speichern</div>
+          <div>Nach Künstler sortieren</div>
+          <div>Duplikate entfernen</div>
+          <div class="tr2"></div>
+          <div>Warteschlange leeren</div>
+        </div>
+        <div class="liste">
+          <div class="wz2"><span class="griffpunkt">&#8942;</span><span class="kk" style="background:linear-gradient(135deg,#4a3a5a,#8a5a3a)"></span><span class="tt2"><b>lit(a)</b><span>Kensuke Ushio</span></span><span class="dd">2:41</span></div>
+          <div class="wz2 jetzt"><span class="griffpunkt">&#8942;</span><span class="kk" style="background:linear-gradient(140deg,#5a3d6e,#c2703a)"></span><span class="tt2"><b>Sakura, Sakura</b><span>Kensuke Ushio</span></span><span class="dd">3:58</span></div>
+          <div class="wz2"><span class="griffpunkt">&#8942;</span><span class="kk" style="background:linear-gradient(135deg,#2a3a4a,#4a7a9a)"></span><span class="tt2"><b>Yuki no Furu Machi</b><span>Kensuke Ushio</span></span><span class="dd">4:12</span></div>
+          <div class="wz2"><span class="griffpunkt">&#8942;</span><span class="kk" style="background:linear-gradient(135deg,#3a2a3a,#8a5a7a)"></span><span class="tt2"><b>Speed of Light</b><span>Yoko Kanno</span></span><span class="dd">3:30</span></div>
+          <div class="wz2"><span class="griffpunkt">&#8942;</span><span class="kk" style="background:linear-gradient(135deg,#2a3a2a,#5a8a4a)"></span><span class="tt2"><b>Blue Bird</b><span>Ikimono-gakari</span></span><span class="dd">3:36</span></div>
+          <div class="wz2"><span class="griffpunkt">&#8942;</span><span class="kk" style="background:linear-gradient(135deg,#3a2a2a,#8a4a4a)"></span><span class="tt2"><b>Unravel</b><span>TK from Ling tosite sigure</span></span><span class="dd">3:55</span></div>
+        </div>
+        <!-- Zufall, Wiederholen und Merken sitzen in der Leiste — hier steht nur,
+             was NUR die Warteschlange betrifft. (JB-Fund 07.08.) -->
+        <div class="wslfuss">
+          <span class="wslinfo">14 Titel &middot; 52 Min</span>
+          <button class="msb" id="wslwerk" title="Warteschlangen-Werkzeuge">&#8943;</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="hoerb" id="hoer" hidden>
+      <div class="hlinks">
+        <div class="hcov"></div>
+        <div class="htx">
+          <div class="stimmen" id="stimmen"></div>
+          <div class="mitlesen">
+            <p><span class="sp3 erz"></span>Der Regen hatte aufgeh&ouml;rt, doch die Dachrinnen tropften noch.</p>
+            <p><span class="sp3 tho"></span><mark>&bdquo;Ich habe keine Feinde mehr&ldquo;, sagte er, ohne sich umzudrehen.</mark></p>
+            <p><span class="sp3 ein"></span>&bdquo;Das sagst du jedes Mal, wenn du einen gemacht hast.&ldquo;</p>
+          </div>
+          <button class="uebergang">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 5.5h6.5a2.5 2.5 0 0 1 2.5 2.5v10a2 2 0 0 0-2-2H4z"/><path d="M15.5 9.5h5"/><path d="M18 7l2.5 2.5L18 12"/></svg>
+            Hier weiterlesen statt h&ouml;ren
+          </button>
+        </div>
+      </div>
+      <div class="hwsl">
+        <h6>Kapitel <span>7 / 24 &middot; 14 h 12 min</span></h6>
+        <div class="hz fertig"><span class="nr2">4</span><span class="tt3">Das Angebot</span><span class="hak2">&#10003;</span><span class="dd2">38:12</span></div>
+        <div class="hz fertig"><span class="nr2">5</span><span class="tt3">Ketils Hof</span><span class="hak2">&#10003;</span><span class="dd2">41:50</span></div>
+        <div class="hz fertig"><span class="nr2">6</span><span class="tt3">Was Arnheid wei&szlig;</span><span class="hak2">&#10003;</span><span class="dd2">35:04</span></div>
+        <div class="hz jetzt"><span class="nr2">7</span><span class="tt3">Der Regen h&ouml;rt auf</span><span class="dd2">12:07 / 41:22</span></div>
+        <div class="hz"><span class="nr2">8</span><span class="tt3">Zwei Wege</span><span class="dd2">39:41</span></div>
+        <div class="hz"><span class="nr2">9</span><span class="tt3">Ackerland</span><span class="dd2">44:18</span></div>
+        <div class="hz"><span class="nr2">10</span><span class="tt3">Die Ernte</span><span class="dd2">37:55</span></div>
+      </div>
+    </div>
+
+    <!-- Untertitel liegen ÜBER dem Bild, aber unter der Bedienung: sie bleiben beim Ausblenden -->
+    <div class="ut" id="ut"><span>Ich habe keine Feinde mehr.</span></div>
+
+    <!-- Pausenkarte -->
+    <div class="pausekarte" id="pausekarte" hidden>
+      <div class="lbl">Folge 9 · Der Regen hört auf</div>
+      <h4>Thorfinn erreicht Ketil&nbsp;s Hof</h4>
+      <div class="meta">2023 · Wit Studio → MAPPA · 24 Min · JP</div>
+      <p>Nach der Schlacht bei Jomsborg verkauft Ketil einen Sklaven, den Thorfinn wiedererkennt.
+      Die Folge, in der zum ersten Mal keine Waffe gezogen wird.</p>
+      <div class="rollen">
+        <span class="rolle"><i style="background:linear-gradient(135deg,#4a3a2a,#c2924a)"></i>Thorfinn</span>
+        <span class="rolle"><i style="background:linear-gradient(135deg,#2a3a4a,#4a7a9a)"></i>Einar</span>
+        <span class="rolle"><i style="background:linear-gradient(135deg,#3a2a3a,#8a5a7a)"></i>Arnheid</span>
+      </div>
+    </div>
+
+    <div class="pausekarte rechtsrum" id="besetzung" hidden>
+      <div class="lbl">Wer ist gerade zu sehen</div>
+      <div class="bes">
+        <div class="bz"><span class="kopf2" style="background:linear-gradient(135deg,#4a3a2a,#c2924a)"></span>
+          <span class="nn3"><b>Thorfinn</b><span>Yūto Uemura</span></span><span class="jetzt2"></span></div>
+        <div class="bz"><span class="kopf2" style="background:linear-gradient(135deg,#2a3a4a,#4a7a9a)"></span>
+          <span class="nn3"><b>Einar</b><span>Shunsuke Takeuchi</span></span><span class="jetzt2"></span></div>
+        <div class="bz" style="opacity:.55"><span class="kopf2" style="background:linear-gradient(135deg,#3a2a3a,#8a5a7a)"></span>
+          <span class="nn3"><b>Arnheid</b><span>Rie Takahashi</span></span></div>
+        <div class="mehr2">3 von 14 &middot; erkannt im Bild</div>
+      </div>
+    </div>
+
+    <div class="hud" id="hud">
+      <!-- Die Anordnungswahl MUSS in der Bedienschicht liegen: .mus hat z-index 3,
+           die Schicht 5 — darunter kommt kein Klick durch. (JB-Fund 07.08.) -->
+      <div class="schnitt" id="schnitt" hidden>
+        <div class="kopf">&#9986; <b>Ausschnitt</b> — Original bleibt unangetastet
+          <span class="zt2">0:52 &rarr; 1:34 &middot; 42 s</span></div>
+        <div class="abspur">
+          <span class="grund"></span><span class="aus"></span>
+          <span class="m" data-l="A" style="left:22%"></span>
+          <span class="m" data-l="B" style="left:59%"></span>
+        </div>
+        <div class="fuss">
+          <button class="msb">&#9654; Ab A anh&ouml;ren</button>
+          <button class="msb" style="border-color:var(--akz);color:var(--akz)">Als neuen Titel speichern</button>
+          <small>wird Favorit der Gruppe</small>
+        </div>
+      </div>
+      <div class="mwahl" id="mwahl" hidden>
+        <button class="mwb an" data-m="a" title="Bühne — Cover links, Warteschlange rechts (wie Apple Music)">A</button>
+        <button class="mwb" data-m="b" title="Mitte — Cover groß zentriert (wie Spotify im Vollbild)">B</button>
+        <button class="mwb" data-m="c" title="Text — der Liedtext füllt die Fläche (wie Apple Music Lyrics)">C</button>
+      </div>
+      <div class="btop">
+        <button class="zur" aria-label="zurück">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>
+        </button>
+        <div class="tt" id="titelblock"><b id="ttitel">Vinland Saga</b><span id="tsub">Staffel 2 · Folge 9 — Der Regen hört auf</span></div>
+        <div class="tt herkunft" id="herkunft" hidden><b>Musik</b><span>Playlist · Ushio, alles</span></div>
+        <div class="rechts">
+          <span class="pill gut" id="p1">1080p · HEVC</span>
+          <span class="pill" id="p2">JP + DE-Untertitel</span>
+        </div>
+      </div>
+
+      <button class="skip" id="skip">Intro überspringen <small>noch 6 s</small></button>
+      <div class="weiche" id="weiche" hidden>
+        <div class="wk">Kapitel 9 zu Ende &middot; wie geht es weiter?</div>
+        <div class="wopt empf">
+          <span class="kk2" style="background:linear-gradient(135deg,#3a2b28,#7a5340)"></span>
+          <span class="nn2"><b>OVA 2 &mdash; Ketils Winter</b><span>spielt zwischen Folge 9 und 10</span></span>
+          <span class="zz">in 50 s</span>
+        </div>
+        <div class="wopt">
+          <span class="kk2" style="background:linear-gradient(135deg,#2a3448,#5a4a6e)"></span>
+          <span class="nn2"><b>Folge 10 &mdash; Zwei Wege</b><span>die Serie geht direkt weiter</span></span>
+        </div>
+        <div class="wopt">
+          <span class="kk2" style="background:linear-gradient(135deg,#22303a,#3f6b6b)"></span>
+          <span class="nn2"><b>Nichts &mdash; zur&uuml;ck ins Regal</b><span>Stand wird gemerkt</span></span>
+        </div>
+        <div class="fuss2">30 s Grundzeit + 10 s je Wahl &middot; Reihenfolge kanonisch, umstellbar auf Erscheinungsdatum</div>
+      </div>
+
+      <div class="naechste" id="naechste" hidden>
+        <div class="k"></div>
+        <div style="min-width:0">
+          <b>Folge 10 — Zwei Wege</b><span>startet in 9 s</span>
+          <div class="bar"><i></i></div>
+        </div>
+      </div>
+
+      <!-- Tafel: Ton & Text -->
+      <div class="tafel" id="tafelTon" hidden>
+        <h5>Ton <span class="x" data-zu="tafelTon">✕</span></h5>
+        <div class="tz on"><span class="t">Japanisch · 5.1 · FLAC</span><span class="d">✓</span></div>
+        <div class="tz"><span class="t">Deutsch · 2.0 · AAC</span></div>
+        <div class="tz"><span class="t">Englisch · 2.0 · AAC</span></div>
+        <div class="tsep"></div>
+        <h5>Untertitel</h5>
+        <div class="tz on"><span class="t">Deutsch — <b>Fan</b></span><span class="d">✓</span></div>
+        <div class="tz"><span class="t">Deutsch — MTL+KI</span></div>
+        <div class="tz"><span class="t">Deutsch — <b>von uns</b></span></div>
+        <div class="tz"><span class="t">Englisch — Offiziell</span></div>
+        <div class="tz"><span class="t">aus</span></div>
+      </div>
+
+      <!-- Tafel: Werkstatt (Zahnrad) -->
+      <div class="tafel" id="tafelWz" hidden>
+        <h5>Untertitel <span class="x" data-zu="tafelWz">&#10005;</span></h5>
+        <div class="probe"><span class="pv2" id="probeut">So sehen Untertitel aus</span></div>
+        <div id="subrows"></div>
+        <div class="subfuss"><button class="sb" id="subreset">Zur&uuml;cksetzen</button></div>
+      </div>
+
+      <div class="bbot">
+        <div class="leiste" id="leiste">
+          <div class="spur">
+            <span class="band op" style="left:2%;width:6.5%" title="Vorspann"></span>
+            <span class="band ed" style="left:90%;width:8%" title="Abspann"></span>
+            <div class="gepuffert" style="width:63%"></div>
+            <div class="gespielt" id="gespielt" style="width:34%"></div>
+            <span class="tick" style="left:22%"></span>
+            <span class="tick" style="left:51%"></span>
+            <span class="tick" style="left:74%"></span>
+            <span class="griff" id="griff" style="left:34%"></span>
+          </div>
+          <div class="vorschau" id="vorschau" hidden>
+            <div class="bild"><span class="tempo" id="vtempo" hidden>4×</span></div>
+            <div class="zt" id="vzt">14:22</div>
+          </div>
+        </div>
+        <div class="zeiten">
+          <span><em id="tjetzt">08:12</em> <span style="opacity:.5">/ 24:10</span></span>
+          <span class="versatz" id="zversatz" hidden>Untertitel +0,5 s</span>
+          <span class="r">noch <em id="trest">15:58</em></span>
+        </div>
+        <div class="reihe" id="musreihe" hidden>
+          <button class="mtaste" data-schalt="zufall" title="Zufall — gestreut, nie zweimal derselbe Künstler hintereinander">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6.5h3.4c1 0 1.9.5 2.4 1.4l5 8.2c.5.9 1.4 1.4 2.4 1.4H21"/><path d="M3 17.5h3.4c1 0 1.9-.5 2.4-1.4l1.3-2.1"/><path d="M13.5 9.6l1.3-2.1c.5-.9 1.4-1.4 2.4-1.4H21"/><path d="M18.4 3.4 21 6l-2.6 2.6"/><path d="M18.4 14.9 21 17.5l-2.6 2.6"/></svg></button>
+          <button class="mtaste" title="voriger Titel">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5h2v14H7zM19 5v14l-9-7z"/></svg></button>
+          <button class="kn gross" id="musplay" title="Pause">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/></svg></button>
+          <button class="mtaste" title="nächster Titel">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M15 5h2v14h-2zM5 5v14l9-7z"/></svg></button>
+          <button class="mtaste" data-schalt="wdh" title="Wiederholen — Warteschlange / ein Titel / aus">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.4V8.2A3.2 3.2 0 0 1 7.2 5h9.6L14.3 2.4"/><path d="M20 14.6v1.2a3.2 3.2 0 0 1-3.2 3.2H7.2L9.7 21.6"/><text class="wdh1" x="12" y="15.2" text-anchor="middle" font-size="8.5" font-family="ui-monospace,monospace" fill="currentColor" stroke="none" opacity="0">1</text></svg></button>
+          <div class="laut" style="margin-left:8px">
+            <button class="mtaste" title="stumm">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M4 9.5h3.5L12 6v12l-4.5-3.5H4z" fill="currentColor"/><path d="M16 9.5a4 4 0 0 1 0 5"/></svg></button>
+            <div class="lautspur"><i></i><u></u></div>
+          </div>
+          <button class="mtaste" data-schalt="nurton" title="Nur den Ton abspielen — das Video bleibt aus, spart Strom und lenkt nicht ab">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 5l18 14"/></svg></button>
+          <div class="rechtsknoepfe">
+            <button class="mtaste an" data-schalt="herz" title="Lieblingssong">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M12 20.3 4.4 12.9a4.6 4.6 0 0 1 6.5-6.5l1.1 1.1 1.1-1.1a4.6 4.6 0 0 1 6.5 6.5z"/></svg></button>
+            <button class="mtaste" id="schnittknopf" title="Ausschnitt schneiden — wie ein Twitch-Clip">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="6.5" cy="17.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/><path d="M8.3 15.7 19 4M15.7 15.7 5 4"/></svg></button>
+            <button class="mtaste" data-schalt="karaoke" title="Karaoke ein/aus">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="17.2" cy="6.8" r="4.4"/><path d="M14.1 9.9 12.6 11.4"/><path d="M12.6 11.4 5.4 18.6a1.95 1.95 0 1 0 2.8 2.8l7.2-7.2"/><path d="M15.4 14.2 12.6 11.4"/><path d="M14.6 3.4 20.6 9.4"/><path d="M16.4 21.4c1.7.9 3.5.4 4.6-1"/></svg></button>
+            <button class="mtaste" title="Zur Quelle — springt zur aktuellen Stelle auf YouTube">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10 6H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4"/><path d="M14 4h6v6"/><path d="M20 4 11 13"/></svg></button>
+            <button class="mtaste" data-schalt="radio" title="Radio — endloser Mix aus deiner Bibliothek">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="8.6" r="2.1"/><path d="M12 10.8 9.6 21M12 10.8 14.4 21M10.4 17.4h3.2"/><path d="M8.2 4.9a5.9 5.9 0 0 0 0 7.4M15.8 4.9a5.9 5.9 0 0 1 0 7.4"/><path d="M5.5 2.5a9.4 9.4 0 0 0 0 12.2M18.5 2.5a9.4 9.4 0 0 1 0 12.2"/></svg></button>
+            <button class="mtaste" data-schalt="schlaf" title="Einschlafen nach 30 Minuten">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M20 13.5A8 8 0 0 1 10.5 4a8 8 0 1 0 9.5 9.5z"/></svg></button>
+            <button class="mtaste" title="Warteschlange ein/ausklappen" id="wslknopf">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 7h11M4 12h11M4 17h7M18 9v9"/><circle cx="18" cy="18" r="2"/></svg></button>
+          </div>
+        </div>
+
+        <div class="reihe" id="vidreihe">
+          <button class="kn" title="vorige Folge">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5h2v14H7zM19 5v14l-9-7z"/></svg></button>
+          <button class="kn spulkn" data-r="-1" title="10 s zurück · halten = schneller spulen">
+            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4.2a7.8 7.8 0 1 1-7.5 5.7"/><path d="M4.1 2.9v4.6h4.6"/><text x="12.4" y="15.6" text-anchor="middle" font-size="8" font-family="ui-monospace,monospace" fill="currentColor" stroke="none">10</text></svg></button>
+          <button class="kn gross" id="playknopf" title="Pause">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/></svg></button>
+          <button class="kn spulkn" data-r="1" title="10 s vor · halten = schneller spulen">
+            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4.2a7.8 7.8 0 1 0 7.5 5.7"/><path d="M19.9 2.9v4.6h-4.6"/><text x="11.6" y="15.6" text-anchor="middle" font-size="8" font-family="ui-monospace,monospace" fill="currentColor" stroke="none">10</text></svg></button>
+          <button class="kn" title="nächste Folge">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M15 5h2v14h-2zM5 5v14l9-7z"/></svg></button>
+          <div class="laut">
+            <button class="kn" title="stumm">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M4 9.5h3.5L12 6v12l-4.5-3.5H4z" fill="currentColor"/><path d="M16 9.5a4 4 0 0 1 0 5"/><path d="M18.5 7a7.5 7.5 0 0 1 0 10"/></svg></button>
+            <div class="lautspur"><i></i><u></u></div>
+          </div>
+          <div class="rechtsknoepfe">
+            <button class="wahl" id="tempo">Tempo <b>1,0×</b></button>
+            <button class="wahl" id="tonknopf">Ton &amp; Text <b>JP / DE</b></button>
+            <button class="kn" id="zahnrad" title="Untertitel einstellen">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="1.5" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M19.3 13.4a7.6 7.6 0 0 0 0-2.8l1.8-1.3-1.9-3.3-2.1.8a7.6 7.6 0 0 0-2.4-1.4L14.4 3h-3.8l-.3 2.4a7.6 7.6 0 0 0-2.4 1.4l-2.1-.8L3.9 9.3l1.8 1.3a7.6 7.6 0 0 0 0 2.8l-1.8 1.3 1.9 3.3 2.1-.8a7.6 7.6 0 0 0 2.4 1.4l.3 2.4h3.8l.3-2.4a7.6 7.6 0 0 0 2.4-1.4l2.1.8 1.9-3.3z"/></svg></button>
+            <button class="kn" title="Bild-in-Bild">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="5" width="18" height="14" rx="2"/><rect x="12" y="12" width="7" height="5" rx="1" fill="currentColor"/></svg></button>
+            <button class="kn" title="Vollbild">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Folgen unter der Bühne -->
+<div class="unten" id="unten">
+  <div class="unkopf">
+    <h4>Folgen</h4>
+    <span style="font-family:var(--data);font-size:10.5px;color:var(--tx3)">24 Folgen · 8 gesehen</span>
+    <span class="staffel">
+      <button class="stb">Staffel 1</button>
+      <button class="stb on">Staffel 2</button>
+      <button class="stb">OVA</button>
+      <button class="stb">Filme</button>
+    </span>
+    <span class="gsw">
+      <button class="gsb on" data-g="pc">PC · Raster</button>
+      <button class="gsb" data-g="tv">Fernseher · Reihe</button>
+    </span>
+  </div>
+  <div class="reihenfuss" style="position:relative">
+    <button class="rpfeil" id="staffelknopf" title="Staffel wechseln — Liste statt Scrollen" style="width:auto;padding:0 11px;gap:7px">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h9"/></svg>
+      <span style="font-family:var(--data);font-size:11px">Staffel 2</span></button>
+    <span class="rzahl">Folge <b style="color:var(--tx)">9</b> von 24</span>
+    <span class="punkte">
+      <i class="ges"></i><i class="ges"></i><i class="ges"></i><i class="ges"></i><i class="ges"></i>
+      <i class="ges"></i><i class="ges"></i><i class="ges"></i><i class="hier"></i>
+      <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+    </span>
+  </div>
+  <div class="folgenbox">
+  <button class="seitpfeil li" id="pfl" title="zurück">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+  <button class="seitpfeil re" id="pfr" title="weiter">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
+  <div class="folgen" id="folgen">
+    <div class="fk gesehen"><div class="bild"><span class="nr">7</span><span class="hak">✓</span><span class="dauer">24:10</span>
+      <span class="fort"><i style="width:100%"></i></span></div>
+      <div class="txt"><b>Der lange Weg</b><span>gesehen · 02.08.</span></div></div>
+    <div class="fk gesehen f2"><div class="bild"><span class="nr">8</span><span class="hak">✓</span><span class="dauer">24:10</span>
+      <span class="fort"><i style="width:100%"></i></span></div>
+      <div class="txt"><b>Ketten</b><span>gesehen · 03.08.</span></div></div>
+    <div class="fk laeuft f3"><div class="bild"><span class="nr">9</span><span class="dauer">24:10</span>
+      <span class="fort"><i style="width:34%"></i></span></div>
+      <div class="txt"><b>Der Regen hört auf</b><span style="color:var(--akz)">läuft gerade · noch 15:58</span></div></div>
+    <div class="fk f4"><div class="bild"><span class="nr">10</span><span class="dauer">24:10</span></div>
+      <div class="txt"><b>Zwei Wege</b><span>bereit · 1080p</span></div></div>
+    <div class="fk"><div class="bild"><span class="nr">11</span><span class="dauer">24:10</span></div>
+      <div class="txt"><b>Ackerland</b><span>bereit · 1080p</span></div></div>
+    <div class="fk f2"><div class="bild" style="opacity:.42"><span class="nr">12</span></div>
+      <div class="txt"><b>Die Ernte</b><span style="color:var(--gelb)">nicht geholt</span></div></div>
+    <div class="stwand"><span>Staffel 1</span></div>
+    <div class="fk gesehen"><div class="bild"><span class="nr">1</span><span class="hak">✓</span><span class="dauer">24:10</span>
+      <span class="fort"><i style="width:100%"></i></span></div>
+      <div class="txt"><b>Irgendwo nicht hier</b><span>gesehen · 2023</span></div></div>
+    <div class="fk gesehen f3"><div class="bild"><span class="nr">2</span><span class="hak">✓</span><span class="dauer">24:10</span>
+      <span class="fort"><i style="width:100%"></i></span></div>
+      <div class="txt"><b>Der Schwertkämpfer</b><span>gesehen · 2023</span></div></div>
+  </div>
+  </div>
+  <div class="stmenue" id="stmenue" hidden>
+    <div class="stk">
+      <h5>Staffel wählen<span id="stzu">✕</span></h5>
+      <div class="stz"><b>Staffel 1</b><span class="g2">24 Folgen</span><span class="bal2"><i style="width:100%"></i></span></div>
+      <div class="stz fokus"><b>Staffel 2</b><span class="g2">24 Folgen</span><span class="bal2"><i style="width:35%"></i></span></div>
+      <div class="stz"><b>OVA</b><span class="g2">3 Folgen</span><span class="bal2"><i style="width:0"></i></span></div>
+      <div class="stz"><b>Filme</b><span class="g2">1 Film</span><span class="bal2"><i style="width:0"></i></span></div>
+    </div>
+  </div>
+</div>
+
+<p class="sub" style="margin-top:13px;font-size:13.5px">
+Zum Ausprobieren: <b>halte</b> die 10-Sekunden-Knöpfe gedrückt — nach einer knappen halben
+Sekunde geht das Spulen los und wird immer schneller, mit Kachelbild und Tempoanzeige.
+Das <b>Zahnrad</b> öffnet die Untertitel-Werkstatt, <b>Ton &amp; Text</b> die Spurenwahl.
+Oben rechts kannst du <b>Ruhe</b> und die <b>lange Pause</b> erzwingen.</p>
+
+<hr class="rule">
+
+<h2>Zehn Sekunden — und wer hält, spult</h2>
+<p class="sub">Du hast recht, und die reifen Abspielprogramme geben dir recht.
+Ich hatte 10 zurück / 30 vor gebaut, das ist YouTube-Denke für Vorträge.
+Für Serien ist <b>10/10 symmetrisch</b> richtig: gleiche Bewegung, gleiches Ergebnis,
+kein Nachdenken. Und für weite Wege gibt es das Halten.</p>
+
+<table>
+  <tr><th style="width:16%">Programm</th><th style="width:22%">Tippen</th><th>Halten</th></tr>
+  <tr><td><b>Netflix</b> (TV)</td><td>10 s</td><td>beschleunigtes Spulen mit Kachelband, Ton aus</td></tr>
+  <tr><td><b>Plex</b></td><td>10 s (einstellbar)</td><td>2× → 4× → 8× → 16× → 32×, Kachelbild aus der BIF-Datei</td></tr>
+  <tr><td><b>Jellyfin</b></td><td>10 s</td><td>Trickplay-Kacheln beim Ziehen</td></tr>
+  <tr><td><b>Kodi</b></td><td>Sprungweiten je Taste</td><td>klassisch 2× → 32×, seit Jahren dieselbe Staffelung</td></tr>
+  <tr><td><b>Prime Video</b></td><td>10 s</td><td>Ziehen auf der Leiste mit Vorschau</td></tr>
+  <tr><td><b>VLC</b></td><td>Shift 3 s · Alt 10 s · Strg 60 s</td><td>— kein Beschleunigen; drei Tasten statt einer Geste</td></tr>
+  <tr><td><b>mpv</b></td><td>5 s / 60 s</td><td>— nur Tastenwiederholung</td></tr>
+</table>
+
+<div class="merk">
+  <b>Unsere Staffelung</b> — bewusst näher an Plex als an VLC, weil eine Geste besser ist als drei Tasten:
+  <table style="margin-top:11px">
+    <tr><th style="width:26%">gehalten seit</th><th style="width:16%">Tempo</th><th>was passiert</th></tr>
+    <tr><td>0 – 0,4 s</td><td>—</td><td>noch ein Tipp: <b>10 s</b></td></tr>
+    <tr><td>0,4 s</td><td><b>4×</b></td><td>Spulen beginnt, Kachelbild erscheint</td></tr>
+    <tr><td>1,2 s</td><td><b>12×</b></td><td>für halbe Folgen</td></tr>
+    <tr><td>2,2 s</td><td><b>30×</b></td><td>für ganze Folgen</td></tr>
+    <tr><td>3,4 s</td><td><b>60×</b></td><td>für Filme und Hörbücher — eine Stunde in einer Minute</td></tr>
+    <tr><td>loslassen</td><td>—</td><td>springt dorthin und läuft weiter</td></tr>
+  </table>
+  <b style="display:block;margin-top:11px">Wichtig: das ist Spulen, kein schnelles Abspielen.</b> Kein Ton, keine Micky-Maus-Stimmen —
+  nur Kachelbilder, die wir beim Einlagern ohnehin erzeugt haben. Deshalb kostet es nichts und
+  ruckelt nie, auch bei 60×.
+</div>
+
+<hr class="rule">
+
+<h2>Ausblenden: ja. Aber wie?</h2>
+<p class="sub">Deine Frage war, ob ein Fade gut ist oder schlecht. Meine Antwort:
+<b>Fade ja, aber nur für die Bedienung — und nie für die Untertitel.</b></p>
+
+<div class="karten">
+  <div class="karte tipp">
+    <h3>Weich ausblenden · 420 ms</h3>
+    <p>Ein hartes Verschwinden liest sich wie ein Fehler („ist es abgestürzt?"). 420 ms ist lang
+    genug, dass das Auge die Bewegung als gewollt erkennt, und kurz genug, dass es nicht müde macht.</p>
+    <div class="wo">gewählt · Einblenden schneller: 120 ms</div>
+  </div>
+  <div class="karte">
+    <h3>Einblenden fast sofort</h3>
+    <p>Beim Zurückkommen darf nichts warten. Ausblenden ist Höflichkeit, Einblenden ist Reaktion —
+    die beiden Zeiten dürfen nicht gleich sein.</p>
+    <div class="wo">Regel: raus langsam, rein schnell</div>
+  </div>
+  <div class="karte">
+    <h3>Untertitel rutschen nach</h3>
+    <p>Verschwindet die Leiste, wandert der Untertitel um die freigewordene Höhe nach unten —
+    in derselben Bewegung. Sonst klebt er mitten im Bild, wo eben noch Knöpfe waren.</p>
+    <div class="wo">im Entwurf oben zu sehen</div>
+  </div>
+  <div class="karte">
+    <h3>Der Zeiger geht mit</h3>
+    <p>Mauszeiger aus, wenn die Bedienung weg ist. Ein schwebender Pfeil auf einem dunklen Bild
+    ist die einzige Sache, die mehr stört als eine Leiste.</p>
+    <div class="wo"><code>cursor:none</code></div>
+  </div>
+</div>
+
+<div class="merk">
+  <b>Wann sie wiederkommt:</b> Maus bewegt · Taste gedrückt · Gamepad berührt · pausiert ·
+  Folge zu Ende. <b>Wann sie bleibt:</b> solange der Zeiger über der Leiste steht, solange eine
+  Tafel offen ist, und immer im Pausezustand. <b>Ruhezeit: 2,5 s.</b>
+  Netflix nimmt 3, YouTube 3, Plex 3 — kürzer wirkt hektisch, länger vergisst man sie.
+</div>
+
+<hr class="rule">
+
+<h2>Die Pausenkarte</h2>
+<p class="sub">Nach <b>länger als 12 Sekunden</b> Pause erscheint links eine Karte —
+Titel der Folge, Jahr, Studio, drei Sätze Inhalt, und wer gerade zu sehen ist.
+Nicht über der Bildmitte, sondern am Rand, mit Verlauf: <b>das Bild bleibt sichtbar.</b>
+Genau das macht Netflix richtig und Prime falsch.</p>
+
+<div class="merk warn">
+  <b>Und was wir nicht machen:</b> keine Empfehlungen in der Pause. Netflix zeigt dort
+  „Ähnliche Titel" — das ist Werbung im eigenen Wohnzimmer. Unsere Karte beantwortet nur die eine
+  Frage, für die man überhaupt pausiert: <em>„Moment, wer ist das nochmal?"</em>
+  Deshalb die <b>Rollenzeile</b>: wer in dieser Szene spricht, mit Gesicht. Das kommt aus dem
+  Werk-Wissen, das wir für Übersetzung und Vertonung ohnehin bauen.
+</div>
+
+<hr class="rule">
+
+<h2>Wie soll die Tafel heißen?</h2>
+<p class="sub">Du hast recht: „Spuren" klingt nach Untertiteln, obwohl auch der Ton drin ist.
+Vier Kandidaten — ich habe mich für den zweiten entschieden und im Entwurf oben eingebaut.</p>
+
+<table>
+  <tr><th style="width:19%">Name</th><th style="width:34%">Dafür</th><th>Dagegen</th></tr>
+  <tr><td>Spuren</td><td>technisch exakt, kurz, gilt für Ton und Text</td><td>Fachwort. Wer nie ein Video geschnitten hat, denkt an Fußspuren oder an Untertitel</td></tr>
+  <tr><td><b style="color:var(--akz)">Ton &amp; Text</b></td><td><b>sagt genau, was drin ist</b> — beide Hälften benannt, kein Fachwort, keine Zweideutigkeit</td><td>zwei Wörter statt einem</td></tr>
+  <tr><td>Sprache</td><td>trifft, was man 90 % der Zeit ändert</td><td>falsch, sobald man 5.1 gegen Stereo tauscht — das ist keine Sprache</td></tr>
+  <tr><td>Fassung</td><td>schön, deutsch, umfasst alles</td><td>zu abstrakt; niemand sucht „Fassung", wenn er deutschen Ton will</td></tr>
+</table>
+
+<div class="merk">
+  <b>Gewählt: „Ton &amp; Text".</b> Der Knopf zeigt ohnehin den Zustand — <code>JP / DE</code> —,
+  also ist das Wort nur die Überschrift für den, der zum ersten Mal hinschaut.
+  Und weil das <b>Einstellen</b> der Untertitel etwas völlig anderes ist als das <b>Auswählen</b>,
+  hat es einen eigenen Knopf bekommen: <b>das Zahnrad</b>, direkt daneben.
+  Auswählen ist eine Entscheidung pro Folge, Einstellen eine Entscheidung fürs Leben —
+  die dürfen nicht im selben Menü liegen.
+</div>
+
+<hr class="rule">
+
+<h2>Was SyncYouTube schon kann — und was davon hierher gehört</h2>
+<p class="sub">Du hattest recht: ich habe zu flüchtig hingeschaut. Der Downloader hat einen
+gewachsenen Spieler mit Funktionen, die ich hier neu erfunden hätte. Der Vollständigkeit halber,
+und weil es die Bühne besser macht:</p>
+
+<table>
+  <tr><th style="width:31%">Schon im Downloader</th><th>Was daraus in der Bühne wird</th></tr>
+  <tr><td><b>⏪/⏩ bis 32×</b><br><span style="font-weight:400;color:var(--tx3);font-size:12px">„nochmal drücken: schneller"</span></td>
+    <td><b>Übernommen und verbessert:</b> statt mehrfach zu drücken wird <b>gehalten</b> (E80). Das Ergebnis ist dasselbe, die Geste ist eine.</td></tr>
+  <tr><td><b>Untertitel-Panel</b><br><span style="font-weight:400;color:var(--tx3);font-size:12px">Größe, Schrift, Farben, Schatten, Hintergrund, Versatz, Live-Vorschau</span></td>
+    <td><b>Genau das ist die Werkstatt hinter dem Zahnrad</b> — ich habe es unabhängig nachgebaut. Beim echten Bau wird der vorhandene Code übernommen, nicht neu geschrieben.</td></tr>
+  <tr><td><b>✂ Ausschnitt („wie ein Twitch-Clip")</b><br><span style="font-weight:400;color:var(--tx3);font-size:12px">A/B ziehen, Player springt mit, als NEUER Titel speichern, Original bleibt</span></td>
+    <td><b>Fehlte komplett.</b> Jetzt in der Musikbühne als Knopf — und gilt für Video genauso. Ein Ausschnitt ist eine <b>Ausgabe</b> des Werks, kein neues Werk.</td></tr>
+  <tr><td><b>Karaoke mit Romaji</b><br><span style="font-weight:400;color:var(--tx3);font-size:12px">LRCLIB, wortweise mitlaufend, Originalspur nötig</span></td>
+    <td><b>Fehlte.</b> Jetzt in der Musikbühne. Es ist dasselbe wie <em>Mitlesen</em> beim Hörbuch — eine Technik, zwei Namen. Das wird vereinheitlicht.</td></tr>
+  <tr><td><b>Auf YouTube öffnen</b><br><span style="font-weight:400;color:var(--tx3);font-size:12px">springt zur aktuellen Stelle · Link kopieren ohne Zeitstempel</span></td>
+    <td><b>Fehlte.</b> Jetzt drin — verallgemeinert zu <b>„Zur Quelle"</b>: YouTube, MangaDex, TMDB, wo das Werk herkam.</td></tr>
+  <tr><td><b>Playlist herauslösen / eingliedern</b><br><span style="font-weight:400;color:var(--tx3);font-size:12px">eigenes andockbares Fenster</span></td>
+    <td>Bei uns: die Warteschlange klebt rechts und lässt sich wegklappen. Das freie Fenster gehört zum Layout-Editor, nicht zur Bühne.</td></tr>
+  <tr><td><b>Mini-Player</b><br><span style="font-weight:400;color:var(--tx3);font-size:12px">schrumpft auf Cover + Regler, bleibt eingebettet</span></td>
+    <td><b>Übernehmen.</b> Genau das braucht die Musik, wenn man nebenher im Regal stöbert. Fehlt noch im Entwurf.</td></tr>
+  <tr><td><b>Ausgabegerät: Browser ↔ VLC</b></td>
+    <td>Bei uns unnötig — <b>libmpv steckt schon im Fenster</b> (E34). Das war eine Notlösung, die wir nicht erben.</td></tr>
+  <tr><td><b>Transkript-Suche</b><br><span style="font-weight:400;color:var(--tx3);font-size:12px">durchsucht alle Untertitel, Funde als Playlist</span></td>
+    <td><b>Die unterschätzteste Funktion überhaupt.</b> Gehört in die <em>Suche</em>, nicht in die Bühne — und dann für Untertitel <b>und</b> Buchtext.</td></tr>
+  <tr><td><b>Bild-in-Bild · Sleep-Timer · Crossfade · Tempo · Sponsorblock · ❤ · Tastenbelegung selbst wählen</b></td>
+    <td>Alles vorhanden und alles richtig. Wird eins zu eins übernommen; das meiste steckt schon im Entwurf.</td></tr>
+</table>
+
+<div class="merk">
+  <b>Der eine echte Unterschied:</b> im Downloader ist der Spieler <b>ein Fenster unter vielen</b> —
+  andockbar, herauslösbar, Teil eines Layout-Editors. Bei SyncFindus ist die Bühne eine
+  <b>Ebene</b>: du gehst hinein und wieder heraus (E38). Das ist kein Rückschritt, sondern
+  die Folge daraus, dass hier auch gelesen wird — und ein Leser in einem andockbaren
+  Fensterchen ist kein Leser.
+</div>
+
+<hr class="rule">
+
+<h2>Playlists — wo sie leben</h2>
+<p class="sub">Sie sind kein Sonderfall, sondern eine <b>Sammlung</b> — dieselbe Sprosse der
+Leiter, auf der auch ein Regal steht. Deshalb brauchen sie keine eigene Verwaltung.</p>
+
+<table>
+  <tr><th style="width:23%"></th><th>Wo</th></tr>
+  <tr><td><b>Gelistet</b></td><td>In der <b>Seitenleiste unter „Musik"</b>, eingerückt — genau wie Staffeln unter einer Serie. Zusätzlich als Regal in der Bibliothek, wenn du sie anheftest.</td></tr>
+  <tr><td><b>Gespeichert</b></td><td>Je Profil eine Datei im Profilordner. <b>Nichts in der Cloud</b>, nichts in einer Datenbank, die man nicht lesen kann.</td></tr>
+  <tr><td><b>Angelegt</b></td><td>Drei Wege, alle ohne Dialog: Titel in die Warteschlange ziehen · <b>Als Playlist</b> in der Warteschlange · oder eine gespeicherte Suche (<b>das kluge Regal</b>, E78) — die füllt sich von selbst.</td></tr>
+  <tr><td><b>Exportiert</b></td><td><b>.m3u</b>, weil das jedes Programm der Welt liest (E06: Standardformate ab der ersten Zeile). Import genauso.</td></tr>
+  <tr><td><b>Abgeglichen</b></td><td>Auf Wunsch gegen eine echte Playlist auf YouTube — genau wie <code>playlist_sync()</code> es im Downloader schon tut.</td></tr>
+  <tr><td style="color:var(--rot)"><b>Nicht</b></td><td>Kein zweiter Ort für „meine Musik". Eine Playlist ist eine <b>Sicht</b> auf die Bibliothek, keine Kopie davon.</td></tr>
+</table>
+
+<hr class="rule">
+
+<h2>Die Besetzungskarte — Amazons X-Ray, aber ehrlich</h2>
+<p class="sub">Ja, das können wir. Und es gehört genau dorthin, wo du es vermutet hast:
+<b>gespiegelt auf der anderen Seite</b>. Links steht, <em>was</em> gerade läuft; rechts, <em>wer</em>
+zu sehen ist. Probier oben <b>Vorführen: Besetzung</b>.</p>
+
+<div class="karten">
+  <div class="karte">
+    <h3>Immer möglich</h3>
+    <p>Die <b>volle Besetzung</b> mit Rolle, Name und Gesicht kommt aus TMDB und AniList —
+    das haben wir ohnehin. Danach ist es eine Liste, sortiert nach Wichtigkeit.</p>
+    <div class="wo">kostet nichts, geht sofort</div>
+  </div>
+  <div class="karte tipp" style="border-color:var(--akz)">
+    <h3>„Gerade im Bild" — einmal rechnen</h3>
+    <p>Amazon lässt X-Ray von Hand annotieren. Wir machen es anders: <b>ein Durchlauf beim
+    Einlagern</b> vergleicht Gesichter im Film mit den Besetzungsfotos. Ergebnis ist eine
+    kleine Zeitliste: <em>wer ab wann sichtbar ist</em>.</p>
+    <div class="wo" style="color:var(--akz)">läuft nachts auf der Grafikkarte, ~2 Min je Film</div>
+  </div>
+  <div class="karte">
+    <h3>Nie behaupten, was wir nicht wissen</h3>
+    <p>Ohne den Durchlauf steht dort <b>die Besetzung</b>, nicht „gerade zu sehen".
+    Die drei Punkte am Rand markieren nur, was <b>erkannt</b> wurde — der Rest steht blass darunter.</p>
+    <div class="wo">E57 — nichts erfinden</div>
+  </div>
+  <div class="karte">
+    <h3>Bei Anime genauso</h3>
+    <p>Dort sind es <b>Figuren statt Schauspieler</b> — mit Sprecher darunter. Die Gesichter
+    kommen aus AniList, und die Erkennung funktioniert bei gezeichneten Figuren sogar besser
+    als bei Menschen.</p>
+    <div class="wo">und es füttert das Werk-Wissen für die Vertonung</div>
+  </div>
+</div>
+
+<div class="merk warn">
+  <b>Was es nicht wird:</b> keine Einblendung <em>während</em> des Films. X-Ray auf dem
+  Fire-Tablet zeigt Namen ins laufende Bild — das ist der schnellste Weg, eine Szene zu zerstören.
+  Bei uns erscheint es <b>nur bei Pause</b>, zusammen mit der Karte links, und verschwindet mit ihr.
+</div>
+
+<hr class="rule">
+
+<h2>Drei Anordnungen für Musik — such aus</h2>
+<p class="sub">Oben rechts in der Musikbühne stehen <b>A · B · C</b>. Jede ist nach einem echten
+Spieler gebaut, und jede ist für eine andere Situation richtig.</p>
+
+<table>
+  <tr><th style="width:13%"></th><th style="width:26%">Vorbild</th><th>Wofür sie richtig ist</th></tr>
+  <tr><td><b class="a">A · Bühne</b></td><td>Apple Music (Vollbild), Tidal</td>
+    <td><b>Der Alltag.</b> Cover links, Text daneben, Warteschlange rechts — man sieht, was läuft <em>und</em> was kommt, ohne zu klicken. Beste Ausnutzung breiter Fenster.</td></tr>
+  <tr><td><b class="a">B · Mitte</b></td><td>Spotify Vollbild, YouTube Music</td>
+    <td><b>Wenn das Cover das Erlebnis ist.</b> Alles zentriert, das Bild groß. Ruhiger, aber die Warteschlange muss man aufklappen. Gut auf schmalen Fenstern und am Fernseher.</td></tr>
+  <tr><td><b class="a">C · Text</b></td><td>Apple Music Lyrics, Spotify Lyrics</td>
+    <td><b>Zum Mitsingen.</b> Cover schrumpft auf ein Abzeichen, der Liedtext füllt die Fläche und läuft mit. Bei Japanisch mit Romaji darunter — das kann sonst niemand.</td></tr>
+</table>
+
+<div class="merk">
+  <b>Wie es die großen machen — und was daraus folgt:</b> Spotify, Apple Music und YouTube Music
+  haben <b>alle drei</b> Ansichten, sie nennen sie nur nicht so und verstecken sie hinter
+  verschiedenen Knöpfen. Der Fehler wäre, sich für eine zu entscheiden. <b>Die Ansicht ist
+  gemerkt</b> — pro Gerät, nicht pro Titel, denn sie hängt an der Situation (Schreibtisch,
+  Fernseher, Handy), nicht am Lied.
+</div>
+
+<div class="merk warn">
+  <b>Und die Regel gegen das Überladen:</b> in jeder Anordnung gilt dieselbe Rangfolge —
+  <b>1.</b> was läuft · <b>2.</b> wo im Stück · <b>3.</b> was kommt · <b>4.</b> alles andere.
+  Was auf Rang 4 steht, darf verschwinden, wenn es eng wird (E122). Freie Fläche ist kein
+  Fehler, den man füllen muss — sie ist der Grund, warum man das Cover überhaupt sieht.
+</div>
+
+<hr class="rule">
+
+<h2>Der Rechtsklick — sieben Menüs, angeklickt</h2>
+<p class="sub">Kein Menü hat mehr als <b>sieben</b> Zeilen, keins mehr als <b>einen</b> Trennstrich,
+und keins wiederholt, was ein sichtbarer Knopf schon kann. Die obersten zwei Zeilen sind die
+90-Prozent-Fälle — der Rest darf länger dauern.</p>
+
+<div class="kmwahl" id="kmwahl"></div>
+<div class="kmbuehne"><div id="kmziel"></div></div>
+
+<div class="merk">
+  <b>Das Muster ist überall dasselbe:</b>
+  <b>Haupthandlung</b> → <b>Zustand ändern</b> → <span style="color:var(--tx3)">─</span> →
+  <b>Vertiefen</b> → <b>Weggeben</b>.<br>
+  Wer das einmal gelernt hat, muss nie wieder ein Menü lesen — nur die Stelle treffen.
+  Und wenn ein Menü acht Zeilen bräuchte, fehlt eine <em>Ebene</em>, keine Zeile.
+</div>
+
+<hr class="rule">
+
+<h2>Tasten, Gamepad, Fernbedienung</h2>
+<div class="tasten">
+  <div class="tst"><kbd>Space</kbd> Pause — und nichts sonst</div>
+  <div class="tst"><kbd>← →</kbd> 10 s · <b>halten = spulen</b></div>
+  <div class="tst"><kbd>↑ ↓</kbd> Lautstärke</div>
+  <div class="tst"><kbd>S</kbd> Vorspann überspringen</div>
+  <div class="tst"><kbd>N</kbd> nächste Folge sofort</div>
+  <div class="tst"><kbd>U</kbd> Untertitel durchschalten</div>
+  <div class="tst"><kbd>T</kbd> Tonspur durchschalten</div>
+  <div class="tst"><kbd>G ⇧G</kbd> Untertitel ∓ 0,5 s</div>
+  <div class="tst"><kbd>F</kbd> Vollbild · <kbd>Esc</kbd> zurück</div>
+</div>
+
+<div class="merk">
+  <b>Am Gamepad</b> fest und nicht verhandelbar: <b>A</b> Pause · <b>B</b> zurück ·
+  <b>X</b> Ton &amp; Text · <b>Y</b> Vorspann überspringen · <b>LB/RB</b> Kapitel ·
+  <b>Stick halten</b> spulen mit derselben Staffelung wie oben.
+  Ziele wachsen auf <b>48 px</b>, Fokus ist ein heller <b>Rahmen</b>, kein Farbwechsel —
+  auf drei Metern sieht man Rahmen, keine Sättigung.
+</div>
+
+</div>
+
+<script>
+
+/* ── Rechtsklick-Menüs: sieben Stück, alle nach demselben Muster ──────────── */
+var I = {
+  play:'<path d="M8 5l12 7-12 7z" fill="currentColor" stroke="none"/>',
+  next:'<path d="M4 6.5h11M4 12h11M4 17.5h7"/><path d="M17 8.5 20.5 12 17 15.5"/>',
+  ende:'<path d="M4 6.5h13M4 12h13M4 17.5h7"/><path d="M19 6.5v11"/>',
+  weg: '<path d="M6 6l12 12M18 6 6 18"/>',
+  plus:'<path d="M12 5v14M5 12h14"/>',
+  album:'<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="2" fill="currentColor" stroke="none"/>',
+  quelle:'<path d="M10 6H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4"/><path d="M14 4h6v6"/><path d="M20 4 11 13"/>',
+  buch:'<path d="M4 5.5h6.5a2.5 2.5 0 0 1 2.5 2.5v10a2 2 0 0 0-2-2H4z"/><path d="M15.5 9.5h5"/><path d="M18 7l2.5 2.5L18 12"/>',
+  hand:'<path d="M6.5 12V6.8a1.6 1.6 0 0 1 3.2 0V11"/><path d="M9.7 10.6V5.6a1.6 1.6 0 0 1 3.2 0V11"/><path d="M12.9 10.9V7.4a1.6 1.6 0 0 1 3.2 0v6.2"/><path d="M16.1 12.4a1.6 1.6 0 0 1 3.2 0V16a5 5 0 0 1-5 5h-1.6a5 5 0 0 1-4.3-2.5L6 15"/>',
+  ausg: '<rect x="3" y="4.5" width="13" height="15" rx="2"/><path d="M8 4.5V3M19 8v11.5a1.5 1.5 0 0 1-1.5 1.5H7"/>',
+  bez:  '<circle cx="6" cy="7" r="2.5"/><circle cx="18" cy="7" r="2.5"/><circle cx="12" cy="17.5" r="2.5"/><path d="M7.6 9.1 10.6 15.4M16.4 9.1 13.4 15.4M8.5 7h7"/>',
+  arch: '<rect x="3.5" y="4.5" width="17" height="4.5" rx="1.5"/><path d="M5.2 9v8.5A2.5 2.5 0 0 0 7.7 20h8.6a2.5 2.5 0 0 0 2.5-2.5V9"/><path d="M10 13h4"/>',
+  neu:  '<path d="M20 11.5A8 8 0 1 0 18.5 16"/><path d="M20.5 5.5v5h-5"/>',
+  hak:  '<path d="M5 12.5l4.5 4.5L19 7.5"/>',
+  cc:   '<rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M6.5 14.5h4M13 14.5h4.5M6.5 11h2.5M11.5 11h6"/>',
+  guet: '<path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8L3.5 9.7l5.9-.9z"/>',
+  datei:'<path d="M13.5 3.5H7a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V9z"/><path d="M13.5 3.5V9H19"/>',
+  umb:  '<path d="M4 20h4L19 9a2.5 2.5 0 0 0-3.5-3.5L4.5 16.5z"/><path d="M14.5 6.5 17.5 9.5"/>',
+  sync: '<path d="M4 9.5V8.2A3.2 3.2 0 0 1 7.2 5h9.6L14.3 2.4"/><path d="M20 14.5v1.3a3.2 3.2 0 0 1-3.2 3.2H7.2L9.7 21.6"/>',
+  m3u:  '<path d="M12 3.2v10.6"/><path d="M8.2 10.2 12 14l3.8-3.8"/><path d="M4 15.5V18a2.5 2.5 0 0 0 2.5 2.5h11A2.5 2.5 0 0 0 20 18v-2.5"/>',
+  dopp: '<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/>',
+  loe:  '<path d="M4.5 6.5h15"/><path d="M9 6.5V4.8A1.3 1.3 0 0 1 10.3 3.5h3.4A1.3 1.3 0 0 1 15 4.8v1.7"/><path d="M6.5 6.5 7.4 19a2 2 0 0 0 2 1.9h5.2a2 2 0 0 0 2-1.9l.9-12.5"/>',
+  ton:  '<path d="M4 9.5h3.5L12 6v12l-4.5-3.5H4z" fill="currentColor" stroke="none"/><path d="M15.8 9.6a3.6 3.6 0 0 1 0 4.8"/><path d="M18.4 7a7.2 7.2 0 0 1 0 10"/>',
+  zahn: '<circle cx="12" cy="12" r="3"/><path d="M19.3 13.4a7.6 7.6 0 0 0 0-2.8l1.8-1.3-1.9-3.3-2.1.8a7.6 7.6 0 0 0-2.4-1.4L14.4 3h-3.8l-.3 2.4a7.6 7.6 0 0 0-2.4 1.4l-2.1-.8L3.9 9.3l1.8 1.3a7.6 7.6 0 0 0 0 2.8l-1.8 1.3 1.9 3.3 2.1-.8a7.6 7.6 0 0 0 2.4 1.4l.3 2.4h3.8l.3-2.4a7.6 7.6 0 0 0 2.4-1.4l2.1.8 1.9-3.3z"/>',
+  temp: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.4V12l3.2 1.9"/>',
+  sche: '<circle cx="6.5" cy="17.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/><path d="M8.3 15.7 19 4M15.7 15.7 5 4"/>',
+  lese: '<path d="M6 4h9a3 3 0 0 1 3 3v13l-4.5-3L9 20V4"/><path d="M6 4a2 2 0 0 0-2 2v12"/>',
+  kop:  '<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/>',
+  dreh: '<path d="M4 12h13"/><path d="M13.5 7.5 18.5 12l-5 4.5"/><path d="M21 5v14"/>',
+  hol:  '<path d="M12 3.2v10.6"/><path d="M8.2 10.2 12 14l3.8-3.8"/><path d="M4 15.5V18a2.5 2.5 0 0 0 2.5 2.5h11A2.5 2.5 0 0 0 20 18v-2.5"/>',
+  frage:'<path d="M9.3 9a2.8 2.8 0 1 1 3.5 3.2c-.6.2-.8.7-.8 1.3v.6"/><circle cx="12" cy="17.6" r="1" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="8.6"/>',
+  sperr:'<circle cx="12" cy="12" r="8.6"/><path d="M6.2 6.2 17.8 17.8"/>',
+  merk: '<circle cx="12" cy="12" r="8.6"/><path d="M12 8v8M8 12h8"/>'
+};
+function ic(k){
+  return '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" '
+       + 'stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">' + I[k] + '</svg>';
+}
+var KM = [
+ ["Titel in der Warteschlange", [
+   ["play","Als Nächstes spielen","",1],["ende","Ans Ende","",0],["weg","Aus der Warteschlange","Entf",0],
+   ["-"],
+   ["plus","Zur Playlist …","",0],["album","Zum Album","",0],["quelle","Zur Quelle","",0]]],
+ ["Werk im Regal", [
+   ["lese","Weiterlesen","⏎",1],["hand","Stand von Hand setzen","",0],
+   ["-"],
+   ["ausg","Weitere Ausgaben","＋Alt",0],["bez","Beziehungen","",0],["neu","Neu anreichern","",0],
+   ["arch","Ins Archiv","",0]]],
+ ["Folge", [
+   ["play","Ansehen","⏎",1],["hak","Als gesehen markieren","",0],
+   ["-"],
+   ["cc","Untertitel holen","",0],["guet","Neu holen in besserer Güte","",0],["datei","Datei zeigen","",0]]],
+ ["Playlist", [
+   ["play","Abspielen","",1],["umb","Umbenennen","F2",0],
+   ["-"],
+   ["sync","Abgleichen","",0],["m3u",".m3u ausgeben","",0],["dopp","Duplikate entfernen","",0],
+   ["loe","Löschen","",-1]]],
+ ["Auf der Bühne", [
+   ["ton","Ton & Text","X",1],["zahn","Untertitel einstellen","",0],["temp","Tempo","",0],
+   ["-"],
+   ["sche","Ausschnitt ab hier","",0],["quelle","Zur Quelle","",0]]],
+ ["Im Leser", [
+   ["lese","Lesezeichen hier","B",1],["kop","Seite kopieren","Strg C",0],
+   ["-"],
+   ["dreh","Leserichtung umkehren","",0],["ausg","Andere Ausgabe","",0],["hol","Kapitel neu holen","",0]]],
+ ["Suchtreffer", [
+   ["merk","Ins Regal","⇧⏎",1],["hak","Nur merken","",0],
+   ["-"],
+   ["frage","Falsches Werk?","",0],["sperr","Quelle ausschließen","",-1]]]
+];
+(function(){
+  var w = document.getElementById("kmwahl"), z = document.getElementById("kmziel");
+  w.innerHTML = KM.map(function(m,i){
+    return '<button class="kmb' + (i===0?" an":"") + '" data-km="' + i + '">' + m[0] + '</button>';
+  }).join("");
+  function mal(i){
+    var m = KM[i];
+    z.innerHTML = '<div class="km"><div class="kmkopf">' + m[0] + '</div>'
+      + m[1].map(function(r){
+          if(r[0] === "-") return '<div class="kmtr"></div>';
+          return '<div class="kmz' + (r[3]===1?" stark":r[3]===-1?" gefahr":"") + '">'
+               + ic(r[0]) + '<span>' + r[1] + '</span>'
+               + (r[2] ? '<span class="kb2">' + r[2] + '</span>' : '') + '</div>';
+        }).join("")
+      + '</div>';
+  }
+  w.querySelectorAll("[data-km]").forEach(function(b){
+    b.addEventListener("click", function(){
+      w.querySelectorAll("[data-km]").forEach(function(x){ x.classList.remove("an"); });
+      b.classList.add("an"); mal(+b.dataset.km);
+    });
+  });
+  mal(0);
+})();
+
+/* ── Wellenform ── */
+/* Stimmen: höchstens drei, dann „+ N weitere". Bei einer einzigen Stimme
+   steht dort nur ihr Name, ohne Punkt. */
+(function(){
+  var ST = [["Thorfinn","tho","#4a3a2a,#c2924a"],["Einar","ein","#2a3a4a,#4a7a9a"],
+            ["Erzähler","erz","#3a3a3e,#6A6A72"],["Arnheid","arn",""],["Ketil","ket",""]];
+  var el = document.getElementById("stimmen");
+  el.innerHTML = ST.slice(0,3).map(function(x){
+      return '<span class="stm"><i style="background:linear-gradient(135deg,' + x[2] + ')"></i>'
+           + '<b>' + x[0] + '</b></span>';
+    }).join("")
+    + (ST.length > 3 ? '<span class="stm mehr">+ ' + (ST.length-3) + ' weitere</span>' : "");
+})();
+
+(function(){
+  var w = document.getElementById("welle"), h = "";
+  var m = [8,14,22,17,29,34,26,19,25,31,12,9,16,24,30,21,13,27,33,18,11,20,28,15,23,32,10,26,19,14];
+  for(var i=0;i<m.length;i++) h += '<i class="' + (i<11?"g":"") + '" style="height:' + m[i] + 'px"></i>';
+  w.innerHTML = h;
+})();
+
+var LAENGE = 24*60 + 10, pos = 0.34, weicheAn = false;
+var flaeche = document.getElementById("flaeche"),
+    leiste  = document.getElementById("leiste"),
+    vor     = document.getElementById("vorschau"),
+    vzt     = document.getElementById("vzt"),
+    vtempo  = document.getElementById("vtempo");
+
+function zeit(s){
+  s = Math.max(0, Math.round(s));
+  var m = Math.floor(s/60), r = s%60;
+  return (m<10?"0":"") + m + ":" + (r<10?"0":"") + r;
+}
+function setzePos(a){
+  pos = Math.max(0, Math.min(1, a));
+  document.getElementById("gespielt").style.width = (pos*100) + "%";
+  document.getElementById("griff").style.left     = (pos*100) + "%";
+  document.getElementById("tjetzt").textContent   = zeit(pos*LAENGE);
+  document.getElementById("trest").textContent    = zeit((1-pos)*LAENGE);
+  var vid = document.querySelector(".tab.on").dataset.b === "video";
+  document.getElementById("skip").hidden     = !vid || pos > 0.085;
+  var nahEnde = vid && pos >= 0.90 && !leiste.classList.contains("spult");
+  document.getElementById("naechste").hidden = !nahEnde || weicheAn;
+  document.getElementById("weiche").hidden   = !nahEnde || !weicheAn;
+  /* Weiche und Besetzung teilen sich das Bild nicht — die Weiche will Entscheidung,
+     die Besetzung will Muße. (JB-Fund 07.08.) */
+  if(nahEnde){
+    document.getElementById("besetzung").hidden = true;
+    document.getElementById("besknopf").classList.remove("on");
+  }
+}
+
+/* ── Ruhe: alles Bedienbare blendet aus ── */
+var ruheZeit = null, ruheErzwungen = false, ruheSperre = 0;
+function wachAuf(){
+  if(ruheErzwungen) return;
+  flaeche.classList.remove("ruht");
+  clearTimeout(ruheZeit);
+  /* Solange gehalten/gespult wird, blendet nichts weg — sonst verschwindet die
+     Leiste unter dem Finger (JB-Fund 07.08.). */
+  if(laeuft && !tafelOffen() && !ruheSperre)
+    ruheZeit = setTimeout(function(){ flaeche.classList.add("ruht"); }, 2500);
+}
+function tafelOffen(){
+  return !document.getElementById("tafelTon").hidden || !document.getElementById("tafelWz").hidden;
+}
+flaeche.addEventListener("mousemove", wachAuf);
+flaeche.addEventListener("mouseleave", function(){ if(laeuft && !tafelOffen() && !ruheErzwungen) flaeche.classList.add("ruht"); });
+document.getElementById("ruheknopf").addEventListener("click", function(){
+  ruheErzwungen = !ruheErzwungen;
+  this.classList.toggle("on", ruheErzwungen);
+  this.textContent = ruheErzwungen ? "Ruhe beenden" : "Vorführen: Ruhe";
+  clearTimeout(ruheZeit);
+  flaeche.classList.toggle("ruht", ruheErzwungen);
+});
+
+/* ── Pausenkarte: je Gestalt anderer Inhalt, gleiche Bauform ──
+   Sie beantwortet immer nur die eine Frage, für die man pausiert. */
+var PK = {
+  video:{lbl:"Folge 9 · Der Regen hört auf", h:"Thorfinn erreicht Ketils Hof",
+    meta:"2023 · Wit Studio → MAPPA · 24 Min · JP",
+    p:"Nach der Schlacht bei Jomsborg verkauft Ketil einen Sklaven, den Thorfinn wiedererkennt. Die Folge, in der zum ersten Mal keine Waffe gezogen wird.",
+    r:[]},
+  musik:{lbl:"Läuft gerade · Titel 2 von 14", h:"Sakura, Sakura",
+    meta:"Kensuke Ushio · A Silent Voice OST · 2016 · FLAC 24/96",
+    p:"Aufgenommen mit präpariertem Klavier. Im Film liegt das Stück unter der Brückenszene — dieselbe Melodie kehrt im Abspann als Streichersatz wieder.",
+    r:[["als nächstes: Yuki no Furu Machi","#2a3a4a,#4a7a9a"],["Album ansehen","#3a2a3a,#8a5a7a"]]},
+  hoer:{lbl:"Band 12 · Kapitel 7", h:"Der Regen hört auf",
+    meta:"gelesen von Stimme „Thorfinn“ · von uns vertont · 41 Min",
+    p:"Du bist bei Minute 12 von 41. Das Kapitel endet mit Arnheids Antwort — danach beginnt Kapitel 8 automatisch.",
+    r:[["weiterlesen statt hören","#4a3a2a,#c2924a"]]}
+};
+var pauseZeit = null;
+function pauseKarte(an){
+  var k = document.querySelector(".tab.on").dataset.b, d = PK[k], el = document.getElementById("pausekarte");
+  el.hidden = !an;
+  if(!an || !d) return;
+  el.querySelector(".lbl").textContent  = d.lbl;
+  el.querySelector("h4").textContent    = d.h;
+  el.querySelector(".meta").textContent = d.meta;
+  el.querySelector("p").textContent     = d.p;
+  document.getElementById("besetzung").hidden =
+    !an || document.querySelector(".tab.on").dataset.b !== "video";
+  el.querySelector(".rollen").innerHTML = d.r.map(function(x){
+    return '<span class="rolle"><i style="background:linear-gradient(135deg,' + x[1] + ')"></i>' + x[0] + '</span>';
+  }).join("");
+}
+document.getElementById("besknopf").addEventListener("click", function(){
+  var b = document.getElementById("besetzung");
+  b.hidden = !b.hidden;
+  this.classList.toggle("on", !b.hidden);
+});
+
+document.getElementById("pauseknopf").addEventListener("click", function(){
+  var an = document.getElementById("pausekarte").hidden;
+  pauseKarte(an);
+  this.classList.toggle("on", an);
+  this.textContent = an ? "Pausenkarte weg" : "Vorführen: Pausenkarte";
+});
+
+/* ── Play ── */
+var laeuft = true;
+var PAUSE = '<svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/></svg>';
+var PLAY  = '<svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5l12 7-12 7z"/></svg>';
+document.getElementById("playknopf").addEventListener("click", function(){
+  laeuft = !laeuft;
+  this.innerHTML = laeuft ? PAUSE : PLAY;
+  this.title = laeuft ? "Pause" : "Weiter";
+  clearTimeout(pauseZeit);
+  if(laeuft){ pauseKarte(false); wachAuf(); }
+  else { flaeche.classList.remove("ruht"); clearTimeout(ruheZeit);
+         pauseZeit = setTimeout(function(){ pauseKarte(true); }, 12000); }
+});
+
+/* ── Spulen: tippen = 10 s, halten = immer schneller ────────────────────
+   Staffelung wie bei Plex/Kodi, aber als GESTE statt als drei Tastenkombis.
+   Es wird gespult, nicht schnell abgespielt: kein Ton, nur Kachelbilder. */
+var STUFEN = [{ab:400,t:4},{ab:1200,t:12},{ab:2200,t:30},{ab:3400,t:60}];
+document.querySelectorAll(".spulkn").forEach(function(b){
+  var richtung = +b.dataset.r, timer = null, halten = null, spult = false, aktiv = false;
+
+  function los(e){
+    if(aktiv) return;                      /* zweiter Druck ohne Loslassen: ignorieren */
+    aktiv = true; spult = false;
+    ruheSperre++; wachAuf();               /* Bedienung bleibt sichtbar, solange gehalten wird */
+    e.preventDefault();
+    if(b.setPointerCapture && e.pointerId !== undefined) b.setPointerCapture(e.pointerId);
+    halten = setTimeout(function(){
+      spult = true;
+      leiste.classList.add("spult");
+      vor.hidden = !hatBild(); vtempo.hidden = !hatBild();
+      var t0 = 400;
+      timer = setInterval(function(){
+        t0 += 60;
+        var tempo = 4;
+        for(var i=0;i<STUFEN.length;i++) if(t0 >= STUFEN[i].ab) tempo = STUFEN[i].t;
+        var neu = pos + richtung * (tempo * 0.06) / LAENGE;
+        setzePos(neu);
+        vtempo.textContent = tempo + "\u00d7";
+        vor.style.left = (pos*100) + "%";
+        vzt.textContent = zeit(pos*LAENGE);
+        /* am Anfang oder Ende ist Schluss — nicht stumm weiterrattern */
+        if(pos <= 0 || pos >= 1){ stopp(); }
+      }, 60);
+    }, 400);
+  }
+
+  function stopp(){
+    if(!aktiv) return;                     /* der EINE Wachposten gegen Doppelaufrufe */
+    aktiv = false;
+    clearTimeout(halten); clearInterval(timer);
+    halten = null; timer = null;
+    leiste.classList.remove("spult");
+    vor.hidden = true; vtempo.hidden = true;
+    if(!spult) setzePos(pos + richtung * 10 / LAENGE);   /* war nur ein Tipp */
+    spult = false;
+    ruheSperre = Math.max(0, ruheSperre - 1);
+    wachAuf();
+  }
+
+  b.addEventListener("pointerdown", los);
+  b.addEventListener("pointerup", stopp);
+  b.addEventListener("pointercancel", stopp);
+  /* NICHT auf mouseleave stoppen: man darf beim Halten vom Knopf rutschen. */
+  window.addEventListener("blur", stopp);
+});
+
+/* ── Leiste: Vorschau und Springen ── */
+function anteil(e){
+  var r = leiste.getBoundingClientRect();
+  return Math.max(0, Math.min(1, (e.clientX - r.left) / r.width));
+}
+function hatBild(){ return document.querySelector(".tab.on").dataset.b === "video"; }
+leiste.addEventListener("mousemove", function(e){
+  if(leiste.classList.contains("spult")) return;
+  /* Kein Video, kein Vorschaubild — bei Ton gibt es nichts zu zeigen (JB-Fund 07.08.) */
+  if(!hatBild()){ vor.hidden = true; return; }
+  var a = anteil(e);
+  vor.hidden = false; vtempo.hidden = true;
+  vor.style.left = (a*100) + "%";
+  vzt.textContent = zeit(a*LAENGE);
+});
+leiste.addEventListener("mouseleave", function(){
+  if(!leiste.classList.contains("spult")) vor.hidden = true;
+});
+leiste.addEventListener("click", function(e){ setzePos(anteil(e)); });
+
+/* ── Tafeln ── */
+function tafel(id){
+  ["tafelTon","tafelWz"].forEach(function(k){
+    document.getElementById(k).hidden = (k !== id) || !document.getElementById(k).hidden;
+  });
+  document.getElementById("tonknopf").classList.toggle("on", !document.getElementById("tafelTon").hidden);
+  document.getElementById("zahnrad").classList.toggle("on", !document.getElementById("tafelWz").hidden);
+  wachAuf();
+}
+document.getElementById("tonknopf").addEventListener("click", function(){
+  /* Beim Hörbuch trägt derselbe Knopf die Einschlafzeit — dann darf er NICHT
+     die Ton-&-Text-Tafel öffnen (JB-Fund 07.08.). Er schaltet die Zeit weiter. */
+  if(document.querySelector(".tab.on").dataset.b === "hoer"){
+    var Z = ["aus","15 min","30 min","45 min","Kapitelende"];
+    schlafI = (schlafI + 1) % Z.length;
+    this.innerHTML = "Einschlafen <b>" + Z[schlafI] + "</b>";
+    this.classList.toggle("on", schlafI > 0);
+    return;
+  }
+  tafel("tafelTon");
+});
+var schlafI = 2;
+function musAnordnung(k){
+  document.getElementById("mus").className = "mus " + k;
+  /* A: das Cover traegt den Titel → oben nur die Herkunft.
+     B und C: Titel oben, weil er dort klein wird bzw. der Text regiert. */
+  var oben = (k !== "a");
+  document.getElementById("titelblock").hidden = !oben;
+  document.getElementById("herkunft").hidden   = oben;
+}
+document.querySelectorAll("[data-m]").forEach(function(b){
+  b.addEventListener("click", function(){
+    document.querySelectorAll("[data-m]").forEach(function(x){ x.classList.remove("an"); });
+    b.classList.add("an");
+    musAnordnung(b.dataset.m);
+  });
+});
+document.getElementById("wslwerk").addEventListener("click", function(e){
+  e.stopPropagation();
+  var m = document.getElementById("wslmenue"); m.hidden = !m.hidden;
+});
+document.getElementById("wslmenue").addEventListener("click", function(){ this.hidden = true; });
+
+document.getElementById("wslknopf").addEventListener("click", function(){
+  var w = document.querySelector(".wsl");
+  w.hidden = !w.hidden;
+  this.classList.toggle("an", !w.hidden);
+  document.querySelector(".buehne").classList.toggle("ohnewsl", w.hidden);
+});
+document.getElementById("zahnrad").addEventListener("click", function(){ tafel("tafelWz"); });
+/* Klick irgendwo neben einer Tafel schliesst sie — JB-Fund 07.08. */
+document.getElementById("flaeche").addEventListener("pointerdown", function(e){
+  if(!tafelOffen()) return;
+  if(e.target.closest(".tafel") || e.target.closest("#tonknopf") || e.target.closest("#zahnrad")) return;
+  document.getElementById("tafelTon").hidden = true;
+  document.getElementById("tafelWz").hidden  = true;
+  document.getElementById("tonknopf").classList.remove("on");
+  document.getElementById("zahnrad").classList.remove("on");
+  wachAuf();
+}, true);
+
+document.querySelectorAll("[data-zu]").forEach(function(x){
+  x.addEventListener("click", function(){ document.getElementById(x.dataset.zu).hidden = true; tafel(""); });
+});
+
+document.querySelectorAll("#tafelTon .tz").forEach(function(z){
+  z.addEventListener("click", function(){
+    /* Die Wahl muss oben ankommen: Kopfzeile, Knopf und Untertitel-Werkstatt
+       zeigen denselben Stand (JB-Fund 07.08.). */
+    var grp = [z], p = z.previousElementSibling, n = z.nextElementSibling;
+    while(p && p.classList.contains("tz")){ grp.push(p); p = p.previousElementSibling; }
+    while(n && n.classList.contains("tz")){ grp.push(n); n = n.nextElementSibling; }
+    grp.forEach(function(x){
+      x.classList.remove("on");
+      var d = x.querySelector(".d"); if(d && d.textContent === "✓") d.remove();
+    });
+    z.classList.add("on");
+    if(!z.querySelector(".d")){
+      var s = document.createElement("span"); s.className = "d"; s.textContent = "✓"; z.appendChild(s);
+    }
+    tonTextStand();
+  });
+});
+
+/* Liest den Stand aus der Tafel und schreibt ihn überall hin. */
+function tonTextStand(){
+  var t = document.getElementById("tafelTon");
+  var gruppen = [], akt = [];
+  t.querySelectorAll(".tz, h5, .tsep").forEach(function(el){
+    if(el.classList.contains("tz")){ akt.push(el); } else { if(akt.length) gruppen.push(akt); akt = []; }
+  });
+  if(akt.length) gruppen.push(akt);
+  var kurz = gruppen.map(function(g){
+    var an = g.filter(function(x){ return x.classList.contains("on"); })[0];
+    if(!an) return "—";
+    var txt = an.querySelector(".t").textContent;
+    if(/Japan/.test(txt)) return "JP";
+    if(/Deutsch/.test(txt)) return "DE";
+    if(/Engl/.test(txt))  return "EN";
+    if(/aus/.test(txt))   return "aus";
+    return txt.slice(0,2).toUpperCase();
+  });
+  document.getElementById("tonknopf").innerHTML = "Ton &amp; Text <b>" + kurz.join(" / ") + "</b>";
+  var sub = gruppen[1] ? gruppen[1].filter(function(x){ return x.classList.contains("on"); })[0] : null;
+  var st  = sub ? sub.querySelector(".t").textContent : "aus";
+  document.getElementById("p2").textContent = kurz[0] + " + " + st.replace(" — ", " ");
+  /* Untertitel-Sprache in der Werkstatt mitziehen */
+  if(/von uns/.test(st)) subStil.sprache = "de-ki";
+  else if(/Deutsch/.test(st)) subStil.sprache = "de";
+  else if(/Engl/.test(st))    subStil.sprache = "en";
+  subStil.modus = /aus/.test(st) ? "aus" : (subStil.modus === "aus" ? "zeilen" : subStil.modus);
+  subZeilen();
+  var el = document.getElementById("ut");
+  if(el) el.hidden = (subStil.modus === "aus") || document.querySelector(".tab.on").dataset.b !== "video";
+}
+
+/* ── Untertitel-Werkstatt ────────────────────────────────────────────────────
+   Eins zu eins aus SyncYouTube `oberflaeche.py` → subMenu() / SUB_STANDARD /
+   SUB_SCHRIFTEN uebernommen. Gleiche Zeilen, gleiche Stufen, gleiche Regeln:
+     · Live-Vorschau oben mit FESTER Hoehe (JB 05.08.)
+     · im Karaoke-Modus verschwinden Farbe/Deckkraft/Hintergrund — die Farben
+       gehoeren dort dem Wischer (JB 05.08.)
+     · Deckkraft als EIN Zyklusknopf statt Knopfreihe (JB: „zu viel Text")
+     · Versatz mit umschaltbarer Schrittweite 0,1 → 0,5 → 1 → 5 s, je Titel gemerkt
+     · Pfeiltasten bewegen den Fokus, Enter waehlt (fernbedienungstauglich)
+   NEU fuer SyncFindus: Zeile „Ort" (unten/oben) und „Rand" (Kontur), weil wir
+   auch senkrecht gelesene Werke und Karaoke im Vollbild haben. */
+var SUB_STANDARD = {modus:"zeilen", sprache:"de", groesse:1, schrift:"standard",
+  farbe:"#ffffff", deckkraft:1, schatten:false, hg:"schwarz", hg_deckkraft:0.7,
+  ort:"unten", rand:false, versatz:0};
+var SUB_SCHRIFTEN = {
+  standard:'system-ui,"Segoe UI",sans-serif',
+  serif:'Literata,Georgia,"Times New Roman",serif',
+  mono:'ui-monospace,Consolas,"Courier New",monospace',
+  casual:'"Comic Sans MS","Segoe Print",cursive',
+  kursiv:'"Segoe Script","Brush Script MT",cursive',
+  breit:'"Arial Black","Segoe UI",sans-serif'
+};
+var GROESSEN = [["0.8",10,"klein"],["1",13,"mittel"],["1.35",16,"gross"],["1.8",19,"riesig (TV)"]];
+var SUBFARBEN = ["#ffffff","#111111","#3b6df0","#38d1c8","#59c93c","#ffe94a","#e04343","#c94fc9"];
+var SPRACHEN = [["de","Deutsch — Fan"],["de-ki","Deutsch — von uns"],["en","Englisch"],["ja-orig","Original"]];
+var subStil = Object.assign({}, SUB_STANDARD), subSchritt = 0.5;
+
+function subAnwenden(){
+  var el = document.getElementById("ut"), pv = document.getElementById("probeut");
+  var kar = subStil.modus === "karaoke";
+  var farbe = kar ? "#ffffff" : subStil.farbe;
+  var hg = (kar || subStil.hg_deckkraft <= 0) ? "transparent"
+         : (subStil.hg === "weiss" ? "rgba(255,255,255," + subStil.hg_deckkraft + ")"
+                                   : "rgba(0,0,0," + subStil.hg_deckkraft + ")");
+  var schatten = (!kar && subStil.schatten) ? "0 2px 4px rgba(0,0,0,.85)" : "none";
+  var rand = subStil.rand ? "-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000" : "";
+  [el, pv].forEach(function(e){
+    if(!e) return;
+    e.style.fontFamily = SUB_SCHRIFTEN[subStil.schrift];
+    e.style.color = kar ? "#ffffff" : hexRgba(farbe, subStil.deckkraft);
+    e.style.textShadow = [rand, schatten].filter(Boolean).join(",") || "none";
+  });
+  if(el){
+    el.style.setProperty("--utgr", subStil.groesse);
+    el.hidden = (subStil.modus === "aus") || document.querySelector(".tab.on").dataset.b !== "video";
+    el.classList.toggle("obenrum", subStil.ort === "oben");
+    var sp = el.querySelector("span");
+    if(sp){ sp.style.background = hg; sp.style.borderRadius = "5px";
+            sp.style.padding = (hg === "transparent") ? "0" : "2px 9px"; }
+  }
+  if(pv){
+    pv.style.fontSize = (13 * subStil.groesse) + "px";
+    pv.style.background = hg;
+    pv.style.borderRadius = "5px";
+    pv.style.padding = (hg === "transparent") ? "0" : "2px 9px";
+    pv.textContent = kar ? "So läuft das Karaoke" : "So sehen Untertitel aus";
+    if(kar) pv.style.color = "var(--akz)";
+  }
+  var z = document.getElementById("zversatz");
+  z.hidden = (subStil.versatz === 0);
+  z.textContent = "Untertitel " + (subStil.versatz > 0 ? "+" : "")
+                + subStil.versatz.toFixed(1).replace(".", ",") + " s";
+  var akt = SPRACHEN.filter(function(x){ return x[0] === subStil.sprache; })[0];
+  document.getElementById("p2").textContent =
+    (subStil.modus === "aus") ? "JP · ohne Untertitel"
+                              : "JP + " + (akt ? akt[1] : subStil.sprache);
+  subZeilen();
+}
+function hexRgba(h, a){
+  var n = parseInt(h.slice(1), 16);
+  return "rgba(" + (n>>16 & 255) + "," + (n>>8 & 255) + "," + (n & 255) + "," + a + ")";
+}
+function subSetz(feld, wert){ subStil[feld] = wert; subAnwenden(); }
+
+function subZeilen(){
+  var m = document.getElementById("subrows"); if(!m) return;
+  var kar = subStil.modus === "karaoke", h = "";
+  function zeile(name, inhalt){
+    return '<div class="subz"><span>' + name + '</span><span class="subk">' + inhalt + '</span></div>';
+  }
+  function kn(label, an, art, wert, stil, titel, kl){
+    return '<button class="sb' + (kl ? " " + kl : "") + (an ? " an" : "") + '" data-art="' + art
+         + '" data-w="' + wert + '"' + (stil ? ' style="' + stil + '"' : "")
+         + (titel ? ' title="' + titel + '"' : "") + '>' + label + '</button>';
+  }
+  /* Modus und Sprache sind NICHT hier — die gehören in „Ton & Text" nebenan.
+     Hier steht nur, wie es AUSSIEHT. (JB-Fund 07.08.) */
+  /* Kein eigener Innenabstand mehr — die Zelle gibt die Breite vor, sonst stehen
+     „Größe" und „Schrift" nicht übereinander (JB-Fund 08.08., Ursache 2). */
+  h += zeile("Größe", GROESSEN.map(function(g){
+      return kn("Aa", String(subStil.groesse)===g[0], "groesse", g[0],
+                "font-size:" + g[1] + "px", g[2]); }).join(""));
+
+  h += zeile("Schrift", Object.keys(SUB_SCHRIFTEN).map(function(f){
+      return kn("Aa", subStil.schrift===f, "schrift", f,
+                "font-family:" + SUB_SCHRIFTEN[f].replace(/"/g, "'"), f); }).join(""));
+
+  if(!kar){
+    h += zeile("Farbe", SUBFARBEN.map(function(f){
+        return '<button class="sb sp' + (subStil.farbe===f ? " an" : "") + '" data-art="farbe" data-w="'
+             + f + '" style="background:' + f + '" title="' + f + '"></button>'; }).join(""));
+
+    h += zeile("Text",
+        kn(Math.round(subStil.deckkraft*100) + " %", false, "zyklus", "deckkraft", "",
+           "Deckkraft — Klick wechselt", "fix")
+      + kn("Schatten", subStil.schatten, "schatten", "x", "", "Schlagschatten hinter der Schrift")
+      + kn("Rand", subStil.rand, "rand", "x", "", "Harte Kontur — liest sich auf hellen Bildern besser"));
+
+    var hgt = subStil.hg_deckkraft <= 0 ? "aus" : Math.round(subStil.hg_deckkraft*100) + " %";
+    h += zeile("Kasten",
+        '<button class="sb sp' + (subStil.hg==="schwarz" ? " an" : "") + '" data-art="hg" data-w="schwarz" style="background:#000" title="schwarz"></button>'
+      + '<button class="sb sp' + (subStil.hg==="weiss" ? " an" : "") + '" data-art="hg" data-w="weiss" style="background:#fff" title="weiß"></button>'
+      + kn(hgt, false, "zyklus", "hg_deckkraft", "", "aus = nur Schrift", "fix"));
+  }
+
+  h += zeile("Ort",
+      kn("unten", subStil.ort==="unten", "ort", "unten")
+    + kn("oben", subStil.ort==="oben", "ort", "oben", "", "Wenn unten Schilder oder Namen im Bild stehen"));
+
+  var st = String(subSchritt).replace(".", ",");
+  h += zeile("Versatz",
+      kn("‹", false, "versatz", "-1", "", "Text kommt " + st + " s später", "pfeil")
+    + '<b class="subwert">' + (subStil.versatz>0 ? "+" : "")
+    + subStil.versatz.toFixed(1).replace(".", ",") + " s</b>"
+    + kn("›", false, "versatz", "1", "", "Text kommt " + st + " s früher — je Titel gemerkt", "pfeil")
+    + kn("± " + st, false, "schritt", "x", "opacity:.75", "Schrittweite: 0,1 → 0,5 → 1 → 5 s", "fix"));
+
+  if(kar) h += '<div class="subz"><span></span><span class="subk" style="font-size:10.5px;color:var(--butx3)">'
+             + 'Farbe und Kasten gehören im Karaoke dem Wischer</span></div>';
+
+  m.innerHTML = h;
+
+  m.querySelectorAll("[data-art]").forEach(function(b){
+    b.addEventListener("click", function(e){
+      e.stopPropagation();
+      var a = b.dataset.art, w = b.dataset.w;
+      if(a === "zyklus"){
+        if(w === "deckkraft"){ var d=[1,0.75,0.5]; subSetz("deckkraft", d[(d.indexOf(subStil.deckkraft)+1) % d.length]); }
+        else { var g=[0.7,1,0,0.25,0.5]; subSetz("hg_deckkraft", g[(g.indexOf(subStil.hg_deckkraft)+1) % g.length]); }
+      }
+      else if(a === "schatten") subSetz("schatten", !subStil.schatten);
+      else if(a === "rand")     subSetz("rand", !subStil.rand);
+      else if(a === "schritt"){ var st=[0.1,0.5,1,5]; subSchritt = st[(st.indexOf(subSchritt)+1) % st.length]; subZeilen(); }
+      else if(a === "versatz")  subSetz("versatz", Math.max(-9, Math.min(9,
+                                  Math.round((subStil.versatz + (+w)*subSchritt)*10)/10)));
+      else if(a === "groesse")  subSetz("groesse", parseFloat(w));
+      else                      subSetz(a, w);
+      var alle = [...m.querySelectorAll("button")];
+      var i = alle.indexOf(b);
+      (alle[Math.min(i, alle.length-1)] || alle[0]).focus();
+    });
+  });
+  m.onkeydown = function(e){
+    var alle = [...m.querySelectorAll("button")], i = alle.indexOf(document.activeElement);
+    if(e.key === "ArrowRight" || e.key === "ArrowDown"){ e.preventDefault(); (alle[i+1] || alle[0]).focus(); }
+    if(e.key === "ArrowLeft"  || e.key === "ArrowUp"){   e.preventDefault(); (alle[i-1] || alle[alle.length-1]).focus(); }
+  };
+}
+document.getElementById("subreset").addEventListener("click", function(){
+  subStil = Object.assign({}, SUB_STANDARD); subSchritt = 0.5; subAnwenden();
+});
+
+/* ── Tempo ── */
+var TEMPI = ["1,0×","1,25×","1,5×","1,75×","2,0×","0,75×"], ti = 0;
+document.getElementById("tempo").addEventListener("click", function(){
+  if(document.querySelector(".tab.on").dataset.b === "musik") return;
+  ti = (ti+1) % TEMPI.length;
+  this.innerHTML = "Tempo <b>" + TEMPI[ti] + "</b>";
+});
+
+/* ── Drei Gestalten ── */
+var G = {
+  video:{motor:"", titel:"Vinland Saga", sub:"Staffel 2 · Folge 9 — Der Regen hört auf",
+    p1:"1080p · HEVC", p2:"JP + DE-Untertitel", ut:true, mus:false, hoer:false,
+    lbl:"libmpv malt hier hinein<br>— und nichts sonst",
+    tempo:"Tempo <b>1,0×</b>", ton:"Ton &amp; Text <b>JP / DE</b>", unten:true},
+  musik:{motor:"musik", titel:"Sakura, Sakura", sub:"Kensuke Ushio · A Silent Voice OST",
+    p1:"FLAC 24/96", p2:"Übergang ohne Lücke", ut:false, mus:true, hoer:false, lbl:"",
+    tempo:"Klang <b>neutral</b>", ton:"Warteschlange <b>14</b>", unten:false},
+  hoer:{motor:"hoer", titel:"Vinland Saga · Band 12", sub:"Kapitel 7 — Der Regen hört auf · 12:07 / 41:22",
+    p1:"von uns vertont", p2:"Mitlesen an", ut:false, mus:false, hoer:true, lbl:"",
+    tempo:"Tempo <b>1,25×</b>", ton:"Einschlafen <b>30 min</b>", unten:false}
+};
+function setze(k){
+  var g = G[k];
+  document.getElementById("motor").className = "motor " + g.motor;
+  document.getElementById("mlbl").innerHTML  = g.lbl;
+  document.getElementById("ttitel").textContent = g.titel;
+  document.getElementById("tsub").textContent   = g.sub;
+  document.getElementById("p1").textContent = g.p1;
+  document.getElementById("p2").textContent = g.p2;
+  document.getElementById("ut").hidden   = !g.ut;
+  document.getElementById("mus").hidden  = !g.mus;
+  document.getElementById("hoer").hidden = !g.hoer;
+  document.getElementById("tempo").innerHTML    = g.tempo;
+  document.getElementById("tonknopf").innerHTML = g.ton;
+  document.getElementById("zahnrad").hidden = !g.ut;
+  document.getElementById("unten").hidden   = !g.unten;
+  document.querySelector(".buehne").classList.toggle("allein", !g.unten);
+  document.querySelector(".buehne").classList.toggle("musikmodus", k === "musik");
+  document.querySelector(".buehne").classList.toggle("hoermodus", k === "hoer");
+  document.getElementById("musreihe").hidden = (k !== "musik");
+  document.getElementById("mwahl").hidden    = (k !== "musik");
+  document.getElementById("wslmenue").hidden = true;
+  if(k === "musik"){ musAnordnung(document.querySelector("[data-m].an").dataset.m); }
+  else { document.getElementById("titelblock").hidden = false;
+         document.getElementById("herkunft").hidden = true; }
+  document.getElementById("vidreihe").hidden = (k === "musik");
+  var sch = document.getElementById("schnitt"); if(sch) sch.hidden = true;
+  document.getElementById("tafelTon").hidden = true;
+  document.getElementById("tafelWz").hidden  = true;
+  document.getElementById("besetzung").hidden = true;
+  document.getElementById("besknopf").classList.remove("on");
+  var w = document.querySelector(".wsl"); if(w) w.hidden = false;
+  document.getElementById("tonknopf").classList.remove("on");
+  pauseKarte(false);
+  setzePos(pos);
+  /* Nach jedem Bühnenwechsel neu messen — die Kopfzeile wechselt ihre Marken
+     und damit ihre Höhe, und das Hörbuch taucht erst jetzt auf. (E121) */
+  if(window.messeBuehne) window.messeBuehne();
+}
+(function(){
+  var f = document.getElementById("folgen");
+  function schieb(r){ f.scrollBy({left: r * (f.clientWidth * 0.8), behavior:"smooth"}); }
+  document.getElementById("pfl").addEventListener("click", function(){ schieb(-1); });
+  document.getElementById("pfr").addEventListener("click", function(){ schieb(1); });
+})();
+
+document.getElementById("weicheknopf").addEventListener("click", function(){
+  weicheAn = !weicheAn;
+  this.classList.toggle("on", weicheAn);
+  setzePos(Math.max(pos, 0.93));
+});
+
+document.getElementById("staffelknopf").addEventListener("click", function(){
+  document.getElementById("stmenue").hidden = false;
+});
+document.getElementById("stzu").addEventListener("click", function(){
+  document.getElementById("stmenue").hidden = true;
+});
+document.getElementById("stmenue").addEventListener("click", function(e){
+  if(e.target === this || e.target.closest(".stz")) this.hidden = true;
+});
+
+document.querySelectorAll("[data-g]").forEach(function(b){
+  b.addEventListener("click", function(){
+    document.querySelectorAll("[data-g]").forEach(function(x){ x.classList.remove("on"); });
+    b.classList.add("on");
+    document.getElementById("unten").classList.toggle("tv", b.dataset.g === "tv");
+  });
+});
+
+document.querySelectorAll(".tab[data-b]").forEach(function(t){
+  t.addEventListener("click", function(){
+    document.querySelectorAll(".tab[data-b]").forEach(function(x){ x.classList.remove("on"); });
+    t.classList.add("on");
+    setze(t.dataset.b);
+  });
+});
+
+/* Alle Musikschalter tragen ihren Zustand als FARBE, nicht als Text — dadurch
+   springt nichts (E103) und man sieht den Stand im Augenwinkel. */
+document.querySelectorAll("[data-schalt]").forEach(function(b){
+  var stufe = b.classList.contains("an") ? 1 : 0;
+  b.addEventListener("click", function(){
+    if(b.dataset.schalt === "wdh"){
+      stufe = (stufe + 1) % 3;                   /* aus → alles → einer */
+      b.classList.toggle("an", stufe > 0);
+      var eins = b.querySelector(".wdh1");
+      if(eins) eins.setAttribute("opacity", stufe === 2 ? "1" : "0");
+    } else {
+      stufe = stufe ? 0 : 1;
+      b.classList.toggle("an", stufe === 1);
+      var pl = b.querySelector(".ikPlus"), hk = b.querySelector(".ikHaken");
+      if(pl && hk){ pl.style.display = stufe ? "none" : "block";
+                    hk.style.display = stufe ? "block" : "none"; }
+    }
+  });
+});
+
+document.getElementById("musplay").addEventListener("click", function(){
+  var an = this.innerHTML.indexOf("M7 5h3.5") >= 0;
+  this.innerHTML = an
+    ? '<svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5l12 7-12 7z"/></svg>'
+    : '<svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/></svg>';
+});
+document.getElementById("schnittknopf").addEventListener("click", function(){
+  var sch = document.getElementById("schnitt");
+  sch.hidden = !sch.hidden;
+  this.classList.toggle("an", !sch.hidden);
+});
+
+/* ══ Das Messwerk (E121: Höhen werden gemessen, nie geraten) ══
+   Drei Dinge hängen an echten Pixeln, nicht an geratenen Zahlen:
+     1. --barh   Höhe der Bedienleiste  -> nichts rutscht darunter
+     2. --kopfh  Höhe der Kopfzeile     -> die Pausenkarte hängt darunter
+     3. .kurz1-3 wie kurz die Bühne ist -> die Pausenkarte gibt gestuft nach
+   Dazu der gestufte Verzicht im Hörbuch: solange der Text höher ist als sein
+   Kasten, fällt die nächste Stufe weg — und der Knopf bleibt stehen. */
+(function(){
+  var b  = document.querySelector(".bbot"),
+      kp = document.querySelector(".btop"),
+      bu = document.querySelector(".buehne"),
+      fl = document.querySelector(".flaeche"),
+      tx = document.querySelector(".htx");
+  var STUFEN_H = ["s1","s2","s3","s4","s5"];
+
+  function hoerbuchPasst(){
+    if(!tx || !tx.offsetParent) return;
+    STUFEN_H.forEach(function(s){ tx.classList.remove(s); });
+    for(var i = 0; i < STUFEN_H.length && tx.scrollHeight > tx.clientHeight + 1; i++){
+      tx.classList.add(STUFEN_H[i]);
+    }
+  }
+  function mess(){
+    var hb = Math.ceil(b.getBoundingClientRect().height);
+    var hk = Math.ceil(kp.getBoundingClientRect().height);
+    bu.style.setProperty("--barh", hb + "px");
+    bu.style.setProperty("--kopfh", hk + "px");
+    var frei = Math.round(fl.getBoundingClientRect().height) - hb - hk;
+    bu.classList.toggle("kurz1", frei < 330);
+    bu.classList.toggle("kurz2", frei < 250);
+    bu.classList.toggle("kurz3", frei < 170);
+    hoerbuchPasst();
+  }
+  if(window.ResizeObserver){
+    var ro = new ResizeObserver(mess);
+    ro.observe(b); ro.observe(kp); ro.observe(fl);
+  }
+  window.addEventListener("resize", mess);
+  requestAnimationFrame(mess);
+  window.messeBuehne = mess;
+})();
+
+setzePos(pos);
+subAnwenden();
+tonTextStand();
+wachAuf();
+</script>

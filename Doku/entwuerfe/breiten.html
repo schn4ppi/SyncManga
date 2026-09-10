@@ -1,0 +1,360 @@
+<title>SyncRegal — Eine Oberfläche von 360 bis 5120</title>
+<style>
+:root{
+  --bg:#0E1217; --panel:#161C23; --panel2:#1c242d; --line:#232C36; --line2:#33404e;
+  --tx:#E4E9EF; --tx2:#8B97A5; --tx3:#5f6b78; --akz:#F0873C; --onA:#150a02;
+  --ok:#5fd07a; --weg:#4a5561;
+  --disp:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --data:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+}
+@media (prefers-color-scheme:light){
+  :root{--bg:#eff1f4;--panel:#fff;--panel2:#f4f6f8;--line:#dde2e8;--line2:#c3ccd6;
+    --tx:#1a1f26;--tx2:#5a6672;--tx3:#8592a0;--akz:#b8551c;--onA:#fff;--ok:#237a42;--weg:#aab4bf}
+}
+:root[data-theme="light"]{--bg:#eff1f4;--panel:#fff;--panel2:#f4f6f8;--line:#dde2e8;--line2:#c3ccd6;
+  --tx:#1a1f26;--tx2:#5a6672;--tx3:#8592a0;--akz:#b8551c;--onA:#fff;--ok:#237a42;--weg:#aab4bf}
+:root[data-theme="dark"]{--bg:#0E1217;--panel:#161C23;--panel2:#1c242d;--line:#232C36;--line2:#33404e;
+  --tx:#E4E9EF;--tx2:#8B97A5;--tx3:#5f6b78;--akz:#F0873C;--onA:#150a02;--ok:#5fd07a;--weg:#4a5561}
+
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:var(--disp);font-size:16px;
+  line-height:1.6;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1080px;margin:0 auto;padding:36px 20px 80px}
+.eyebrow{font-family:var(--data);font-size:11px;letter-spacing:.17em;text-transform:uppercase;
+  color:var(--akz);margin:0 0 11px}
+h1{font-size:clamp(28px,4.3vw,43px);line-height:1.06;letter-spacing:-.028em;font-weight:800;
+  margin:0 0 13px;text-wrap:balance}
+.lede{font-size:17px;color:var(--tx2);max-width:64ch;margin:0}
+h2{font-size:23px;font-weight:800;letter-spacing:-.022em;margin:0 0 8px}
+.sub{color:var(--tx2);margin:0 0 20px;max-width:66ch}
+hr.rule{height:1px;background:var(--line);border:0;margin:46px 0}
+
+/* ---- Regler ---- */
+.steuer{margin:30px 0 6px;background:var(--panel);border:1px solid var(--line);
+  border-radius:14px;padding:18px 20px}
+.st-kopf{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:14px}
+.st-w{font-family:var(--data);font-size:26px;font-weight:700;color:var(--akz);
+  font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.st-n{font-size:14.5px;color:var(--tx2)}
+.st-n b{color:var(--tx)}
+input[type=range]{width:100%;accent-color:var(--akz);height:26px;cursor:pointer}
+input[type=range]:focus-visible{outline:2px solid var(--akz);outline-offset:3px}
+.marks{display:flex;justify-content:space-between;font-family:var(--data);font-size:9.5px;
+  color:var(--tx3);margin-top:2px}
+.presets{display:flex;gap:6px;flex-wrap:wrap;margin-top:13px}
+.pre{appearance:none;border:1px solid var(--line2);background:var(--panel2);color:var(--tx2);
+  font-family:var(--disp);font-size:12.5px;font-weight:600;padding:6px 13px;border-radius:99px;cursor:pointer}
+.pre:hover{color:var(--tx);border-color:var(--akz)}
+.pre:focus-visible{outline:2px solid var(--akz);outline-offset:2px}
+
+/* ---- Vorschau-Bühne ---- */
+.buehne{margin-top:16px;border:1px solid var(--line2);border-radius:14px;overflow:hidden;
+  background:var(--panel2);position:relative}
+.buehne-in{overflow:hidden}
+#rahmen{transform-origin:top left;background:#0E1217;color:#E4E9EF;font-family:var(--disp)}
+
+/* ==== Die Oberfläche im Rahmen ==== */
+.app{display:flex;min-height:520px}
+.seite{width:186px;flex:0 0 186px;background:#12171e;border-right:1px solid #232C36;padding:16px 12px;
+  display:none}
+.app.hat-seite .seite{display:block}
+.s-log{font-weight:800;font-size:15px;letter-spacing:-.02em;margin-bottom:18px;color:#E4E9EF}
+.s-log em{color:#F0873C;font-style:normal}
+.s-nav{display:flex;flex-direction:column;gap:3px}
+.s-nav span{font-size:13px;color:#8B97A5;padding:9px 10px;border-radius:8px}
+.s-nav span.on{background:#1c242d;color:#E4E9EF}
+
+.haupt{flex:1;min-width:0;display:flex;flex-direction:column}
+.o-bar{display:flex;align-items:center;gap:11px;padding:13px 18px;border-bottom:1px solid #232C36}
+.o-av{width:28px;height:28px;border-radius:8px;background:linear-gradient(150deg,#F0873C,#b8551c);
+  flex:0 0 auto;display:grid;place-items:center;font-size:11px;font-weight:800;color:#150a02}
+.o-who{font-size:13px;color:#8B97A5}
+.app.eng .o-who{display:none}
+.o-sp{flex:1}
+.o-ic{width:34px;height:34px;border-radius:9px;border:1px solid #33404e;display:grid;place-items:center;
+  color:#8B97A5;font-size:15px;flex:0 0 auto}
+.app.touch .o-ic{width:44px;height:44px;font-size:18px}
+
+/* Held */
+.o-held{padding:18px;position:relative;overflow:hidden;min-height:132px;display:flex;align-items:flex-end}
+.o-held::before{content:"";position:absolute;inset:0;
+  background:radial-gradient(120% 130% at 78% 12%,#2f4a63,transparent 62%),linear-gradient(100deg,#0E1217 34%,#16232f)}
+.o-held-in{position:relative;max-width:44ch}
+.o-kick{font-family:var(--data);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;
+  color:#F0873C;font-weight:700;margin-bottom:7px}
+.o-held h3{margin:0 0 5px;font-size:22px;line-height:1.1;letter-spacing:-.022em;font-weight:800}
+.app.eng .o-held h3{font-size:17px}
+.o-meta{font-family:var(--data);font-size:10.5px;color:#8B97A5;margin-bottom:12px}
+.app.p-meta-weg .o-meta{display:none}
+.o-akt{display:flex;gap:8px}
+.o-btn{border:0;border-radius:9px;padding:9px 18px;font-family:inherit;font-size:13.5px;font-weight:700;
+  background:#F0873C;color:#150a02;white-space:nowrap}
+.app.touch .o-btn{padding:13px 22px;font-size:15px}
+.o-btn.geist{background:transparent;border:1px solid #33404e;color:#8B97A5}
+.app.p-zweitknopf-weg .o-btn.geist{display:none}
+
+/* Regal */
+.o-regal{padding:16px 18px;border-top:1px solid #232C36}
+.o-rk{display:flex;align-items:baseline;gap:11px;margin-bottom:11px}
+.o-rk h4{margin:0;font-size:14.5px;font-weight:700;letter-spacing:-.01em}
+.o-rk span{font-family:var(--data);font-size:10px;color:#5f6b78}
+.app.p-untertitel-weg .o-rk span{display:none}
+.o-tiles{display:grid;gap:11px}
+.o-t{border-radius:9px;overflow:hidden;border:1px solid #232C36}
+.o-p{aspect-ratio:2/3;position:relative;display:flex;align-items:flex-end;padding:8px}
+.o-p b{position:relative;font-size:10.5px;font-weight:800;color:#fff;line-height:1.15;
+  text-shadow:0 1px 6px rgba(0,0,0,.8)}
+.o-p::after{content:"";position:absolute;inset:0;
+  background:linear-gradient(to top,rgba(0,0,0,.8),transparent 58%)}
+.o-p i{position:absolute;left:0;bottom:0;height:3px;background:#F0873C;z-index:2}
+.o-tm{font-family:var(--data);font-size:9px;color:#5f6b78;padding:5px 2px 0;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.app.p-kachelmeta-weg .o-tm{display:none}
+.o-chips{display:flex;gap:6px;margin-top:12px}
+.app.p-filter-weg .o-chips{display:none}
+.o-c{font-family:var(--data);font-size:9.5px;padding:5px 11px;border-radius:99px;
+  border:1px solid #232C36;color:#8B97A5;white-space:nowrap}
+.app.touch .o-c{font-size:12px;padding:11px 16px}
+.o-c.on{background:#F0873C;color:#150a02;border-color:#F0873C}
+
+/* Befehlsleiste */
+.o-cmd{margin-top:auto;display:flex;align-items:center;gap:11px;padding:11px 18px;
+  border-top:1px solid #232C36;background:#12171e}
+.o-in{flex:1;min-width:0;background:#0E1217;border:1px solid #33404e;border-radius:9px;padding:9px 12px;
+  font-size:12px;color:#5f6b78;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.app.p-eingabe-knopf .o-in{flex:0 0 auto;width:44px;text-align:center;color:#F0873C}
+.app.touch .o-in{padding:13px 14px}
+.o-q{font-family:var(--data);font-size:10.5px;color:#8B97A5;white-space:nowrap}
+.app.p-queue-weg .o-q{display:none}
+
+/* Detailspalte (nur sehr breit) */
+.detail{width:300px;flex:0 0 300px;border-left:1px solid #232C36;background:#12171e;padding:18px;display:none}
+.app.hat-detail .detail{display:block}
+.d-l{font-family:var(--data);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;
+  color:#5f6b78;margin-bottom:11px}
+.d-p{aspect-ratio:2/3;border-radius:10px;background:linear-gradient(150deg,#3d5570,#161f2a);margin-bottom:12px}
+.d-t{font-size:15px;font-weight:800;letter-spacing:-.015em;margin-bottom:5px}
+.d-m{font-family:var(--data);font-size:10px;color:#8B97A5;line-height:1.7}
+
+/* ---- Prioritätsleiter ---- */
+.leiter{margin-top:26px}
+.lz{display:flex;align-items:center;gap:13px;padding:9px 13px;border-radius:9px;
+  border:1px solid var(--line);margin-bottom:5px;background:var(--panel);transition:opacity .2s}
+.lz.aus{opacity:.42}
+.lz-r{font-family:var(--data);font-size:10.5px;color:var(--tx3);width:20px;flex:0 0 auto;
+  font-variant-numeric:tabular-nums}
+.lz-n{flex:1;font-size:13.5px;min-width:0}
+.lz-w{font-family:var(--data);font-size:10px;color:var(--tx3);white-space:nowrap}
+.lz-s{font-family:var(--data);font-size:9.5px;font-weight:700;padding:3px 9px;border-radius:99px;
+  white-space:nowrap}
+.lz .lz-s{background:color-mix(in srgb,var(--ok) 18%,transparent);color:var(--ok)}
+.lz.aus .lz-s{background:color-mix(in srgb,var(--weg) 22%,transparent);color:var(--weg)}
+
+/* ---- Karten ---- */
+.karten{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px;margin-top:22px}
+.k{background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:18px}
+.k b{display:block;font-size:14.5px;margin-bottom:7px;letter-spacing:-.01em}
+.k p{margin:0;font-size:13.5px;color:var(--tx2);line-height:1.6}
+.k .n{font-family:var(--data);font-size:10px;color:var(--akz);letter-spacing:.13em;
+  display:block;margin-bottom:9px;text-transform:uppercase}
+.k code{font-family:var(--data);font-size:12px;color:var(--tx)}
+@media (prefers-reduced-motion:reduce){*{transition-duration:.001ms!important}}
+</style>
+
+<div class="wrap">
+
+<p class="eyebrow">SyncRegal · Baustein Oberfläche</p>
+<h1>Eine Oberfläche.<br>360 Pixel bis 5120.</h1>
+<p class="lede">Nicht sechs Entwürfe für sechs Geräte — eine Rangfolge. Jedes Element hat einen Rang;
+beim Schrumpfen fällt von unten weg. Zieh den Regler und schau, was verschwindet.</p>
+
+<div class="steuer">
+  <div class="st-kopf">
+    <span class="st-w" id="w">1440 px</span>
+    <span class="st-n" id="n"><b>Desktop</b> · Seitenleiste fest, alles sichtbar</span>
+  </div>
+  <input type="range" id="r" min="360" max="5120" step="20" value="1440" aria-label="Fensterbreite">
+  <div class="marks"><span>360</span><span>768</span><span>1280</span><span>1920</span><span>2560</span><span>3840</span><span>5120</span></div>
+  <div class="presets">
+    <button class="pre" data-w="390">Handy 390</button>
+    <button class="pre" data-w="834">Tablet 834</button>
+    <button class="pre" data-w="1280">Laptop 1280</button>
+    <button class="pre" data-w="1920">Full HD</button>
+    <button class="pre" data-w="3440">Ultrabreit 3440</button>
+    <button class="pre" data-w="5120">5K 5120</button>
+  </div>
+</div>
+
+<div class="buehne"><div class="buehne-in" id="buehne">
+  <div id="rahmen">
+    <div class="app" id="app">
+      <aside class="seite">
+        <div class="s-log">Sync<em>Regal</em></div>
+        <nav class="s-nav">
+          <span class="on">Start</span><span>Angefangen</span><span>Anime</span>
+          <span>Novels</span><span>Musik</span><span>Filme</span><span>Werkstatt</span>
+        </nav>
+      </aside>
+
+      <div class="haupt">
+        <div class="o-bar">
+          <div class="o-av">JB</div><span class="o-who">Jan-Bernd</span>
+          <span class="o-sp"></span><span class="o-ic">⌕</span><span class="o-ic">⚙</span>
+        </div>
+
+        <section class="o-held"><div class="o-held-in">
+          <div class="o-kick">Weiter, wo du warst</div>
+          <h3>Frieren — Nach dem Ende der Reise</h3>
+          <div class="o-meta">Anime · Staffel 1 · Folge 14 · noch 17 Min · zuletzt gestern 22:40</div>
+          <div class="o-akt"><button class="o-btn">▶ Weitersehen</button>
+            <button class="o-btn geist">Etwas anderes</button></div>
+        </div></section>
+
+        <section class="o-regal">
+          <div class="o-rk"><h4>Angefangen</h4><span>gemischt — der Faden zählt, nicht die Gattung</span></div>
+          <div class="o-tiles" id="tiles"></div>
+          <div class="o-chips"><span class="o-c on">Angefangen</span><span class="o-c">Neu</span>
+            <span class="o-c">Offline</span><span class="o-c">Alles</span></div>
+        </section>
+
+        <div class="o-cmd">
+          <div class="o-in" id="cmdin">Link, Magnet oder Titel einfügen…</div>
+          <div class="o-q">2 in Arbeit · Vinland Saga S02E19 · 68 %</div>
+        </div>
+      </div>
+
+      <aside class="detail">
+        <div class="d-l">Ausgewählt</div>
+        <div class="d-p"></div>
+        <div class="d-t">Lord of the Mysteries</div>
+        <div class="d-m">Novel · Band 3 · Kapitel 412<br>44 % gelesen<br>1432 Kapitel übersetzt<br>🖐 von Hand · EN<br>offline verfügbar</div>
+      </aside>
+    </div>
+  </div>
+</div></div>
+
+<div class="leiter" id="leiter"></div>
+
+<hr class="rule">
+
+<h2>Die drei Arten zu wachsen</h2>
+<p class="sub">Der Fehler bei großen Bildschirmen ist, alles mitzudehnen. Breit heißt nicht groß —
+es heißt <em>mehr</em>. Jedes Element gehört genau einer dieser Regeln.</p>
+
+<div class="karten">
+  <div class="k"><span class="n">Regel A</span><b>Mehr davon</b>
+    <p>Regale, Kacheln, Listen. Die Kachel behält ihre Größe, es passen nur mehr rein.
+    Bei 5120 px sind das 14 Kacheln statt 6 — <b>nicht</b> 6 riesige.</p></div>
+  <div class="k"><span class="n">Regel B</span><b>Nebeneinander</b>
+    <p>Ab etwa 2200 px wandert das Detail neben das Regal statt darüber. Die Breite wird
+    <em>benutzt</em> statt verschenkt — und man verliert den Überblick nicht beim Nachschauen.</p></div>
+  <div class="k"><span class="n">Regel C</span><b>Nie breiter</b>
+    <p>Alles Gelesene. Fließtext bleibt bei <code>~65–75 Zeichen</code>, egal wie breit der Schirm ist.
+    Eine Zeile über 30 cm findet das Auge am Zeilenende nicht mehr zurück.</p></div>
+  <div class="k"><span class="n">Regel D</span><b>Fingerfreundlich ab Touch</b>
+    <p>WCAG 2.5.8 verlangt <code>24 × 24 px</code> — Apple empfiehlt <code>44</code>, Material <code>48</code>.
+    Der Trick: das <em>Symbol</em> bleibt klein, die <em>Trefferfläche</em> wächst per Innenabstand.
+    Erkannt wird am Zeigergerät, nicht an der Breite.</p></div>
+  <div class="k"><span class="n">Verboten</span><b>Vier Dinge, immer</b>
+    <p>Kein waagerechtes Scrollen der Seite. Kein Menü, das über den Rand aufklappt. Kein Fenster,
+    das von Haus aus scrollen muss. Keine Zahl fest im Code — alles über Ränge.</p></div>
+  <div class="k"><span class="n">Der Prüfstein</span><b>Ein Bauteil, alle Breiten</b>
+    <p>Jedes Bauteil wird bei <code>360</code>, <code>834</code>, <code>1280</code> und <code>3440</code>
+    geprüft, bevor es fertig ist. Bricht es bei einer, ist es nicht fertig — nicht „später anpassen".
+    Genau daran scheitern die Programme, die du beschrieben hast.</p></div>
+</div>
+
+</div>
+
+<script>
+const TITEL = ["Frieren","Vinland Saga","Lord of the Mysteries","Junk the Black Shadow","Der Wüstenplanet",
+  "Omniscient Reader","Dungeon Meshi","Solo Leveling","Reverend Insanity","One Piece","Blue Giant",
+  "Apothecary Diaries","Perfect Blue","Dune Part Two"];
+const HUE = [172,210,268,22,34,198,126,246,288,8,216,158,330,28];
+const META = ["S1 · Folge 14","S2 · Folge 19","Band 3 · Kap. 412","Kap. 30","Teil 1 · Kap. 9",
+  "Arc 4 · Kap. 188","S1 · Folge 7","Kap. 141","Band 12","Kap. 1108","Kap. 62","S2 · Folge 3","Film","Teil 2"];
+const FORT = [31,68,44,12,55,81,22,0,0,0,0,0,0,0];
+
+/* Rang → fällt weg unterhalb dieser Breite */
+const LEITER = [
+  {r:1,  n:"Der Weiter-Knopf",              w:0,    k:null},
+  {r:2,  n:"Titel des Helden",              w:0,    k:null},
+  {r:3,  n:"Erste Kachelreihe",             w:0,    k:null},
+  {r:4,  n:"Fortschrittsbalken",            w:0,    k:null},
+  {r:5,  n:"Kopfzeile mit Profil",          w:0,    k:null},
+  {r:6,  n:"Filter-Chips",                  w:420,  k:"p-filter-weg"},
+  {r:7,  n:"Meta unter der Kachel",         w:520,  k:"p-kachelmeta-weg"},
+  {r:8,  n:"Zeile unterm Held",             w:600,  k:"p-meta-weg"},
+  {r:9,  n:"Zweiter Knopf im Held",         w:700,  k:"p-zweitknopf-weg"},
+  {r:10, n:"Eingabefeld (wird ✚-Knopf)",    w:760,  k:"p-eingabe-knopf", um:true},
+  {r:11, n:"Warteschlangen-Anzeige",        w:900,  k:"p-queue-weg"},
+  {r:12, n:"Untertitel des Regals",         w:1040, k:"p-untertitel-weg"},
+  {r:13, n:"Feste Seitenleiste",            w:1180, k:null, add:"hat-seite"},
+  {r:14, n:"Detailspalte daneben",          w:2200, k:null, add:"hat-detail"},
+];
+
+const STUFEN = [
+  {w:0,    n:"Handy hoch",   t:"eine Hand, Daumen — nur das Nötigste, große Ziele"},
+  {w:480,  n:"Handy quer",   t:"Filter kommen zurück, Kacheln bleiben groß"},
+  {w:768,  n:"Tablet",       t:"Touch-Größen bleiben — der Finger schrumpft nicht mit"},
+  {w:1180, n:"Laptop",       t:"Seitenleiste fest, Befehlsleiste vollständig"},
+  {w:1440, n:"Desktop",      t:"Seitenleiste fest, alles sichtbar"},
+  {w:1920, n:"Groß",         t:"mehr Kacheln, gleiche Kachelgröße"},
+  {w:2200, n:"Ultrabreit",   t:"Detail wandert daneben statt darüber"},
+  {w:3400, n:"5K",           t:"Inhalt gedeckelt und zentriert — nichts wird gedehnt"},
+];
+
+const app=document.getElementById("app"), rahmen=document.getElementById("rahmen"),
+      buehne=document.getElementById("buehne"), tiles=document.getElementById("tiles"),
+      leiter=document.getElementById("leiter"), r=document.getElementById("r");
+
+function zeichne(b){
+  /* Rahmenbreite + Skalierung, damit 5120 px auf den Schirm passen */
+  rahmen.style.width = b+"px";
+  const platz = buehne.clientWidth;
+  const s = Math.min(1, platz/b);
+  rahmen.style.transform = "scale("+s+")";
+  buehne.style.height = (rahmen.offsetHeight*s)+"px";
+
+  /* Klassen aus der Leiter */
+  app.className = "app";
+  LEITER.forEach(e=>{
+    if(e.k && b < e.w) app.classList.add(e.k);
+    if(e.add && b >= e.w) app.classList.add(e.add);
+  });
+  if(b < 640) app.classList.add("eng");
+  if(b < 1180) app.classList.add("touch");        /* Touch-Annahme unter Laptop-Breite */
+
+  /* Kacheln: Regel A — gleiche Größe, mehr davon; ab 3400 gedeckelt */
+  const innen = b - (b>=1180?186:0) - (b>=2200?300:0) - 36;
+  let n = Math.max(2, Math.min(14, Math.floor(innen/152)));
+  tiles.style.gridTemplateColumns = "repeat("+n+",1fr)";
+  tiles.innerHTML = Array.from({length:n},(_,i)=>{
+    const h=HUE[i%14];
+    return `<div class="o-t"><div class="o-p" style="background:linear-gradient(150deg,hsl(${h} 34% 30%),hsl(${(h+30)%360} 28% 13%))">
+      ${FORT[i%14]?`<i style="width:${FORT[i%14]}%"></i>`:""}<b>${TITEL[i%14]}</b></div>
+      <div class="o-tm">${META[i%14]}</div></div>`;
+  }).join("");
+
+  document.getElementById("cmdin").textContent = b<760 ? "✚" : "Link, Magnet oder Titel einfügen…";
+  document.getElementById("w").textContent = b+" px";
+  const st = [...STUFEN].reverse().find(x=>b>=x.w);
+  document.getElementById("n").innerHTML = "<b>"+st.n+"</b> · "+st.t;
+
+  leiter.innerHTML = LEITER.map(e=>{
+    const da = b >= e.w;
+    const wo = e.w===0 ? "immer" : "ab "+e.w+" px";
+    const zust = da ? (e.um&&b<760?"umgeformt":"sichtbar") : (e.um?"als Knopf":"ausgeblendet");
+    return `<div class="lz ${da?"":"aus"}"><span class="lz-r">${String(e.r).padStart(2,"0")}</span>
+      <span class="lz-n">${e.n}</span><span class="lz-w">${wo}</span>
+      <span class="lz-s">${zust}</span></div>`;
+  }).join("");
+}
+
+r.addEventListener("input",()=>zeichne(+r.value));
+document.querySelectorAll(".pre").forEach(b=>b.addEventListener("click",()=>{
+  r.value=b.dataset.w; zeichne(+b.dataset.w);
+}));
+window.addEventListener("resize",()=>zeichne(+r.value));
+zeichne(1440);
+</script>

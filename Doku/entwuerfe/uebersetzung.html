@@ -1,0 +1,421 @@
+<title>SyncFindus — Die Übersetzung</title>
+<style>
+:root{
+  --bg:#0E1217; --panel:#161C23; --panel2:#1c242d; --line:#232C36; --line2:#33404e;
+  --tx:#E4E9EF; --tx2:#8B97A5; --tx3:#5f6b78; --akz:#F0873C; --onA:#150a02;
+  --grün:#5fd07a; --gelb:#d8b64a; --rot:#e06a5a; --türkis:#5fd0c4;
+  --disp:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --data:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  --serif:Literata,"Source Serif 4",Georgia,serif;
+}
+@media (prefers-color-scheme:light){
+  :root:not([data-theme="dark"]){--bg:#eff1f4;--panel:#fff;--panel2:#f4f6f8;--line:#dde2e8;--line2:#c3ccd6;
+    --tx:#1a1f26;--tx2:#5a6672;--tx3:#8592a0;--akz:#b8551c;--onA:#fff;
+    --grün:#237a42;--gelb:#8a6410;--rot:#b13a28;--türkis:#1a7f74}
+}
+:root[data-theme="light"]{--bg:#eff1f4;--panel:#fff;--panel2:#f4f6f8;--line:#dde2e8;--line2:#c3ccd6;
+  --tx:#1a1f26;--tx2:#5a6672;--tx3:#8592a0;--akz:#b8551c;--onA:#fff;
+  --grün:#237a42;--gelb:#8a6410;--rot:#b13a28;--türkis:#1a7f74}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:var(--disp);font-size:16px;
+  line-height:1.6;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1120px;margin:0 auto;padding:34px 18px 90px}
+.eyebrow{font-family:var(--data);font-size:11px;letter-spacing:.17em;text-transform:uppercase;
+  color:var(--akz);margin:0 0 11px}
+h1{font-size:clamp(27px,4.2vw,42px);line-height:1.06;letter-spacing:-.028em;font-weight:800;
+  margin:0 0 13px;text-wrap:balance}
+.lede{font-size:17px;color:var(--tx2);max-width:66ch;margin:0}
+h2{font-size:22px;font-weight:800;letter-spacing:-.022em;margin:0 0 6px}
+h3{font-size:15px;font-weight:800;letter-spacing:-.01em;margin:0 0 5px}
+.sub{color:var(--tx2);margin:0 0 18px;max-width:70ch;font-size:15px}
+hr.rule{height:1px;background:var(--line);border:0;margin:44px 0}
+b.a{color:var(--akz)}
+code{font-family:var(--data);font-size:.88em;background:var(--panel2);border:1px solid var(--line);
+  border-radius:4px;padding:1px 5px}
+
+/* ── Drei Fassungen ── */
+.drei{display:grid;grid-template-columns:repeat(auto-fit,minmax(238px,1fr));gap:14px;margin-top:18px}
+.fs{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--panel)}
+.fs.gut{border-color:var(--akz)}
+.fskopf{display:flex;align-items:center;gap:8px;padding:9px 13px;border-bottom:1px solid var(--line);
+  background:var(--panel2)}
+.fskopf b{font-size:12.5px}
+.fskopf .ab{margin-left:auto;font-family:var(--data);font-size:9px;letter-spacing:.12em;
+  text-transform:uppercase;border:1px solid var(--line2);border-radius:4px;padding:1px 6px;color:var(--tx3)}
+.fs.gut .fskopf .ab{border-color:var(--akz);color:var(--akz)}
+
+/* Panel mit Sprechblase */
+.panel{aspect-ratio:4/3;position:relative;background:#efe9df;overflow:hidden}
+.panel .kunst{position:absolute;inset:0;
+  background:linear-gradient(160deg,#d9d1c4 0%,#bdb2a0 46%,#8e8375 100%)}
+.panel .kunst::after{content:"";position:absolute;left:-10%;top:22%;width:70%;height:78%;
+  background:linear-gradient(200deg,#5a5044,#2a241d);
+  clip-path:polygon(18% 0,82% 12%,100% 100%,0 100%)}
+.panel .turm{position:absolute;right:11%;top:6%;width:22%;height:74%;
+  background:linear-gradient(180deg,#3b342b,#6d6255);clip-path:polygon(30% 0,70% 0,100% 100%,0 100%)}
+.blase{position:absolute;left:8%;top:9%;width:52%;background:#fff;border:2px solid #2a241d;
+  border-radius:46% 46% 46% 46%/38% 38% 38% 38%;padding:11px 14px;
+  font-family:var(--serif);font-size:11.5px;line-height:1.3;color:#1a1610;text-align:center;
+  display:flex;align-items:center;justify-content:center;min-height:64px}
+.blase::after{content:"";position:absolute;left:22%;bottom:-15px;width:0;height:0;
+  border:9px solid transparent;border-top-color:#2a241d;border-bottom:0}
+.blase.jp{font-size:12.5px;letter-spacing:.02em}
+.blase.eng{font-size:10.8px}
+.blase.voll{outline:2px dashed var(--rot);outline-offset:3px}
+.fsfuss{padding:10px 13px;font-size:12.5px;color:var(--tx2);min-height:74px}
+.fsfuss em{font-style:normal;color:var(--rot)}
+.fsfuss b{color:var(--tx)}
+
+/* Regler */
+.reglerbox{margin-top:18px;background:var(--panel);border:1px solid var(--line);border-radius:12px;
+  padding:16px 18px}
+.reglerreihe{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.reglerreihe span{font-family:var(--data);font-size:10.5px;color:var(--tx3);white-space:nowrap}
+#ueb{flex:1;min-width:160px;accent-color:var(--akz);height:24px;cursor:pointer}
+.mischpanel{position:relative;margin-top:14px;max-width:430px;aspect-ratio:4/3;border-radius:10px;
+  overflow:hidden;border:1px solid var(--line2)}
+.mischpanel .blase{transition:none}
+.mischpanel .lage{position:absolute;left:0;top:0;right:0;bottom:0;transition:opacity .05s}
+.mischpanel .lage .blase{left:8%;top:9%;width:52%}
+
+/* Glossar */
+.glos{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden;
+  margin-top:16px}
+.gk{display:flex;align-items:center;gap:9px;padding:11px 14px;border-bottom:1px solid var(--line);
+  background:var(--panel2);font-family:var(--data);font-size:9.5px;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--tx3)}
+.gk .z2{margin-left:auto;color:var(--akz);letter-spacing:0;font-size:10.5px}
+.gz{display:grid;grid-template-columns:9.5ch 24px 1fr auto;gap:11px;align-items:baseline;
+  padding:9px 14px;border-bottom:1px solid var(--line);font-size:13px}
+.gz:last-child{border-bottom:0}
+.gz .q{font-family:var(--serif);font-size:14px;color:var(--tx)}
+.gz .pf{color:var(--tx3);text-align:center}
+.gz .z3{font-weight:700;color:var(--tx)}
+.gz .wa{font-family:var(--data);font-size:10.5px;color:var(--tx3);text-align:right;white-space:nowrap}
+.gz.hand .z3{color:var(--akz)}
+.gz .warum{grid-column:3/-1;font-size:11.5px;color:var(--tx3);margin-top:2px}
+
+/* Erneuerung */
+.laufbox{margin-top:16px;background:var(--panel);border:1px solid var(--line2);border-radius:12px;
+  padding:15px 17px}
+.laufkopf{display:flex;align-items:center;gap:10px;font-size:13.5px;flex-wrap:wrap}
+.laufkopf b{color:var(--tx)}
+.laufkopf .r4{margin-left:auto;font-family:var(--data);font-size:11px;color:var(--akz)}
+.laufbal{height:6px;border-radius:4px;background:var(--line2);margin-top:11px;overflow:hidden}
+.laufbal i{display:block;height:100%;background:var(--akz);width:0;transition:width .25s linear}
+.laufinfo{margin-top:8px;font-family:var(--data);font-size:10.5px;color:var(--tx3)}
+.knopf2{font-family:var(--disp);font-size:12.5px;font-weight:700;border-radius:8px;padding:7px 14px;
+  min-height:30px;border:1px solid var(--akz);background:var(--akz);color:var(--onA);cursor:pointer}
+.knopf2.aus{background:transparent;color:var(--akz)}
+
+/* Sprichwörter */
+.spw{display:grid;grid-template-columns:repeat(auto-fit,minmax(258px,1fr));gap:14px;margin-top:18px}
+.sp{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 17px}
+.sp.gut{border-color:var(--akz)}
+.sp .orig{font-family:var(--serif);font-size:15px;color:var(--tx);margin-bottom:3px}
+.sp .lit{font-family:var(--data);font-size:10.5px;color:var(--tx3);margin-bottom:10px}
+.sp p{margin:6px 0 0;font-size:13px;color:var(--tx2)}
+.sp .erg{font-family:var(--serif);font-size:14px;color:var(--akz);margin-top:8px}
+.sp .wo{margin-top:9px;font-family:var(--data);font-size:10px;color:var(--tx3);
+  border-top:1px solid var(--line);padding-top:8px}
+
+.fn{border-bottom:1px dotted var(--akz);cursor:help}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:14px}
+th{text-align:left;font-family:var(--data);font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--tx3);font-weight:400;padding:0 12px 7px 0;border-bottom:1px solid var(--line)}
+td{padding:9px 12px 9px 0;border-bottom:1px solid var(--line);vertical-align:top;color:var(--tx2)}
+td:first-child{color:var(--tx);font-weight:600;white-space:nowrap}
+td b{color:var(--tx)}
+.merk{border-left:3px solid var(--akz);background:var(--panel);border-radius:0 10px 10px 0;
+  padding:13px 16px;margin-top:16px;font-size:14px;color:var(--tx2)}
+.merk b{color:var(--tx)}
+.merk.warn{border-left-color:var(--rot)}
+</style>
+
+<div class="wrap">
+
+<p class="eyebrow">SyncFindus · Bauteil 14</p>
+<h1>Die Übersetzung</h1>
+<p class="lede">Dieselbe Sprechblase, drei Fassungen. Der Unterschied liegt nicht im Satzbau —
+er liegt darin, dass die dritte <b class="a">weiß, was letztes Kapitel entschieden wurde</b>.
+Ein Glossar schlägt jedes bessere Modell.</p>
+
+<div class="drei">
+  <div class="fs">
+    <div class="fskopf"><b>Original</b><span class="ab">KR</span></div>
+    <div class="panel"><div class="kunst"></div><div class="turm"></div>
+      <div class="blase jp">회귀자여,<br>탑은 너를<br>기억한다</div></div>
+    <div class="fsfuss"><b>hoegwijaeyeo, tap-eun neoreul gieokhanda</b><br>
+      Wörtlich: „Rückkehrer-Anrede, der Turm dich erinnert."</div>
+  </div>
+
+  <div class="fs">
+    <div class="fskopf"><b>Maschine</b><span class="ab">MTL</span></div>
+    <div class="panel"><div class="kunst"></div><div class="turm"></div>
+      <div class="blase eng voll">Regressor, the tower remembers you</div></div>
+    <div class="fsfuss">Grammatisch in Ordnung. Aber: <em>„Regressor"</em> ist kein englisches Wort,
+      und in Kapitel 41 stand <em>„Returner"</em>, in Kapitel 88 <em>„one who returned"</em>.
+      Und der Satz <em>läuft aus der Blase</em>.</div>
+  </div>
+
+  <div class="fs gut">
+    <div class="fskopf"><b>Unsere Fassung</b><span class="ab">MTL + KI</span></div>
+    <div class="panel"><div class="kunst"></div><div class="turm"></div>
+      <div class="blase eng">Returner —<br>the Tower<br>remembers you.</div></div>
+    <div class="fsfuss">Ein Begriff, <b>214-mal derselbe</b>. Der Turm mit Großbuchstaben, weil er
+      eine Figur ist. Und der Umbruch sitzt so, dass er in die Blase passt.</div>
+  </div>
+</div>
+
+<div class="merk">
+  <b>Die eigentliche Leistung ist nicht der Satz, sondern die Beständigkeit.</b>
+  Ein gutes Modell übersetzt eine einzelne Zeile heute schon sehr gut. Was es <em>nicht</em> kann,
+  ist sich an Kapitel 41 erinnern — es sei denn, jemand schreibt die Entscheidung auf.
+  Genau das ist das Glossar.
+</div>
+
+<hr class="rule">
+
+<h2>Überblenden — passt der Text überhaupt hinein?</h2>
+<p class="sub">Das ist beim Manga das wirkliche Problem, nicht die Übersetzung.
+Zieh den Regler: dieselbe Blase, links Original, rechts unsere Fassung.
+Bei <b>MTL</b> läuft der Satz über den Rand — der Rahmen wird rot.</p>
+
+<div class="reglerbox">
+  <div class="reglerreihe">
+    <span>Original</span>
+    <input type="range" id="ueb" min="0" max="100" value="100">
+    <span>Übersetzt</span>
+    <span style="margin-left:8px">Fassung:</span>
+    <button class="knopf2 aus" id="fassung" style="min-height:26px;padding:4px 12px">MTL + KI</button>
+  </div>
+  <div class="mischpanel">
+    <div class="kunst"></div><div class="turm"></div>
+    <div class="lage"><div class="blase jp" id="bl_o">회귀자여,<br>탑은 너를<br>기억한다</div></div>
+    <div class="lage"><div class="blase eng" id="bl_u">Returner —<br>the Tower<br>remembers you.</div></div>
+  </div>
+  <div class="laufinfo" id="passung">Passt in die Blase · 3 Zeilen · 82 % Füllung</div>
+</div>
+
+<hr class="rule">
+
+<h2>Das Glossar ist der Star</h2>
+<p class="sub">Es steht neben dem Leser und wächst mit. Jede Zeile ist eine Entscheidung,
+die <b>nie wieder neu getroffen</b> wird — und jede sagt, woher sie kommt.</p>
+
+<div class="glos">
+  <div class="gk">Werk-Glossar · Solo Leveling<span class="z2">41 Einträge · 3 von Hand</span></div>
+  <div class="gz hand"><span class="q">회귀자</span><span class="pf">→</span>
+    <span><span class="z3">Returner</span>
+      <span class="warum">nicht „Regressor" — kein englisches Wort. Deutsch: <b>Rückkehrer</b></span></span>
+    <span class="wa">214× · von Hand</span></div>
+  <div class="gz"><span class="q">탑</span><span class="pf">→</span>
+    <span><span class="z3">the Tower</span>
+      <span class="warum">immer mit Artikel und groß — er ist eine Figur, kein Gebäude</span></span>
+    <span class="wa">1.109× · Kap. 1</span></div>
+  <div class="gz"><span class="q">그림자 군주</span><span class="pf">→</span>
+    <span><span class="z3">Shadow Monarch</span>
+      <span class="warum">Eigenname — nie zerlegen, nie „Lord of Shadows"</span></span>
+    <span class="wa">88× · AniList</span></div>
+  <div class="gz hand"><span class="q">스킬</span><span class="pf">→</span>
+    <span><span class="z3">Skill</span>
+      <span class="warum">Spielbegriff, bleibt englisch. Deutsch ebenfalls <b>Skill</b>, nicht „Fertigkeit"</span></span>
+    <span class="wa">640× · von Hand</span></div>
+  <div class="gz"><span class="q">성진우</span><span class="pf">→</span>
+    <span><span class="z3">Sung Jinwoo</span>
+      <span class="warum">Revidierte Romanisierung, Familienname zuerst — wie in der offiziellen Ausgabe</span></span>
+    <span class="wa">1.402× · offiziell</span></div>
+  <div class="gz"><span class="q">헌터</span><span class="pf">→</span>
+    <span><span class="z3">Hunter</span>
+      <span class="warum">nie „Jäger" — der Begriff ist im Werk eine Berufsbezeichnung</span></span>
+    <span class="wa">933× · Kap. 2</span></div>
+</div>
+
+<div class="merk">
+  <b>Woher die Einträge kommen</b> — in dieser Reihenfolge, und die obere gewinnt immer:
+  <b>1.</b> deine Handkorrektur · <b>2.</b> die offizielle Ausgabe, wenn es eine gibt ·
+  <b>3.</b> AniList/MangaUpdates-Namen · <b>4.</b> die häufigste Fassung in den Fan-Übersetzungen ·
+  <b>5.</b> der Vorschlag des Modells.
+  <br><br>
+  ⚠️ <b>Nie stumm überschreiben.</b> Ändert eine Quelle ihre Meinung, wird es ein Eintrag im
+  Postfach — keine automatische Korrektur (E41, E87).
+</div>
+
+<hr class="rule">
+
+<h2>Rückwirkend besser werden</h2>
+<p class="sub">Der Grund, warum das Glossar mehr wert ist als jedes Modell: <b>du korrigierst
+einmal, und 214 Stellen ziehen nach.</b> Kein Fansub der Welt macht das.</p>
+
+<div class="laufbox">
+  <div class="laufkopf">
+    <b>회귀자</b> geändert: <span style="color:var(--tx3);text-decoration:line-through">Regressor</span>
+    → <b style="color:var(--akz)">Returner</b>
+    <span class="r4" id="lz">214 Stellen betroffen</span>
+  </div>
+  <div class="laufbal"><i id="lb"></i></div>
+  <div class="laufinfo" id="li">Betroffene Kapitel: 1–179 · geschätzt 3 Min auf der Grafikkarte</div>
+  <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+    <button class="knopf2" id="start">Alle 214 erneuern</button>
+    <button class="knopf2 aus" id="nur">Nur ab hier</button>
+  </div>
+</div>
+
+<div class="merk warn">
+  <b>Und die Regel, die dabei nicht gebrochen wird:</b> dein <b>Lesestand bleibt</b>.
+  Du warst bei Kapitel 60 — nach der Erneuerung bist du bei Kapitel 60, nur mit besserem Text.
+  Der Fortschritt hängt am <b>Werk</b>, nicht an der Ausgabe (E76). Kein Zurückspringen,
+  kein Verlust, und du merkst den Wechsel nicht.
+</div>
+
+<hr class="rule">
+
+<h2>Sprichwörter — der schwerste Teil</h2>
+<p class="sub">Ein Sprichwort wörtlich zu übersetzen ergibt Unsinn; es zu ersetzen ergibt einen
+koreanischen Jäger, der plötzlich klingt wie ein englischer Landwirt. <b>Es gibt keine Lösung,
+nur drei Wege</b> — und die Kunst ist, den richtigen zu wählen.</p>
+
+<div class="spw">
+  <div class="sp">
+    <div class="orig">눈 가리고 아웅</div>
+    <div class="lit">nun garigo aung — „die Augen zuhalten und miauen"</div>
+    <h3>Weg 1 · Ersetzen</h3>
+    <p>Ein echtes Sprichwort der Zielsprache mit derselben Bedeutung.</p>
+    <div class="erg">„pulling the wool over someone's eyes"</div>
+    <p style="color:var(--rot);margin-top:8px">⚠️ Klingt rund — aber es verpflanzt die Figur
+    kulturell. In einem Werk, das <em>in Korea spielt</em>, ist das ein Bruch.</p>
+    <div class="wo">gut bei Isekai und Fantasy ohne Ortsbezug</div>
+  </div>
+
+  <div class="sp gut">
+    <div class="orig">눈 가리고 아웅</div>
+    <div class="lit">nun garigo aung</div>
+    <h3>Weg 2 · Bild behalten, erklären</h3>
+    <p>Das Bild bleibt stehen, die Erklärung kommt <b>auf Antippen</b> — punktierte Linie beim
+    ersten Vorkommen je Kapitel, sonst nichts.</p>
+    <div class="erg">„Covering your eyes and
+      <span class="fn" title="Koreanische Redensart: so tun, als wäre etwas verborgen, obwohl es alle sehen">meowing</span>."</div>
+    <p style="margin-top:8px">Der Leser lernt etwas, und der Lesefluss bleibt — weil die Erklärung
+    nur kommt, wenn er sie will.</p>
+    <div class="wo">gewählt · Standard bei allem mit Ortsbezug</div>
+  </div>
+
+  <div class="sp">
+    <div class="orig">눈 가리고 아웅</div>
+    <div class="lit">nun garigo aung</div>
+    <h3>Weg 3 · Sinn ohne Bild</h3>
+    <p>Kein Sprichwort, nur die Bedeutung.</p>
+    <div class="erg">„You're only fooling yourself."</div>
+    <p style="margin-top:8px">Immer richtig, nie falsch — aber die Figur verliert ihre Stimme.
+    Der sichere Weg, wenn Weg 2 nicht in die Blase passt.</p>
+    <div class="wo">Rückfall, wenn der Platz fehlt</div>
+  </div>
+</div>
+
+<h3 style="margin-top:22px">Wie entschieden wird — automatisch, aber nachvollziehbar</h3>
+<table>
+  <tr><th style="width:26%">Frage</th><th>Antwort führt zu</th></tr>
+  <tr><td><b>Spielt das Werk in der Ursprungskultur?</b></td>
+    <td>Ja → <b>Weg 2</b> (Bild behalten). Nein, reine Fantasywelt → <b>Weg 1</b> erlaubt</td></tr>
+  <tr><td><b>Passt Weg 2 in die Blase?</b></td>
+    <td>Nein → <b>Weg 3</b>. Platz schlägt Schönheit — ein überlaufender Satz ist immer falsch</td></tr>
+  <tr><td><b>Ist es ein bekanntes Sprichwort?</b></td>
+    <td>Nur wenn es in einer Sprichwortsammlung steht, wird es überhaupt als eins behandelt. Sonst normal übersetzen</td></tr>
+  <tr><td><b>Gibt es die offizielle Fassung?</b></td>
+    <td>Dann <b>gewinnt sie</b> — auch wenn wir es anders lösen würden. Beständigkeit vor Geschmack</td></tr>
+  <tr><td><b>Schon mal entschieden?</b></td>
+    <td>Dann steht es im Glossar und wird <b>nie wieder</b> neu entschieden</td></tr>
+</table>
+
+<div class="merk">
+  <b>Und der ehrliche Zusatz:</b> Sprichwörter sind die Stelle, an der eine gute Fan-Gruppe uns
+  weiterhin schlägt — sie <em>kennt</em> die Serie und weiß, ob die Figur gerade ironisch ist.
+  Unser Ausgleich ist nicht Klugheit, sondern <b>Beständigkeit und Umkehrbarkeit</b>:
+  jede Sprichwort-Entscheidung steht im Glossar, ist mit einem Klick änderbar, und die Änderung
+  gilt rückwirkend für alle Kapitel.
+</div>
+
+<hr class="rule">
+
+<h2>Was am Ende dransteht</h2>
+<table>
+  <tr><th style="width:20%">Abzeichen</th><th>Bedeutung</th></tr>
+  <tr><td><code>Offiziell</code></td><td>Verlagsfassung. Gewinnt immer, wenn vorhanden</td></tr>
+  <tr><td><code>Fan</code></td><td>Übersetzergruppe. Gewinnt gegen uns, solange sie aktiv ist</td></tr>
+  <tr><td><code>MTL + KI</code></td><td><b>unsere</b> — mit Glossar, mit Blasenprüfung, rückwirkend erneuerbar</td></tr>
+  <tr><td><code>MTL</code></td><td>rohe Maschine, ohne Glossar. Nur als Notnagel, immer als solcher gekennzeichnet</td></tr>
+  <tr><td style="color:var(--akz)"><code>? unsicher</code></td><td>Stellen, an denen das Modell selbst gezweifelt hat, werden <b>markiert statt versteckt</b> — mit einem Klick siehst du das Original</td></tr>
+</table>
+
+<div class="merk">
+  <b>Die Zielsprache ist Englisch</b>, weil dort die meisten Fan-Fassungen fehlen und die
+  Vorlagen am besten sind. <b>Deutsch ist der zweite Lauf</b> — und er läuft <b>nicht</b> aus dem
+  Koreanischen, sondern aus <em>unserer</em> englischen Fassung, weil das Glossar dann schon steht.
+  Zwei Sprünge klingen nach Verlust, sind aber besser: der zweite Sprung erbt jede Entscheidung
+  des ersten.
+</div>
+
+</div>
+
+<script>
+/* ── Überblenden: Original ↔ Übersetzung, mit Passungsprüfung ─────────────── */
+var FASSUNG = [
+  {n:"MTL + KI", t:"Returner —<br>the Tower<br>remembers you.", kl:"eng", voll:false,
+   info:"Passt in die Blase · 3 Zeilen · 82 % Füllung"},
+  {n:"MTL",      t:"Regressor, the tower remembers you", kl:"eng voll", voll:true,
+   info:"Läuft über · 1 Zeile zu lang · 118 % Füllung"},
+  {n:"Fan",      t:"Regressor.<br>The Tower<br>knows your name.", kl:"eng", voll:false,
+   info:"Passt · 3 Zeilen · 79 % Füllung · frei, aber gut"}
+];
+var fi = 0;
+
+function mische(){
+  var v = +document.getElementById("ueb").value / 100;
+  document.getElementById("bl_o").parentNode.style.opacity = (1 - v).toFixed(2);
+  document.getElementById("bl_u").parentNode.style.opacity = v.toFixed(2);
+}
+function setzeFassung(){
+  var f = FASSUNG[fi], b = document.getElementById("bl_u");
+  b.className = "blase " + f.kl;
+  b.innerHTML = f.t;
+  document.getElementById("fassung").textContent = f.n;
+  document.getElementById("passung").textContent = f.info;
+  document.getElementById("passung").style.color = f.voll ? "var(--rot)" : "var(--tx3)";
+}
+document.getElementById("ueb").addEventListener("input", mische);
+document.getElementById("fassung").addEventListener("click", function(){
+  fi = (fi + 1) % FASSUNG.length;
+  setzeFassung();
+});
+setzeFassung();
+mische();
+
+/* ── Erneuerungslauf ── */
+var lauf = null;
+document.getElementById("start").addEventListener("click", function(){
+  if(lauf) return;
+  var p = 0, b = document.getElementById("lb"), z = document.getElementById("lz"),
+      i = document.getElementById("li");
+  this.textContent = "Läuft …";
+  lauf = setInterval(function(){
+    p += 4;
+    b.style.width = Math.min(100, p) + "%";
+    var fertig = Math.round(214 * Math.min(100, p) / 100);
+    z.textContent = fertig + " von 214 erneuert";
+    i.textContent = p < 100
+      ? "Kapitel " + Math.max(1, Math.round(179 * p / 100)) + " · Lesestand bleibt bei Kapitel 60"
+      : "Fertig · dein Lesestand ist unverändert bei Kapitel 60";
+    if(p >= 100){
+      clearInterval(lauf); lauf = null;
+      document.getElementById("start").textContent = "Erneut durchlaufen";
+      b.style.width = "0%";
+    }
+  }, 90);
+});
+document.getElementById("nur").addEventListener("click", function(){
+  document.getElementById("li").textContent =
+    "Nur Kapitel 61–179 · 92 Stellen · was du schon gelesen hast, bleibt wie es war";
+});
+</script>

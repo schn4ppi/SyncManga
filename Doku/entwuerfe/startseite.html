@@ -1,0 +1,427 @@
+<title>SyncRegal — Die Startseite</title>
+<style>
+:root{
+  --bg:#141110; --bg2:#0d0b0a;
+  --panel:#1c1814; --panel2:#231e19; --line:#2e2823; --line2:#3d352e;
+  --akz:#c9952b; --akz2:#e0b878; --akzbg:#2a2016;
+  --head:#d67756;
+  --tx:#efe9e2; --tx2:#a3988c; --tx3:#726860;
+  --st-lese:#5fd07a; --st-pause:#d8b64a; --st-backlog:#e8e4de;
+  --st-auf:#7d9ab5; --st-fertig:#5fd0c4;
+  --shadow:0 12px 34px rgba(0,0,0,.55);
+  --r:14px;
+  --disp:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --data:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+}
+@media (prefers-color-scheme:light){
+  :root{
+    --bg:#f2ede6; --bg2:#e7e0d6;
+    --panel:#fffdfa; --panel2:#f7f2ea; --line:#ddd3c6; --line2:#c9bcab;
+    --akz:#9a6d12; --akz2:#7d5809; --akzbg:#f0e4cb;
+    --head:#b8542f;
+    --tx:#241f1a; --tx2:#6a5f54; --tx3:#8d8175;
+    --st-lese:#2f8f4c; --st-pause:#9a7b12; --st-backlog:#5c5349;
+    --st-auf:#4a6b8a; --st-fertig:#1f8a7e;
+    --shadow:0 10px 28px rgba(80,60,40,.16);
+  }
+}
+:root[data-theme="light"]{
+  --bg:#f2ede6; --bg2:#e7e0d6;
+  --panel:#fffdfa; --panel2:#f7f2ea; --line:#ddd3c6; --line2:#c9bcab;
+  --akz:#9a6d12; --akz2:#7d5809; --akzbg:#f0e4cb;
+  --head:#b8542f;
+  --tx:#241f1a; --tx2:#6a5f54; --tx3:#8d8175;
+  --st-lese:#2f8f4c; --st-pause:#9a7b12; --st-backlog:#5c5349;
+  --st-auf:#4a6b8a; --st-fertig:#1f8a7e;
+  --shadow:0 10px 28px rgba(80,60,40,.16);
+}
+:root[data-theme="dark"]{
+  --bg:#141110; --bg2:#0d0b0a;
+  --panel:#1c1814; --panel2:#231e19; --line:#2e2823; --line2:#3d352e;
+  --akz:#c9952b; --akz2:#e0b878; --akzbg:#2a2016;
+  --head:#d67756;
+  --tx:#efe9e2; --tx2:#a3988c; --tx3:#726860;
+  --st-lese:#5fd07a; --st-pause:#d8b64a; --st-backlog:#e8e4de;
+  --st-auf:#7d9ab5; --st-fertig:#5fd0c4;
+  --shadow:0 12px 34px rgba(0,0,0,.55);
+}
+
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:var(--disp);
+  font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1180px;margin:0 auto;padding:36px 22px 80px}
+
+/* ---------- Seitenkopf (Dokument, nicht Mockup) ---------- */
+.doc-head{margin-bottom:30px}
+.eyebrow{font-family:var(--data);font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--akz);margin:0 0 10px}
+h1{font-size:clamp(30px,4.6vw,46px);line-height:1.06;letter-spacing:-.025em;font-weight:800;
+  margin:0 0 12px;text-wrap:balance}
+.lede{font-size:17px;color:var(--tx2);max-width:62ch;margin:0}
+
+/* ---------- Geräte-Umschalter ---------- */
+.switch{display:flex;gap:6px;margin:26px 0 14px;flex-wrap:wrap;align-items:center}
+.switch-lbl{font-family:var(--data);font-size:11px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--tx3);margin-right:8px}
+.sw{appearance:none;border:1px solid var(--line2);background:var(--panel);color:var(--tx2);
+  font-family:var(--disp);font-size:13.5px;font-weight:600;padding:8px 16px;border-radius:999px;
+  cursor:pointer;transition:background .16s,color .16s,border-color .16s}
+.sw:hover{color:var(--tx);border-color:var(--akz)}
+.sw[aria-pressed="true"]{background:var(--akz);border-color:var(--akz);color:#191308}
+:root[data-theme="light"] .sw[aria-pressed="true"]{color:#fffdfa}
+@media (prefers-color-scheme:light){:root:not([data-theme]) .sw[aria-pressed="true"]{color:#fffdfa}}
+.sw:focus-visible{outline:2px solid var(--head);outline-offset:2px}
+
+/* ---------- Der Mockup-Rahmen ---------- */
+.screen{background:var(--bg2);border:1px solid var(--line);border-radius:20px;overflow:hidden;
+  box-shadow:var(--shadow);--tile:132px;--gap:14px;--pad:22px}
+.screen.tv{--tile:186px;--gap:20px;--pad:34px}
+.screen.handy{--tile:112px;--gap:11px;--pad:14px;max-width:430px;margin:0 auto}
+.screen-note{font-family:var(--data);font-size:11.5px;color:var(--tx3);text-align:center;
+  padding:9px 12px;border-bottom:1px solid var(--line);background:var(--panel)}
+
+/* Kopfleiste im Mockup — bewusst nur drei Dinge */
+.bar{display:flex;align-items:center;gap:14px;padding:14px var(--pad);border-bottom:1px solid var(--line)}
+.avatar{width:30px;height:30px;border-radius:9px;background:linear-gradient(150deg,var(--head),var(--akz));
+  flex:0 0 auto;display:grid;place-items:center;font-size:13px;font-weight:800;color:#191308}
+.who{font-size:13.5px;font-weight:600;color:var(--tx2)}
+.bar-sp{flex:1}
+.ico{width:30px;height:30px;border-radius:9px;border:1px solid var(--line2);display:grid;place-items:center;
+  color:var(--tx3);font-size:14px;background:var(--panel)}
+.screen.tv .bar{padding-top:20px;padding-bottom:20px}
+
+/* ---------- Der Held: „Weiter" ---------- */
+.hero{position:relative;display:grid;grid-template-columns:1fr;min-height:246px;
+  padding:var(--pad);gap:0;overflow:hidden;isolation:isolate}
+.screen.tv .hero{min-height:340px}
+.screen.handy .hero{min-height:200px}
+.hero-bg{position:absolute;inset:0;z-index:-2}
+.hero-bg::after{content:"";position:absolute;inset:0;
+  background:linear-gradient(92deg,var(--bg2) 6%,rgba(20,17,16,.72) 46%,rgba(20,17,16,.12) 100%)}
+:root[data-theme="light"] .hero-bg::after{
+  background:linear-gradient(92deg,var(--bg2) 6%,rgba(231,224,214,.78) 46%,rgba(231,224,214,.15) 100%)}
+@media (prefers-color-scheme:light){:root:not([data-theme]) .hero-bg::after{
+  background:linear-gradient(92deg,var(--bg2) 6%,rgba(231,224,214,.78) 46%,rgba(231,224,214,.15) 100%)}}
+.hero-in{align-self:end;max-width:520px}
+.hero-kick{display:flex;align-items:center;gap:9px;margin-bottom:10px}
+.kick{font-family:var(--data);font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--akz);font-weight:700}
+.hero h2{font-size:clamp(24px,3.4vw,36px);line-height:1.08;letter-spacing:-.02em;font-weight:800;
+  margin:0 0 8px;text-wrap:balance}
+.screen.tv .hero h2{font-size:clamp(30px,4vw,44px)}
+.hero-meta{font-family:var(--data);font-size:12.5px;color:var(--tx2);margin:0 0 16px;
+  font-variant-numeric:tabular-nums}
+.hero-acts{display:flex;gap:9px;flex-wrap:wrap}
+.btn{border:0;border-radius:10px;padding:10px 20px;font-family:var(--disp);font-size:14.5px;
+  font-weight:700;cursor:pointer;background:var(--akz);color:#191308;transition:transform .14s}
+:root[data-theme="light"] .btn{color:#fffdfa}
+@media (prefers-color-scheme:light){:root:not([data-theme]) .btn{color:#fffdfa}}
+.btn:hover{transform:translateY(-1px)}
+.btn.ghost{background:transparent;border:1px solid var(--line2);color:var(--tx2)}
+.btn.ghost:hover{color:var(--tx);border-color:var(--akz)}
+.btn:focus-visible{outline:2px solid var(--head);outline-offset:2px}
+.hero-bar{position:absolute;left:var(--pad);right:var(--pad);bottom:calc(var(--pad) - 8px);
+  height:3px;background:var(--line2);border-radius:2px;overflow:hidden}
+.hero-bar i{display:block;height:100%;background:var(--akz);border-radius:2px}
+
+/* ---------- Regale ---------- */
+.shelves{display:flex;flex-direction:column}
+.shelf{padding:var(--pad);border-top:1px solid var(--line)}
+.shelf-head{display:flex;align-items:baseline;gap:12px;margin-bottom:13px}
+.shelf-head h3{font-size:15.5px;font-weight:700;letter-spacing:-.01em;margin:0}
+.shelf-sub{font-family:var(--data);font-size:11px;color:var(--tx3)}
+.rail{display:flex;gap:var(--gap);overflow-x:auto;padding-bottom:6px;scrollbar-width:thin}
+.screen.handy .rail{gap:var(--gap)}
+
+/* Kachel */
+.tile{flex:0 0 var(--tile);width:var(--tile);cursor:pointer;background:none;border:0;padding:0;
+  text-align:left;font-family:inherit;color:inherit}
+.tile:focus-visible{outline:2px solid var(--akz);outline-offset:3px;border-radius:var(--r)}
+.poster{position:relative;aspect-ratio:2/3;border-radius:var(--r);overflow:hidden;
+  border:1px solid var(--line2);display:flex;align-items:flex-end;padding:11px;
+  transition:transform .18s,border-color .18s}
+.tile:hover .poster{transform:translateY(-3px);border-color:var(--akz)}
+.poster.wide{aspect-ratio:16/10}
+.p-title{font-size:12.5px;font-weight:800;line-height:1.18;letter-spacing:-.01em;
+  color:#fff;text-shadow:0 1px 8px rgba(0,0,0,.75);position:relative;z-index:1}
+.p-scrim{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.78) 0%,rgba(0,0,0,.18) 46%,transparent 72%)}
+/* Medium = Form/Kürzel (nicht Farbe) */
+.p-med{position:absolute;top:8px;left:8px;z-index:1;font-family:var(--data);font-size:9px;
+  letter-spacing:.1em;text-transform:uppercase;font-weight:700;color:#fff;
+  background:rgba(0,0,0,.55);backdrop-filter:blur(3px);padding:3px 6px;border-radius:5px}
+/* Zustand = Farbe */
+.p-dot{position:absolute;top:9px;right:9px;z-index:1;width:8px;height:8px;border-radius:50%;
+  box-shadow:0 0 0 2px rgba(0,0,0,.45)}
+.p-neu{position:absolute;top:8px;right:8px;z-index:1;font-family:var(--data);font-size:9.5px;
+  font-weight:800;background:var(--st-lese);color:#0b1a0f;padding:3px 6px;border-radius:5px}
+.p-bar{position:absolute;left:0;right:0;bottom:0;height:3px;background:rgba(0,0,0,.5);z-index:1}
+.p-bar i{display:block;height:100%;background:var(--akz)}
+.t-meta{margin-top:7px;font-family:var(--data);font-size:10.5px;color:var(--tx3);
+  font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.t-name{margin-top:2px;font-size:12.5px;font-weight:600;line-height:1.25;color:var(--tx2);
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+
+/* Eingeklapptes Regal = „nutzt du kaum" */
+.shelf.quiet{padding-top:13px;padding-bottom:13px}
+.shelf.quiet .rail{display:none}
+.quiet-line{display:flex;align-items:center;gap:11px;color:var(--tx3);font-size:13.5px}
+.quiet-line b{color:var(--tx2);font-weight:600}
+.quiet-line .open{margin-left:auto;font-family:var(--data);font-size:11px;color:var(--akz);
+  border:1px solid var(--line2);padding:4px 10px;border-radius:999px}
+
+/* ---------- Befehlsleiste ---------- */
+.cmd{display:flex;align-items:center;gap:12px;padding:12px var(--pad);border-top:1px solid var(--line);
+  background:var(--panel)}
+.cmd-in{flex:1;min-width:0;background:var(--bg2);border:1px solid var(--line2);border-radius:10px;
+  padding:9px 13px;font-family:var(--disp);font-size:13px;color:var(--tx3)}
+.cmd-q{display:flex;align-items:center;gap:8px;font-family:var(--data);font-size:11.5px;color:var(--tx2);
+  white-space:nowrap}
+.qdot{width:7px;height:7px;border-radius:50%;background:var(--akz);
+  animation:pulse 1.9s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.32}}
+.screen.tv .cmd,.screen.tv .bar .ico{display:none}
+.screen.handy .cmd-q{display:none}
+
+/* ---------- Begründungen ---------- */
+.why{margin-top:44px}
+.why h2{font-size:23px;font-weight:800;letter-spacing:-.02em;margin:0 0 6px}
+.why-lede{color:var(--tx2);margin:0 0 24px;max-width:64ch}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(268px,1fr));gap:15px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:19px}
+.card h4{margin:0 0 8px;font-size:15px;font-weight:700;letter-spacing:-.01em}
+.card p{margin:0;font-size:14px;color:var(--tx2);line-height:1.6}
+.card .tag{font-family:var(--data);font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--akz);display:block;margin-bottom:9px}
+.rule{height:1px;background:var(--line);border:0;margin:40px 0}
+
+.legend{display:flex;flex-wrap:wrap;gap:8px 20px;margin-top:20px;
+  font-family:var(--data);font-size:11.5px;color:var(--tx3)}
+.legend span{display:flex;align-items:center;gap:7px}
+.legend i{width:8px;height:8px;border-radius:50%;display:block}
+
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.001ms!important;transition-duration:.001ms!important}
+}
+@media (max-width:640px){
+  .wrap{padding:24px 14px 60px}
+  .hero-in{max-width:none}
+}
+</style>
+
+<div class="wrap">
+
+  <header class="doc-head">
+    <p class="eyebrow">SyncRegal · Entwurf 1</p>
+    <h1>Die Startseite ist keine Auswahl.<br>Sie ist eine Fortsetzung.</h1>
+    <p class="lede">Jeder Start, der fragt „Was willst du?", kostet eine Entscheidung — jeden Tag aufs Neue.
+    Ein Start, der antwortet „Hier, mach weiter", kostet nichts. Unten läuft dasselbe Regal in drei
+    Geräte-Gewichtungen: derselbe Kern, andere Reihenfolge.</p>
+  </header>
+
+  <div class="switch" role="group" aria-label="Geräte-Gewichtung">
+    <span class="switch-lbl">Gerät</span>
+    <button class="sw" data-dev="pc" aria-pressed="true">PC</button>
+    <button class="sw" data-dev="tv" aria-pressed="false">Fernseher</button>
+    <button class="sw" data-dev="handy" aria-pressed="false">Handy</button>
+  </div>
+
+  <div class="screen" id="screen">
+    <div class="screen-note" id="note"></div>
+
+    <div class="bar">
+      <div class="avatar">JB</div>
+      <span class="who">Jan-Bernd</span>
+      <span class="bar-sp"></span>
+      <span class="ico" title="Suchen">⌕</span>
+      <span class="ico" title="Einstellungen">⚙</span>
+    </div>
+
+    <section class="hero">
+      <div class="hero-bg" id="heroBg"></div>
+      <div class="hero-in">
+        <div class="hero-kick"><span class="kick">Weiter, wo du warst</span></div>
+        <h2 id="heroTitle">Frieren — Nach dem Ende der Reise</h2>
+        <p class="hero-meta" id="heroMeta">Anime · Staffel 1 · Folge 14 · noch 17 Min · zuletzt gestern 22:40</p>
+        <div class="hero-acts">
+          <button class="btn" id="heroBtn">▶ Weitersehen</button>
+          <button class="btn ghost">Etwas anderes</button>
+        </div>
+      </div>
+      <div class="hero-bar"><i style="width:31%"></i></div>
+    </section>
+
+    <div class="shelves" id="shelves"></div>
+
+    <div class="cmd">
+      <div class="cmd-in">Link, Magnet oder Titel einfügen — SyncRegal erkennt, was es ist…</div>
+      <div class="cmd-q"><span class="qdot"></span>2 in Arbeit · Vinland Saga S02E19 · 68 %</div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <span><i style="background:var(--st-lese)"></i>Lese/sehe gerade</span>
+    <span><i style="background:var(--st-pause)"></i>Pausiert</span>
+    <span><i style="background:var(--st-backlog)"></i>Backlog</span>
+    <span><i style="background:var(--st-auf)"></i>Aufgeholt</span>
+    <span><i style="background:var(--st-fertig)"></i>Abgeschlossen</span>
+    <span style="margin-left:auto">Farbe = Zustand · Kürzel = Medium</span>
+  </div>
+
+  <hr class="rule">
+
+  <section class="why">
+    <h2>Warum so</h2>
+    <p class="why-lede">Fünf Entscheidungen stecken in dem Entwurf. Jede ist einzeln umstoßbar —
+    aber jede hat einen Grund.</p>
+
+    <div class="cards">
+      <div class="card">
+        <span class="tag">Kein Menü zuerst</span>
+        <h4>Eine Fläche, kein Buffet</h4>
+        <p>Sechs Medienkacheln als Startbild sind sechs Entscheidungen, bevor irgendetwas läuft.
+        Die Entscheidungszeit wächst mit der Zahl der Optionen — messbar. Also fängt die Seite mit
+        genau einer Sache an: der wahrscheinlichsten Fortsetzung. Ein Knopf, null Nachdenken.</p>
+      </div>
+      <div class="card">
+        <span class="tag">Angefangenes zieht</span>
+        <h4>Unterbrochenes wiegt schwerer als Neues</h4>
+        <p>Halbfertige Dinge bleiben im Kopf hängen — deshalb steht bei jedem Streamingdienst
+        „Weiter ansehen" oben. Das gilt medienübergreifend: dein halbes Kapitel zieht genauso
+        wie deine halbe Folge. Darum ist das zweite Regal gemischt, nicht nach Medium getrennt.</p>
+      </div>
+      <div class="card">
+        <span class="tag">Absicht vor Gattung</span>
+        <h4>Medium ist ein Filter, kein Reiter</h4>
+        <p>Die Regale sind nach <em>Absicht</em> sortiert — weitermachen, Neues von Bekanntem,
+        stöbern. Nach Medium wird erst weiter unten getrennt. Reiter würden dich zwingen,
+        die Gattung zu wissen, bevor du weißt, worauf du Lust hast.</p>
+      </div>
+      <div class="card">
+        <span class="tag">Deine Antwort auf „Manga stört"</span>
+        <h4>Ungenutztes sinkt, statt zu verschwinden</h4>
+        <p>Wer kaum Manga liest, bekommt das Manga-Regal als eine ruhige Zeile ganz unten —
+        aufklappbar, nie weg. Kein Häkchen nötig, keine Entscheidung. Die Reihenfolge rechnet
+        sich selten neu (wöchentlich, nicht stündlich) und ist festnagelbar: eine Oberfläche,
+        die täglich umsortiert, macht nervös statt bequem.</p>
+      </div>
+      <div class="card">
+        <span class="tag">Gegen das Tab-Gefühl</span>
+        <h4>Es gibt keinen Ort namens „Downloader"</h4>
+        <p>Deine Befehlsleiste war schon die richtige Antwort — sie muss nur alles annehmen:
+        Link, Magnet, Titel, Kapitelnummer. Laden ist dann kein Ort, an den man geht, sondern
+        etwas, das einem Werk passiert. Nichts öffnet mehr in einem neuen Tab, weil es kein
+        zweites Programm mehr gibt.</p>
+      </div>
+      <div class="card">
+        <span class="tag">Gerät statt Einstellung</span>
+        <h4>Dieselbe Seite, andere Gewichtung</h4>
+        <p>Am Fernseher führt Video, die Kacheln wachsen, die Befehlsleiste verschwindet — man
+        tippt keine Links mit einer Fernbedienung. Am Handy führen Hören und Lesen, weil das die
+        Unterwegs-Medien sind. Kein zweites Programm, nur eine andere Sortierung derselben Regale.</p>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+const WERKE = [
+  {t:"Frieren — Nach dem Ende der Reise", med:"Anime", grp:"Staffel 1", ein:"Folge 14", pos:.31, st:"lese",  hue:172, neu:0, wide:1},
+  {t:"Vinland Saga",              med:"Anime",  grp:"Staffel 2", ein:"Folge 19", pos:.68, st:"lese",   hue:210, neu:0},
+  {t:"Lord of the Mysteries",     med:"Novel",  grp:"Band 3",    ein:"Kap. 412", pos:.44, st:"lese",   hue:268, neu:3},
+  {t:"Junk the Black Shadow",     med:"Manga",  grp:"—",         ein:"Kap. 30",  pos:.12, st:"pause",  hue:22,  neu:6},
+  {t:"Der Wüstenplanet",          med:"Hörbuch",grp:"Teil 1",    ein:"Kap. 9",   pos:.55, st:"lese",   hue:34,  neu:0},
+  {t:"Omniscient Reader",         med:"Novel",  grp:"Arc 4",     ein:"Kap. 188", pos:.81, st:"lese",   hue:198, neu:0},
+  {t:"Dungeon Meshi",             med:"Anime",  grp:"Staffel 1", ein:"Folge 7",  pos:.22, st:"pause",  hue:126, neu:0},
+  {t:"Solo Leveling",             med:"Manga",  grp:"—",         ein:"Kap. 141", pos:0,   st:"auf",    hue:246, neu:2},
+  {t:"Reverend Insanity",         med:"Novel",  grp:"Band 12",   ein:"Kap. 1204",pos:0,   st:"auf",    hue:288, neu:9},
+  {t:"One Piece",                 med:"Manga",  grp:"—",         ein:"Kap. 1108",pos:0,   st:"auf",    hue:8,   neu:1},
+  {t:"Blue Giant",                med:"Manga",  grp:"—",         ein:"Kap. 62",  pos:0,   st:"backlog",hue:216, neu:0},
+  {t:"Apothecary Diaries",        med:"Anime",  grp:"Staffel 2", ein:"Folge 3",  pos:0,   st:"backlog",hue:158, neu:4},
+  {t:"Nujabes — Modal Soul",      med:"Musik",  grp:"Album",     ein:"12 Titel", pos:0,   st:"fertig", hue:44},
+  {t:"Ghibli — Piano Collection", med:"Musik",  grp:"Album",     ein:"14 Titel", pos:0,   st:"fertig", hue:96},
+  {t:"Dune — Part Two",           med:"Film",   grp:"Reihe",     ein:"Teil 2",   pos:0,   st:"fertig", hue:28},
+  {t:"Perfect Blue",              med:"Film",   grp:"—",         ein:"Film",     pos:0,   st:"backlog",hue:330},
+  {t:"Project Hail Mary",         med:"Hörbuch",grp:"—",         ein:"Kap. 1",   pos:0,   st:"backlog",hue:188},
+];
+const ST = {lese:"--st-lese",pause:"--st-pause",backlog:"--st-backlog",auf:"--st-auf",fertig:"--st-fertig"};
+const NOTE = {
+  pc:"PC · Maus, dicht, alles greifbar — die Befehlsleiste nimmt jeden Link an",
+  tv:"Fernseher · aus 3 m, Fernbedienung — Video führt, Text tritt zurück, keine Eingabe",
+  handy:"Handy · eine Hand, unterwegs — Hören und Lesen führen, Video ist Fernbedienung"
+};
+const HERO = {
+  pc:   {t:"Frieren — Nach dem Ende der Reise", m:"Anime · Staffel 1 · Folge 14 · noch 17 Min · zuletzt gestern 22:40", b:"▶ Weitersehen", hue:172, p:31},
+  tv:   {t:"Vinland Saga",                      m:"Anime · Staffel 2 · Folge 19 · noch 8 Min · auf diesem Fernseher begonnen", b:"▶ Weitersehen", hue:210, p:68},
+  handy:{t:"Lord of the Mysteries",             m:"Novel · Band 3 · Kapitel 412 · 44 % · offline verfügbar", b:"▶ Weiterlesen", hue:268, p:44}
+};
+
+function grad(hue){
+  return `background:
+    radial-gradient(120% 90% at 22% 8%, hsl(${hue} 46% 34% / .95), transparent 62%),
+    radial-gradient(110% 100% at 88% 96%, hsl(${(hue+42)%360} 40% 20%), transparent 66%),
+    linear-gradient(158deg, hsl(${hue} 30% 22%), hsl(${(hue+28)%360} 26% 11%))`;
+}
+
+function tile(w){
+  const neu = w.neu > 0 ? `<span class="p-neu">+${w.neu}</span>`
+                        : `<span class="p-dot" style="background:var(${ST[w.st]})"></span>`;
+  const bar = w.pos > 0 ? `<span class="p-bar"><i style="width:${Math.round(w.pos*100)}%"></i></span>` : "";
+  return `<button class="tile">
+    <span class="poster${w.wide?" wide":""}" style="${grad(w.hue)}">
+      <span class="p-scrim"></span>
+      <span class="p-med">${w.med}</span>${neu}
+      <span class="p-title">${w.t}</span>${bar}
+    </span>
+    <span class="t-meta">${w.grp === "—" ? w.ein : w.grp + " · " + w.ein}</span>
+  </button>`;
+}
+
+function shelf(titel, sub, liste){
+  return `<section class="shelf">
+    <div class="shelf-head"><h3>${titel}</h3><span class="shelf-sub">${sub}</span></div>
+    <div class="rail">${liste.map(tile).join("")}</div>
+  </section>`;
+}
+function quiet(titel, n){
+  return `<section class="shelf quiet"><div class="quiet-line">
+    <b>${titel}</b><span>${n} Werke · zuletzt vor 4 Monaten</span>
+    <span class="open">aufklappen</span></div></section>`;
+}
+
+const M = m => WERKE.filter(w => w.med === m);
+
+function render(dev){
+  const angefangen = WERKE.filter(w => w.pos > 0);
+  const neu        = WERKE.filter(w => w.neu > 0);
+  let s = "";
+  s += shelf("Angefangen", "gemischt — was zählt, ist der Faden, nicht die Gattung", angefangen);
+  s += shelf("Neu für dich", "neue Kapitel und Folgen von Serien, denen du folgst", neu);
+
+  const reihen = dev === "tv"
+    ? [["Anime", M("Anime")], ["Filme", M("Film")], ["Musik", M("Musik")]]
+    : dev === "handy"
+      ? [["Hörbücher", M("Hörbuch")], ["Novels", M("Novel")], ["Musik", M("Musik")]]
+      : [["Anime", M("Anime")], ["Novels", M("Novel")], ["Musik", M("Musik")], ["Filme", M("Film")]];
+
+  reihen.forEach(([n, l]) => { if (l.length) s += shelf(n, `${l.length} Werke · nach deiner Nutzung einsortiert`, l); });
+  s += quiet("Manga", 214);
+  s += shelf("Entdecken", "passt zu dir, ist aber noch nicht im Regal", WERKE.filter(w => w.st === "backlog"));
+
+  document.getElementById("shelves").innerHTML = s;
+
+  const h = HERO[dev];
+  document.getElementById("heroTitle").textContent = h.t;
+  document.getElementById("heroMeta").textContent  = h.m;
+  document.getElementById("heroBtn").textContent   = h.b;
+  document.getElementById("heroBg").setAttribute("style", grad(h.hue));
+  document.querySelector(".hero-bar i").style.width = h.p + "%";
+  document.getElementById("note").textContent = NOTE[dev];
+  document.getElementById("screen").className = "screen" + (dev === "pc" ? "" : " " + dev);
+}
+
+document.querySelectorAll(".sw").forEach(b => b.addEventListener("click", () => {
+  document.querySelectorAll(".sw").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+  render(b.dataset.dev);
+}));
+render("pc");
+</script>

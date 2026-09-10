@@ -1,0 +1,526 @@
+<title>SyncFindus — Das Regal mit Funktion</title>
+<style>
+:root{
+  --bg:#0E1217; --panel:#161C23; --panel2:#1c242d; --line:#232C36; --line2:#33404e;
+  --tx:#E4E9EF; --tx2:#8B97A5; --tx3:#5f6b78; --akz:#F0873C; --onA:#150a02;
+  --st-lese:#5fd07a; --st-pause:#d8b64a; --st-back:#e8e4de; --st-auf:#7d9ab5; --st-fertig:#5fd0c4;
+  --amp-gr:#5fd07a; --amp-ge:#e0b45a; --amp-rt:#e06a5a;
+  --disp:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --data:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+}
+@media (prefers-color-scheme:light){
+  :root{--bg:#eff1f4;--panel:#fff;--panel2:#f4f6f8;--line:#dde2e8;--line2:#c3ccd6;
+    --tx:#1a1f26;--tx2:#5a6672;--tx3:#8592a0;--akz:#b8551c;--onA:#fff;
+    --st-lese:#237a42;--st-pause:#8a6410;--st-back:#5c5349;--st-auf:#41617f;--st-fertig:#1a7f74;
+    --amp-gr:#237a42;--amp-ge:#8a6410;--amp-rt:#b13a28}
+}
+:root[data-theme="light"]{--bg:#eff1f4;--panel:#fff;--panel2:#f4f6f8;--line:#dde2e8;--line2:#c3ccd6;
+  --tx:#1a1f26;--tx2:#5a6672;--tx3:#8592a0;--akz:#b8551c;--onA:#fff;
+  --st-lese:#237a42;--st-pause:#8a6410;--st-back:#5c5349;--st-auf:#41617f;--st-fertig:#1a7f74;
+  --amp-gr:#237a42;--amp-ge:#8a6410;--amp-rt:#b13a28}
+:root[data-theme="dark"]{--bg:#0E1217;--panel:#161C23;--panel2:#1c242d;--line:#232C36;--line2:#33404e;
+  --tx:#E4E9EF;--tx2:#8B97A5;--tx3:#5f6b78;--akz:#F0873C;--onA:#150a02;
+  --st-lese:#5fd07a;--st-pause:#d8b64a;--st-back:#e8e4de;--st-auf:#7d9ab5;--st-fertig:#5fd0c4;
+  --amp-gr:#5fd07a;--amp-ge:#e0b45a;--amp-rt:#e06a5a}
+
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:var(--disp);font-size:16px;
+  line-height:1.6;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1120px;margin:0 auto;padding:34px 18px 80px}
+.eyebrow{font-family:var(--data);font-size:11px;letter-spacing:.17em;text-transform:uppercase;
+  color:var(--akz);margin:0 0 11px}
+h1{font-size:clamp(27px,4.2vw,42px);line-height:1.06;letter-spacing:-.028em;font-weight:800;
+  margin:0 0 13px;text-wrap:balance}
+.lede{font-size:17px;color:var(--tx2);max-width:64ch;margin:0}
+h2{font-size:22px;font-weight:800;letter-spacing:-.022em;margin:0 0 6px}
+.sub{color:var(--tx2);margin:0 0 18px;max-width:68ch;font-size:15px}
+hr.rule{height:1px;background:var(--line);border:0;margin:40px 0}
+
+/* ---------- Logo ---------- */
+.logos{display:flex;gap:26px;flex-wrap:wrap;align-items:flex-start;margin-top:16px}
+.lg{text-align:center}
+.lg svg{display:block;margin-bottom:8px}
+.lg span{font-family:var(--data);font-size:10.5px;color:var(--tx3)}
+/* Wortmarke: das Zeichen steht AN der Stelle des S */
+.marken{display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start;margin-top:6px}
+.mk{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px 20px}
+.mkline{display:flex;align-items:center;gap:1px}
+.mksign{width:44px;height:44px;flex:0 0 auto;margin-right:-2px}
+.mkline b{font-size:34px;font-weight:800;letter-spacing:-.035em;line-height:1}
+.mkline b em{font-style:normal;color:var(--akz)}
+.mkline.hell b em{color:#b8551c}
+.mkline.sm .mksign{width:26px;height:26px}
+.mkline.sm b{font-size:20px}
+.mkline.hell{background:#f6efe3;border-radius:9px;padding:9px 13px 9px 7px}
+.mkline.hell b{color:#241e17}
+.mklbl{display:block;margin-top:11px;font-family:var(--data);font-size:10px;color:var(--tx3)}
+.fam{display:flex;gap:20px;flex-wrap:wrap;align-items:center;margin-top:20px;
+  padding:16px 20px;background:var(--panel2);border:1px solid var(--line);border-radius:14px}
+.fs{display:inline-flex;align-items:center;font-size:16px;font-weight:700;letter-spacing:-.02em}
+.fs::before{content:"";width:19px;height:19px;margin-right:5px;background:var(--c);
+  clip-path:polygon(50% 6%,96% 88%,4% 88%);border-radius:3px}
+.fs b{color:var(--c);font-weight:800}
+.famnote{margin-left:auto;font-family:var(--data);font-size:10px;color:var(--tx3)}
+
+/* ---------- Bühne ---------- */
+.stage{border:1px solid var(--line2);border-radius:16px;overflow:hidden;background:#0E1217;
+  color:#E4E9EF;margin-top:22px;container-type:inline-size;container-name:st}
+
+/* Held mit Titel-Logo */
+.hero{position:relative;min-height:180px;display:flex;align-items:flex-end;padding:20px;overflow:hidden}
+.hero::before{content:"";position:absolute;inset:0;
+  background:radial-gradient(100% 150% at 70% 4%,#6f9dc2,transparent 60%),
+             radial-gradient(115% 135% at 82% 16%,#41688a,transparent 56%),
+             linear-gradient(120deg,#1d2f40,#274257)}
+.hero::after{content:"";position:absolute;left:0;top:0;bottom:0;width:64%;z-index:1;
+  background:linear-gradient(90deg,rgba(8,11,15,.9),rgba(8,11,15,.68) 46%,transparent)}
+.hin{position:relative;z-index:2;max-width:52%}
+.kick{font-family:var(--data);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;
+  color:#F0873C;font-weight:700;margin-bottom:8px}
+.hmeta{font-family:var(--data);font-size:10.5px;color:#9fb0c0;margin:8px 0 12px;
+  display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.gue{font-family:var(--data);font-size:9px;letter-spacing:.06em;padding:1px 6px;border-radius:5px;
+  border:1px solid currentColor;line-height:1.5}
+.hsep{color:#3d4854}.hmeta b{color:#dfe7ee;font-weight:700}
+.lc2{font-family:var(--data);font-size:9px;border:1px solid rgba(159,176,192,.4);
+  border-radius:4px;padding:0 4px;letter-spacing:.06em}
+.gue.hand{color:#8fd6a4}.gue.mtl{color:#e0b45a}.gue.ki{color:#7ec8e8}.gue.off{color:#e8d48a}
+.hbtn{border:0;border-radius:9px;padding:9px 18px;font-family:inherit;font-size:13.5px;
+  font-weight:700;background:#F0873C;color:#150a02}
+.hbtn.g{background:rgba(255,255,255,.1);color:#dfe7ee;margin-left:8px}
+
+/* Werkzeugleiste */
+.tools{display:flex;align-items:center;gap:9px;padding:11px 16px;border-top:1px solid #232C36;
+  border-bottom:1px solid #232C36;flex-wrap:wrap}
+.srch{flex:1 1 220px;min-width:0;display:flex;align-items:center;gap:8px;background:#0E1217;
+  border:1px solid #33404e;border-radius:9px;padding:7px 11px;font-size:12.5px;color:#5f6b78}
+.srch b{color:#E4E9EF;font-weight:400}
+.icn{width:15px;height:15px;flex:0 0 auto;stroke:currentColor;fill:none;stroke-width:1.5;
+  stroke-linecap:round;stroke-linejoin:round}
+.vsw{display:flex;gap:3px;background:#12171e;border:1px solid #33404e;border-radius:9px;padding:3px}
+.vb{appearance:none;border:0;background:none;color:#8B97A5;padding:5px 9px;border-radius:7px;
+  cursor:pointer;display:grid;place-items:center}
+.vb.on{background:#F0873C;color:#150a02}
+.vb:focus-visible{outline:2px solid #fff;outline-offset:2px}
+
+/* Filterzeile */
+.filters{display:flex;gap:6px;padding:10px 16px;flex-wrap:wrap;align-items:center;
+  border-bottom:1px solid #232C36}
+.fc{font-family:var(--data);font-size:10px;padding:5px 11px;border-radius:999px;
+  border:1px solid #232C36;color:#8B97A5;cursor:pointer;white-space:nowrap}
+.fc.on{background:#F0873C;color:#150a02;border-color:#F0873C}
+.fc.warn{border-color:#5a3a2a;color:#e0b45a}
+.fsp{flex:1}
+.amp{display:flex;align-items:center;gap:7px;font-family:var(--data);font-size:10px;color:#5f6b78}
+.amp i{width:8px;height:8px;border-radius:50%;display:inline-block}
+
+/* Statistik */
+.stats{display:flex;gap:20px;padding:10px 16px;border-bottom:1px solid #232C36;flex-wrap:wrap}
+.stt{font-family:var(--data);font-size:10.5px;color:#5f6b78}
+.stt b{display:block;font-family:var(--disp);font-size:17px;font-weight:800;color:#E4E9EF;
+  letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+
+/* ===== Ansicht: Liste ===== */
+.body{padding:0}
+table.liste{width:100%;border-collapse:collapse;font-size:13px}
+.liste th{text-align:left;padding:9px 12px;font-family:var(--data);font-size:9.5px;
+  letter-spacing:.12em;text-transform:uppercase;color:#4d5865;font-weight:400;
+  border-bottom:1px solid #232C36;white-space:nowrap;cursor:pointer}
+.liste th.sortiert{color:#F0873C}
+.liste td{padding:8px 12px;border-bottom:1px solid #1a2129;vertical-align:middle}
+.liste tr:hover td{background:#141a21}
+.cov{width:34px;height:48px;border-radius:5px;display:block;flex:0 0 auto}
+.tt{display:flex;align-items:center;gap:10px;min-width:0}
+.tt .nm{min-width:0}
+.tt b{display:block;font-size:13px;font-weight:600;letter-spacing:-.01em;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lc{font-family:var(--data);font-size:9px;letter-spacing:.06em;color:#5f6b78;
+  border:1px solid #2b3540;border-radius:4px;padding:0 4px;margin-right:5px;vertical-align:1px}
+.tt small{font-family:var(--data);font-size:9.5px;color:#5f6b78;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis;display:block}
+/* EINE Zelle, EIN Kopf — die Zahlen stehen in einem festen Raster dicht beieinander.
+   Der Kopftext bestimmt NICHT den Abstand der Zahlen (JB-Fund 07.08.). */
+.liste th.kh,.liste td.kap{text-align:center;white-space:nowrap;width:1%}
+.liste th.kh{font-size:9px;letter-spacing:.06em}
+.kh s{text-decoration:none;color:#4d5865;cursor:pointer;padding:0 1px}
+.kh s:hover{color:#8B97A5}
+.kh s.sortiert{color:#F0873C}
+.kh i{font-style:normal;color:#2e3843;padding:0 2px}
+/* festes Raster: rechts | mitte | links — dicht, aber über alle Zeilen bündig */
+/* Zahlentrio. Die Luft gehoert dem TRENNER, nie der Restbreite einer Zelle —
+   sonst kleben vierstellige Zahlen am Schraegstrich und dreistellige schweben.
+   Ausgerichtet wird mit Ziffernleerzeichen (U+2007), deren Breite die aktuelle
+   Ansicht bestimmt: keine 1000er im Regal, keine 1000er-Luecken. (JB-Fund 07.08.) */
+.kapg{display:inline-flex;align-items:baseline;white-space:pre;
+  font-family:var(--data);font-size:12.5px;font-variant-numeric:tabular-nums}
+.kapg .g{font-weight:800}
+.kapg .u{color:#8B97A5}
+.kapg .t{color:#5f6b78}
+.kapg .s{color:#3d4854;padding:0 .5ch}
+.liste td.kap{cursor:pointer}
+.liste tr:hover td.kap{background:#1a222b}
+.neu{font-family:var(--data);font-size:9.5px;font-weight:800;background:var(--st-lese);
+  color:#0b1a0f;padding:1px 5px;border-radius:5px;margin-left:6px}
+.zust{font-family:var(--data);font-size:10px;white-space:nowrap}
+.zdot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:6px;vertical-align:1px}
+.q{display:flex;align-items:center;gap:6px;font-family:var(--data);font-size:10.5px;color:#8B97A5}
+.akt{display:flex;gap:5px;justify-content:flex-end}
+.ab{appearance:none;border:1px solid #33404e;background:none;color:#8B97A5;border-radius:7px;
+  padding:4px 9px;font-family:var(--data);font-size:10px;cursor:pointer;white-space:nowrap}
+.ab.pri{background:#F0873C;border-color:#F0873C;color:#150a02;font-weight:700}
+.ab:hover{border-color:#F0873C;color:#E4E9EF}
+.ab.pri:hover{color:#150a02}
+.ab.w{color:#e0b45a;border-color:#5a3a2a}
+.off{color:#5fd0c4}
+
+/* ===== Ansicht: Kacheln / Raster ===== */
+.grid{display:grid;gap:12px;padding:14px 16px}
+.grid.kacheln{grid-template-columns:repeat(6,1fr)}
+.grid.raster{grid-template-columns:repeat(8,1fr);gap:9px}
+.tile{cursor:pointer}
+.po{position:relative;aspect-ratio:2/3;border-radius:10px;overflow:hidden;border:1px solid #232C36;
+  display:flex;align-items:flex-end;padding:7px}
+.po::after{content:"";position:absolute;inset:0;z-index:1;
+  background:linear-gradient(to top,rgba(0,0,0,.84),transparent 52%)}
+.po b{position:relative;z-index:2;font-size:10.5px;font-weight:800;color:#fff;line-height:1.15}
+/* E88 (JB-Fund 07.08.): kein reines Bilderraten. In der dichten Ansicht wandert der
+   Titel unter das Bild — einzeilig, gekuerzt. Vorbild ist die „Kompakt"-Ansicht in
+   SyncYouTube: mehr Kacheln, aber Bild UND Titel. */
+.grid.raster .po b{display:none}
+.grid.raster .po{border-radius:7px;padding:5px}
+.grid.raster .tname{display:block}
+.po .bar{position:absolute;left:0;bottom:0;height:3px;background:#F0873C;z-index:3}
+.po .pn{position:absolute;top:7px;right:7px;z-index:3;width:8px;height:8px;border-radius:50%;
+  box-shadow:0 0 0 2px rgba(0,0,0,.5)}
+.po .pneu{position:absolute;top:6px;right:6px;z-index:3;font-family:var(--data);font-size:9px;
+  font-weight:800;background:var(--st-lese);color:#0b1a0f;padding:2px 5px;border-radius:5px}
+.tmeta{margin-top:6px;font-family:var(--data);font-size:9.5px;color:#5f6b78;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.grid.raster .tmeta{display:none}
+.tname{display:none;margin-top:5px;font-size:10.5px;font-weight:700;color:#E4E9EF;line-height:1.25;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.grid.raster .zstreif{position:absolute;left:0;right:0;bottom:0;height:3px;z-index:4}
+
+@container st (max-width:900px){
+  .grid.kacheln{grid-template-columns:repeat(4,1fr)}
+  .grid.raster{grid-template-columns:repeat(7,1fr)}
+  .liste .c-q,.liste .h-q{display:none}
+  .stats{gap:14px}
+}
+@container st (max-width:640px){
+  .grid.kacheln{grid-template-columns:repeat(3,1fr)}
+  .grid.raster{grid-template-columns:repeat(5,1fr)}
+  .liste .c-z,.liste .h-z{display:none}
+  .liste .c-n,.liste .h-n{display:none}
+  .hin{max-width:78%}
+}
+
+.leg{margin-top:16px;display:grid;gap:9px}
+.legg{font-size:13px;color:var(--tx2);display:flex;gap:14px;flex-wrap:wrap;align-items:center;
+  background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:11px 15px}
+.legg b{color:var(--tx);font-family:var(--data);font-size:11.5px;min-width:74px}
+.lgi{display:inline-flex;align-items:center;gap:6px;font-family:var(--data);font-size:10.5px;color:var(--tx3)}
+.lgi i{width:9px;height:9px;border-radius:50%}
+/* Karten */
+.karten{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:13px;margin-top:18px}
+.k{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:17px}
+.k .n{font-family:var(--data);font-size:10px;color:var(--akz);letter-spacing:.13em;
+  text-transform:uppercase;display:block;margin-bottom:8px}
+.k b{display:block;font-size:14px;margin-bottom:6px;letter-spacing:-.01em}
+.k p{margin:0;font-size:13.5px;color:var(--tx2);line-height:1.58}
+.merk{background:var(--panel);border-left:3px solid var(--akz);border-radius:0 12px 12px 0;
+  padding:17px 19px;margin:20px 0}
+.merk p{margin:0;font-size:16px;line-height:1.58}
+.merk p+p{margin-top:8px;color:var(--tx2);font-size:14px}
+</style>
+
+<div class="wrap">
+
+<p class="eyebrow">SyncFindus · Regal, Suche, Zeichen</p>
+<h1>Funktion zuerst.<br>Schön ist, was funktioniert.</h1>
+<p class="lede">Die alte Manga-Leseliste konnte mehr als meine Kachelentwürfe. Hier ist sie zurück —
+als <b>Liste</b>, die eine von drei Ansichten desselben Regals ist. Mit Suche, Filtern, Ampel,
+Kapitelzelle und allem, was sie ausgemacht hat.</p>
+
+<hr class="rule">
+
+<h2>Das Gleichdick</h2>
+<p class="sub">Das Familienzeichen ist ein <b>Reuleaux-Dreieck</b> — eine Kurve konstanter Breite,
+egal wie man sie dreht. Drei Vorschläge, alle in derselben Konstruktion wie eure bestehenden Marken.</p>
+
+<div class="logos">
+  <div class="lg">
+    <svg width="76" height="76" viewBox="0 0 120 112" aria-label="Variante S">
+      <path d="M 10 96.6 A 100 100 0 0 0 110 96.6 A 100 100 0 0 0 60 10 A 100 100 0 0 0 10 96.6 Z" fill="#F0873C"/>
+      <path d="M 73 34 C 70 26 57 23 49 26 C 40 29 38 37 41 44 C 44 51 54 53 60 55 C 68 57 75 61 75 69 C 75 79 65 85 55 84 C 46 83 40 78 39 71"
+        fill="none" stroke="#15100a" stroke-width="14" stroke-linecap="round"/>
+    </svg>
+    <span>S · Familie</span>
+  </div>
+
+  <div class="lg">
+    <svg width="76" height="76" viewBox="0 0 120 112" aria-label="Variante F">
+      <path d="M 10 96.6 A 100 100 0 0 0 110 96.6 A 100 100 0 0 0 60 10 A 100 100 0 0 0 10 96.6 Z" fill="#F0873C"/>
+      <path d="M 45 84 L 45 34 L 78 34 M 45 58 L 70 58"
+        fill="none" stroke="#15100a" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <span>F · eigenständig</span>
+  </div>
+
+  <div class="lg">
+    <svg width="76" height="76" viewBox="0 0 120 112" aria-label="Variante Regalbretter">
+      <path d="M 10 96.6 A 100 100 0 0 0 110 96.6 A 100 100 0 0 0 60 10 A 100 100 0 0 0 10 96.6 Z" fill="#F0873C"/>
+      <path d="M 30 48 L 90 48 M 24 66 L 96 66 M 30 84 L 90 84"
+        fill="none" stroke="#15100a" stroke-width="12" stroke-linecap="round"/>
+      <path d="M 60 30 L 60 88" fill="none" stroke="#15100a" stroke-width="12" stroke-linecap="round" opacity=".35"/>
+    </svg>
+    <span>Regalbretter</span>
+  </div>
+
+  <div class="lg">
+    <svg width="76" height="76" viewBox="0 0 120 112" aria-label="Variante S mit Brett">
+      <path d="M 10 96.6 A 100 100 0 0 0 110 96.6 A 100 100 0 0 0 60 10 A 100 100 0 0 0 10 96.6 Z" fill="#F0873C"/>
+      <path d="M 73 32 C 70 24 57 21 49 24 C 40 27 38 35 41 42 C 44 49 54 51 60 53 C 68 55 75 59 75 67 C 75 77 65 83 55 82 C 46 81 40 76 39 69"
+        fill="none" stroke="#15100a" stroke-width="13" stroke-linecap="round"/>
+      <path d="M 26 92 L 94 92" fill="none" stroke="#15100a" stroke-width="9" stroke-linecap="round"/>
+    </svg>
+    <span>S auf dem Brett ⭐</span>
+  </div>
+</div>
+
+<h2 style="margin-top:34px">Die Wortmarke — das Zeichen <em style="font-style:normal;color:var(--akz)">ist</em> das S</h2>
+<p class="sub">Kein Zeichen <em>neben</em> dem Wort, sondern <b>an seiner Stelle</b>: das Gleichdick
+trägt das S, das Wort läuft direkt weiter. So bleibt die Familie erkennbar und die Marke ist
+ein Ding statt zweier.</p>
+
+<div class="marken">
+  <div class="mk">
+    <span class="mkline">
+      <svg viewBox="0 0 120 112" class="mksign" aria-label="S"><path d="M 10 96.6 A 100 100 0 0 0 110 96.6 A 100 100 0 0 0 60 10 A 100 100 0 0 0 10 96.6 Z" fill="#F0873C"/><path d="M 73 34 C 70 26 57 23 49 26 C 40 29 38 37 41 44 C 44 51 54 53 60 55 C 68 57 75 61 75 69 C 75 79 65 85 55 84 C 46 83 40 78 39 71" fill="none" stroke="#15100a" stroke-width="14" stroke-linecap="round"/></svg><b>ync<em>Fundus</em></b></span>
+    <span class="mklbl">groß · Startbild, Fenstertitel</span>
+  </div>
+
+  <div class="mk">
+    <span class="mkline sm">
+      <svg viewBox="0 0 120 112" class="mksign" aria-label="S"><path d="M 10 96.6 A 100 100 0 0 0 110 96.6 A 100 100 0 0 0 60 10 A 100 100 0 0 0 10 96.6 Z" fill="#F0873C"/><path d="M 73 34 C 70 26 57 23 49 26 C 40 29 38 37 41 44 C 44 51 54 53 60 55 C 68 57 75 61 75 69 C 75 79 65 85 55 84 C 46 83 40 78 39 71" fill="none" stroke="#15100a" stroke-width="14" stroke-linecap="round"/></svg><b>ync<em>Fundus</em></b></span>
+    <span class="mklbl">klein · Seitenleiste, Kopfzeile</span>
+  </div>
+
+  <div class="mk">
+    <span class="mkline hell">
+      <svg viewBox="0 0 120 112" class="mksign" aria-label="S"><path d="M 10 96.6 A 100 100 0 0 0 110 96.6 A 100 100 0 0 0 60 10 A 100 100 0 0 0 10 96.6 Z" fill="#b8551c"/><path d="M 73 34 C 70 26 57 23 49 26 C 40 29 38 37 41 44 C 44 51 54 53 60 55 C 68 57 75 61 75 69 C 75 79 65 85 55 84 C 46 83 40 78 39 71" fill="none" stroke="#fffdf9" stroke-width="14" stroke-linecap="round"/></svg><b>ync<em>Fundus</em></b></span>
+    <span class="mklbl">auf hellem Grund (Papier-Modus)</span>
+  </div>
+
+  <div class="mk">
+    <span class="mkline">
+      <svg viewBox="0 0 120 112" class="mksign" aria-label="S"><path d="M 10 96.6 A 100 100 0 0 0 110 96.6 A 100 100 0 0 0 60 10 A 100 100 0 0 0 10 96.6 Z" fill="#F0873C"/><path d="M 73 34 C 70 26 57 23 49 26 C 40 29 38 37 41 44 C 44 51 54 53 60 55 C 68 57 75 61 75 69 C 75 79 65 85 55 84 C 46 83 40 78 39 71" fill="none" stroke="#15100a" stroke-width="14" stroke-linecap="round"/></svg>
+    </span>
+    <span class="mklbl">allein · Symbol, Tray, Favicon</span>
+  </div>
+</div>
+
+<div class="fam">
+  <span class="fs" style="--c:#c9952b">Sync<b>YouTube</b></span>
+  <span class="fs" style="--c:#d67756">Sync<b>Manga</b></span>
+  <span class="fs" style="--c:#F0873C">Sync<b>Fundus</b></span>
+  <span class="fs" style="--c:#6d9ac0">Sync<b>DashTray</b></span>
+  <span class="famnote">gleiche Konstruktion, eigene Farbe je Programm</span>
+</div>
+
+<hr class="rule">
+
+<h2>Das Regal</h2>
+<p class="sub">Oben ein Held mit <b>Titel-Logo statt Titel-Schrift</b> — so sieht es aus, wenn das
+Bild den Namen mitbringt. Darunter Suche, Filter, Ampel, Statistik. Und drei Ansichten
+desselben Bestands: <b>Kacheln · Raster · Liste</b>.</p>
+
+<div class="stage">
+
+  <section class="hero"><div class="hin">
+    <div class="kick">Weiter, wo du warst</div>
+    <!-- „ClearLogo": der Titel als transparentes Bild statt als Schrift -->
+    <svg viewBox="0 0 420 92" style="width:min(340px,100%);height:auto;margin-bottom:2px" aria-label="Frieren">
+      <text x="0" y="52" font-family="Georgia,serif" font-size="52" font-weight="700"
+        letter-spacing="6" fill="#f4f7fa">FRIEREN</text>
+      <text x="3" y="80" font-family="system-ui,sans-serif" font-size="15" letter-spacing="7"
+        fill="#9fc3e0">NACH DEM ENDE DER REISE</text>
+    </svg>
+    <div class="hmeta"><span>Manga</span><span class="hsep">·</span><span>gelesen bis <b style="color:#8fd6a4">88</b></span><span class="hsep">/</span><span>übersetzt <b>122</b></span><span class="hsep">/</span><span>erschienen <b>187</b></span><span class="hsep">·</span><span class="gue hand">Fan</span><span class="lc2">JP</span><span class="hsep">·</span><span>05.08.</span></div>
+    <div><button class="hbtn">▶ Weiterlesen · Kapitel 89</button><button class="hbtn g">Info</button>
+      <button class="hbtn g" title="auch als Anime vorhanden">→ Anime</button></div>
+  </div></section>
+
+  <div class="tools">
+    <div class="srch">
+      <svg class="icn" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <b>vinl</b><span style="color:#3d4854">&nbsp;— 3 im Regal, 2 draußen</span>
+    </div>
+    <div class="vsw" role="group" aria-label="Ansicht">
+      <button class="vb" data-v="kacheln" title="Kacheln">
+        <svg class="icn" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></button>
+      <button class="vb" data-v="raster" title="Raster klein">
+        <svg class="icn" viewBox="0 0 24 24"><rect x="3" y="3" width="4" height="4" rx="1"/><rect x="10" y="3" width="4" height="4" rx="1"/><rect x="17" y="3" width="4" height="4" rx="1"/><rect x="3" y="10" width="4" height="4" rx="1"/><rect x="10" y="10" width="4" height="4" rx="1"/><rect x="17" y="10" width="4" height="4" rx="1"/><rect x="3" y="17" width="4" height="4" rx="1"/><rect x="10" y="17" width="4" height="4" rx="1"/><rect x="17" y="17" width="4" height="4" rx="1"/></svg></button>
+      <button class="vb on" data-v="liste" title="Liste">
+        <svg class="icn" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01"/></svg></button>
+    </div>
+  </div>
+
+  <div class="filters">
+    <span class="fc on">Alle · 214</span>
+    <span class="fc">Angefangen · 23</span>
+    <span class="fc">Neue Kapitel · 7</span>
+    <span class="fc">Aufgeholt · 41</span>
+    <span class="fc">Offline · 12</span>
+    <span class="fc warn">⚠ Braucht Hilfe · 4</span>
+    <span class="fsp"></span>
+    <span class="amp">Quellen
+      <i style="background:var(--amp-gr)"></i>9
+      <i style="background:var(--amp-ge)"></i>3
+      <i style="background:var(--amp-rt)"></i>1
+    </span>
+  </div>
+
+  <div class="stats">
+    <div class="stt"><b>214</b>Werke</div>
+    <div class="stt"><b>18.402</b>Kapitel gelesen</div>
+    <div class="stt"><b>7</b>neue seit gestern</div>
+    <div class="stt"><b>41</b>warten auf Übersetzung</div>
+    <div class="stt"><b>12,4 GB</b>offline</div>
+  </div>
+
+  <div class="body" id="body"></div>
+</div>
+
+<div class="leg">
+  <div class="legg"><b>gelesen</b> — dein Lesestand
+    <span class="lgi"><i style="background:#5fd07a"></i>lese gerade</span>
+    <span class="lgi"><i style="background:#d8b64a"></i>pausiert</span>
+    <span class="lgi"><i style="background:#e8e4de"></i>Backlog</span>
+    <span class="lgi"><i style="background:#7d9ab5"></i>aufgeholt</span></div>
+  <div class="legg"><b>übersetzt</b> — lebt die Übersetzung noch?
+    <span class="lgi"><i style="background:#5fd07a"></i>aktiv</span>
+    <span class="lgi"><i style="background:#d8b64a"></i>seit Monaten nichts</span>
+    <span class="lgi"><i style="background:#e06a5a"></i>über ein Jahr nichts</span>
+    <span class="lgi"><i style="background:#5fd0c4"></i>vollständig</span></div>
+  <div class="legg"><b>erschienen</b> — wie viele Kapitel es im Original schon gibt, und wie es der Serie geht
+    <span class="lgi"><i style="background:#7d9ab5"></i>läuft</span>
+    <span class="lgi"><i style="background:#5fd0c4"></i>abgeschlossen</span>
+    <span class="lgi"><i style="background:#d8b64a"></i>Hiatus</span>
+    <span class="lgi"><i style="background:#e06a5a"></i>abgebrochen</span></div>
+</div>
+
+<hr class="rule">
+
+<h2>Warum die Liste die wichtigste Ansicht ist</h2>
+
+<div class="merk">
+  <p><b>Kacheln beantworten „worauf habe ich Lust". Die Liste beantwortet „wo stehe ich".</b></p>
+  <p>Das sind zwei völlig verschiedene Aufgaben — und die zweite ist die, für die man ein
+  Programm überhaupt schreibt. Deshalb ist die Ansicht <b>pro Regal</b> gemerkt: Anime als
+  Kacheln, Manga als Liste, Musik als Liste.</p>
+</div>
+
+<div class="karten">
+  <div class="k"><span class="n">Das Herzstück</span><b>Die Kapitelzelle</b>
+    <p><code style="font-family:var(--data);font-size:12px">30 <span style="color:#3d4854">/</span> 36 <span style="color:#3d4854">/</span> 343</code>
+    — gelesen, übersetzt, erschienen. Die <b>gelesene Zahl trägt die Zustandsfarbe</b>, das
+    <b>+N</b> zeigt Neues. Anklicken setzt den Stand von Hand. Eine Zelle, vier Auskünfte.</p></div>
+
+  <div class="k"><span class="n">Sortierbar</span><b>Jede Spalte ist eine Frage</b>
+    <p>Nach <em>zuletzt gelesen</em> → wo war ich. Nach <em>neu</em> → was ist passiert.
+    Nach <em>Übersetzungsstand</em> → was ist eingeschlafen. Nach <em>Quelle</em> → was ist
+    kaputt. Die Sortierung <b>ist</b> die Auswertung.</p></div>
+
+  <div class="k"><span class="n">Die Suche</span><b>Findet auch, was du nicht hast</b>
+    <p>Ein Feld. Es sucht in <b>allen</b> Titelvarianten (Romaji, Englisch, Original, Synonyme),
+    im Autor und in den Tags — und zeigt getrennt: <b>im Regal</b> und <b>draußen</b>.
+    Was draußen ist, bekommt „hol es mir". Kein zweiter Modus.</p></div>
+
+  <div class="k"><span class="n">Die Ampel</span><b>Quellen-Gesundheit auf einen Blick</b>
+    <p>🟢 9 · 🟡 3 · 🔴 1. Und die Zeile mit der roten Quelle zeigt es direkt in der
+    Spalte — du musst nicht suchen, wo es klemmt.</p></div>
+
+  <div class="k"><span class="n">Die Statistik</span><b>Fünf Zahlen, keine Tabelle</b>
+    <p>Werke · gelesene Kapitel · neu seit gestern · wartet auf Übersetzung · offline.
+    Mehr will niemand sehen. Alles Weitere lebt in der Statistik-Tafel.</p></div>
+
+  <div class="k"><span class="n">Und das Alte bleibt</span><b>weiterlesen · ＋Alt · ⚠</b>
+    <p>Genau die drei Knöpfe der Leseliste: direkt weiterlesen, Alternativen zeigen,
+    kaputten Link melden. Bewährt, bleibt.</p></div>
+</div>
+
+</div>
+
+<script>
+const W = [
+ {t:"Junk the Black Shadow", a:"Hisashi Sakaguchi", f:"JP", g:30,  u:36,  ges:343, st:"pause", ue:"tot",  ser:"hiatus", neu:6, q:"WeebCentral", amp:"gr", off:false, h:22},
+ {t:"Solo Leveling",         a:"Chugong",           f:"KR", g:141, u:179, ges:179, st:"auf",   ue:"ende", ser:"fertig", neu:2, q:"MangaFire",   amp:"gr", off:true,  h:246},
+ {t:"Vinland Saga",          a:"Makoto Yukimura",   f:"JP", g:188, u:214, ges:214, st:"lese",  ue:"aktiv",ser:"laeuft", neu:0, q:"Bato",        amp:"ge", off:false, h:210},
+ {t:"One Piece",             a:"Eiichiro Oda",      f:"JP", g:1096,u:1108,ges:0,   st:"auf",   ue:"aktiv",ser:"laeuft", neu:1, q:"MangaKatana", amp:"gr", off:false, h:8},
+ {t:"Lord of the Mysteries", a:"Cuttlefish",        f:"CN", g:412, u:1432,ges:1432,st:"lese",  ue:"ende", ser:"fertig", neu:3, q:"NovelBin",    amp:"gr", off:true,  h:268},
+ {t:"Blue Giant",            a:"Shinichi Ishizuka", f:"JP", g:0,   u:62,  ges:490, st:"back",  ue:"schlaf",ser:"laeuft",neu:0, q:"Comick",      amp:"rt", off:false, h:216},
+ {t:"Reverend Insanity",     a:"Gu Zhen Ren",       f:"CN", g:1204,u:2334,ges:2334,st:"pause", ue:"tot",  ser:"abbruch",neu:9, q:"—",           amp:"ge", off:false, h:288},
+ {t:"Apothecary Diaries",    a:"Natsu Hyuuga",      f:"JP", g:0,   u:88,  ges:88,  st:"back",  ue:"aktiv",ser:"laeuft", neu:4, q:"MangaFire",   amp:"gr", off:false, h:158},
+];
+/* übersetzt: wie lebendig ist die Übersetzung · erschienen: wie steht die Serie selbst */
+const UEF = {aktiv:"#5fd07a", schlaf:"#d8b64a", tot:"#e06a5a", ende:"#5fd0c4"};
+const UET = {aktiv:"aktiv übersetzt", schlaf:"seit Monaten nichts", tot:"seit über einem Jahr nichts", ende:"vollständig übersetzt"};
+const SEF = {laeuft:"#7d9ab5", fertig:"#5fd0c4", hiatus:"#d8b64a", abbruch:"#e06a5a"};
+const SET = {laeuft:"läuft", fertig:"abgeschlossen", hiatus:"Hiatus", abbruch:"abgebrochen"};
+const FARBE = {lese:"var(--st-lese)",pause:"var(--st-pause)",back:"var(--st-back)",
+               auf:"var(--st-auf)",fertig:"var(--st-fertig)"};
+const NAME  = {lese:"Lese gerade",pause:"Pausiert",back:"Backlog",auf:"Aufgeholt",fertig:"Fertig"};
+const AMPF  = {gr:"var(--amp-gr)",ge:"var(--amp-ge)",rt:"var(--amp-rt)"};
+const g = h=>`linear-gradient(150deg,hsl(${h} 34% 31%),hsl(${(h+30)%360} 28% 13%))`;
+
+const ZL = "\u2007";   /* Ziffernleerzeichen — exakt so breit wie eine Ziffer */
+const txt = (v, leer) => (v ? String(v) : leer);
+const BR  = {
+  g:   Math.max(...W.map(w => txt(w.g,   "0").length)),
+  u:   Math.max(...W.map(w => txt(w.u,   "\u2013").length)),
+  ges: Math.max(...W.map(w => txt(w.ges, "\u2026").length)),
+};
+const fz = (v, b, leer) => { const t = txt(v, leer); return ZL.repeat(Math.max(0, b - t.length)) + t; };
+
+function liste(){
+  return `<table class="liste"><thead><tr>
+    <th style="width:40%">Titel</th>
+    <th class="kh"><s class="sortiert">gelesen&nbsp;↓</s><i>/</i><s>übersetzt</s><i>/</i><s>erschienen</s></th>
+    <th class="h-n">neu</th>
+    <th class="h-q">Quelle</th>
+    <th style="text-align:right">Aktion</th>
+  </tr></thead><tbody>` + W.map(w=>`<tr>
+    <td><div class="tt"><span class="cov" style="background:${g(w.h)}"></span>
+      <span class="nm"><b><span class="lc">${w.f}</span> ${w.t}</b><small>${w.a}${w.off?' · <span class="off">offline</span>':''}</small></span></div></td>
+    <td class="kap" title="anklicken = Stand von Hand setzen"><span class="kapg"><span class="g" style="color:${FARBE[w.st]}">${fz(w.g,BR.g,"0")}</span><span class="s">/</span><span class="u" style="color:${UEF[w.ue]}" title="${UET[w.ue]}">${fz(w.u,BR.u,"–")}</span><span class="s">/</span><span class="t" style="color:${SEF[w.ser]}" title="${SET[w.ser]}">${fz(w.ges,BR.ges,"…")}</span></span></td>
+    <td class="c-n">${w.neu?`<span class="neu">+${w.neu}</span>`:""}</td>
+    <td class="c-q"><span class="q"><i class="zdot" style="background:${AMPF[w.amp]}"></i>${w.q}</span></td>
+    <td><div class="akt">
+      <button class="ab pri">weiterlesen</button>
+      <button class="ab">＋Alt</button>
+    </div></td></tr>`).join("") + `</tbody></table>`;
+}
+
+function gitter(art){
+  return `<div class="grid ${art}">` + W.map(w=>`<div class="tile">
+    <div class="po" style="background:${g(w.h)}"><span class="zstreif" style="background:${FARBE[w.st]}"></span>
+      ${w.neu?`<span class="pneu">+${w.neu}</span>`
+             :`<span class="pn" style="background:${FARBE[w.st]}"></span>`}
+      <b>${w.t}</b>
+      ${w.u&&w.g?`<span class="bar" style="width:${Math.min(100,Math.round(w.g/w.u*100))}%"></span>`:""}
+    </div>
+    <div class="tname" title="${w.t}">${w.t}</div>
+    <div class="tmeta">${w.g} / ${w.u}${w.ges?" / "+w.ges:""}</div>
+  </div>`).join("") + `</div>`;
+}
+
+function zeige(v){
+  document.getElementById("body").innerHTML = (v==="liste") ? liste() : gitter(v);
+}
+document.querySelectorAll(".vb").forEach(b=>b.addEventListener("click",()=>{
+  document.querySelectorAll(".vb").forEach(x=>x.classList.toggle("on",x===b));
+  zeige(b.dataset.v);
+}));
+zeige("liste");
+</script>

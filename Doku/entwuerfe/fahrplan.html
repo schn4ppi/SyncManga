@@ -1,0 +1,376 @@
+<title>SyncFindus — Was noch offen ist</title>
+<style>
+:root{
+  --bg:#0E1217; --panel:#161C23; --panel2:#1c242d; --line:#232C36; --line2:#33404e;
+  --tx:#E4E9EF; --tx2:#8B97A5; --tx3:#5f6b78; --akz:#F0873C; --onA:#150a02;
+  --grün:#5fd07a; --gelb:#d8b64a; --rot:#e06a5a; --türkis:#5fd0c4;
+  --disp:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --data:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+}
+@media (prefers-color-scheme:light){
+  :root:not([data-theme="dark"]){--bg:#eff1f4;--panel:#fff;--panel2:#f4f6f8;--line:#dde2e8;--line2:#c3ccd6;
+    --tx:#1a1f26;--tx2:#5a6672;--tx3:#8592a0;--akz:#b8551c;--onA:#fff;
+    --grün:#237a42;--gelb:#8a6410;--rot:#b13a28;--türkis:#1a7f74}
+}
+:root[data-theme="light"]{--bg:#eff1f4;--panel:#fff;--panel2:#f4f6f8;--line:#dde2e8;--line2:#c3ccd6;
+  --tx:#1a1f26;--tx2:#5a6672;--tx3:#8592a0;--akz:#b8551c;--onA:#fff;
+  --grün:#237a42;--gelb:#8a6410;--rot:#b13a28;--türkis:#1a7f74}
+
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:var(--disp);font-size:16px;
+  line-height:1.6;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1120px;margin:0 auto;padding:34px 18px 90px}
+.eyebrow{font-family:var(--data);font-size:11px;letter-spacing:.17em;text-transform:uppercase;
+  color:var(--akz);margin:0 0 11px}
+h1{font-size:clamp(27px,4.2vw,42px);line-height:1.06;letter-spacing:-.028em;font-weight:800;
+  margin:0 0 13px;text-wrap:balance}
+.lede{font-size:17px;color:var(--tx2);max-width:66ch;margin:0}
+h2{font-size:22px;font-weight:800;letter-spacing:-.022em;margin:0 0 6px}
+h3{font-size:15px;font-weight:800;letter-spacing:-.01em;margin:0 0 5px}
+.sub{color:var(--tx2);margin:0 0 18px;max-width:70ch;font-size:15px}
+hr.rule{height:1px;background:var(--line);border:0;margin:44px 0}
+b.a{color:var(--akz)}
+
+/* Zahlenband */
+.zahlen{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:11px;margin-top:20px}
+.zt{background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:13px 14px}
+.zt b{display:block;font-size:26px;font-weight:800;letter-spacing:-.03em;line-height:1.05;
+  font-variant-numeric:tabular-nums}
+.zt span{display:block;font-family:var(--data);font-size:9.5px;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--tx3);margin-top:4px}
+.zt.akz b{color:var(--akz)}
+
+/* Statustafel */
+.tafel{margin-top:18px;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.zeile{display:grid;grid-template-columns:2.2ch 1fr repeat(3,72px);gap:11px;align-items:center;
+  padding:11px 14px;border-bottom:1px solid var(--line);background:var(--panel);font-size:13.5px}
+.zeile:last-child{border-bottom:0}
+.zeile.kopf{background:var(--panel2);font-family:var(--data);font-size:9.5px;letter-spacing:.15em;
+  text-transform:uppercase;color:var(--tx3)}
+.zeile .nr{font-family:var(--data);font-size:11px;color:var(--tx3);text-align:right}
+.zeile .nm{min-width:0}
+.zeile .nm b{display:block;font-weight:700;letter-spacing:-.01em}
+.zeile .nm span{display:block;font-size:11.5px;color:var(--tx3)}
+.pkt{display:flex;align-items:center;justify-content:center;gap:5px;font-family:var(--data);
+  font-size:10px;color:var(--tx3)}
+.pkt i{width:9px;height:9px;border-radius:50%;background:var(--line2);display:block}
+.pkt.ja i{background:var(--grün)}
+.pkt.halb i{background:var(--gelb)}
+.pkt.nein i{background:var(--line2)}
+.zeile.kopf .pkt{justify-content:center;color:var(--tx3)}
+
+/* Karten */
+.karten{display:grid;grid-template-columns:repeat(auto-fit,minmax(252px,1fr));gap:14px;margin-top:18px}
+.k{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 17px}
+.k.jetzt{border-color:var(--akz)}
+.k .rang{font-family:var(--data);font-size:9.5px;letter-spacing:.15em;text-transform:uppercase;
+  color:var(--tx3);margin-bottom:7px}
+.k.jetzt .rang{color:var(--akz)}
+.k p{margin:6px 0 0;font-size:13px;color:var(--tx2)}
+.k .wo{margin-top:9px;font-family:var(--data);font-size:10px;color:var(--tx3);
+  border-top:1px solid var(--line);padding-top:8px}
+
+/* Phasen */
+.phasen{margin-top:18px}
+.ph{display:grid;grid-template-columns:34px 1fr;gap:14px;position:relative;padding-bottom:20px}
+.ph::before{content:"";position:absolute;left:16.5px;top:34px;bottom:0;width:1.5px;background:var(--line)}
+.ph:last-child::before{display:none}
+.ph .num{width:34px;height:34px;border-radius:11px;background:var(--panel);border:1px solid var(--line2);
+  display:flex;align-items:center;justify-content:center;font-family:var(--data);font-size:12px;
+  color:var(--tx2);font-weight:700;z-index:1}
+.ph.jetzt .num{background:var(--akz);border-color:var(--akz);color:var(--onA)}
+.ph .inh{min-width:0;padding-top:4px}
+.ph .inh b{display:block;font-size:15px;letter-spacing:-.015em}
+.ph .inh .zt2{font-family:var(--data);font-size:10px;color:var(--tx3);margin-top:2px}
+.ph .inh p{margin:7px 0 0;font-size:13.5px;color:var(--tx2)}
+.ph .liste{margin:9px 0 0;padding:0;list-style:none;display:flex;flex-wrap:wrap;gap:6px}
+.ph .liste li{font-family:var(--data);font-size:10.5px;border:1px solid var(--line2);border-radius:6px;
+  padding:3px 9px;color:var(--tx3)}
+.ph.jetzt .liste li{border-color:var(--akz);color:var(--akz)}
+
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:14px}
+th{text-align:left;font-family:var(--data);font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--tx3);font-weight:400;padding:0 12px 7px 0;border-bottom:1px solid var(--line)}
+td{padding:9px 12px 9px 0;border-bottom:1px solid var(--line);vertical-align:top;color:var(--tx2)}
+td:first-child{color:var(--tx);font-weight:600;white-space:nowrap}
+td b{color:var(--tx)}
+.merk{border-left:3px solid var(--akz);background:var(--panel);border-radius:0 10px 10px 0;
+  padding:13px 16px;margin-top:16px;font-size:14px;color:var(--tx2)}
+.merk b{color:var(--tx)}
+.merk.warn{border-left-color:var(--rot)}
+.neu{display:inline-block;font-family:var(--data);font-size:9px;letter-spacing:.1em;
+  text-transform:uppercase;background:var(--akz);color:var(--onA);border-radius:4px;
+  padding:1px 5px;margin-left:6px;vertical-align:.12em}
+@media (max-width:680px){
+  .zeile{grid-template-columns:2.2ch 1fr repeat(3,44px);gap:7px;font-size:12.5px}
+  .pkt span{display:none}
+}
+</style>
+
+<div class="wrap">
+
+<p class="eyebrow">SyncFindus · Fahrplan · Stand 08.08.2026 · Fassung 1.11</p>
+<h1>Was noch offen ist</h1>
+<p class="lede">Nach drei Tagen: <b class="a">165 Entscheidungen, 18 Entwürfe, null Zeilen Code</b>.
+Alle zehn Bausteine sind <b>entschieden</b>, neun von zehn <b>gezeichnet</b> — die Zeichenphase
+ist im Wesentlichen vorbei. Was bleibt, steht unten: sortiert nach dem, was <em>blockiert</em>,
+nicht nach dem, was Spaß macht.</p>
+
+<div class="zahlen">
+  <div class="zt akz"><b>165</b><span>Entscheidungen</span></div>
+  <div class="zt"><b>16</b><span>unverhandelbar</span></div>
+  <div class="zt"><b>18</b><span>Entwürfe</span></div>
+  <div class="zt"><b>2</b><span>fehlen noch</span></div>
+  <div class="zt"><b>17</b><span>gelernte Fallen</span></div>
+  <div class="zt"><b>7</b><span>offene Fragen</span></div>
+</div>
+
+<hr class="rule">
+
+<h2>Was jetzt noch offen ist</h2>
+<p class="sub">Drei Dinge warteten gestern auf dich. <b>Alle drei sind vom Tisch</b> — und mit
+ihnen neun der zehn Lücken. Was übrig bleibt, passt auf eine halbe Seite.</p>
+
+<div class="karten">
+  <div class="k">
+    <div class="rang">Erledigt · F02</div>
+    <h3>Der Name steht: SyncFindus <span class="neu">neu</span></h3>
+    <p>Nach dem Kater. Dokument, Dateiname und alle achtzehn Entwürfe sind umbenannt — der
+    Zeitpunkt war der bestmögliche, weil noch keine Zeile Code existiert.</p>
+    <div class="wo">blockiert nichts mehr</div>
+  </div>
+  <div class="k">
+    <div class="rang">Erledigt · F05</div>
+    <h3>Die zwei Dateien kommen raus</h3>
+    <p>Entschieden nach <b>Schadenshöhe statt Wahrscheinlichkeit</b>: bleiben sie liegen und
+    nichts passiert, gewinnen wir null. Passiert etwas, ist das Repo weg.</p>
+    <div class="wo">⚠️ <code>git rm</code> reicht nicht — Historie</div>
+  </div>
+  <div class="k">
+    <div class="rang">Kein Druck mehr</div>
+    <h3>Das Zertifikat</h3>
+    <p>JB: <em>„Ich hab Zeit mit dem Token. Das ist rein für andere Personen mit dem
+    Zertifikat, ich hab keine Lasten damit."</em> Damit fällt es aus dem kritischen Pfad.</p>
+    <div class="wo">wenn die erste Fassung näher rückt</div>
+  </div>
+  <div class="k jetzt">
+    <div class="rang">Die letzte offene Lücke</div>
+    <h3>Sicherung &amp; Wiederherstellung</h3>
+    <p>Dateien lassen sich neu holen — <b>der Lesestand nicht</b>. Nach <b>E151</b> trägt
+    <b>eine</b> Datenbankdatei alles. Das ist die richtige Bauform und gleichzeitig der eine
+    Punkt, an dem alles hängt.</p>
+    <p><em>„Klingt vernünftig" ist noch keine Regel.</em></p>
+    <div class="wo">braucht eine E-Nummer</div>
+  </div>
+</div>
+
+<div class="merk warn">
+  <b>Die eine Weiche, die alles verschiebt: E162.</b> JB: <em>„Die Library ist egal, die
+  sollten wir uns selber aufbauen. Wir sind noch nicht so etabliert, dass wir nichts wagen
+  können."</em> — Damit fällt der Satz, der bisher über allem stand: <em>800 Werke müssen am
+  ersten Tag drin sein</em>. Die erste Fassung heißt jetzt nicht mehr „800 Werke drin",
+  sondern <b>„ein Werk richtig"</b>. Der Prüflauf-Bericht war gestern der riskanteste
+  ungezeichnete Entwurf und ist heute keiner mehr.
+</div>
+
+<h2>Die zehn Bausteine</h2>
+<p class="sub">Nichts aus Stufe N+1 wird gebaut, solange N nicht fertig ist (§14).
+<b>Neu grün seit gestern:</b> Register, Warteschlange, Erkennung, Beschaffung.</p>
+
+<div class="tafel">
+  <div class="zeile kopf"><span></span><span>Baustein</span>
+    <span class="pkt">entschieden</span><span class="pkt">gezeichnet</span><span class="pkt">gebaut</span></div>
+
+  <div class="zeile"><span class="nr">1</span>
+    <span class="nm"><b>Register &amp; Werk-Modell</b><span>E151 — das Register ist die Wahrheit</span></span>
+    <span class="pkt ja"><i></i></span><span class="pkt ja"><i></i></span><span class="pkt nein"><i></i></span></div>
+
+  <div class="zeile"><span class="nr">2</span>
+    <span class="nm"><b>Warteschlange</b><span>die Bahn · E142, E143</span></span>
+    <span class="pkt ja"><i></i></span><span class="pkt ja"><i></i></span><span class="pkt nein"><i></i></span></div>
+
+  <div class="zeile"><span class="nr">3</span>
+    <span class="nm"><b>Erkennung &amp; Identität</b><span>Postfach als Trichter · E141, E145, E146</span></span>
+    <span class="pkt ja"><i></i></span><span class="pkt ja"><i></i></span><span class="pkt nein"><i></i></span></div>
+
+  <div class="zeile"><span class="nr">4</span>
+    <span class="nm"><b>Regal &amp; Startseite</b><span>drei Ansichten · Prioritätsleiter</span></span>
+    <span class="pkt ja"><i></i></span><span class="pkt ja"><i></i></span><span class="pkt nein"><i></i></span></div>
+
+  <div class="zeile"><span class="nr">5</span>
+    <span class="nm"><b>Suche</b><span>ein Feld, zwei Gruppen, drei Zustände</span></span>
+    <span class="pkt ja"><i></i></span><span class="pkt ja"><i></i></span><span class="pkt nein"><i></i></span></div>
+
+  <div class="zeile"><span class="nr">6</span>
+    <span class="nm"><b>Leser</b><span>fünf Modi · Leserichtung · ein Griff</span></span>
+    <span class="pkt ja"><i></i></span><span class="pkt ja"><i></i></span><span class="pkt nein"><i></i></span></div>
+
+  <div class="zeile"><span class="nr">7</span>
+    <span class="nm"><b>Bühne</b><span>Video · Musik · Hörbuch</span></span>
+    <span class="pkt ja"><i></i></span><span class="pkt ja"><i></i></span><span class="pkt nein"><i></i></span></div>
+
+  <div class="zeile"><span class="nr">8</span>
+    <span class="nm"><b>Erweiterung</b><span>markiert zurück · nur 127.0.0.1</span></span>
+    <span class="pkt ja"><i></i></span><span class="pkt ja"><i></i></span><span class="pkt nein"><i></i></span></div>
+
+  <div class="zeile"><span class="nr">9</span>
+    <span class="nm"><b>Beschaffung</b><span>vier Protokolle · das Rennen · Güteleiter</span></span>
+    <span class="pkt ja"><i></i></span><span class="pkt ja"><i></i></span><span class="pkt nein"><i></i></span></div>
+
+  <div class="zeile"><span class="nr">10</span>
+    <span class="nm"><b>Veredelung</b><span>Übersetzung ✅ · Vertonung offen · F04, F07</span></span>
+    <span class="pkt halb"><i></i></span><span class="pkt halb"><i></i></span><span class="pkt nein"><i></i></span></div>
+</div>
+
+<div class="merk">
+  <b>Was das Bild jetzt sagt:</b> Der Unterbau (1–3) hatte vor zwei Tagen zusammen <em>ein</em>
+  Bild und ist jetzt vollständig belegt — genau die Falle, vor der hier stand. <b>Es gibt
+  keinen blockierenden Entwurf mehr.</b> Was noch fehlt, ist angenehm zu haben, nicht nötig
+  zum Bauen.
+</div>
+
+<hr class="rule">
+
+<h2>Die zwei fehlenden Entwürfe</h2>
+<p class="sub">Von acht auf zwei — und <b>keiner von beiden blockiert etwas</b>. Sechs sind
+seit gestern dazugekommen: Werk-Seite, Postfach, Warteschlange, die beiden Ton-Regale mit
+Hover-Karte und Lücken-Liste, der Installer mit Emulator-Ebenen.</p>
+<div class="karten">
+  <div class="k">
+    <div class="rang">Nett zu haben</div>
+    <h3>Der Prüflauf-Bericht</h3>
+    <p>Seit <b>E162</b> ist der Umzug aus SyncManga ein Angebot statt einer Pflicht. Wenn er
+    kommt, zeigt er: so viele eindeutig, so viele ins Postfach, diese Handkorrekturen
+    kollidieren. Kein Zeitdruck mehr.</p>
+    <div class="wo">war gestern noch das größte Risiko</div>
+  </div>
+  <div class="k">
+    <div class="rang">Kann warten</div>
+    <h3>Spiele-Regal (die Liste)</h3>
+    <p>Die <b>Einstellungen</b> sind gezeichnet — das war JBs eigentliche Frage. Was fehlt, ist
+    nur noch die Regalansicht davor: Playnite bindet an, ROM = Werk, Emulator = Abspielweg.</p>
+    <div class="wo">niedrigste Priorität</div>
+  </div>
+</div>
+
+<hr class="rule">
+
+<h2>Neun Lücken geschlossen, zwei offen</h2>
+<p class="sub">JB hat sie am 08.08. in einem Zug beantwortet. Mehrere seiner Antworten waren
+<b>besser als meine Fragen</b> — das steht so im Pflichtenheft.</p>
+
+<table>
+  <tr><th style="width:24%">Lücke</th><th>Antwort</th></tr>
+  <tr><td><b>Kein Internet</b><br><span style="color:var(--tx3)">E156</span></td>
+    <td><em>„Das System merkt sich, wann ich kein Internet mehr hatte, und was ab dem Zeitpunkt
+    neu rauskommt, wird als Update gefahren."</em> — Beim Abriss wird ein <b>Zeitstempel</b>
+    gesetzt; bei Rückkehr fragt jede Quelle nicht <em>„was gibt es?"</em>, sondern <b>„was gibt
+    es seit diesem Zeitpunkt?"</b>. Billiger, vollständiger, nachvollziehbar.</td></tr>
+  <tr><td><b>Zeitzonen</b><br><span style="color:var(--tx3)">E157</span></td>
+    <td>Alles Sichtbare rechnet in <b>Berliner Zeit</b>. Die Herkunftszeit wird gespeichert und
+    <b>nur auf Nachfrage</b> gezeigt — nie beide Daten gleichzeitig im Regal.</td></tr>
+  <tr><td><b>Kinderprofil</b><br><span style="color:var(--tx3)">E158</span></td>
+    <td><b>Eine Zahl statt einer Häkchenliste.</b> Dazu zwei Regeln: was nicht bewertet ist,
+    gilt als <b>nicht freigegeben</b> — und <b>das Kind sieht keine Schlösser</b>. Ein leeres
+    Regal ist besser als ein Regal voller Verbote.</td></tr>
+  <tr><td><b>Zwei Menschen</b><br><span style="color:var(--tx3)">E161</span></td>
+    <td><em>„Abwechselnd. Wenn das nicht geht, ist die Prio bei diesem PC."</em> — Kein
+    Anteilsverfahren, kein Verwalter. <b>Wer davorsitzt, gewinnt</b>; der zweite Zugang läuft
+    langsamer weiter und sieht auch, warum.</td></tr>
+  <tr><td><b>Benachrichtigungen</b><br><span style="color:var(--tx3)">E164</span></td>
+    <td><em>„Versteh das Problem nicht."</em> — Fair, es ist unsichtbar bis es da ist: wer alles
+    meldet, wird stummgeschaltet; wer nie meldet, verschweigt Kaputtes. <b>Drei Anlässe, mehr
+    nicht:</b> etwas ist kaputt und du merkst es sonst nicht · etwas läuft weg · du hast
+    ausdrücklich gefragt. <b>Nie eine reine Erfolgsmeldung.</b></td></tr>
+  <tr><td><b>Platte voll</b></td>
+    <td><em>„Wenn die Platte voll wird, dann erweitere ich."</em> — <b>Keine
+    Verdrängungslogik.</b> Die einfachste denkbare Antwort und die richtige: jede automatische
+    Löschung wäre ein Risiko für null Gewinn. Bleibt: ehrliche Anzeige, Warnung ab 95 %.</td></tr>
+  <tr><td><b>Ohne Maus</b></td>
+    <td><em>„Ich will reparieren, keine neuen Säulen ziehen."</em> — Damit ist es keine
+    Funktion, sondern eine <b>Bauvorgabe</b>: jedes Bedienelement ist von Anfang an echt
+    fokussierbar. Einzelne Tastenwege dürfen fehlen; <b>fehlende Fokussierbarkeit darf nie
+    entstehen</b>.</td></tr>
+  <tr><td><b>Übernahme</b><br><span style="color:var(--tx3)">E151, E162</span></td>
+    <td>Drei ineinandergreifende Macken benannt, acht Beschlüsse gefasst — und dann die Fessel
+    ganz gelöst.</td></tr>
+  <tr><td style="color:var(--akz)"><b>Sicherung</b> ⬜</td>
+    <td><b>offen.</b> Siehe oben — die letzte, und nach E151 die wichtigste.</td></tr>
+  <tr><td style="color:var(--akz)"><b>Sprache</b> ⬜</td>
+    <td><b>offen.</b> <code>i18n.py</code> und der Text-Wächter existieren; welche Sprachen
+    mitkommen, ist nicht entschieden. Blockiert nichts.</td></tr>
+</table>
+
+<hr class="rule">
+
+<h2>Neu und dauerhaft: die wöchentliche Pflege</h2>
+<p class="sub">Ab jetzt fest im Repo als <code>Doku/PFLEGE.md</code> — nicht in einem Chat.
+<em>Ein Chat endet, die Datei nicht.</em></p>
+
+<table>
+  <tr><th style="width:26%">Was</th><th>Hält</th></tr>
+  <tr><td><b>Werk-Modell</b></td><td><b>Jahre.</b> Open Library modelliert <em>Work → Edition</em>
+    seit zwanzig Jahren</td></tr>
+  <tr><td><b>Gestaltungsregeln</b></td><td><b>Jahre.</b> Zielgrößen ändern sich pro Jahrzehnt</td></tr>
+  <tr><td><b>Werkzeuge</b></td><td><b>Monate.</b> Readarr wurde 2025 eingestellt — an den
+    Metadaten, nicht am Code</td></tr>
+  <tr><td><b>Quellen</b></td><td><b>Wochen.</b> Sony nahm mit <em>einer</em> Meldung über 200
+    Aniyomi-Erweiterungen offline</td></tr>
+</table>
+
+<div class="merk">
+  <b>Acht Prüfungen, jede mit einem Fund-Auslöser</b> — nur wenn der eintritt, gibt es Arbeit:
+  die vier Protokolle leben · Wissensketten antworten unverändert · Werkzeuge werden gepflegt ·
+  <b>der Friedhof</b> (wer ist gestorben) · Recht und Schlösser · neue Vorbilder · Browser ·
+  die eigene Baustelle. Jeder Fund wandert in §15 des Pflichtenhefts.
+  <b>Auch „kein Fund" wird eingetragen</b> — sonst weiß niemand, ob geprüft oder vergessen wurde.
+</div>
+
+<hr class="rule">
+
+<h2>Wie es weitergeht</h2>
+<div class="phasen">
+  <div class="ph jetzt">
+    <div class="num">1</div>
+    <div class="inh"><b>Die Lücken schließen</b>
+      <div class="zt2">jetzt · Entscheidungen, keine Bilder</div>
+      <p>Nur noch <b>zwei</b>: Sicherung &amp; Wiederherstellung und die Sprache der Oberfläche.
+      Danach ist das Pflichtenheft übergabereif — <b>alles Weitere ist Bauen, nicht Planen</b>.</p>
+      <ul class="liste"><li>Sicherung</li><li>Sprache</li></ul></div>
+  </div>
+  <div class="ph">
+    <div class="num">2</div>
+    <div class="inh"><b>Übergabe an die zweite KI</b>
+      <div class="zt2">wenn 1 steht</div>
+      <p>Pflichtenheft + Übernahmedokument + Pflegeliste + 18 Entwürfe. Gebaut wird in der
+      Reihenfolge aus §16.2, und <b>Baustein 1 gilt erst als fertig, wenn die vier
+      Eigenschaften grün sind</b> — nicht, wenn es „läuft".</p>
+      <ul class="liste"><li>Register</li><li>Warteschlange</li><li>Erkennung</li></ul></div>
+  </div>
+  <div class="ph">
+    <div class="num">3</div>
+    <div class="inh"><b>Die Übernahme — falls du sie willst</b>
+      <div class="zt2">seit E162 optional</div>
+      <p>Prüflauf, Bericht lesen, umschalten. <b>Die alte Installation bleibt vollständig</b>,
+      bis JB freigibt. Ein Rückweg, den man nie braucht, kostet nichts — einer, den man
+      braucht und nicht hat, kostet alles.</p>
+      <ul class="liste"><li>800 Werke</li><li>647 Overrides</li><li>Bruchtest ab Tag eins</li></ul></div>
+  </div>
+  <div class="ph">
+    <div class="num">4</div>
+    <div class="inh"><b>Die erste Fassung, die du benutzt</b>
+      <div class="zt2">das eigentliche Ziel</div>
+      <p>Nicht „fertig", sondern: <b>deine 800 Manga sind drin, du liest darin, und es fühlt
+      sich besser an als SyncManga.</b> Alles danach ist Zugabe.</p>
+      <ul class="liste"><li>Übernahme gelaufen</li><li>Leser läuft</li><li>signiert</li></ul></div>
+  </div>
+</div>
+
+<div class="merk warn">
+  <b>Ab hier ist Weiterplanen die Gefahr.</b> Alle zehn Bausteine entschieden, alle gezeichnet,
+  zwei Lücken offen, kein Blocker. <b>Ein Pflichtenheft mit 165 Entscheidungen ist nur dann
+  etwas wert, wenn jemand anfängt zu bauen</b> — und seit E162 gibt es nicht einmal mehr
+  800 Werke, auf die man warten müsste.
+</div>
+
+</div>
