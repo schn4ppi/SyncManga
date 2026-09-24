@@ -49,6 +49,16 @@ _SOURCE_LABEL = {"mangabaka": "MangaBaka", "anilist": "AniList", "mangaupdates":
                  "mangadex": "MangaDex", "fallback": "Reserve-Suche"}
 
 
+def _js(obj, **kw):
+    """JSON fuer ein Inline-<script>: wie json.dumps, aber `<`, `>`, `&` und U+2028/2029 als
+    \\u-Escapes. Titel/Genres kommen aus FREMDEN Datenbanken — ein Titel wie
+    `</script><svg onload=...>` wuerde sonst das Skript-Element beenden (XSS, auch in der
+    Online-Liste). Der JS-Wert bleibt identisch, nur die Schreibweise im HTML ist sicher."""
+    return (json.dumps(obj, ensure_ascii=False, **kw)
+            .replace("<", "\\u003c").replace(">", "\\u003e").replace("&", "\\u0026")
+            .replace("\u2028", "\\u2028").replace("\u2029", "\\u2029"))
+
+
 def _src_key(name):
     return (name or "").lower().replace(" ", "").replace("-", "")
 
@@ -387,7 +397,7 @@ def stats_panel(rows, pcnt, s):
     avg = sum(rated) / len(rated) if rated else 0
     chaps = sum(min(int(e["chap"]), 5000) for e in rows if e.get("chap"))   # Ausreißer kappen
     by_flag = Counter(e.get("flag") for e in rows if e.get("flag"))
-    by_type = Counter(_type_label(e.get("type")) for e in rows if e.get("type"))
+    by_type = Counter(html.escape(_type_label(e.get("type"))) for e in rows if e.get("type"))
     adult = sum(1 for e in rows if e.get("adult_kind"))
     top = max(rows, key=lambda e: e.get("rating") or 0, default=None)
     # (Text, Tooltip) -> jede Kachel erklaert sich beim Hovern (JBs Wunsch)
@@ -476,11 +486,11 @@ def recommendations_panel(rows, s):
         return {"t": str(r["title"])[:38], "u": r["url"], "s": r.get("score") or "?",
                 "g": ", ".join(r.get("genres") or []), "r": r.get("read") or ""}
     # Pool (bis 30) einbetten -> der ↻-Knopf mischt clientseitig neue 12 heraus (JB-Wunsch), kein Netz.
-    pool = json.dumps([_slim(r) for r in items[:30]], ensure_ascii=False)
+    pool = _js([_slim(r) for r in items[:30]])
     # v2 (JB 10.07.2026): je-Genre-Pools + Genre-Chips (an/★Prio) — der Client kombiniert live.
     by_genre = meta.get("by_genre") or {}
-    bg = json.dumps({g: [_slim(r) for r in rs] for g, rs in by_genre.items()}, ensure_ascii=False)
-    top = json.dumps(meta.get("genres") or [], ensure_ascii=False)
+    bg = _js({g: [_slim(r) for r in rs] for g, rs in by_genre.items()})
+    top = _js(meta.get("genres") or [])
     order = [g for g in (meta.get("order") or sorted(by_genre)) if g in by_genre]
     gchips = "".join(f'<button type=button class=rchip data-rg="{html.escape(g)}" '
                      f'onclick="recsCycle(this)" title="{html.escape(s["recs_genre_tip"])}">'
@@ -489,7 +499,7 @@ def recommendations_panel(rows, s):
     return (f'<details class=stats><summary class="pill alt" title="{html.escape(s["recs_toggle"])}">💡 {s["recs_title"]}</summary>'
             f'<div class=pdrop>'
             f'<div class="muted" style="margin:0 0 6px;font-size:12px">'
-            f'{s["recs_hint"].format(g=", ".join(meta.get("genres") or []))} '
+            f'{s["recs_hint"].format(g=html.escape(", ".join(meta.get("genres") or [])))} '
             f'<button class=btn onclick="shuffleRecs()" title="{html.escape(s["recs_shuffle_title"])}">{s["recs_shuffle"]}</button></div>'
             f'{anker_zeile}'
             f'{gbar}'
@@ -792,7 +802,7 @@ def render(rows, out_dir, out_html, namelen=NAMELEN, lang="de", readers_snap=Non
     # -> jede Titelkorrektur invalidierte Archiv/Favoriten/Bestaetigungen im localStorage. Jetzt:
     # STABILER Schluessel (DB-ID bzw. n:+Roh-Verlaufsname) + Alias-Map MIG (alle bekannten
     # Titel-Varianten -> neuer Schluessel), die das JS beim Boot einmalig umschreibt.
-    mig, mig_ambig = {}, set()
+    mig, mig_ambig, live_keys = {}, set(), set()
     for e in rows:
         full = e['name']
         disp = full if len(full) <= namelen else full[:namelen - 1].rstrip() + '…'
@@ -923,13 +933,16 @@ def render(rows, out_dir, out_html, namelen=NAMELEN, lang="de", readers_snap=Non
         # als letzte Reserve (direkt konstruierte Zeilen, z.B. Tests).
         raw_keys = [rk for rk in (e.get('hkeys') or []) if rk]
         key = e.get('md_id') or ('n:' + (raw_keys[0] if raw_keys else norm(full)))
+        live_keys.add(key)
         # Alias-Map fuellen: alles, worunter diese Serie FRUEHER als data-h gespeichert sein kann
         # (norm alter/aktueller Titel, Roh-Schluessel, kuenftig auch n:-Keys wenn spaeter eine
         # DB-ID auftaucht). Mehrdeutige Aliasse (2 Serien) fliegen raus — lieber nicht migrieren
         # als falsch migrieren.
         for al in {norm(full), norm(e.get('title_native') or ''), norm(e.get('title_romaji') or ''),
                    *(norm(t) for t in (e.get('alt_titles') or [])),
-                   *raw_keys, *('n:' + rk for rk in raw_keys)}:
+                   *raw_keys, *('n:' + rk for rk in raw_keys),
+                   # fruehere DB-IDs (enrich: id_hist) -> Favorit/Archiv ueberleben den ID-Wechsel
+                   *(str(x) for x in (e.get('id_hist') or []))}:
             if al and al != key:
                 if mig.get(al, key) != key:
                     mig_ambig.add(al)
@@ -980,26 +993,30 @@ def render(rows, out_dir, out_html, namelen=NAMELEN, lang="de", readers_snap=Non
     try:
         _sp = os.path.join(os.path.dirname(_READER_DATA), "list_state.json")
         if os.path.exists(_sp):
-            seed = json.dumps(json.load(open(_sp, encoding="utf-8")), ensure_ascii=False)
+            seed = _js(json.load(open(_sp, encoding="utf-8")))
     except Exception:
         seed = "null"
     # I.tt = die statischen Zeilen-Tooltips EINMAL (HTML-Diaet); JS applyTips() verteilt sie.
-    tt = json.dumps({"c": s["chapfix_tip"], "fav": s["fav_title"], "arch": s["archive_title"],
+    tt = _js({"c": s["chapfix_tip"], "fav": s["fav_title"], "arch": s["archive_title"],
                      "unarch": s["unarchive_title"], "rep": s["report_broken_title"],
                      "cfm": s["confirm_title"], "galt": s["alt_search_tip"],
                      "sq": sites_q,
-                     "st": {k: s.get(v, "") for k, v in STATUS_TIP.items()}}, ensure_ascii=False)
+                     "st": {k: s.get(v, "") for k, v in STATUS_TIP.items()}})
     # MIG = Alias->Schluessel fuer die einmalige localStorage-Migration (mehrdeutige raus, s.o.)
+    # Ein Alias, der selbst noch der Schluessel einer ANDEREN Zeile ist (z.B. eine fruehere ID aus
+    # id_hist, die eine zweite Serie noch traegt), darf nie migriert werden — sonst wandern deren
+    # Favoriten/Archiv zur falschen Serie.
+    mig_ambig |= (set(mig) & live_keys)
     for al in mig_ambig:
         mig.pop(al, None)
-    mig_json = json.dumps(mig, ensure_ascii=False, separators=(",", ":"))
+    mig_json = _js(mig, separators=(",", ":"))
     jsvars = (f'<script>var I={{"arch":"🗃 {s["archive_count"]}","fav":"{s["fav_button"]}",'
               f'"xd":"{s["export_done"]}","xs":"{s["export_skipped"]}","cq":"{s["chapfix_prompt"]}",'
               f'"imu":"{s["import_done"]}","imn":"{s["import_new"]}","sy":"{s["syncbar"]}","syp":"{s["sync_paused"]}","tp":"{s["to_top"]}","rts":{now_ts},'
               f'"op":"{s["open"]}","brkSent":"{s["brk_sent"]}","rgo":"{s["recs_read_tip"]}",'
               f'"altm":"{s["alt_menu"]}",'
               f'"dudArch":"{s["dud_arch"]}","dudBack":"{s["dud_back"]}","dudAll":"{s["dud_all"]}",'
-              f'"paused":{json.dumps(sorted(_config.all_paused()), ensure_ascii=False)},'
+              f'"paused":{_js(sorted(_config.all_paused()))},'
               f'"tt":{tt}}};'
               f'var SEED={seed};var MIG={mig_json};</script>')
     type_opts = "".join(f"<option>{m}</option>" for m in MEDIA_FILTER)   # Manga/Manhwa/Manhua/Webtoon/Comic

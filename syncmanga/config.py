@@ -212,8 +212,8 @@ def load_overrides(path):
 def save_override(path, key, name, search=None, mb_id=None):
     """Eine Titel-Korrektur in overrides.json schreiben (nicht-destruktiv).
 
-    Laedt die bestehende Datei, ergaenzt/ueberschreibt NUR den einen Key (alle anderen
-    Eintraege und der _doc-Kommentar bleiben erhalten) und schreibt sie zurueck. `key` wird
+    Laedt die bestehende Datei, ergaenzt NUR den einen Key (alle anderen Eintraege, der
+    _doc-Kommentar und die uebrigen Felder dieses Eintrags bleiben erhalten) und schreibt sie zurueck. `key` wird
     VERBATIM gesetzt (kein norm). Gibt das gespeicherte {"name","search"[,"mb_id"]} zurueck.
     `mb_id` (MangaBaka-ID) = Ground-Truth-Pin: die Anreicherung holt den Record dann per
     catalog.lookup_id statt per Suche (kein Fehlmatch, JB 07.07.2026).
@@ -236,7 +236,11 @@ def save_override(path, key, name, search=None, mb_id=None):
     if not isinstance(ov, dict):
         ov = {}
         data["overrides"] = ov
-    entry = {"name": name, "search": search or name}
+    # MERGE statt Ersetzen (Befund 24.09.2026): ein ✔-Pin loeschte sonst baka/type/author/hide
+    # des bestehenden Eintrags (z.B. baka:910 bei 'evolutionbeginswithbigtree').
+    old = ov.get(key) if isinstance(ov.get(key), dict) else {}
+    entry = dict(old)
+    entry.update({"name": name, "search": search or name})
     if mb_id is not None and str(mb_id).strip():
         try:
             entry["mb_id"] = int(mb_id)

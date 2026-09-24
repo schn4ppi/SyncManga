@@ -8,10 +8,12 @@ Diese Funktionen sind seiteneffektfrei (kein Netz, kein Dateizugriff) und vollst
 
 Enthält:
   host, slug_from_url, clean_title, chapter_of, series_from, norm, is_junk,
-  romaji_score, pick_english  + die zugehörigen Regex-Konstanten
+  romaji_score, pick_english, sim_norm, key_ratio  + die zugehörigen Regex-Konstanten
   (SITE_SUFFIX, CH, URLCH, GARB, ROM_PART, ROM_WORD).
 """
+import difflib
 import html
+import unicodedata
 import re
 
 # Seiten-/Reader-Suffixe, die clean_title vom echten Titel abschneidet.
@@ -19,14 +21,21 @@ SITE_SUFFIX = (r'mangadex|mgeko|mangasupa|jaimini.?s? ?box|line ?webtoon|webtoon
     r'asura.*|flame.*|comix.*|mangasee|kissmanga|manga ?kakalot|bato.*|mangareader|manga ?plus|'
     r'read.*online.*|thunder ?scans.*|qi ?manhwa.*|leviatan.*|kireicake.*|reaper.*|all chapters|'
     r'valhalla.*|rizz.*|killberos|kingofshojo|king ?of ?shojo|mangatoda.*|mangabuddy|mangan[ae]lo|manganato|manga ?clash|manga ?freak|manga ?here|manga ?panda|manga ?owl|manhuaplus|'
-    r'nani\W*scans|inept\W*bastards|kissxdeath|reset ?scans|read first at.*|free manga|novel|manhwa|manhua|manga')
+    r'nani\W*scans|inept\W*bastards|kissxdeath|reset ?scans|read first at.*|free manga|novel|manhwa|manhua|manga|'
+    r'weeb ?central|tcb ?scans|comick')   # 24.09.2026: 'Blue Lock Chapter 250 | Weeb Central' 
 CH = re.compile(r'\b(?:Chapter|Episode|Chap\.?|Ch\.?|Ep\.?)\s*([0-9]+(?:\.[0-9]+)?)', re.I)
-URLCH = re.compile(r'(?:chapter|episode|chap)[-_/]?(\d+(?:\.\d+)?)', re.I)
+# Kapitel-Token nur als EIGENES Wort (Befund 24.09.2026, Lehre aus readerlink 1f8e928): kein
+# Buchstabe davor ('switch-2-1', 'rich-2-life'), keine zwei Buchstaben danach. chapter_of nimmt den
+# LETZTEN Treffer ('/chapter/1-2-prince-chapter-7/' -> 7, nicht 1).
+URLCH = re.compile(r'(?<![a-z])(?:chapter|episode|chap)[-_/]?(\d+(?:\.\d+)?)(?![a-z]{2})', re.I)
 # Bindestrich-Dezimalkapitel (JB 15.07.2026): manche Seiten schreiben 953.5 als 'chapter-953-5'.
 # KONSERVATIV: nur 1-2-Ziffern-Tail, KEINE weitere Ziffer danach -> mgeko '-eng'-Sprachsuffixe
 # (Buchstaben) und Reader-IDs (>=3 Ziffern, z.B. roliascan chapter-1-57261) bleiben unberuehrt.
 # Datenbeleg: von 283 'chapter-N-M'-URLs im Cache sind 274 '-eng', 8 IDs, genau 1 echte Dezimale.
-URLCH_DASH = re.compile(r'(?:chapter|episode|chap|ch)[-_/]?(\d+)-(\d{1,2})(?![0-9])', re.I)
+# Nur als eigenes Wort UND nur, wenn danach kein weiteres Kapitel-Token folgt ('/chapter/2-5-dimensional-
+# seduction-chapter-150/' ist Kapitel 150, nicht 2.5; '/manga/switch-2-1/chapter-40/' ist 40, nicht 2.1).
+URLCH_DASH = re.compile(r'(?<![a-z])(?:chapter|episode|chap|ch)[-_/]?(\d+)-(\d{1,2})(?![0-9])'
+                        r'(?!.*?(?<![a-z])(?:chapter|episode|chap|ch)[-_/]?\d)', re.I)
 # Webtoons traegt die GLOBALE Episodennummer im Query (episode_no=608) — Pfad ('s3-ep-145')
 # und Seitentitel ('(S3) Ep. 145') zaehlen je SEASON neu, und der Pfad hinkt teils sogar um
 # eins hinterher (JB-Beleg Runde 32: Orion 'chapter-21' im Pfad, episode_no=22). Der
@@ -85,7 +94,8 @@ def slug_from_url(u):
             s = re.sub(r'^[a-z0-9]{1,7}-(?=[a-z0-9])', '', s, count=1)
         if _mf and len(s) >= 5 and s[-1] == s[-2]:
             s = s[:-1]
-        s = re.sub(r'[-_/]?(chapter|chap|episode|ep|ch)[-_]?\d.*$', '', s)
+        # Token nur am Anfang oder hinter -_/ ('the-witch-2' und 'rich-2-life' sind Titel, kein 'ch-2')
+        s = re.sub(r'(?:^|[-_/])(chapter|chap|episode|ep|ch)[-_]?\d.*$', '', s)
         s = re.sub(r'^\d+-(en|de|raw)-', '', s)
         s = re.sub(r'^\d+-', '', s)
         if re.match(r'^[a-z]*\d[a-z0-9]*-(?=[a-z])', s):
@@ -122,7 +132,10 @@ def clean_title(t):
     # "Season 1 Extras | Love Advice ..." -> Teil nach dem letzten |
     if '|' in t and re.search(r'season\s*\d|extras?', t.split('|')[0], re.I):
         t = t.split('|')[-1]
-    if '|' in t and re.search(r'(?:Ep|Episode|Chapter|Ch)\.?\s*\d', t.split('|')[0], re.I):
+    # Nur wenn der Teil VOR dem Strich MIT der Kapitel-Marke beginnt ('Episode 12 | Tower of God').
+    # Befund 24.09.2026: mit re.search wurde 'Blue Lock Chapter 250 | Weeb Central' zu 'Weeb Central'
+    # (alle Serien der Seite unter einem Schluessel).
+    if '|' in t and re.match(r'\s*(?:Ep|Episode|Chapter|Ch)\.?\s*\d', t.split('|')[0], re.I):
         after = t.split('|')[-1].strip()          # nur nehmen, wenn es KEIN Seitenname ist
         if not re.match(r'(?:' + SITE_SUFFIX + r')\s*$', after, re.I):
             t = after
@@ -137,9 +150,15 @@ def clean_title(t):
     s = re.sub(r'\s*[-–—:|]\s*(?:Page|Seite|Pg|Raw|Read Online)\b.*$', '', s, flags=re.I)
     s = re.sub(r'\s*\((?:[A-Z]{2,}\b[^)]*|[A-Z][a-z]+ [A-Z][a-z]+)\)\s*$', '', s)   # Autor-Tag "(KAKU Yuuji)"/"(Nariie Shinichirou)"
     s = re.sub(r'\s*[-–—]\s*(?:Volume|Vol\.?|Season|S)\s*\d+.*$', '', s, flags=re.I)
-    s = re.sub(r'\s*[-–—,|:•]\s*\d+(?:\.\d+)?\s*$', '', s)
-    # ab freistehender (Kapitel-)Nummer bis Ende abschneiden (faengt "… 100 The End"-Subtitles)
-    s = re.sub(r'\s+\d{1,4}(?:\.\d+)?(?:[\s:.\-–—|]+.*)?$', '', s)
+    if m1 or m2:
+        # Schon an der expliziten Kapitel-Marke getrennt -> eine Zahl im Rest gehoert zum TITEL
+        # ('Kaiju No. 8', 'Zom 100', 'Mob Psycho 100', 'Class 1-9'; Befund 24.09.2026: die Schnitte
+        # unten machten daraus 'Kaiju No'/'Zom'). Nur ein nachlaufendes 'Vol. N'/'Season N' faellt.
+        s = re.sub(r'[\s,;:]*\b(?:Volume|Vol\.?|Season)\s*\d+\s*$', '', s, flags=re.I)
+    else:
+        s = re.sub(r'\s*[-–—,|:•]\s*\d+(?:\.\d+)?\s*$', '', s)
+        # ab freistehender (Kapitel-)Nummer bis Ende abschneiden (faengt "… 100 The End"-Subtitles)
+        s = re.sub(r'\s+\d{1,4}(?:\.\d+)?(?:[\s:.\-–—|]+.*)?$', '', s)
     s = re.sub(r'[“”„‟"〝〞「」『』《》〈〉【】«»]', '', s)   # Gänsefüßchen/CJK-Klammern raus
     s = re.sub(r'\s*<[^>]*>\s*$', '', s)                                   # Gruppen-Tag <KillBeros>
     s = re.sub(r'\s*\((?:Manga|Manhwa|Manhua|Novel|Webtoon|Comic|Official)\)\s*$', '', s, flags=re.I)
@@ -172,7 +191,11 @@ def chapter_of(url, title):
         if 0 < n <= MAX_CHAPTER:
             return n
     for pat, txt in ((EPQ, url), (CH, title), (URLCH, url)):
-        m = pat.search(txt or '')
+        if pat is URLCH:                 # letzter Token der URL = das Kapitel (Slug kann eins enthalten)
+            ms = list(pat.finditer(txt or ''))
+            m = ms[-1] if ms else None
+        else:
+            m = pat.search(txt or '')
         if m:
             n = float(m.group(1))
             if 0 < n <= MAX_CHAPTER:     # unplausible Riesenzahlen (No Guns Life 326576) verwerfen
@@ -208,6 +231,29 @@ def norm(s):
     s = re.sub(r'\b(?:chapter|chap|episode|ep|ch|vol|volume|season)\.?\s*\d+(?:\.\d+)?', ' ', s)
     s = re.sub(r'\b(20\d\d|the|a|an|s\d|official|manga|manhwa|manhua|webtoon)\b', '', s)
     return re.sub(r'[^a-z0-9]', '', s)
+
+
+def sim_norm(s):
+    """Schluessel NUR fuer Aehnlichkeitsvergleiche. Lateinische Titel: exakt norm(). Ergibt norm()
+    einen LEEREN Schluessel (reiner Kanji-/Kana-/Hangul-Titel — norm behaelt nur [a-z0-9]), dann eine
+    Unicode-Fassung (NFKC, casefold, Buchstaben/Ziffern aller Schriften). norm() selbst bleibt
+    unveraendert, weil Scan, Cache und Dedup darueber verschluesseln."""
+    n = norm(s)
+    if n:
+        return n
+    t = unicodedata.normalize("NFKC", s or "").casefold()
+    return "".join(ch for ch in t if ch.isalnum())
+
+
+def key_ratio(a, b):
+    """SequenceMatcher-Ratio zweier Vergleichs-Schluessel (sim_norm) — eine LEERE Seite ist 0.0.
+
+    Befund 24.09.2026: SequenceMatcher('', '').ratio() ist 1.0. Ein CJK-Suchbegriff wurde zu ''
+    normiert und traf damit JEDEN Kandidaten mit Originaltitel zu 1.0 — die Beliebtheit entschied
+    ('影栗の姫' -> 'Solo Leveling', conf 1.0, ohne ❓)."""
+    if not a or not b:
+        return 0.0
+    return difflib.SequenceMatcher(None, a, b).ratio()
 
 
 # Reine URL-/Seiten-Infrastruktur-Woerter, die als ALLEINIGER Name nie eine Serie sind (Parser-Reste aus

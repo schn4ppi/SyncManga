@@ -132,21 +132,40 @@ function restoreScroll(){var sp=parseInt(localStorage.getItem('scrollPos')||'0',
 // localStorage 'chapFix' (wandert in 💾-Sicherung + Export via data-rc). ---
 function cfGet(){try{return JSON.parse(localStorage.getItem('chapFix')||'{}')}catch(e){return{}}}
 function cfSave(o){localStorage.setItem('chapFix',JSON.stringify(o))}
+// Eintrag = {n: Kapitel, b: Scan-Stand beim Setzen}; Alt-Eintraege (nackte Zahl) gelten wie {n:n,b:n}.
+// Befund 24.09.2026: der Handwert wirkte FUER IMMER — am PC 50 eingetragen, danach im Browser bis 70
+// gelesen, die Liste zeigte weiter 50 (auch 'verbleibend', 'neu', MAL-Export). Jetzt: ist der Scan
+// ueber b hinaus UND mindestens bei n, gewinnt der Scan und der Eintrag faellt weg (groesster
+// Fortschritt gewinnt, wie beim Zusammenfuehren der Browser). Ein am Handy HOEHER gesetzter Stand
+// bleibt, bis der Scan ihn eingeholt hat.
+function cfN(v){return (v&&typeof v==='object')?parseFloat(v.n):parseFloat(v)}
+function cfB(v){return (v&&typeof v==='object'&&v.b!=null)?parseFloat(v.b):cfN(v)}
+function scanRc(tr){var td=tr.querySelector('td.rd');var v=(td&&td.dataset.origrc!=null)?td.dataset.origrc:tr.dataset.rc;return parseFloat(v)||0}
+function cfLive(v,tr){var n=cfN(v),sc=scanRc(tr);return v!=null&&isFinite(n)&&!(sc>cfB(v)&&sc>=n)}
+function cfPlain(o){var p={};Object.keys(o).forEach(function(k){var n=cfN(o[k]);if(isFinite(n))p[k]=n});return p}
 // Kapitel-Nummer in einer Reader-URL austauschen (chapter-16, /chapter/16, episode_no=7 ...) ->
 // ALLE Links der Zeile folgen dem manuell gesetzten Lesestand: Primaerlink UND +Alt-Reserven
 // (JB 09.07.2026: 'im moment wird nur der weiterlesen link angepasst'). Nur die Google-Kombi-
 // Suche (galt) bleibt aussen vor. Die PRUEFUNG der neuen Links macht der naechste Sync
 // (chapfix.py) — der Browser darf fremde Seiten nicht abfragen (CORS).
-function cfRelink(tr,n){[].forEach.call(tr.querySelectorAll('td.act a.pill.go'),function(a){if(a.classList.contains('galt'))return;if(a.dataset.orighref==null)a.dataset.orighref=a.href;var u=a.dataset.orighref;
+function cfTok(u){var re=/(^|[^a-z])((?:chapter|episode|chap|ch)[-_\/]?)(\d+(?:[.-]\d+)?)(?![a-z]{2})/ig,m,last=null;while((m=re.exec(u))!==null)last=m;return last}
+function cfRelink(tr,n){[].forEach.call(tr.querySelectorAll('td.act a.pill.go'),function(a){if(a.classList.contains('galt'))return;
+// Kapitel-Aufloeser (data-kap) folgt dem Handwert mit — sonst bekam /lesen weiter den alten Stand.
+if(a.dataset.kap!=null){if(a.dataset.okap==null)a.dataset.okap=a.dataset.kap;a.dataset.kap=n}
+if(a.dataset.orighref==null)a.dataset.orighref=a.href;var u=a.dataset.orighref;
 // OPAKE Kapitel-IDs (mangafire/comix: /chapter/7518136) NIE auf die neue Nummer umschreiben
 // (JB 08.07.2026, One-Piece: Lesestand 987 zerstoerte den Pin; >5000 ist nie eine Kapitelnummer).
 // Stattdessen zeigt der Link nach manueller Aenderung auf die SERIEN-Seite (JB 09.07.2026:
 // 'Mangafire sollte dann zur mangaseite verweisen') — dort navigiert man zum echten Kapitel.
-var opaque=false;
-var v=u.replace(/((?:chapter|episode|chap|ch)[-_\/]?)(\d+(?:[.-]\d+)?)/i,function(m,p,num){if(parseFloat(num)>5000){opaque=true;return m}return p+n}).replace(/([?&]episode_no=)\d+/i,function(m,p){return p+n});
+// Token nur als EIGENES Wort und der LETZTE Treffer (Befund 24.09.2026, wie parse.URLCH):
+// sonst wurde aus 'the-witch-2' 'the-witch-12', aus der weebcentral-ULID '…XYCH2B6…' Muell,
+// und '/chapter/1-2-prince-chapter-7/' bekam die Nummer im Slug statt am Kapitel.
+var opaque=false,v=u,t=cfTok(u);
+if(t){var num=t[3];if(parseFloat(num)>5000)opaque=true;else{var st=t.index+t[1].length+t[2].length;v=u.slice(0,st)+n+u.slice(st+num.length)}}
+v=v.replace(/([?&]episode_no=)\d+/i,function(m,p){return p+n});
 if(opaque){var r=u.replace(/\/(?:chapter|episode|chap|ch)[-_\/]?\d.*$/i,'');if(r&&r!==u)v=r}
 if(v!==u)a.href=v})}
-function cfUnlink(tr){[].forEach.call(tr.querySelectorAll('td.act a.pill.go'),function(a){if(a.dataset.orighref!=null)a.href=a.dataset.orighref})}
+function cfUnlink(tr){[].forEach.call(tr.querySelectorAll('td.act a.pill.go'),function(a){if(a.dataset.orighref!=null)a.href=a.dataset.orighref;if(a.dataset.okap!=null)a.dataset.kap=a.dataset.okap})}
 // Aenderung an den Tray-Server melden -> naechster Sync prueft die umgeschriebenen Links
 // serverseitig (existiert das Kapitel dort wirklich?) und uebernimmt nur Verifiziertes.
 function cfPush(o){try{fetch('http://127.0.0.1:8765/chapfix',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(o)}).catch(function(){})}catch(e){}}
@@ -157,11 +176,13 @@ var totCell=tr.querySelector('td.tot'),tlCell=tr.querySelector('td.tl');var tot=
 var rdf=parseFloat(tr.dataset.rdf)||tot;var badge=td.querySelector('span.unk'),bh=badge?badge.outerHTML:'',fmt=function(x){return x%1?x:Math.round(x)};var un=Math.max(0,Math.round((rdf||n)-n));
 td.innerHTML=fmt(n)+bh;td.dataset.rv=Math.floor(n);tr.dataset.un=un;tr.dataset.rc=Math.floor(n);if(tlCell)tlCell.dataset.tl=un;cfRelink(tr,fmt(n));return n}
 function cfReset(td){var tr=td.closest('tr');if(td.dataset.orig!=null){td.innerHTML=td.dataset.orig;tr.dataset.un=td.dataset.origun;tr.dataset.rc=td.dataset.origrc;td.dataset.rv=td.dataset.origrc;var tl=tr.querySelector('td.tl');if(tl)tl.dataset.tl=td.dataset.origun;cfUnlink(tr)}}
-function chapEdit(td){var tr=td.closest('tr'),k=tr.dataset.h,o=cfGet(),cur=(o[k]!=null?o[k]:tr.dataset.rc||'');var v=prompt((typeof I!=='undefined'&&I.cq)||'Gelesen bis Kapitel?',cur);if(v===null)return;v=String(v).trim().replace(',','.');if(v===''){if(o[k]!=null){delete o[k];cfSave(o);cfReset(td);ff()}return}var n=parseFloat(v);if(!isFinite(n)||n<0)return;n=cfSet(td,n);o[k]=n;cfSave(o);var p={};p[k]=n;cfPush(p);ff()}
-function applyChapFix(){var o=cfGet();document.querySelectorAll('#t tbody tr').forEach(function(tr){var n=o[tr.dataset.h];if(n!=null){var td=tr.querySelector('td.rd');if(td)cfSet(td,parseFloat(n))}});
+function chapEdit(td){var tr=td.closest('tr'),k=tr.dataset.h,o=cfGet(),cur=(o[k]!=null&&cfLive(o[k],tr)?cfN(o[k]):tr.dataset.rc||'');var v=prompt((typeof I!=='undefined'&&I.cq)||'Gelesen bis Kapitel?',cur);if(v===null)return;v=String(v).trim().replace(',','.');if(v===''){if(o[k]!=null){delete o[k];cfSave(o);cfReset(td);ff()}return}var n=parseFloat(v);if(!isFinite(n)||n<0)return;n=cfSet(td,n);o[k]={n:n,b:scanRc(tr)};cfSave(o);var p={};p[k]=n;cfPush(p);ff()}
+function applyChapFix(){var o=cfGet(),gone=false;document.querySelectorAll('#t tbody tr').forEach(function(tr){var k=tr.dataset.h,v=o[k];if(v==null)return;
+if(!cfLive(v,tr)){delete o[k];gone=true;return}   // Scan hat den Handwert ueberholt -> Scan gewinnt
+var td=tr.querySelector('td.rd');if(td)cfSet(td,cfN(v))});if(gone)cfSave(o);
 // kompletten Stand einmal je Seitenaufruf mitmelden -> auch AELTERE manuelle Aenderungen
 // (vor diesem Update) landen in der Server-Pruefung (Tray vereint idempotent)
-if(Object.keys(o).length)cfPush(o)}
+if(Object.keys(o).length)cfPush(cfPlain(o))}
 document.addEventListener('click',function(ev){var td=ev.target.closest('td.rd');if(td)chapEdit(td)});
 
 // --- 🎲 Ueberrasch mich (JB): zufaellige UNGELESENE Serie (Backlog), Bewertung gewichtet ---
@@ -226,7 +247,9 @@ if(det&&prim.dataset.op&&D[prim.dataset.op]&&!alts.some(function(a){return a.get
  var hn='';try{hn=new URL(prim.dataset.op,location.href).hostname.replace(/^www\./,'')}catch(e){}
  var sp=document.createElement('span');sp.className='altrow dudsyn';
  sp.innerHTML='<a class="pill go dud" href="'+escH(prim.dataset.op)+'" target=_blank>'+escH(hn||'Link')+'</a>';
- det.insertBefore(sp,det.querySelector('.srcown')||null);}
+ // In den ELTERN-Knoten von .srcown einfuegen: .srcown ist kein direktes Kind von det -> det.insertBefore
+ // warf NotFoundError (Befund 24.09.2026) und brach applyPause fuer alle folgenden Zeilen ab.
+ var own=det.querySelector('.srcown');(own?own.parentNode:det).insertBefore(sp,own||null);}
 var cands=[];alts.forEach(function(a){if(a.dataset.pp)cands.push([a.getAttribute('href'),(typeof I!=='undefined'&&I.op)||'▶ öffnen'])});
 cands.push([prim.dataset.op,prim.dataset.ol]);
 alts.forEach(function(a){if(!a.dataset.pp)cands.push([a.getAttribute('href'),(typeof I!=='undefined'&&I.op)||'▶ öffnen'])});
@@ -246,7 +269,7 @@ var sc=r.querySelector('td.src');
 if(sc){if(sc.dataset.os===undefined)sc.dataset.os=sc.innerHTML;
 if(pick[0]===prim.dataset.op){sc.innerHTML=sc.dataset.os}
 else{var sh='';try{sh=new URL(pick[0],location.href).hostname.replace(/^www\./,'')}catch(e){}
-var st=sh.length>22?sh.slice(0,21)+'…':sh;sc.innerHTML='<span title="'+sh+'">'+st+'</span>'}}});
+var st=sh.length>22?sh.slice(0,21)+'…':sh;sc.innerHTML='<span title="'+escH(sh)+'">'+escH(st)+'</span>'}}});
 // Ampel-Chips live nachziehen: ⏸ fuer pausierte Hosts (in der vorhandenen Ampelfarbe), sonst ●
 document.querySelectorAll('.srcchip[data-rh]').forEach(function(c){var d=c.querySelector('.dot');if(!d)return;var on=P.some(function(p){return p&&(c.dataset.rh||'').indexOf(p)>=0});d.textContent=on?'⏸':'●'});
 // ⏸-Menue-Haken synchron halten (data-ph kann eine Komma-Liste sein: Familie/Sammelgruppe —
@@ -266,7 +289,7 @@ function exportJson(){var out=xRows().map(function(tr){return {name:tr.dataset.n
 // (nach Manga/data legen, der naechste Lauf reichert sie an). ---
 // jsNorm MUSS syncmanga/parse.norm() spiegeln (gleiche Keys, sonst Duplikat-Zeilen beim Merge).
 function jsNorm(s){s=String(s||'').toLowerCase().replace(/['’]/g,'');s=s.replace(/\b(?:chapter|chap|episode|ep|ch|vol|volume|season)\.?\s*\d+(?:\.\d+)?/g,' ');s=s.replace(/\b(20\d\d|the|a|an|s\d|official|manga|manhwa|manhua|webtoon)\b/g,'');return s.replace(/[^a-z0-9]/g,'')}
-function importMal(inp){var f=inp.files&&inp.files[0];inp.value='';if(!f)return;var rd=new FileReader();rd.onload=function(){try{var doc=new DOMParser().parseFromString(rd.result,'text/xml');var byMal={};document.querySelectorAll('#t tbody tr').forEach(function(tr){if(tr.dataset.mal)byMal[tr.dataset.mal]=tr});var o=cfGet(),up=0,unknown=[];[].forEach.call(doc.querySelectorAll('manga'),function(m){var g=function(t){var el=m.querySelector(t);return el?(el.textContent||'').trim():''};var id=g('series_mangadb_id')||g('manga_mangadb_id');var ch=parseFloat(g('my_read_chapters'))||0;var tr=byMal[id];if(tr){var k=tr.dataset.h,cur=parseFloat(o[k]!=null?o[k]:tr.dataset.rc)||0;if(ch>cur){var td=tr.querySelector('td.rd');o[k]=td?cfSet(td,ch):ch;up++}}else if(g('series_title')){unknown.push({t:g('series_title'),c:ch||null,s:g('my_status')||'Reading',m:parseInt(id,10)||null})}});cfSave(o);ff();var msg=up+' '+((typeof I!=='undefined'&&I.imu)||'Lesestände übernommen');if(unknown.length){var obj={};unknown.forEach(function(u){var k=jsNorm(u.t);if(k&&!obj[k])obj[k]={name:u.t,chap:u.c,status:u.s==='Completed'?'Fertig':(u.s==='Reading'?'Am Lesen':'Gelesen'),mal_id:u.m}});xDown(JSON.stringify(obj,null,1),'application/json','imported_series.json');msg+='\n'+unknown.length+' '+((typeof I!=='undefined'&&I.imn)||'unbekannte Serien → imported_series.json (nach Manga/data legen)')}alert(msg)}catch(e){alert('Import: '+e)}};rd.readAsText(f)}
+function importMal(inp){var f=inp.files&&inp.files[0];inp.value='';if(!f)return;var rd=new FileReader();rd.onload=function(){try{var doc=new DOMParser().parseFromString(rd.result,'text/xml');var byMal={};document.querySelectorAll('#t tbody tr').forEach(function(tr){if(tr.dataset.mal)byMal[tr.dataset.mal]=tr});var o=cfGet(),up=0,unknown=[];[].forEach.call(doc.querySelectorAll('manga'),function(m){var g=function(t){var el=m.querySelector(t);return el?(el.textContent||'').trim():''};var id=g('series_mangadb_id')||g('manga_mangadb_id');var ch=parseFloat(g('my_read_chapters'))||0;var tr=byMal[id];if(tr){var k=tr.dataset.h,cur=(o[k]!=null&&cfLive(o[k],tr)?cfN(o[k]):parseFloat(tr.dataset.rc))||0;if(ch>cur){var td=tr.querySelector('td.rd');o[k]={n:td?cfSet(td,ch):ch,b:scanRc(tr)};up++}}else if(g('series_title')){unknown.push({t:g('series_title'),c:ch||null,s:g('my_status')||'Reading',m:parseInt(id,10)||null})}});cfSave(o);ff();var msg=up+' '+((typeof I!=='undefined'&&I.imu)||'Lesestände übernommen');if(unknown.length){var obj={};unknown.forEach(function(u){var k=jsNorm(u.t);if(k&&!obj[k])obj[k]={name:u.t,chap:u.c,status:u.s==='Completed'?'Fertig':(u.s==='Reading'?'Am Lesen':'Gelesen'),mal_id:u.m}});xDown(JSON.stringify(obj,null,1),'application/json','imported_series.json');msg+='\n'+unknown.length+' '+((typeof I!=='undefined'&&I.imn)||'unbekannte Serien → imported_series.json (nach Manga/data legen)')}alert(msg)}catch(e){alert('Import: '+e)}};rd.readAsText(f)}
 
 // --- ▦ Kachel-Ansicht (JB): Cover-Galerie, komplett CLIENTSEITIG aus den Tabellen-Zeilen gebaut
 // (kein HTML-Gewicht; Bilder laden lazy). Zahl links = dein Stand in der USER-Status-Farbe,
@@ -380,7 +403,7 @@ function pollSync(){try{var s=document.createElement('script');s.src='data/sync_
 // Top-Genres aus WIRKLICH gelesenen Serien, >=20 Kapitel — Basis rechnet der Sync). Kandidaten
 // kommen aus den eingebetteten je-Genre-Pools (RECSBG); ★-Genres boosten das Ranking, der
 // 🎲/↻-Knopf mischt mit Zufalls-Jitter. Alles clientseitig, kein Netz. ---
-function escH(x){return String(x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;')}
+function escH(x){return String(x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
 function recsGet(){try{return JSON.parse(localStorage.getItem('recsGenres')||'null')}catch(e){return null}}
 function recsSave(o){try{localStorage.setItem('recsGenres',JSON.stringify(o))}catch(e){}}
 // Effektive Wahl: gespeicherte, sonst Standard (Top-Genres an, keine Prio)
@@ -429,18 +452,21 @@ function isSearch(u){return /^https?:\/\/(www\.)?google\.[a-z.]+\/search/i.test(
 function markDud(url,on){if(!url||isSearch(url))return;var o=dudGet();if(on)o[url]=Date.now();else delete o[url];dudSave(o)}
 // Alt-Bestand bereinigen: frueher versehentlich markierte Such-URLs entfernen (einmalig je Laden)
 (function(){try{var o=dudGet(),ch=false;Object.keys(o).forEach(function(u){if(isSearch(u)){delete o[u];ch=true}});if(ch)dudSave(o)}catch(e){}})();
-function rep(btn){var tr=btn.closest('tr'),name=tr.dataset.n||'',link=tr.querySelector('.pill.go'),
+// h = stabiler Zeilen-Schluessel (data-h) — der Sync loest die Meldung darueber auf; name bleibt
+// nur als Rueckfall fuer alte Staende (Befund 24.09.2026: Titel != Cache-Key -> Meldung traf nichts).
+function brkSame(x,h,name){return h?(x.h===h||(!x.h&&x.name===name)):x.name===name}
+function rep(btn){var tr=btn.closest('tr'),name=tr.dataset.n||'',h=tr.dataset.h||'',link=tr.querySelector('.pill.go'),
   url=link?link.getAttribute('href'):'';
  // 2. Klick auf ⚠✓ = RUECKGAENGIG fuer die ganze Zeile (JB 08.07.2026: mehrfach geklickt toetete
  // die Reserve-Kette bis zum Google-Fallback). Alle Striche dieser Serie weg + Meldung zurueckziehen.
  if(btn.classList.contains('on')){var o=dudGet(),act=tr.querySelector('td.act');
   if(act){var p=act.querySelector('a.pill.go');if(p&&p.dataset.op)delete o[p.dataset.op];
    [].forEach.call(act.querySelectorAll('details.alt a.pill.go'),function(a){var u=a.getAttribute('href');if(u)delete o[u]})}
-  dudSave(o);brkSave(brkGet().filter(function(x){return x.name!==name}));
+  dudSave(o);brkSave(brkGet().filter(function(x){return !brkSame(x,h,name)}));
   btn.classList.remove('on');btn.textContent='⚠';
   if(typeof applyPause==='function')applyPause();updateAb();ff();return}
  markDud(url,true);                              // aktuellen Link als tot markieren (nicht loeschen)
- var a=brkGet();if(!a.some(function(x){return x.name===name})){a.push({name:name,url:url,ts:Date.now()})}
+ var a=brkGet();if(!a.some(function(x){return brkSame(x,h,name)})){a.push({name:name,h:h,url:url,ts:Date.now()})}
  brkSave(a);btn.classList.add('on');btn.textContent='⚠✓';
  if(typeof applyPause==='function')applyPause();  // weiterlesen -> naechste lebende Reserve
  updateAb();                                      // 🔗-Zaehler am Archiv-Knopf nachziehen
@@ -484,7 +510,7 @@ fetch('http://127.0.0.1:8765/broken',{method:'POST',headers:{'Content-Type':'app
 .then(function(){brkSave([]);document.querySelectorAll('button.rep.on').forEach(function(b){b.classList.remove('on');b.textContent='⚠'});alert((typeof I!=='undefined'&&I.brkSent)||'🛠 An die Reparatur übergeben — der nächste Sync prüft die Serien komplett neu.')})
 .catch(function(){dl()})}
 // beim Laden bereits gemeldete Zeilen (aus localStorage) wieder markieren
-(function(){var a=brkGet();brkSave(a);var n={};a.forEach(function(x){n[x.name]=1});document.querySelectorAll('#t tbody tr').forEach(function(tr){if(n[tr.dataset.n]){var b=tr.querySelector('.rep');if(b){b.classList.add('on');b.textContent='⚠ ✓'}}})})();
+(function(){var a=brkGet();brkSave(a);var n={},hh={};a.forEach(function(x){if(x.h)hh[x.h]=1;else n[x.name]=1});document.querySelectorAll('#t tbody tr').forEach(function(tr){if(hh[tr.dataset.h]||n[tr.dataset.n]){var b=tr.querySelector('.rep');if(b){b.classList.add('on');b.textContent='⚠ ✓'}}})})();
 // Meldungen automatisch nachreichen (JB 08.07.2026 'Ja'): liegen ⚠-Meldungen an und das Tray
 // laeuft, gehen sie STILL an die Reparatur — kein 🛠-Klick noetig. Tray aus -> naechstes Mal.
 (function(){var a=brkGet();if(!a.length||typeof fetch==='undefined')return;

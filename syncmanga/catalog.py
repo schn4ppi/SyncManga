@@ -13,7 +13,6 @@ Jeder Aufruf meldet Erfolg/Fehler an `srcstatus` -> Fallback-Kette + Dashboard-P
 
 WICHTIG fuer Tests: Netzzugriff laeuft ueber das Modul-Attribut `get_json` (mockbar).
 """
-import difflib
 import re
 import threading
 import time
@@ -24,7 +23,7 @@ from . import (
     health as srcstatus,  # Quellen-Status (frueher srcstatus.py, jetzt in health)
 )
 from .common import Pacer, get_json
-from .parse import norm
+from .parse import key_ratio, norm, sim_norm
 
 API_MB = "https://api.mangabaka.org/v1/series"  # K6 24.08.: .dev tot (HTTP 500, deprecated) -> .org; live gemessen: /series/1 = 200
 MB_PACER = Pacer(0.6)         # MangaBaka drosselt hart (~429 nach 5-6 schnellen Calls)
@@ -283,10 +282,10 @@ def mb_search(name, read_chap=None, prefer_novel=False):
              if (r.get("state") or "active") == "active" or r.get("merged_with")]
     if not items:
         return {}, 0.0
-    nn = norm(name)
+    nn = sim_norm(name)       # leer-sicher: ein CJK-Suchbegriff trifft nicht mehr alles zu 1.0
 
     def score(r):
-        return max((difflib.SequenceMatcher(None, nn, norm(t)).ratio() for t in _titles(r)), default=0.0)
+        return max((key_ratio(nn, sim_norm(t)) for t in _titles(r)), default=0.0)
 
     # Auswahl-Pipeline (jede Stufe eine benannte Verteidigungslinie, einzeln getestet):
     #   strong      -> nur Kandidaten nahe am besten Titel-Match (Name schlaegt Popularitaet)
@@ -368,7 +367,7 @@ def _fallback(name):
     # MangaDex (riesiger Katalog, matcht Serien, die AL/MAL/Kitsu nicht kennen) NUR akzeptieren, wenn der
     # Titel wirklich passt -> kein Fehlmatch bei obskuren Serien (JB-Regel: kein falscher Manga). md_lookup
     # gibt sonst immer den "aehnlichsten" Treffer zurueck. Liefert dann Titel/Status/Autor/latest/mangadex-id.
-    if not (d.get("md_id") and difflib.SequenceMatcher(None, norm(name), norm(d.get("title") or "")).ratio() >= 0.8):
+    if not (d.get("md_id") and key_ratio(sim_norm(name), sim_norm(d.get("title") or "")) >= 0.8):
         d = {}
     title = a.get("title") or j.get("title") or k.get("title") or d.get("title") or ""
     if not title:

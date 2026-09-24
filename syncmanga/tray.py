@@ -445,6 +445,11 @@ class TrayApp:
                     pass
                 # kehrt nicht zurueck (Setup + Neustart); `arg` startet bei v2 das Skript
                 update.apply_setup_update(neu, exe, arg)
+            if not info.get("exe_url"):
+                # Einzeldatei-exe, aber das Release bringt nur noch den Installer: nicht still
+                # scheitern, sondern einmal den Installer-Weg nennen (kein exe-Tausch moeglich).
+                self._notify(s["upd_need_setup"].format(v=v))
+                return
             new = update.download_exe(info, os.path.dirname(exe))
             try:
                 os.remove(self.lockfile)         # sauber uebergeben wie bei on_quit

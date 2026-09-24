@@ -26,7 +26,7 @@ from urllib.parse import urlparse
 
 from .common import Pacer
 from .config import is_dead_reader
-from .parse import CH, clean_title, host, norm
+from .parse import CH, clean_title, host, key_ratio, norm, sim_norm
 
 READER_PACER = Pacer(0.25)
 # Hoefliche Zusatz-Bremse je HOST: mangafire blockt Bots nach zu vielen schnellen Anfragen (403-
@@ -255,12 +255,17 @@ def _images_hard_blocked(body, page_url, fetch_img=None):
 
 
 def _alive_status(url, titles=None):
-    """GET -> 'ok' | 'no' | 'blocked' | 'odd'.
+    """GET -> 'ok' | 'no' | 'blocked' | 'down' | 'odd'.
 
     'ok'      = Kapitel-Seite existiert (200, Pfad erhalten, Identitaet bestaetigt).
     'no'      = BEWIESEN nicht vorhanden: 404, oder Redirect mit verlorenem/falschem
                 Kapitel-Token (toongod-Fall: nicht existentes Kapitel -> Serienseite).
     'blocked' = Bot-Sperre: 403/429/503 oder Cloudflare-Challenge MIT 200.
+    'down'    = NICHT pruefbar: Timeout, Verbindungsfehler, 5xx (ausser 503). Das ist KEIN
+                Beweis, dass es die Seite nicht gibt (Befund 24.09.2026: frueher 'no' -> bei
+                schlechtem Netz bestaetigte verify_reader 0/41 Reader und die Discovery
+                speicherte eine leere Liste — das JB-No-Go aus health.py). Aufrufer behandeln
+                'down' wie 'blocked'.
     'odd'     = 200, aber NICHT einordenbar: Root-Redirect oder fremder Seiteninhalt
                 (Identitaets-Check schlaegt fehl — unter Last liefern Reader Drossel-
                 Seiten ohne bekannte Marker, JB-Fund Runde 31 Jigokuraku). Kuratierte
@@ -296,9 +301,13 @@ def _alive_status(url, titles=None):
                                                   # (comicasura-Fall) -> als Rate-Link nie 'ok'
             return "ok"
     except urllib.error.HTTPError as e:
-        return "blocked" if e.code in (403, 429, 503) else "no"   # 404 = gibt es dort nicht
+        if e.code in (401, 403, 407, 429, 451, 503):
+            return "blocked"
+        if e.code >= 500:
+            return "down"                         # 5xx: Server-Stoerung, kein Beweis
+        return "no"                               # 404/410 & Co. = gibt es dort nicht
     except Exception:
-        return "no"           # Timeout/Verbindungsfehler -> als nicht verfuegbar werten
+        return "down"         # Timeout/Verbindungsfehler: NICHT pruefbar, kein 'gibt es nicht'
 
 
 def _alive(url, titles=None):
@@ -727,7 +736,7 @@ def find_chapters(titles, chapter, mtype=None, limit=3, fetch=None, prefer_hosts
               (((tpl if "{n}" not in tpl else _series_page(tpl)), h) for tpl, h in hits) if p]
     if prefer_page:
         for purl, h in pages:            # kuratierte Map-Seite -> Bot-Block/odd zaehlt (existiert sicher)
-            if probe(purl) in ("ok", "blocked", "odd"):
+            if probe(purl) in ("ok", "blocked", "down", "odd"):
                 return [(purl, h)]
         gp = guess_series_pages(titles, probe)
         if gp or not n:
@@ -742,7 +751,7 @@ def find_chapters(titles, chapter, mtype=None, limit=3, fetch=None, prefer_hosts
         url = tpl.replace("{n}", n)
         # Kuratierter Map-Treffer: nur ein BEWIESENES 'gibt es nicht' (404/Kapitel-Redirect)
         # verwirft — 'blocked' und 'odd' (Drossel-Seiten unter Last) zaehlen als vorhanden.
-        if probe(url) in ("ok", "blocked", "odd"):
+        if probe(url) in ("ok", "blocked", "down", "odd"):
             out.append((url, h))
         if len(out) >= limit:
             return out
@@ -789,7 +798,7 @@ def find_chapters(titles, chapter, mtype=None, limit=3, fetch=None, prefer_hosts
     # 4) Serien-Seite aus den MAPS als Ruecklage (kuratiert > geraten; Label wird 'öffnen').
     if not out:
         for purl, h in pages:
-            if probe(purl) in ("ok", "blocked", "odd"):
+            if probe(purl) in ("ok", "blocked", "down", "odd"):
                 out.append((purl, h))
                 break
     # 5) Serien-SEITEN-Rater als allerletzte Stufe: besser 'öffnen' auf die richtige Serie
@@ -971,6 +980,28 @@ def load_overrides(path):
     return SERIES_OVERRIDES
 
 
+_UUID_IN_URL = re.compile(r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}", re.I)
+
+
+def ist_opake_kapitel_id(url):
+    """True, wenn die Kapitel-Kennung der URL KEINE Kapitelnummer ist: eine UUID (MangaDex
+    /chapter/<uuid>) oder eine Zahl > 5000 im Kapitel-Token (mangafire /chapter/4807126, One-Piece-
+    Regel wie chapfix.MAX_CHAPTER). Solche Links duerfen nie zur {n}-Vorlage werden — aus
+    …/chapter/4807126 wuerde …/chapter/{n} -> …/chapter/110 -> heal_bad_links macht die Serienseite
+    daraus, JBs hoechstrangige Bestaetigung waere herabgestuft (Befund 24.09.2026)."""
+    if not url:
+        return False
+    if _UUID_IN_URL.search(url):
+        return True
+    m = _CHAPTOK.search(url)
+    if not m:
+        return False
+    try:
+        return float(m.group(1).replace("-", ".")) > _MF_OPAQUE_MIN
+    except ValueError:
+        return False
+
+
 def _templatize_chapter(url):
     """Bestaetigten Kapitel-Link -> {n}-Vorlage: die ERSTE Kapitelnummer wird durch {n} ersetzt,
     damit der Override mit dem Lesefortschritt mitwaechst. Keine Kapitelnummer erkennbar -> URL
@@ -1007,6 +1038,8 @@ def save_series_override(path, key, name, url, pin=True, template=True):
     if not isinstance(data, dict):
         data = {}
     ov = data.setdefault("overrides", {})
+    if template and ist_opake_kapitel_id(url):
+        template = False                      # opake ID: unveraendert pinnen, nie {n}
     entry = {"name": name, "chapter": _templatize_chapter(url) if template else url,
              "trust": True, "pin": bool(pin)}
     ov[key] = entry
@@ -1086,9 +1119,8 @@ def cx_chapter_link(titles, chapter, fetch=None):
             if slug in seen:
                 continue
             seen.add(slug)
-            ns = norm(slug.replace("-", " "))
-            if not any(ns == norm(t) or difflib.SequenceMatcher(
-                    None, ns, norm(t)).ratio() >= 0.9 for t in titles):
+            ns = sim_norm(slug.replace("-", " "))
+            if not any(key_ratio(ns, sim_norm(t)) >= 0.9 for t in titles):   # '' == '' zaehlt nie
                 continue
             u = harvest_chapter_link(f"https://comix.to/title/{sid}-{slug}", chapter,
                                      fetch=fetch)
@@ -1146,9 +1178,8 @@ def search_slug_link(titles, chapter, mtype=None, fetch=None, hosts=None, cap=3)
             if slug in seen:
                 continue
             seen.add(slug)
-            ns = norm(slug.replace("-", " "))
-            if not any(ns == norm(t) or difflib.SequenceMatcher(
-                    None, ns, norm(t)).ratio() >= 0.9 for t in titles):
+            ns = sim_norm(slug.replace("-", " "))
+            if not any(key_ratio(ns, sim_norm(t)) >= 0.9 for t in titles):   # '' == '' zaehlt nie
                 continue
             url = r["chapter"].format(slug=slug, n=n)
             try:
@@ -1226,16 +1257,35 @@ def _reliable(tpl, slug, n, check):
             and not check(tpl.format(slug=slug, n="99999")))
 
 
-def verify_reader(reader, fetch=None, series=None):
-    """Prueft, ob ein Reader noch ZUVERLAESSIG funktioniert (echtes Kapitel 200, Muell + Muell-Kapitel 404)."""
-    check = fetch or _alive
+def verify_reader(reader, fetch=None, series=None, probe=None):
+    """Prueft, ob ein Reader noch ZUVERLAESSIG funktioniert (echtes Kapitel 200, Muell + Muell-Kapitel 404).
+
+    -> True (bestaetigt) | False (nachweislich unzuverlaessig: echtes Kapitel 404 bzw. Soft-404) |
+       None (NICHT pruefbar: Timeout/5xx/Bot-Sperre beim echten Kapitel). Aufrufer duerfen einen
+       Reader nur bei False entfernen (JB-Regel health.py: "nicht bestaetigt" ist nie "widerlegt";
+       Befund 24.09.2026: bei Netzausfall verschwanden sonst alle Reader, hinter Cloudflare immer).
+    `fetch` (bool, Tests/Altaufrufer) behaelt das alte Verhalten: nur True/False."""
     series = series or DISCOVERY_SERIES
     cats = ["manga", "manhwa"] if reader.get("type") in ("any", None) else [reader["type"]]
+    if fetch is not None:
+        for cat in cats:
+            for slug, n in series.get(cat, []):
+                if _reliable(reader["chapter"], slug, n, fetch):
+                    return True
+        return False
+    probe = probe or _alive_status
+    unklar = False
     for cat in cats:
         for slug, n in series.get(cat, []):
-            if _reliable(reader["chapter"], slug, n, check):
-                return True
-    return False
+            tpl = reader["chapter"]
+            st = probe(tpl.format(slug=slug, n=n))
+            if st == "ok":
+                if (probe(tpl.format(slug="zzqx-not-real-xyz", n=n)) != "ok"
+                        and probe(tpl.format(slug=slug, n="99999")) != "ok"):
+                    return True
+            elif st != "no":
+                unklar = True                    # blocked/down/odd: kein Beweis in beide Richtungen
+    return None if unklar else False
 
 
 def _fast_alive(url, timeout=5):

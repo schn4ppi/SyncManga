@@ -232,10 +232,13 @@ def parse_sha256(text):
 
 
 def check_release(current, fetch_json):
-    """Neuestes GitHub-Release auswerten -> {available, version, exe_url, size, sha_url}.
+    """Neuestes GitHub-Release auswerten -> {available, version, exe_url, size, sha_url, setup_*}.
 
     `fetch_json()` liefert die /releases/latest-Antwort (injizierbar). Fehler, kein Release
-    oder kein exe-Asset -> available=False, die App laeuft einfach normal weiter.
+    oder WEDER exe- NOCH Setup-Asset -> available=False, die App laeuft normal weiter.
+    Befund 24.09.2026: frueher hing `available` allein am exe-Asset — ein Release nur mit
+    SyncManga-Setup.exe (angekuendigt in 8da300e) haette alle Installer-Nutzer still von
+    Updates abgeschnitten. Welcher Weg taugt, entscheidet der Aufrufer (tray._self_update).
     /releases/latest liefert nie Prereleases -> entspricht update_channel "stable"."""
     try:
         data = fetch_json() or {}
@@ -244,7 +247,7 @@ def check_release(current, fetch_json):
     tag = str(data.get("tag_name") or "").strip()
     exe, sha = pick_assets(data.get("assets"))
     setup, setup_sha = pick_setup_asset(data.get("assets"))
-    return {"available": bool(exe) and is_newer(tag, current),
+    return {"available": bool(exe or setup) and is_newer(tag, current),
             "version": tag.lstrip("vV."),
             "exe_url": (exe or {}).get("browser_download_url", ""),
             "size": int((exe or {}).get("size") or 0),
