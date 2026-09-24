@@ -108,7 +108,10 @@ def main():
     cf = json.loads(state.get("chapFix") or "{}")
     raised = 0
     for k, n in fixes.items():
-        if n > float(cf.get(k) or 0):
+        # chapFix-Wert: Zahl (alt) oder {n, b} (list.js seit 24.09.2026)
+        _alt = cf.get(k)
+        _alt = _alt.get("n") if isinstance(_alt, dict) else _alt
+        if n > float(_alt or 0):
             cf[k] = n
             raised += 1
     if raised:

@@ -11,7 +11,6 @@ Flagge/Land, Status, Bewertung, Autor, …). KEINE Verhaltensänderung gegenübe
 Ergänzen einer Quelle = neue lookup-Funktion hier + eine Zeile in enrich_one / probe_sources.
 (Eine echte Registry-Datenstruktur folgt bei Bedarf in einer späteren Phase.)
 """
-import difflib
 import re
 import time
 import urllib.error
@@ -19,7 +18,7 @@ import urllib.parse
 import urllib.request
 
 from .common import UA, Pacer, get_json, post_json
-from .parse import norm, pick_english
+from .parse import key_ratio, norm, pick_english, sim_norm
 
 # Tempo-Bremsen je Quelle (threadsicher, global) — Limits siehe Kommentare.
 AL_PACER = Pacer(0.7)    # AniList: < ~85 Anfragen/Min
@@ -168,9 +167,8 @@ def mf_chapter_link(titles, chapter, verify=None):
             if hid in seen:
                 continue
             seen.add(hid)
-            ns = norm(mtitle)
-            if not any(ns == norm(t) or difflib.SequenceMatcher(None, ns, norm(t)).ratio() >= 0.9
-                       for t in titles):
+            ns = sim_norm(mtitle)
+            if not any(key_ratio(ns, sim_norm(t)) >= 0.9 for t in titles):   # '' == '' zaehlt nie
                 continue
             cid = _mf_chapter_id(hid, chapter)
             if not cid:
@@ -267,9 +265,8 @@ def dy_chapter_link(titles, chapter):
             if perma in seen:
                 continue
             seen.add(perma)
-            ns = norm(sname)
-            if not any(ns == norm(t) or difflib.SequenceMatcher(None, ns, norm(t)).ratio() >= 0.9
-                       for t in titles):
+            ns = sim_norm(sname)
+            if not any(key_ratio(ns, sim_norm(t)) >= 0.9 for t in titles):   # '' == '' zaehlt nie
                 continue
             cp = _dy_chapter_permalink(perma, chapter)
             if cp:
@@ -297,7 +294,7 @@ def md_lookup(name):
         data = get_json(f"{API_MD}/manga?{q}").get("data", [])
         if not data:
             return out
-        nn = norm(name)
+        nn = sim_norm(name)
 
         def titles_of(m):
             a = m.get("attributes", {})
@@ -307,7 +304,7 @@ def md_lookup(name):
             return ts
 
         def score(m):
-            ratio = max((difflib.SequenceMatcher(None, nn, norm(t)).ratio() for t in titles_of(m)), default=0)
+            ratio = max((key_ratio(nn, sim_norm(t)) for t in titles_of(m)), default=0)
             # Bei (fast) gleichem Titel die kanonische Serie bevorzugen statt eines gleichnamigen
             # Porno-Doujins (sonst falsches 18+/Bewertung/Autor). Kleiner Malus bricht nur den Gleichstand.
             cr = (m.get("attributes", {}) or {}).get("contentRating", "")
@@ -496,12 +493,12 @@ def wt_chapter_link(titles, chapter):
             lst = ((data.get("result") or {}).get("searchedList")) or []
         except Exception:
             continue
-        nn = norm(q)
+        nn = sim_norm(q)
         for m in lst:
             t, tno = m.get("title") or "", m.get("titleNo")
             if not tno:
                 continue
-            if norm(t) != nn and difflib.SequenceMatcher(None, nn, norm(t)).ratio() < 0.9:
+            if key_ratio(nn, sim_norm(t)) < 0.9:
                 continue
             u = (f"https://www.webtoons.com/en/x/x/episode-{n}/viewer"
                  f"?title_no={tno}&episode_no={n}")
@@ -537,14 +534,14 @@ def ck_chapter_link(title, chapter):
             return "", "", ""
         CK_PACER.wait()
         data = get_json(f"{API_CK}/v1.0/search?q={urllib.parse.quote(str(title))}&limit=5&type=comic")
-        nn = norm(title)
+        nn = sim_norm(title)
         best, sim = None, 0.0
         for m in (data if isinstance(data, list) else []):
-            r = difflib.SequenceMatcher(None, nn, norm(m.get("title") or "")).ratio()
+            r = key_ratio(nn, sim_norm(m.get("title") or ""))
             if r > sim:
                 best, sim = m, r
         if not best or not best.get("hid") or not best.get("slug") \
-                or (norm(best.get("title") or "") != nn and sim < 0.93):
+                or (sim_norm(best.get("title") or "") != nn and sim < 0.93):
             return "", "", ""
         CK_PACER.wait()
         chs = (get_json(f"{API_CK}/comic/{best['hid']}/chapters?lang=en&chap={n}&limit=10")
@@ -716,14 +713,14 @@ def al_lookup(name):
                 raise
         if not data:
             return out
-        nn = norm(name)
+        nn = sim_norm(name)
 
         def titles_of(m):
             t = m.get("title") or {}
             return [x for x in [t.get("english"), t.get("romaji"), t.get("native")]
                     + (m.get("synonyms") or []) if x]
         best = max(data, key=lambda m: max(
-            (difflib.SequenceMatcher(None, nn, norm(x)).ratio() for x in titles_of(m)), default=0))
+            (key_ratio(nn, sim_norm(x)) for x in titles_of(m)), default=0))
         t = best.get("title") or {}
         out["al_id"] = best.get("id")
         out["title"] = t.get("english") or ""
@@ -769,11 +766,11 @@ def mu_rating(name):
         results = post_json(API_MU, {"search": name, "perpage": 5}).get("results", [])
         if not results:
             return out
-        nn = norm(name)
+        nn = sim_norm(name)
 
         def title_of(x):
             return re.sub(r'<[^>]+>', '', x.get("record", {}).get("title", "") or "")
-        best = max(results, key=lambda x: difflib.SequenceMatcher(None, nn, norm(title_of(x))).ratio())
+        best = max(results, key=lambda x: key_ratio(nn, sim_norm(title_of(x))))
         rc = best.get("record", {})
         br = rc.get("bayesian_rating")
         if br:
@@ -958,14 +955,14 @@ def kitsu_rating(name):
         data = get_json(f"{API_KITSU}?{q}", headers={**UA, "Accept": "application/vnd.api+json"}).get("data", [])
         if not data:
             return None
-        nn = norm(name)
+        nn = sim_norm(name)
 
         def titles_of(m):
             at = m.get("attributes", {})
             return [t for t in [at.get("canonicalTitle", "")]
                     + [v for v in (at.get("titles") or {}).values() if v] if t]
         def ratio(m):
-            return max((difflib.SequenceMatcher(None, nn, norm(t)).ratio() for t in titles_of(m)), default=0)
+            return max((key_ratio(nn, sim_norm(t)) for t in titles_of(m)), default=0)
         best = max(data, key=ratio)
         at = best.get("attributes", {})
         if ratio(best) < 0.6:               # zu unsicherer Treffer -> ignorieren
@@ -994,13 +991,13 @@ def jikan_lookup(name):
         data = get_json(f"{API_JK}?{q}").get("data", [])
         if not data:
             return out
-        nn = norm(name)
+        nn = sim_norm(name)
 
         def titles_of(m):
             ts = [m.get("title_english"), m.get("title")] + [t.get("title") for t in (m.get("titles") or [])]
             return [t for t in ts if t]
         best = max(data, key=lambda m: max(
-            (difflib.SequenceMatcher(None, nn, norm(t)).ratio() for t in titles_of(m)), default=0))
+            (key_ratio(nn, sim_norm(t)) for t in titles_of(m)), default=0))
         out["title"] = best.get("title_english") or ""
         sc = best.get("score")
         if sc:

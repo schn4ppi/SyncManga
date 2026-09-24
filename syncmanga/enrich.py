@@ -30,7 +30,7 @@ from . import (
     health as srcstatus,  # Quellen-Status (frueher srcstatus.py, jetzt in health)
 )
 from .config import CACHE_VER, is_dead_reader, is_no_read
-from .parse import host, is_dynamic, is_novel_url, norm, romaji_score, slug_from_url
+from .parse import host, is_dynamic, is_novel_url, key_ratio, norm, romaji_score, sim_norm, slug_from_url
 from .sources import (
     al_english_by_id,
     al_lookup,
@@ -411,8 +411,7 @@ _TYPO = str.maketrans({"’": "'", "‘": "'", "“": '"', "”": '"', "–": "-
 
 
 def _title_sim(a, b):
-    import difflib
-    return difflib.SequenceMatcher(None, norm(a), norm(b)).ratio()
+    return key_ratio(sim_norm(a), sim_norm(b))     # leere Seite -> 0.0 (CJK-Befund 24.09.2026)
 
 
 def fill_one_reserves(v):
@@ -761,6 +760,28 @@ def select_todo(items, cache, cache_ver, force=False):
     return retries + todo
 
 
+def cache_keys_for_h(cache, h):
+    """data-h (stabiler Zeilen-Schluessel der Liste) -> passende Cache-Keys.
+
+    Seit Runde 35 ist data-h die DB-ID ("mb:123", "al:5", MangaDex-UUID) oder "n:"+Cache-Key —
+    nie mehr der Anzeigetitel. Meldungen/Bestaetigungen aus der Liste MUESSEN darueber aufgeloest
+    werden: 111 von 151 Override-Namen weichen vom Cache-Key ab ('Dungeon Meshi (Delicious in
+    Dungeon)' vs. 'dungeonmeshi'), ein Titel-Vergleich traf dann nichts (Befund 24.09.2026).
+    Eine DB-ID trifft ALLE Zwillinge mit dieser md_id — auch ueber eine fruehere ID (id_hist).
+    Altbestand (norm(Anzeigetitel)) nur, wenn er direkt ein Cache-Key ist. Unbekannt -> []."""
+    h = str(h or "").strip()
+    if not h:
+        return []
+    if h.startswith("n:"):
+        k = h[2:]
+        return [k] if k in cache else []
+    hits = [k for k, c in cache.items() if isinstance(c, dict)
+            and (str(c.get("md_id") or "") == h or h in (c.get("id_hist") or []))]
+    if hits:
+        return hits
+    return [h] if h in cache else []
+
+
 def _consume_broken(cache):
     """⚠-Meldungen SOFORT verarbeiten (JB): liegt data/broken_links.json (Export aus der Liste) im
     Datenordner, wird jede gemeldete Serie in DIESEM Lauf komplett neu aufgeloest (Cache-Eintrag raus
@@ -773,25 +794,37 @@ def _consume_broken(cache):
     try:
         reports = json.load(open(src, encoding="utf-8"))
         from .parse import norm as _norm
-        hit = []
+        hit, miss = [], []
         for rep in reports if isinstance(reports, list) else []:
             k = _norm(rep.get("name") or "")
-            for ck in [c for c in cache if c == k or _norm(c) == k]:
-                del cache[ck]
+            # ZUERST ueber den stabilen Zeilen-Schluessel (data-h), der Titel nur als Rueckfall
+            # fuer alte Meldungen ohne "h" — er weicht oft vom Cache-Key ab (cache_keys_for_h).
+            cks = cache_keys_for_h(cache, rep.get("h")) or [c for c in cache if c == k or _norm(c) == k]
+            if not cks:
+                miss.append(rep.get("h") or rep.get("name") or "")
+            names = {k}
+            for ck in cks:
+                names |= {_norm(ck), _norm((cache.get(ck) or {}).get("title") or "")}
+                cache.pop(ck, None)
                 hit.append(ck)
             try:                                  # kaputten kuratierten Link derselben Serie entfernen
                 from . import readerlink as _rl
-                if k in _rl.SERIES_OVERRIDES:
-                    del _rl.SERIES_OVERRIDES[k]
+                for nk in names:
+                    if nk and nk in _rl.SERIES_OVERRIDES:
+                        del _rl.SERIES_OVERRIDES[nk]
             except Exception:
                 pass
         done = os.path.join(data_dir, "broken_links.done.json")
         hist = json.load(open(done, encoding="utf-8")) if os.path.exists(done) else []
-        hist.append({"ts": time.time(), "reports": reports, "recheck": hit})
+        # "nicht_gefunden" sichtbar halten: die Liste verspricht eine Neupruefung — trifft eine
+        # Meldung keine Serie, soll das im Archiv stehen statt still zu verschwinden.
+        hist.append({"ts": time.time(), "reports": reports, "recheck": hit, "nicht_gefunden": miss})
         json.dump(hist, open(done, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
         os.remove(src)
         if hit:
             print(f"  [Link kaputt] {len(hit)} gemeldete Serie(n) werden JETZT neu aufgeloest", flush=True)
+        if miss:
+            print(f"  [Link kaputt] {len(miss)} Meldung(en) passten zu keiner Serie: {miss[:5]}", flush=True)
     except Exception:
         pass
 
@@ -1328,10 +1361,9 @@ def _metadaten_eintrag(k, e, c, stale, name_fix, cache_ver):
             if not mdx2 and did and "-" in str(did):
                 mdx2 = did
             if not mdx2:
-                import difflib as _dl
                 hit = S.md_lookup(nc["title"]) or {}
-                if hit.get("md_id") and _dl.SequenceMatcher(
-                        None, norm(nc["title"]), norm(hit.get("title") or "")).ratio() >= 0.8:
+                if hit.get("md_id") and key_ratio(
+                        sim_norm(nc["title"]), sim_norm(hit.get("title") or "")) >= 0.8:
                     mdx2 = hit["md_id"]
                     # MangaDex liefert Flagge/Land/Autor gleich mit -> Luecken auffuellen
                     # (JB-Fall Soul Anomaly: laut MD ein ENGLISCHES Original -> 🇺🇸, nicht JP)
@@ -1572,6 +1604,15 @@ def enrich(items, cache_path, health_dir, cap, name_fix=None, cache_ver=CACHE_VE
             return
         nc, rec, conf, typ = _metadaten_eintrag(k, e, c, stale, name_fix, cache_ver)
         _lese_links_setzen(e, c, nc, rec, conf, typ, force)
+        # Fruehere DB-IDs merken (Befund 24.09.2026): md_id wechselt planmaessig von al:/UUID auf
+        # mb:<n>, sobald MangaBaka trifft -> data-h aendert sich. Ohne diese Liste kennt die Alias-
+        # Karte MIG die alte ID nicht, Favorit/Archiv/chapFix/titleCfm verwaisen ("Archiv resetted").
+        _hist = [x for x in ((c or {}).get("id_hist") or []) if x]
+        _old = (c or {}).get("md_id")
+        if _old and _old != nc.get("md_id") and _old not in _hist:
+            _hist.append(_old)
+        if _hist:
+            nc["id_hist"] = _hist[-8:]
         old_latest = c.get("latest") if c else None             # neue Kapitel seit letztem Lauf?
         if old_latest and nc.get("latest") and nc["latest"] > old_latest and not nc.get("novel"):
             new_chaps.append(nc["title"])
@@ -1634,7 +1675,7 @@ def assemble_rows(items, cache, name_fix):
                                                # Uebersetzungs-Stand (JB 20.07.): eigene Spalte "Uebersetzt"
                                                "trans", "trans_ts",
                                                "title_native", "needs_help", "conf", "src", "genres",
-                                               "read_url", "read_site", "read_urls", "ov",
+                                               "read_url", "read_site", "read_urls", "ov", "id_hist",
                                                # read_chap mitkopieren (Runde 35): _merge_action
                                                # vergleicht Zwillinge nach AKTUALITAET des Ziels —
                                                # ohne das Feld gewann der zuerst gesehene 'Vol.'-
@@ -1711,6 +1752,9 @@ def assemble_rows(items, cache, name_fix):
             o = by_id[mid]
             (o.setdefault("readers", [])).extend(e.get("readers") or [])
             (o.setdefault("hkeys", [])).extend(e.get("hkeys") or [])
+            for _m in (e.get("id_hist") or []):          # fruehere IDs des Zwillings behalten
+                if _m not in (o.get("id_hist") or []):
+                    o.setdefault("id_hist", []).append(_m)
             if (e.get("chap") or 0) > (o.get("chap") or 0):
                 o["chap"] = e["chap"]; o["url"] = e["url"]
             o["lv"] = max(o.get("lv", 0), e.get("lv", 0))
@@ -1740,6 +1784,7 @@ def assemble_rows(items, cache, name_fix):
         # Gleicher Name = derselbe Manga auf zwei Seiten -> EINE Zeile. Reader/Kapitel vereinigen.
         (o.setdefault("readers", [])).extend(e.get("readers") or [])
         (o.setdefault("hkeys", [])).extend(e.get("hkeys") or [])
+        _o_mid = o.get("md_id")
         if (e.get("chap") or 0) > (o.get("chap") or 0):
             o["chap"], o["url"] = e["chap"], e["url"]
         o["lv"] = max(o.get("lv", 0), e.get("lv", 0))
@@ -1753,5 +1798,13 @@ def assemble_rows(items, cache, name_fix):
                   "trans", "trans_ts"):
             if e.get(f) and (prefer_e or not o.get(f)):
                 o[f] = e[f]
+        # Die verschmolzene Zeile hatte eine eigene data-h (ihre md_id) -> als Alias behalten,
+        # sonst verwaisen Favorit/Archiv dieses Zwillings.
+        _ah = list(o.get("id_hist") or []) + list(e.get("id_hist") or [])
+        for _m in (_o_mid, e.get("md_id")):
+            if _m and _m != o.get("md_id") and _m not in _ah:
+                _ah.append(_m)
+        if _ah:
+            o["id_hist"] = _ah
         _merge_action(o, e)
     return final

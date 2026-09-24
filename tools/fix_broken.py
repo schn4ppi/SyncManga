@@ -20,9 +20,11 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 PKG = os.path.normpath(os.path.join(HERE, ".."))
 if PKG not in sys.path:
     sys.path.insert(0, PKG)
+from syncmanga.enrich import cache_keys_for_h  # noqa: E402
 from syncmanga.parse import norm  # noqa: E402
 
 OV = os.path.join(PKG, "data", "series_overrides.json")
+DEFAULT_CACHE = os.path.normpath(os.path.join(PKG, "..", "..", "SyncDashTray", "System", "md_cache.json"))
 BROKEN = os.path.join(PKG, "data", "broken_links.json")
 ARCHIVE = os.path.join(PKG, "data", "broken_links.done.json")   # verarbeitete Meldungen (Historie)
 
@@ -38,13 +40,23 @@ def main():
     except Exception:
         data = {"overrides": {}}
     ov = data.get("overrides") or {}
+    cache_path = sys.argv[1] if len(sys.argv) > 1 else DEFAULT_CACHE
+    try:
+        cache = json.load(open(cache_path, encoding="utf-8"))
+    except Exception:
+        cache = {}
     removed = 0
     for r in (reports or []):
-        k = norm((r.get("name") or "").strip())
-        if k and k in ov:
-            del ov[k]
-            removed += 1
-            print(f"  - kaputten Override entfernt: {r.get('name')}", flush=True)
+        # Meldungen tragen seit 24.09.2026 den stabilen Zeilen-Schluessel "h" (data-h). Der
+        # Anzeigetitel weicht oft vom Override-Key ab -> ueber den Cache alle Namen der Serie holen.
+        keys = {norm((r.get("name") or "").strip())}
+        for ck in cache_keys_for_h(cache, r.get("h")):
+            keys |= {norm(ck), norm((cache.get(ck) or {}).get("title") or "")}
+        for k in keys:
+            if k and k in ov:
+                del ov[k]
+                removed += 1
+                print(f"  - kaputten Override entfernt: {r.get('name')} ({k})", flush=True)
     data["overrides"] = ov
     tmp = OV + ".tmp"
     with open(tmp, "w", encoding="utf-8") as f:

@@ -31,8 +31,14 @@ def refresh(snap_path=SNAP, out_path=OUT, verbose=True):
     if verbose:
         print(f"Bestehende Reader: {len(existing)} | everythingmoe-Eintraege: "
               f"{len(snap.get('items') or [])}", flush=True)
-    alive = [r for r in existing if readerlink.verify_reader(r)]
-    dropped = [r["host"] for r in existing if r not in alive]
+    # Entfernt wird nur, was NACHWEISLICH nicht mehr geht (False). None = nicht pruefbar
+    # (Timeout/Bot-Sperre) -> Reader bleibt (Befund 24.09.2026: sonst leerte schlechtes Netz die Liste).
+    verdict = {r["host"]: readerlink.verify_reader(r) for r in existing}
+    alive = [r for r in existing if verdict[r["host"]] is not False]
+    dropped = [r["host"] for r in existing if verdict[r["host"]] is False]
+    unklar = [h for h, v in verdict.items() if v is None]
+    if verbose and unklar:
+        print(f"nicht pruefbar (bleiben): {unklar}", flush=True)
     found = readerlink.discover(snap, workers=14)      # parallel + kurzer Timeout = deutlich schneller
     merged = readerlink.merge_readers(alive, found)
     before = {r["host"] for r in existing}
