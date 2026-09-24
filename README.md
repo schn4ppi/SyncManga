@@ -30,8 +30,12 @@ Manga-Datenbanken im Internet abgefragt (Titel/Bewertung/Status), niemals deine 
 - **Einzeldatei-exe (`SyncManga.exe`) — nur noch für Bestandsnutzer bis v0.4.1**, deren
   eingebauter Updater sie namentlich erwartet. Sie läuft weiterhin, ist aber nicht mehr
   der empfohlene Weg; neu installiert wird über den Installer.
-- Beim ersten Start warnt Windows-SmartScreen evtl. vor einer „unbekannten" App (die Datei
-  ist nicht teuer signiert) → *Weitere Informationen* → *Trotzdem ausführen*.
+- **Signiert:** Seit v0.4.4 tragen Installer und exe eine Code-Signatur der **JBK-Holding GmbH**
+  (Sectigo, mit Zeitstempel) — prüfbar per Rechtsklick → *Eigenschaften* → *Digitale Signaturen*.
+  Warnt SmartScreen bei einer ganz neuen Version trotzdem (Reputation wächst erst mit den
+  Downloads): *Weitere Informationen* → *Trotzdem ausführen*.
+- **Per winget:** `winget install schn4ppi.SyncManga` — neue Versionen erscheinen dort, sobald
+  die winget-Prüfung durch ist (meist ein bis zwei Tage nach dem Release).
 - **Mit Python:** `python -m syncmanga` (einmaliger Lauf) oder `python -m syncmanga.tray` (Tray).
 
 ### Tray-Menü
@@ -124,8 +128,12 @@ The list is **fully mobile-optimized** (since v0.3.4).
 - **Single-file `SyncManga.exe` — kept for existing users on v0.4.1 and older**, whose
   built-in updater expects it by name. It still runs, but it is no longer the recommended
   route; fresh installs should use the installer.
-- On first launch Windows SmartScreen may warn about an "unknown" app (the file is not
-  expensively signed) → *More info* → *Run anyway*.
+- **Signed:** since v0.4.4 the installer and the exe carry a code signature by **JBK-Holding GmbH**
+  (Sectigo, timestamped) — check via right-click → *Properties* → *Digital Signatures*. If
+  SmartScreen still warns about a brand-new version (reputation builds up with downloads):
+  *More info* → *Run anyway*.
+- **Via winget:** `winget install schn4ppi.SyncManga` — new versions show up there once the
+  winget review has passed (usually one to two days after the release).
 - **With Python:** `python -m syncmanga` (one run) or `python -m syncmanga.tray` (tray).
 
 ### Tray menu
