@@ -255,7 +255,7 @@ def _images_hard_blocked(body, page_url, fetch_img=None):
 
 
 def _alive_status(url, titles=None):
-    """GET -> 'ok' | 'no' | 'blocked' | 'down' | 'odd'.
+    """GET -> 'ok' | 'no' | 'blocked' | 'down' | 'gone' | 'odd'.
 
     'ok'      = Kapitel-Seite existiert (200, Pfad erhalten, Identitaet bestaetigt).
     'no'      = BEWIESEN nicht vorhanden: 404, oder Redirect mit verlorenem/falschem
@@ -266,6 +266,10 @@ def _alive_status(url, titles=None):
                 schlechtem Netz bestaetigte verify_reader 0/41 Reader und die Discovery
                 speicherte eine leere Liste — das JB-No-Go aus health.py). Aufrufer behandeln
                 'down' wie 'blocked'.
+    'gone'    = Domain nicht aufloesbar, Verbindung verweigert oder Zertifikat ungueltig — die
+                typischen Zeichen einer GESTORBENEN Domain, aber auch eines fehlenden eigenen
+                Netzes. Aufrufer werten 'gone' als tot nur, wenn das Netz nachweislich geht
+                (netz_ok / ein anderer Treffer im selben Lauf); sonst wie 'down'.
     'odd'     = 200, aber NICHT einordenbar: Root-Redirect oder fremder Seiteninhalt
                 (Identitaets-Check schlaegt fehl — unter Last liefern Reader Drossel-
                 Seiten ohne bekannte Marker, JB-Fund Runde 31 Jigokuraku). Kuratierte
@@ -306,8 +310,30 @@ def _alive_status(url, titles=None):
         if e.code >= 500:
             return "down"                         # 5xx: Server-Stoerung, kein Beweis
         return "no"                               # 404/410 & Co. = gibt es dort nicht
-    except Exception:
-        return "down"         # Timeout/Verbindungsfehler: NICHT pruefbar, kein 'gibt es nicht'
+    except Exception as e:
+        return "gone" if _domain_weg(e) else "down"   # Timeout/Reset: NICHT pruefbar
+
+
+def _domain_weg(exc):
+    """True bei DNS-Fehler (gaierror), 'connection refused' oder ungueltigem Zertifikat — auch
+    eingepackt in URLError.reason. Timeouts und Resets sind es NICHT (die bleiben 'down')."""
+    import socket
+    import ssl
+    r = getattr(exc, "reason", exc)
+    return isinstance(r, (socket.gaierror, ConnectionRefusedError, ssl.SSLCertVerificationError))
+
+
+def netz_ok(urls=("https://api.github.com", "https://www.cloudflare.com/cdn-cgi/trace"), timeout=8):
+    """Referenz-Abfrage: geht das EIGENE Netz? Erst dann darf 'gone' als tot gelten."""
+    for u in urls:
+        try:
+            with urllib.request.urlopen(urllib.request.Request(u, headers=_UA), timeout=timeout):
+                return True
+        except urllib.error.HTTPError:
+            return True                            # Antwort kam an -> Netz geht
+        except Exception:
+            continue
+    return False
 
 
 def _alive(url, titles=None):
@@ -645,9 +671,12 @@ def swap_chapter(url, chapter):
     n = _chapter_str(chapter)
     if not n or not url:
         return ""
-    m = _CHAPTOK.search(urlparse(url).path)
+    ms = list(_CHAPTOK.finditer(urlparse(url).path))   # letzter Treffer = das Kapitel
+    m = ms[-1] if ms else None
     if m and re.fullmatch(r"\d+(?:\.\d+)?", m.group(1)):
-        return url.replace(m.group(0), m.group(0)[:len(m.group(0)) - len(m.group(1))] + n, 1)
+        p = urlparse(url).path
+        neu = p[:m.start(1)] + n + p[m.end(1):]
+        return url.replace(p, neu, 1)
     m = _CNUM.search(urlparse(url).path)
     if m:
         return url.replace(m.group(0), m.group(0).replace(m.group(1), n, 1), 1)
@@ -993,11 +1022,11 @@ def ist_opake_kapitel_id(url):
         return False
     if _UUID_IN_URL.search(url):
         return True
-    m = _CHAPTOK.search(url)
-    if not m:
+    ms = list(_CHAPTOK.finditer(url))                # LETZTER Treffer = das Kapitel (wie parse.URLCH)
+    if not ms:
         return False
     try:
-        return float(m.group(1).replace("-", ".")) > _MF_OPAQUE_MIN
+        return float(ms[-1].group(1).replace("-", ".")) > _MF_OPAQUE_MIN
     except ValueError:
         return False
 
@@ -1009,10 +1038,13 @@ def _templatize_chapter(url):
     if not url or "{n}" in url:
         return url or ""
 
-    def _repl(m):
-        return m.group(0)[: m.start(1) - m.start(0)] + "{n}"        # Praefix (z.B. 'chapter-') + {n}
-
-    return _CHAPTOK.sub(_repl, url, count=1)
+    # LETZTER Treffer (Gegenpruefung 24.09.2026): '…/chapter/1-2-prince-chapter-7/' wurde sonst
+    # zu '…/chapter/{n}-prince-chapter-7/' — mit trust=True ungeprueft ein kaputter Pin.
+    ms = list(_CHAPTOK.finditer(url))
+    if not ms:
+        return url
+    m = ms[-1]
+    return url[:m.start(1)] + "{n}" + url[m.end(1):]
 
 
 def save_series_override(path, key, name, url, pin=True, template=True):
@@ -1257,13 +1289,14 @@ def _reliable(tpl, slug, n, check):
             and not check(tpl.format(slug=slug, n="99999")))
 
 
-def verify_reader(reader, fetch=None, series=None, probe=None):
+def verify_reader(reader, fetch=None, series=None, probe=None, netz=False):
     """Prueft, ob ein Reader noch ZUVERLAESSIG funktioniert (echtes Kapitel 200, Muell + Muell-Kapitel 404).
 
     -> True (bestaetigt) | False (nachweislich unzuverlaessig: echtes Kapitel 404 bzw. Soft-404) |
        None (NICHT pruefbar: Timeout/5xx/Bot-Sperre beim echten Kapitel). Aufrufer duerfen einen
        Reader nur bei False entfernen (JB-Regel health.py: "nicht bestaetigt" ist nie "widerlegt";
        Befund 24.09.2026: bei Netzausfall verschwanden sonst alle Reader, hinter Cloudflare immer).
+    `netz=True` (Referenz-Abfrage erfolgreich) wertet 'gone' (DNS/refused/Zertifikat) als tot.
     `fetch` (bool, Tests/Altaufrufer) behaelt das alte Verhalten: nur True/False."""
     series = series or DISCOVERY_SERIES
     cats = ["manga", "manhwa"] if reader.get("type") in ("any", None) else [reader["type"]]
@@ -1279,6 +1312,8 @@ def verify_reader(reader, fetch=None, series=None, probe=None):
         for slug, n in series.get(cat, []):
             tpl = reader["chapter"]
             st = probe(tpl.format(slug=slug, n=n))
+            if st == "gone" and netz:
+                st = "no"                        # Netz geht, Domain nicht -> nachweislich tot
             if st == "ok":
                 if (probe(tpl.format(slug="zzqx-not-real-xyz", n=n)) != "ok"
                         and probe(tpl.format(slug=slug, n="99999")) != "ok"):

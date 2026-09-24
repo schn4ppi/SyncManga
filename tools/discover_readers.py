@@ -33,7 +33,8 @@ def refresh(snap_path=SNAP, out_path=OUT, verbose=True):
               f"{len(snap.get('items') or [])}", flush=True)
     # Entfernt wird nur, was NACHWEISLICH nicht mehr geht (False). None = nicht pruefbar
     # (Timeout/Bot-Sperre) -> Reader bleibt (Befund 24.09.2026: sonst leerte schlechtes Netz die Liste).
-    verdict = {r["host"]: readerlink.verify_reader(r) for r in existing}
+    netz = readerlink.netz_ok()          # erst dann gilt eine tote Domain (DNS/refused) als tot
+    verdict = {r["host"]: readerlink.verify_reader(r, netz=netz) for r in existing}
     alive = [r for r in existing if verdict[r["host"]] is not False]
     dropped = [r["host"] for r in existing if verdict[r["host"]] is False]
     unklar = [h for h, v in verdict.items() if v is None]

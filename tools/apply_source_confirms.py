@@ -31,14 +31,13 @@ if PKG not in sys.path:
     sys.path.insert(0, PKG)
 
 from syncmanga import config, readerlink  # noqa: E402
-from syncmanga.enrich import cache_keys_for_h  # noqa: E402
+from syncmanga.enrich import cache_fuer_werkzeuge, cache_keys_for_h  # noqa: E402
 from syncmanga.parse import norm  # noqa: E402
 
 CONFIRMS = os.path.join(PKG, "data", "source_confirms.json")
 DONE = os.path.join(PKG, "data", "source_confirms.done.json")
 OVERRIDES = os.path.join(PKG, "data", "series_overrides.json")
 NAMEFIX = os.path.join(PKG, "data", "overrides.json")
-DEFAULT_CACHE = os.path.normpath(os.path.join(PKG, "..", "..", "SyncDashTray", "System", "md_cache.json"))
 
 
 def _load(path, default):
@@ -94,7 +93,7 @@ def main():
     if not confirms:
         print("Keine source_confirms.json in Manga/data — nichts zu tun.")
         return
-    cache = _load(sys.argv[1] if len(sys.argv) > 1 else DEFAULT_CACHE, {})
+    cache = cache_fuer_werkzeuge(PKG, sys.argv[1] if len(sys.argv) > 1 else None)
     n = apply_confirms(confirms, cache)
     print(f"{n} bestaetigte Quelle(n) in series_overrides.json geschrieben.")
     # ins .done-Archiv ueberfuehren (additiv), Eingang leeren

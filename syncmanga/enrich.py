@@ -648,7 +648,7 @@ def _bookmark_link(e, next_chap, titles):
             # Auch die eigene URL pruefen: Reader sterben (JB-Fall manhuafast: Kapitel-404).
             # Bot-Block/Drossel der EIGENEN Seite ist ok — nachweislich besucht; nur ein
             # bewiesenes 404/Kapitel-Redirect disqualifiziert.
-            if readerlink._alive_status(u, titles) != "no":
+            if readerlink._alive_status(u, titles) not in ("no", "gone"):
                 return u, hh
             continue
         swap_cands.append((u, hh))
@@ -760,6 +760,27 @@ def select_todo(items, cache, cache_ver, force=False):
     return retries + todo
 
 
+_ID_ERBE = {}     # Cache-Key -> fruehere IDs eines per ⚠ geloeschten Eintrags (fuer id_hist)
+
+
+def cache_fuer_werkzeuge(pkg_dir, argv_pfad=None):
+    """md_cache.json fuer die tools/ laden: CLI-Pfad, dann Suite-Layout, dann Standalone
+    (<pkg>/data/cache/md_cache.json). Kein Cache -> {} MIT Hinweis: ohne ihn fallen die
+    Werkzeuge still auf den Titel-Abgleich zurueck (Gegenpruefung 24.09.2026)."""
+    kandidaten = [argv_pfad] if argv_pfad else []
+    kandidaten += [os.path.normpath(os.path.join(pkg_dir, "..", "..", "SyncDashTray", "System", "md_cache.json")),
+                   os.path.join(pkg_dir, "data", "cache", "md_cache.json")]
+    for p in kandidaten:
+        try:
+            with open(p, encoding="utf-8") as f:
+                return json.load(f)
+        except (OSError, ValueError):
+            continue
+    print("  Hinweis: kein md_cache.json gefunden -> Abgleich nur ueber den Titel "
+          f"(gesucht: {kandidaten})", flush=True)
+    return {}
+
+
 def cache_keys_for_h(cache, h):
     """data-h (stabiler Zeilen-Schluessel der Liste) -> passende Cache-Keys.
 
@@ -775,8 +796,12 @@ def cache_keys_for_h(cache, h):
     if h.startswith("n:"):
         k = h[2:]
         return [k] if k in cache else []
-    hits = [k for k, c in cache.items() if isinstance(c, dict)
-            and (str(c.get("md_id") or "") == h or h in (c.get("id_hist") or []))]
+    hits = [k for k, c in cache.items() if isinstance(c, dict) and str(c.get("md_id") or "") == h]
+    if hits:
+        return hits
+    # Fruehere IDs NUR, wenn heute keine Serie diese ID traegt (Gegenpruefung 24.09.2026: sonst
+    # traf eine Meldung fuer X auch Y, das X' ID frueher per Fehlmatch trug).
+    hits = [k for k, c in cache.items() if isinstance(c, dict) and h in (c.get("id_hist") or [])]
     if hits:
         return hits
     return [h] if h in cache else []
@@ -805,7 +830,12 @@ def _consume_broken(cache):
             names = {k}
             for ck in cks:
                 names |= {_norm(ck), _norm((cache.get(ck) or {}).get("title") or "")}
-                cache.pop(ck, None)
+                old = cache.pop(ck, None) or {}
+                # IDs vererben: die Neuaufloesung kann eine andere md_id liefern -> ohne das Erbe
+                # verwaisten Favorit/Archiv wieder (enrich_one liest _ID_ERBE).
+                _erbe = [x for x in (old.get("id_hist") or []) if x] + ([old["md_id"]] if old.get("md_id") else [])
+                if _erbe:
+                    _ID_ERBE[ck] = _erbe
                 hit.append(ck)
             try:                                  # kaputten kuratierten Link derselben Serie entfernen
                 from . import readerlink as _rl
@@ -1607,10 +1637,11 @@ def enrich(items, cache_path, health_dir, cap, name_fix=None, cache_ver=CACHE_VE
         # Fruehere DB-IDs merken (Befund 24.09.2026): md_id wechselt planmaessig von al:/UUID auf
         # mb:<n>, sobald MangaBaka trifft -> data-h aendert sich. Ohne diese Liste kennt die Alias-
         # Karte MIG die alte ID nicht, Favorit/Archiv/chapFix/titleCfm verwaisen ("Archiv resetted").
-        _hist = [x for x in ((c or {}).get("id_hist") or []) if x]
+        _hist = [x for x in ((c or {}).get("id_hist") or _ID_ERBE.pop(k, [])) if x]
         _old = (c or {}).get("md_id")
         if _old and _old != nc.get("md_id") and _old not in _hist:
             _hist.append(_old)
+        _hist = [x for x in _hist if x != nc.get("md_id")]
         if _hist:
             nc["id_hist"] = _hist[-8:]
         old_latest = c.get("latest") if c else None             # neue Kapitel seit letztem Lauf?
@@ -1752,9 +1783,9 @@ def assemble_rows(items, cache, name_fix):
             o = by_id[mid]
             (o.setdefault("readers", [])).extend(e.get("readers") or [])
             (o.setdefault("hkeys", [])).extend(e.get("hkeys") or [])
-            for _m in (e.get("id_hist") or []):          # fruehere IDs des Zwillings behalten
-                if _m not in (o.get("id_hist") or []):
-                    o.setdefault("id_hist", []).append(_m)
+            _neu = [m for m in (e.get("id_hist") or []) if m not in (o.get("id_hist") or [])]
+            if _neu:                                      # fruehere IDs des Zwillings behalten —
+                o["id_hist"] = list(o.get("id_hist") or []) + _neu   # KOPIE, nie die Cache-Liste
             if (e.get("chap") or 0) > (o.get("chap") or 0):
                 o["chap"] = e["chap"]; o["url"] = e["url"]
             o["lv"] = max(o.get("lv", 0), e.get("lv", 0))
