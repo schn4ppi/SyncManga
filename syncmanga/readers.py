@@ -262,6 +262,41 @@ def _classify_status(url, host=""):
     return "ok", "funktioniert"
 
 
+def _broken_einreihen(data_dir, fails):
+    """Ausfaelle des Link-Sweeps in den bestehenden Reparatur-Eingang einreihen
+    (data/broken_links.json, vereint, dedupe nach Name)."""
+    p = os.path.join(data_dir, "broken_links.json")
+    try:
+        old = json.load(open(p, encoding="utf-8"))
+        if not isinstance(old, list):
+            old = []
+    except (OSError, ValueError):
+        old = []
+    seen = {r.get("name") for r in old if isinstance(r, dict)}
+    merged = old + [f for f in fails if f["name"] not in seen]
+    tmp = p + ".tmp"
+    json.dump(merged, open(tmp, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+    os.replace(tmp, p)
+
+
+def _auto_pause_ergaenzen(status_out, burst):
+    """Ausfall-Muster einer Domain -> Auto-Pause ERGAENZEN (reader_status.json + live)."""
+    from . import config as _c
+    try:
+        data = json.load(open(status_out, encoding="utf-8"))
+    except Exception:
+        data = {}
+    auto = sorted(set(data.get("auto_paused") or []) | set(burst))
+    data["auto_paused"] = auto
+    try:
+        tmp = status_out + ".tmp"
+        json.dump(data, open(tmp, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
+        os.replace(tmp, status_out)
+    except Exception:
+        pass
+    _c.set_auto_paused(auto)
+
+
 def link_sweep(cache_path, data_dir, n=25, check=None, status_out=STATUS_OUT):
     """Stichproben-Sweep der Primaerlinks (JB Runde 39, Idee 1 — Taktung: je 6h-Sync 25
     Zufalls-Links => der ganze Bestand ist ~woechentlich einmal durchgeprueft, +25 Requests
@@ -315,36 +350,10 @@ def link_sweep(cache_path, data_dir, n=25, check=None, status_out=STATUS_OUT):
         fails += gone
         per_host.update(gone_host)
     if fails:
-        # in den bestehenden Reparatur-Eingang einreihen (vereint, dedupe nach Name)
-        p = os.path.join(data_dir, "broken_links.json")
-        try:
-            old = json.load(open(p, encoding="utf-8"))
-            if not isinstance(old, list):
-                old = []
-        except (OSError, ValueError):
-            old = []
-        seen = {r.get("name") for r in old if isinstance(r, dict)}
-        merged = old + [f for f in fails if f["name"] not in seen]
-        tmp = p + ".tmp"
-        json.dump(merged, open(tmp, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
-        os.replace(tmp, p)
+        _broken_einreihen(data_dir, fails)
     burst = sorted(h for h, c in per_host.items() if c >= 3)
     if burst:
-        # Ausfall-Muster einer Domain -> Auto-Pause ERGAENZEN (reader_status.json + live)
-        from . import config as _c
-        try:
-            data = json.load(open(status_out, encoding="utf-8"))
-        except Exception:
-            data = {}
-        auto = sorted(set(data.get("auto_paused") or []) | set(burst))
-        data["auto_paused"] = auto
-        try:
-            tmp = status_out + ".tmp"
-            json.dump(data, open(tmp, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
-            os.replace(tmp, status_out)
-        except Exception:
-            pass
-        _c.set_auto_paused(auto)
+        _auto_pause_ergaenzen(status_out, burst)
     if fails or burst:
         print(f"  [Link-Sweep] {checked} geprüft, {len(fails)} Ausfälle -> Reparatur"
               + (f", AUTO-PAUSE: {', '.join(burst)}" if burst else ""), flush=True)

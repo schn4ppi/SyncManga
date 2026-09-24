@@ -30,7 +30,16 @@ from . import (
     health as srcstatus,  # Quellen-Status (frueher srcstatus.py, jetzt in health)
 )
 from .config import CACHE_VER, is_dead_reader, is_no_read
-from .parse import host, is_dynamic, is_novel_url, key_ratio, norm, romaji_score, sim_norm, slug_from_url
+from .parse import (
+    host,
+    is_dynamic,
+    is_novel_url,
+    key_ratio,
+    norm,
+    romaji_score,
+    sim_norm,
+    slug_from_url,
+)
 from .sources import (
     al_english_by_id,
     al_lookup,
@@ -1571,16 +1580,9 @@ def _lese_links_setzen(e, c, nc, rec, conf, typ, force):
     nc["needs_help"] = bool(nc.get("needs_help")) and not nc.get("read_urls")
 
 
-def enrich(items, cache_path, health_dir, cap, name_fix=None, cache_ver=CACHE_VER, force=False,
-           relink=False, progress_dir=None, checkpoint_render=None):
-    name_fix = name_fix or {}
-    cache = {}
-    if os.path.exists(cache_path):
-        try:
-            cache = json.load(open(cache_path, encoding="utf-8"))
-        except Exception:
-            cache = {}
-    _consume_broken(cache)          # ⚠-Meldungen -> betroffene Serien in diesem Lauf neu (JB-Wunsch)
+def _vorlauf_ohne_netz(cache, items):
+    """Die netzfreien Durchgaenge vor der Anreicherung, in fester Reihenfolge. Jeder ist
+    best-effort: scheitert einer, meldet er es und die naechsten laufen trotzdem."""
     try:                            # kuratierte Direktlinks IMMER einbacken (kein Netz) -> nie 'Alternative'
         _baked = bake_overrides(cache, items)      # trotz vorhandenem Override (JB 07.07.2026)
         if _baked:
@@ -1605,6 +1607,33 @@ def enrich(items, cache_path, health_dir, cap, name_fix=None, cache_ver=CACHE_VE
             print(f"  {_nr} Serien: mangadex als Lese-Link entfernt (bleibt Datenquelle).", flush=True)
     except Exception as ex:
         print(f"  [No-Read-Filter] uebersprungen: {type(ex).__name__}: {ex}", flush=True)
+
+
+def _id_hist_fortschreiben(k, c, nc):
+    """Fruehere DB-IDs merken (Befund 24.09.2026): md_id wechselt planmaessig von al:/UUID auf
+    mb:<n>, sobald MangaBaka trifft -> data-h aendert sich. Ohne diese Liste kennt die Alias-Karte
+    MIG die alte ID nicht, Favorit/Archiv/chapFix/titleCfm verwaisen ("Archiv resetted").
+    Das _ID_ERBE (per ⚠ geloeschter Eintrag) wird nur gelesen, wenn der Cache keine id_hist hat."""
+    _hist = [x for x in ((c or {}).get("id_hist") or _ID_ERBE.pop(k, [])) if x]
+    _old = (c or {}).get("md_id")
+    if _old and _old != nc.get("md_id") and _old not in _hist:
+        _hist.append(_old)
+    _hist = [x for x in _hist if x != nc.get("md_id")]
+    if _hist:
+        nc["id_hist"] = _hist[-8:]
+
+
+def enrich(items, cache_path, health_dir, cap, name_fix=None, cache_ver=CACHE_VER, force=False,
+           relink=False, progress_dir=None, checkpoint_render=None):
+    name_fix = name_fix or {}
+    cache = {}
+    if os.path.exists(cache_path):
+        try:
+            cache = json.load(open(cache_path, encoding="utf-8"))
+        except Exception:
+            cache = {}
+    _consume_broken(cache)          # ⚠-Meldungen -> betroffene Serien in diesem Lauf neu (JB-Wunsch)
+    _vorlauf_ohne_netz(cache, items)
     if relink:
         # Relink: gecachte Metadaten behalten, NUR den 'weiterlesen'-Link neu aufloesen (Override-Vorrang).
         # Kein MangaBaka -> schnell. Alle bereits gecachten (aktuellen) Serien kommen dran.
@@ -1634,17 +1663,8 @@ def enrich(items, cache_path, health_dir, cap, name_fix=None, cache_ver=CACHE_VE
             return
         nc, rec, conf, typ = _metadaten_eintrag(k, e, c, stale, name_fix, cache_ver)
         _lese_links_setzen(e, c, nc, rec, conf, typ, force)
-        # Fruehere DB-IDs merken (Befund 24.09.2026): md_id wechselt planmaessig von al:/UUID auf
-        # mb:<n>, sobald MangaBaka trifft -> data-h aendert sich. Ohne diese Liste kennt die Alias-
-        # Karte MIG die alte ID nicht, Favorit/Archiv/chapFix/titleCfm verwaisen ("Archiv resetted").
-        _hist = [x for x in ((c or {}).get("id_hist") or _ID_ERBE.pop(k, [])) if x]
-        _old = (c or {}).get("md_id")
-        if _old and _old != nc.get("md_id") and _old not in _hist:
-            _hist.append(_old)
-        _hist = [x for x in _hist if x != nc.get("md_id")]
-        if _hist:
-            nc["id_hist"] = _hist[-8:]
-        old_latest = c.get("latest") if c else None             # neue Kapitel seit letztem Lauf?
+        _id_hist_fortschreiben(k, c, nc)
+        old_latest =c.get("latest") if c else None             # neue Kapitel seit letztem Lauf?
         if old_latest and nc.get("latest") and nc["latest"] > old_latest and not nc.get("novel"):
             new_chaps.append(nc["title"])
         snap = None
@@ -1691,6 +1711,46 @@ def enrich(items, cache_path, health_dir, cap, name_fix=None, cache_ver=CACHE_VE
     return assemble_rows(items, cache, name_fix)
 
 
+# Felder, die assemble_rows aus dem Cache in jede Zeile uebernimmt.
+_CACHE_ZEILEN_FELDER = (
+    "country", "flag", "type", "latest", "pub_status",
+    "md_id", "md_url", "link_ok", "rating", "rating_n",
+    "ratings", "author", "novel", "adult_kind",
+    # Uebersetzungs-Stand (JB 20.07.): eigene Spalte "Uebersetzt"
+    "trans", "trans_ts",
+    "title_native", "needs_help", "conf", "src", "genres",
+    "read_url", "read_site", "read_urls", "ov", "id_hist",
+    # read_chap mitkopieren (Runde 35): _merge_action vergleicht Zwillinge nach AKTUALITAET des
+    # Ziels — ohne das Feld gewann der zuerst gesehene 'Vol.'-Zwilling (Kapitel 6) gegen den 112er.
+    "read_chap", "last_group",
+    "lh_status",     # Link-Health (R7): fuer den Anzeige-Marker
+    "mal_id", "al_id", "cover",
+    # Titel-Varianten fuer die Archiv-Migration (Runde 35): alte localStorage-Schluessel =
+    # norm(alter Anzeigetitel) -> render baut daraus die Alias-Map MIG
+    "title_romaji", "alt_titles",
+)
+
+
+def _id_hist_vom_id_zwilling(o, e):
+    """Zwilling mit derselben DB-ID: seine frueheren IDs behalten — als KOPIE, nie die Cache-Liste
+    veraendern (Gegenpruefung 24.09.2026)."""
+    _neu = [m for m in (e.get("id_hist") or []) if m not in (o.get("id_hist") or [])]
+    if _neu:
+        o["id_hist"] = list(o.get("id_hist") or []) + _neu
+
+
+def _id_hist_vom_namens_zwilling(o, e, o_mid):
+    """Namens-Zwilling verschmolzen: die verschmolzene Zeile hatte eine eigene data-h (ihre md_id,
+    `o_mid` = o's ID VOR dem Feld-Uebernehmen) -> als Alias behalten, sonst verwaisen Favorit/Archiv
+    dieses Zwillings."""
+    _ah = list(o.get("id_hist") or []) + list(e.get("id_hist") or [])
+    for _m in (o_mid, e.get("md_id")):
+        if _m and _m != o.get("md_id") and _m not in _ah:
+            _ah.append(_m)
+    if _ah:
+        o["id_hist"] = _ah
+
+
 def assemble_rows(items, cache, name_fix):
     """ENDMONTAGE (herausgeloest fuer Zwischen-Renders, JB: 'erste Serien schon zeigen'):
     Cache-Werte in die items uebernehmen, Overrides anwenden, Dedup (ID + Name) -> rows.
@@ -1700,24 +1760,7 @@ def assemble_rows(items, cache, name_fix):
         c = cache.get(k)
         if c:
             e["enriched"] = True
-            e.update({kk: c.get(kk) for kk in ("country", "flag", "type", "latest", "pub_status",
-                                               "md_id", "md_url", "link_ok", "rating", "rating_n",
-                                               "ratings", "author", "novel", "adult_kind",
-                                               # Uebersetzungs-Stand (JB 20.07.): eigene Spalte "Uebersetzt"
-                                               "trans", "trans_ts",
-                                               "title_native", "needs_help", "conf", "src", "genres",
-                                               "read_url", "read_site", "read_urls", "ov", "id_hist",
-                                               # read_chap mitkopieren (Runde 35): _merge_action
-                                               # vergleicht Zwillinge nach AKTUALITAET des Ziels —
-                                               # ohne das Feld gewann der zuerst gesehene 'Vol.'-
-                                               # Zwilling (Kapitel 6) gegen den 112er.
-                                               "read_chap", "last_group",
-                                               "lh_status",     # Link-Health (R7): fuer den Anzeige-Marker
-                                               "mal_id", "al_id", "cover",
-                                               # Titel-Varianten fuer die Archiv-Migration (Runde 35):
-                                               # alte localStorage-Schluessel = norm(alter Anzeigetitel)
-                                               # -> render baut daraus die Alias-Map MIG
-                                               "title_romaji", "alt_titles")})
+            e.update({kk: c.get(kk) for kk in _CACHE_ZEILEN_FELDER})
             if c.get("title"):
                 e["md_title"] = c["title"]
             # SELBSTHEILUNG BEIM ZUSAMMENBAU (JB-Befund 20.07., Lost-Update): laeuft parallel ein
@@ -1783,9 +1826,7 @@ def assemble_rows(items, cache, name_fix):
             o = by_id[mid]
             (o.setdefault("readers", [])).extend(e.get("readers") or [])
             (o.setdefault("hkeys", [])).extend(e.get("hkeys") or [])
-            _neu = [m for m in (e.get("id_hist") or []) if m not in (o.get("id_hist") or [])]
-            if _neu:                                      # fruehere IDs des Zwillings behalten —
-                o["id_hist"] = list(o.get("id_hist") or []) + _neu   # KOPIE, nie die Cache-Liste
+            _id_hist_vom_id_zwilling(o, e)
             if (e.get("chap") or 0) > (o.get("chap") or 0):
                 o["chap"] = e["chap"]; o["url"] = e["url"]
             o["lv"] = max(o.get("lv", 0), e.get("lv", 0))
@@ -1829,13 +1870,6 @@ def assemble_rows(items, cache, name_fix):
                   "trans", "trans_ts"):
             if e.get(f) and (prefer_e or not o.get(f)):
                 o[f] = e[f]
-        # Die verschmolzene Zeile hatte eine eigene data-h (ihre md_id) -> als Alias behalten,
-        # sonst verwaisen Favorit/Archiv dieses Zwillings.
-        _ah = list(o.get("id_hist") or []) + list(e.get("id_hist") or [])
-        for _m in (_o_mid, e.get("md_id")):
-            if _m and _m != o.get("md_id") and _m not in _ah:
-                _ah.append(_m)
-        if _ah:
-            o["id_hist"] = _ah
+        _id_hist_vom_namens_zwilling(o, e, _o_mid)
         _merge_action(o, e)
     return final

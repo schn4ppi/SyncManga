@@ -61,12 +61,17 @@ def resolve(key, v, cache):
     return ck, title
 
 
-def apply_confirms(confirms, cache=None, namefix=NAMEFIX, overrides=OVERRIDES):
+def apply_confirms(confirms, cache=None, namefix=None, overrides=None):
     """{data_h: {url|mb_id, name, site}} -> Anzahl geschriebener Overrides. Rein testbar (Pfade/Cache
     einspeisbar).
 
     mb_id -> MangaBaka-Ground-Truth-Pin in overrides.json (Metadaten), vorhandene Felder bleiben.
     url -> Reader-Direktlink in series_overrides.json. Beides keyed auf den Cache-Key der Serie."""
+    # Pfade erst beim AUFRUF aufloesen, nie als Default-Parameter (Befund 24.09.2026): dort waren sie
+    # beim Import eingefroren. Tests, die OVERRIDES/NAMEFIX am Modul umbiegen, schrieben dadurch einen
+    # 'foobar'-Eintrag in JBs echte series_overrides.json — die in die exe gebuendelt wird.
+    namefix = namefix or NAMEFIX
+    overrides = overrides or OVERRIDES
     cache = cache or {}
     written = 0
     for key, v in (confirms or {}).items():

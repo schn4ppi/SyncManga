@@ -13,8 +13,8 @@ Enthält:
 """
 import difflib
 import html
-import unicodedata
 import re
+import unicodedata
 
 # Seiten-/Reader-Suffixe, die clean_title vom echten Titel abschneidet.
 SITE_SUFFIX = (r'mangadex|mgeko|mangasupa|jaimini.?s? ?box|line ?webtoon|webtoon|mangasushi|fascans|night ?scans|'
@@ -22,7 +22,7 @@ SITE_SUFFIX = (r'mangadex|mgeko|mangasupa|jaimini.?s? ?box|line ?webtoon|webtoon
     r'read.*online.*|thunder ?scans.*|qi ?manhwa.*|leviatan.*|kireicake.*|reaper.*|all chapters|'
     r'valhalla.*|rizz.*|killberos|kingofshojo|king ?of ?shojo|mangatoda.*|mangabuddy|mangan[ae]lo|manganato|manga ?clash|manga ?freak|manga ?here|manga ?panda|manga ?owl|manhuaplus|'
     r'nani\W*scans|inept\W*bastards|kissxdeath|reset ?scans|read first at.*|free manga|novel|manhwa|manhua|manga|'
-    r'weeb ?central|tcb ?scans|comick')   # 24.09.2026: 'Blue Lock Chapter 250 | Weeb Central' 
+    r'weeb ?central|tcb ?scans|comick')   # 24.09.2026: 'Blue Lock Chapter 250 | Weeb Central'
 CH = re.compile(r'\b(?:Chapter|Episode|Chap\.?|Ch\.?|Ep\.?)\s*([0-9]+(?:\.[0-9]+)?)', re.I)
 # Kapitel-Token nur als EIGENES Wort (Befund 24.09.2026, Lehre aus readerlink 1f8e928): kein
 # Buchstabe davor ('switch-2-1', 'rich-2-life'). Bewusst KEIN Lookahead danach: der wuerde die Zahl

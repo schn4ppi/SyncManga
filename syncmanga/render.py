@@ -59,6 +59,26 @@ def _js(obj, **kw):
             .replace("\u2028", "\\u2028").replace("\u2029", "\\u2029"))
 
 
+def _alias_kandidaten(e, full, raw_keys):
+    """Alles, worunter diese Serie FRUEHER als data-h gespeichert sein kann: norm alter/aktueller
+    Titel, Roh-Schluessel, kuenftig auch n:-Keys (wenn spaeter eine DB-ID auftaucht) und fruehere
+    DB-IDs (enrich: id_hist) — damit ueberleben Favorit/Archiv einen ID-Wechsel."""
+    return {norm(full), norm(e.get('title_native') or ''), norm(e.get('title_romaji') or ''),
+            *(norm(t) for t in (e.get('alt_titles') or [])),
+            *raw_keys, *('n:' + rk for rk in raw_keys),
+            *(str(x) for x in (e.get('id_hist') or []))}
+
+
+def _mig_json(mig, mig_ambig, live_keys):
+    """MIG = Alias->Schluessel fuer die einmalige localStorage-Migration, als Inline-JSON.
+    Mehrdeutige Aliasse fallen raus, ebenso einer, der selbst noch der Schluessel einer ANDEREN
+    Zeile ist (z.B. eine fruehere ID aus id_hist, die eine zweite Serie noch traegt) — sonst
+    wandern deren Favoriten/Archiv zur falschen Serie. Veraendert `mig` wie vorher an Ort und Stelle."""
+    for al in mig_ambig | (set(mig) & live_keys):
+        mig.pop(al, None)
+    return _js(mig, separators=(",", ":"))
+
+
 def _src_key(name):
     return (name or "").lower().replace(" ", "").replace("-", "")
 
@@ -934,15 +954,8 @@ def render(rows, out_dir, out_html, namelen=NAMELEN, lang="de", readers_snap=Non
         raw_keys = [rk for rk in (e.get('hkeys') or []) if rk]
         key = e.get('md_id') or ('n:' + (raw_keys[0] if raw_keys else norm(full)))
         live_keys.add(key)
-        # Alias-Map fuellen: alles, worunter diese Serie FRUEHER als data-h gespeichert sein kann
-        # (norm alter/aktueller Titel, Roh-Schluessel, kuenftig auch n:-Keys wenn spaeter eine
-        # DB-ID auftaucht). Mehrdeutige Aliasse (2 Serien) fliegen raus — lieber nicht migrieren
-        # als falsch migrieren.
-        for al in {norm(full), norm(e.get('title_native') or ''), norm(e.get('title_romaji') or ''),
-                   *(norm(t) for t in (e.get('alt_titles') or [])),
-                   *raw_keys, *('n:' + rk for rk in raw_keys),
-                   # fruehere DB-IDs (enrich: id_hist) -> Favorit/Archiv ueberleben den ID-Wechsel
-                   *(str(x) for x in (e.get('id_hist') or []))}:
+        # Mehrdeutige Aliasse (2 Serien) fliegen raus — lieber nicht migrieren als falsch migrieren.
+        for al in _alias_kandidaten(e, full, raw_keys):
             if al and al != key:
                 if mig.get(al, key) != key:
                     mig_ambig.add(al)
@@ -1002,15 +1015,8 @@ def render(rows, out_dir, out_html, namelen=NAMELEN, lang="de", readers_snap=Non
                      "cfm": s["confirm_title"], "galt": s["alt_search_tip"],
                      "sq": sites_q,
                      "st": {k: s.get(v, "") for k, v in STATUS_TIP.items()}})
-    # MIG = Alias->Schluessel fuer die einmalige localStorage-Migration (mehrdeutige raus, s.o.)
-    # Ein Alias, der selbst noch der Schluessel einer ANDEREN Zeile ist (z.B. eine fruehere ID aus
-    # id_hist, die eine zweite Serie noch traegt), darf nie migriert werden — sonst wandern deren
-    # Favoriten/Archiv zur falschen Serie.
-    mig_ambig |= (set(mig) & live_keys)
-    for al in mig_ambig:
-        mig.pop(al, None)
-    mig_json = _js(mig, separators=(",", ":"))
-    jsvars = (f'<script>var I={{"arch":"🗃 {s["archive_count"]}","fav":"{s["fav_button"]}",'
+    mig_json = _mig_json(mig, mig_ambig, live_keys)
+    jsvars =(f'<script>var I={{"arch":"🗃 {s["archive_count"]}","fav":"{s["fav_button"]}",'
               f'"xd":"{s["export_done"]}","xs":"{s["export_skipped"]}","cq":"{s["chapfix_prompt"]}",'
               f'"imu":"{s["import_done"]}","imn":"{s["import_new"]}","sy":"{s["syncbar"]}","syp":"{s["sync_paused"]}","tp":"{s["to_top"]}","rts":{now_ts},'
               f'"op":"{s["open"]}","brkSent":"{s["brk_sent"]}","rgo":"{s["recs_read_tip"]}",'
