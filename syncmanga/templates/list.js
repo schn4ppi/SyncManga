@@ -132,23 +132,25 @@ function restoreScroll(){var sp=parseInt(localStorage.getItem('scrollPos')||'0',
 // localStorage 'chapFix' (wandert in 💾-Sicherung + Export via data-rc). ---
 function cfGet(){try{return JSON.parse(localStorage.getItem('chapFix')||'{}')}catch(e){return{}}}
 function cfSave(o){localStorage.setItem('chapFix',JSON.stringify(o))}
-// Eintrag = {n: Kapitel, b: Scan-Stand beim Setzen}; Alt-Eintraege (nackte Zahl) gelten wie {n:n,b:n}.
+// Eintrag = {n: Kapitel, b: Scan-Stand beim Setzen}. Alt-Eintraege (nackte Zahl) haben kein b: sie
+// werden beim ersten Laden auf {n, b: aktueller Scan} umgeschrieben — NIE geloescht (eine bewusste
+// Korrektur nach unten bleibt; Gegenpruefung 24.09.2026).
 // Befund 24.09.2026: der Handwert wirkte FUER IMMER — am PC 50 eingetragen, danach im Browser bis 70
 // gelesen, die Liste zeigte weiter 50 (auch 'verbleibend', 'neu', MAL-Export). Jetzt: ist der Scan
 // ueber b hinaus UND mindestens bei n, gewinnt der Scan und der Eintrag faellt weg (groesster
 // Fortschritt gewinnt, wie beim Zusammenfuehren der Browser). Ein am Handy HOEHER gesetzter Stand
 // bleibt, bis der Scan ihn eingeholt hat.
 function cfN(v){return (v&&typeof v==='object')?parseFloat(v.n):parseFloat(v)}
-function cfB(v){return (v&&typeof v==='object'&&v.b!=null)?parseFloat(v.b):cfN(v)}
 function scanRc(tr){var td=tr.querySelector('td.rd');var v=(td&&td.dataset.origrc!=null)?td.dataset.origrc:tr.dataset.rc;return parseFloat(v)||0}
-function cfLive(v,tr){var n=cfN(v),sc=scanRc(tr);return v!=null&&isFinite(n)&&!(sc>cfB(v)&&sc>=n)}
+function cfLive(v,tr){var n=cfN(v),sc=scanRc(tr),b=(v&&typeof v==='object'&&v.b!=null)?parseFloat(v.b):sc;return v!=null&&isFinite(n)&&!(sc>b&&sc>=n)}
 function cfPlain(o){var p={};Object.keys(o).forEach(function(k){var n=cfN(o[k]);if(isFinite(n))p[k]=n});return p}
 // Kapitel-Nummer in einer Reader-URL austauschen (chapter-16, /chapter/16, episode_no=7 ...) ->
 // ALLE Links der Zeile folgen dem manuell gesetzten Lesestand: Primaerlink UND +Alt-Reserven
 // (JB 09.07.2026: 'im moment wird nur der weiterlesen link angepasst'). Nur die Google-Kombi-
 // Suche (galt) bleibt aussen vor. Die PRUEFUNG der neuen Links macht der naechste Sync
 // (chapfix.py) — der Browser darf fremde Seiten nicht abfragen (CORS).
-function cfTok(u){var re=/(^|[^a-z])((?:chapter|episode|chap|ch)[-_\/]?)(\d+(?:[.-]\d+)?)(?![a-z]{2})/ig,m,last=null;while((m=re.exec(u))!==null)last=m;return last}
+// Kein Lookahead hinter der Zahl: er schnitt sie zurueck ('chapter-100th' -> 10), wie parse.URLCH.
+function cfTok(u){var re=/(^|[^a-z])((?:chapter|episode|chap|ch)[-_\/]?)(\d+(?:[.-]\d+)?)/ig,m,last=null;while((m=re.exec(u))!==null)last=m;return last}
 function cfRelink(tr,n){[].forEach.call(tr.querySelectorAll('td.act a.pill.go'),function(a){if(a.classList.contains('galt'))return;
 // Kapitel-Aufloeser (data-kap) folgt dem Handwert mit — sonst bekam /lesen weiter den alten Stand.
 if(a.dataset.kap!=null){if(a.dataset.okap==null)a.dataset.okap=a.dataset.kap;a.dataset.kap=n}
@@ -178,6 +180,7 @@ td.innerHTML=fmt(n)+bh;td.dataset.rv=Math.floor(n);tr.dataset.un=un;tr.dataset.r
 function cfReset(td){var tr=td.closest('tr');if(td.dataset.orig!=null){td.innerHTML=td.dataset.orig;tr.dataset.un=td.dataset.origun;tr.dataset.rc=td.dataset.origrc;td.dataset.rv=td.dataset.origrc;var tl=tr.querySelector('td.tl');if(tl)tl.dataset.tl=td.dataset.origun;cfUnlink(tr)}}
 function chapEdit(td){var tr=td.closest('tr'),k=tr.dataset.h,o=cfGet(),cur=(o[k]!=null&&cfLive(o[k],tr)?cfN(o[k]):tr.dataset.rc||'');var v=prompt((typeof I!=='undefined'&&I.cq)||'Gelesen bis Kapitel?',cur);if(v===null)return;v=String(v).trim().replace(',','.');if(v===''){if(o[k]!=null){delete o[k];cfSave(o);cfReset(td);ff()}return}var n=parseFloat(v);if(!isFinite(n)||n<0)return;n=cfSet(td,n);o[k]={n:n,b:scanRc(tr)};cfSave(o);var p={};p[k]=n;cfPush(p);ff()}
 function applyChapFix(){var o=cfGet(),gone=false;document.querySelectorAll('#t tbody tr').forEach(function(tr){var k=tr.dataset.h,v=o[k];if(v==null)return;
+if(typeof v!=='object'){if(!isFinite(cfN(v)))return;v=o[k]={n:cfN(v),b:scanRc(tr)};gone=true}   // Alt-Zahl -> {n,b}
 if(!cfLive(v,tr)){delete o[k];gone=true;return}   // Scan hat den Handwert ueberholt -> Scan gewinnt
 var td=tr.querySelector('td.rd');if(td)cfSet(td,cfN(v))});if(gone)cfSave(o);
 // kompletten Stand einmal je Seitenaufruf mitmelden -> auch AELTERE manuelle Aenderungen
@@ -381,7 +384,7 @@ var lastAct=Date.now();['mousedown','keydown','wheel','touchstart'].forEach(func
 // holen und NUR die Tabellen-Zeilen austauschen. Kein Seiten-Reload: Scroll, Filter, Theme bleiben.
 // Ein harter Reload passiert nur noch EINMAL am Ende eines Erstaufbaus (fuer Genre-Chips & Zaehler). ---
 var LTSseen=(typeof I!=='undefined'&&I.rts)||0,startedEmpty=null;
-function refreshRows(){document.querySelectorAll('#t tbody tr').forEach(function(r){r.classList.toggle('fav',FAV.has(r.dataset.h))});var oc=cfmGet();document.querySelectorAll('#t tbody tr').forEach(function(tr){if(oc[tr.dataset.h]){var c=tr.querySelector('.cfm');if(c)c.classList.add('on')}});var a=brkGet(),nn={};a.forEach(function(x){nn[x.name]=1});document.querySelectorAll('#t tbody tr').forEach(function(tr){if(nn[tr.dataset.n]){var b=tr.querySelector('.rep');if(b){b.classList.add('on');b.textContent='⚠ ✓'}}});var w=document.querySelector('.welcome');if(w&&document.querySelectorAll('#t tbody tr').length>0)w.style.display='none';applyTips();applyChapFix();pinFavs(true);updateAb();updateFav();regray();ff()}
+function refreshRows(){document.querySelectorAll('#t tbody tr').forEach(function(r){r.classList.toggle('fav',FAV.has(r.dataset.h))});var oc=cfmGet();document.querySelectorAll('#t tbody tr').forEach(function(tr){if(oc[tr.dataset.h]){var c=tr.querySelector('.cfm');if(c)c.classList.add('on')}});var a=brkGet(),nn={},hh={};a.forEach(function(x){if(x.h)hh[x.h]=1;else nn[x.name]=1});document.querySelectorAll('#t tbody tr').forEach(function(tr){if(hh[tr.dataset.h]||nn[tr.dataset.n]){var b=tr.querySelector('.rep');if(b){b.classList.add('on');b.textContent='⚠ ✓'}}});var w=document.querySelector('.welcome');if(w&&document.querySelectorAll('#t tbody tr').length>0)w.style.display='none';applyTips();applyChapFix();pinFavs(true);updateAb();updateFav();regray();ff()}
 function loadRows(){var s=document.createElement('script');s.src='data/list_rows.js?_='+Date.now();s.onload=function(){try{s.remove()}catch(e){}try{if(typeof LROWS!=='undefined'&&window.LTS&&window.LTS>LTSseen){LTSseen=window.LTS;document.querySelector('#t tbody').innerHTML=LROWS;var sb=document.querySelector('.sub');if(sb&&window.LSUB)sb.textContent=LSUB;refreshRows()}}catch(e){}};s.onerror=function(){try{s.remove()}catch(e){}};document.head.appendChild(s)}
 function updSync(d){var b=document.getElementById('syncbar');if(!b||!d)return;if(startedEmpty===null)startedEmpty=document.querySelectorAll('#t tbody tr').length===0;var age=Date.now()/1000-(d.ts||0),fresh=age<900;var offen=d.total>0&&d.done<d.total;
 // laufend = Herzschlag juenger als 90s; sonst AUSGEGRAUT mit Hinweis (JB: 'Tray geschlossen —

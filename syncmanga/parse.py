@@ -25,9 +25,10 @@ SITE_SUFFIX = (r'mangadex|mgeko|mangasupa|jaimini.?s? ?box|line ?webtoon|webtoon
     r'weeb ?central|tcb ?scans|comick')   # 24.09.2026: 'Blue Lock Chapter 250 | Weeb Central' 
 CH = re.compile(r'\b(?:Chapter|Episode|Chap\.?|Ch\.?|Ep\.?)\s*([0-9]+(?:\.[0-9]+)?)', re.I)
 # Kapitel-Token nur als EIGENES Wort (Befund 24.09.2026, Lehre aus readerlink 1f8e928): kein
-# Buchstabe davor ('switch-2-1', 'rich-2-life'), keine zwei Buchstaben danach. chapter_of nimmt den
+# Buchstabe davor ('switch-2-1', 'rich-2-life'). Bewusst KEIN Lookahead danach: der wuerde die Zahl
+# zurueckschneiden ('chapter-100th' -> 10, 'chapter-5eng' -> nichts). chapter_of nimmt den
 # LETZTEN Treffer ('/chapter/1-2-prince-chapter-7/' -> 7, nicht 1).
-URLCH = re.compile(r'(?<![a-z])(?:chapter|episode|chap)[-_/]?(\d+(?:\.\d+)?)(?![a-z]{2})', re.I)
+URLCH = re.compile(r'(?<![a-z])(?:chapter|episode|chap)[-_/]?(\d+(?:\.\d+)?)', re.I)
 # Bindestrich-Dezimalkapitel (JB 15.07.2026): manche Seiten schreiben 953.5 als 'chapter-953-5'.
 # KONSERVATIV: nur 1-2-Ziffern-Tail, KEINE weitere Ziffer danach -> mgeko '-eng'-Sprachsuffixe
 # (Buchstaben) und Reader-IDs (>=3 Ziffern, z.B. roliascan chapter-1-57261) bleiben unberuehrt.
@@ -135,7 +136,8 @@ def clean_title(t):
     # Nur wenn der Teil VOR dem Strich MIT der Kapitel-Marke beginnt ('Episode 12 | Tower of God').
     # Befund 24.09.2026: mit re.search wurde 'Blue Lock Chapter 250 | Weeb Central' zu 'Weeb Central'
     # (alle Serien der Seite unter einem Schluessel).
-    if '|' in t and re.match(r'\s*(?:Ep|Episode|Chapter|Ch)\.?\s*\d', t.split('|')[0], re.I):
+    if '|' in t and re.match(r'\s*(?:Vol(?:ume)?\.?\s*\d+\s*[,:\-–]?\s*)?(?:Ep|Episode|Chapter|Ch)\.?\s*\d',
+                             t.split('|')[0], re.I):   # auch 'Vol. 1 Ch. 5 | Blue Lock'
         after = t.split('|')[-1].strip()          # nur nehmen, wenn es KEIN Seitenname ist
         if not re.match(r'(?:' + SITE_SUFFIX + r')\s*$', after, re.I):
             t = after
@@ -239,10 +241,12 @@ def sim_norm(s):
     Unicode-Fassung (NFKC, casefold, Buchstaben/Ziffern aller Schriften). norm() selbst bleibt
     unveraendert, weil Scan, Cache und Dedup darueber verschluesseln."""
     n = norm(s)
-    if n:
+    if n and not n.isdigit():
         return n
+    # Leer ODER nur Ziffern ('影栗の姫 2' -> '2' traf sonst jeden CJK-Titel mit derselben Zahl zu 1.0)
     t = unicodedata.normalize("NFKC", s or "").casefold()
-    return "".join(ch for ch in t if ch.isalnum())
+    u = "".join(ch for ch in t if ch.isalnum())
+    return u or n
 
 
 def key_ratio(a, b):

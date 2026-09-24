@@ -10,6 +10,7 @@ import json
 import os
 import re
 import shutil
+import socket
 import subprocess
 import sys
 import urllib.error
@@ -58,6 +59,7 @@ def test_statistik_escaped_typ_aus_fremder_datenbank():
     ("Episode 12 | Tower of God", "Tower of God"),                 # bleibt richtig
     ("Solo Leveling Chapter 57", "Solo Leveling"),
     ("Naruto 700", "Naruto"),                                       # nackte End-Nummer = Kapitel
+    ("Vol. 1 Ch. 5 | Blue Lock", "Blue Lock"),                      # Band vor der Kapitel-Marke
 ])
 def test_clean_title(titel, erwartet):
     assert clean_title(titel) == erwartet
@@ -72,6 +74,8 @@ def test_clean_title(titel, erwartet):
     ("https://x.com/chapter/1000-yen-hero-chapter-7/", 7.0),       # war 1000
     ("https://x.com/manga/one-piece/chapter-953-5/", 953.5),       # Bindestrich-Dezimale bleibt
     ("https://mgeko.cc/reader/en/solo-leveling-chapter-57-eng/", 57.0),
+    ("https://x.com/manga/y/chapter-100th/", 100.0),               # kein Zurueckschneiden auf 10
+    ("https://x.com/manga/y/chapter-5eng/", 5.0),
 ])
 def test_chapter_of(url, kapitel):
     assert chapter_of(url, "") == kapitel
@@ -98,6 +102,7 @@ def test_leere_seite_ist_nie_aehnlich():
     assert key_ratio(sim_norm("影栗の姫"), sim_norm("俺だけレベルアップな件")) < 0.5
     assert key_ratio(sim_norm("Solo Leveling"), sim_norm("solo-leveling")) == 1.0
     assert sim_norm("Solo Leveling") == "sololeveling"          # lateinisch: exakt wie norm()
+    assert key_ratio(sim_norm("影栗の姫 2"), sim_norm("俺だけレベルアップな件 2")) < 0.5   # nicht nur '2' 
 
 
 def test_mb_search_cjk_trifft_nicht_die_beliebteste_serie(monkeypatch):
@@ -126,6 +131,9 @@ class _NoPacer:
     (urllib.error.HTTPError("u", 500, "x", {}, io.BytesIO()), "down"),
     (urllib.error.HTTPError("u", 404, "x", {}, io.BytesIO()), "no"),
     (urllib.error.HTTPError("u", 403, "x", {}, io.BytesIO()), "blocked"),
+    (urllib.error.URLError(socket.gaierror(-2, "Name or service not known")), "gone"),   # tote Domain
+    (urllib.error.URLError(ConnectionRefusedError(111, "refused")), "gone"),
+    (ConnectionResetError(104, "reset"), "down"),
 ])
 def test_alive_status_trennt_netzfehler_von_404(monkeypatch, fehler, erwartet):
     monkeypatch.setattr(readerlink, "READER_PACER", _NoPacer())
@@ -144,6 +152,24 @@ def test_verify_reader_dreiwertig():
     echt = lambda u: "ok" if ("zzqx" not in u and "99999" not in u) else "no"  # noqa: E731
     assert readerlink.verify_reader(rd, probe=echt) is True
     assert readerlink.verify_reader(rd, probe=lambda u: "ok") is False        # Soft-404-Reader
+    # tote Domain: ohne Netz-Nachweis nicht pruefbar, mit Netz-Nachweis tot
+    assert readerlink.verify_reader(rd, probe=lambda u: "gone") is None
+    assert readerlink.verify_reader(rd, probe=lambda u: "gone", netz=True) is False
+
+
+def test_link_sweep_wertet_tote_domain_nur_bei_funktionierendem_netz(tmp_path):
+    from syncmanga import readers
+    cache = {f"s{i}": {"title": f"S{i}", "read_urls": [[f"https://h{i}.example/manga/s/chapter-1/", "x"]]}
+             for i in range(4)}
+    cp = tmp_path / "md_cache.json"
+    cp.write_text(json.dumps(cache), encoding="utf-8")
+    st = str(tmp_path / "reader_status.json")
+    readers.link_sweep(str(cp), str(tmp_path), n=4, check=lambda u: "gone", status_out=st)
+    assert not (tmp_path / "broken_links.json").exists()           # alles 'gone' = eigenes Netz weg
+    readers.link_sweep(str(cp), str(tmp_path), n=4,
+                       check=lambda u: "ok" if "h0." in u else "gone", status_out=st)
+    gemeldet = json.load(open(tmp_path / "broken_links.json", encoding="utf-8"))
+    assert len(gemeldet) == 3 and all(x["h"].startswith("n:") for x in gemeldet)
 
 
 # ---------------- Opake Kapitel-IDs nie als {n}-Vorlage (S1) ----------------
@@ -153,6 +179,7 @@ def test_verify_reader_dreiwertig():
     ("https://mangadex.org/chapter/3f2a1b4c-1234-4abc-9def-0123456789ab", True),
     ("https://mgeko.cc/reader/en/solo-leveling-chapter-57/", False),
     ("https://comix.to/title/x/7468952-chapter-8", False),        # comix: Nummer steht im Token
+    ("https://x.com/abc-chapter-2-x/chapter/4807126", True),      # letzter Treffer zaehlt
 ])
 def test_ist_opake_kapitel_id(url, opak):
     assert readerlink.ist_opake_kapitel_id(url) is opak
@@ -165,6 +192,13 @@ def test_save_series_override_pinnt_opake_id_unveraendert(tmp_path):
     assert e["chapter"] == u and "{n}" not in e["chapter"]
 
 
+def test_vorlage_und_tausch_nehmen_den_letzten_treffer():
+    assert (readerlink._templatize_chapter("https://x.com/chapter/1-2-prince-chapter-7/")
+            == "https://x.com/chapter/1-2-prince-chapter-{n}/")
+    assert (readerlink.swap_chapter("https://x.com/chapter/1-2-prince-chapter-7/", 9)
+            == "https://x.com/chapter/1-2-prince-chapter-9/")
+
+
 def test_save_override_merged_statt_ersetzt(tmp_path):
     p = str(tmp_path / "overrides.json")
     json.dump({"overrides": {"evolutionbeginswithbigtree": {
@@ -172,7 +206,12 @@ def test_save_override_merged_statt_ersetzt(tmp_path):
         open(p, "w", encoding="utf-8"))
     config.save_override(p, "evolutionbeginswithbigtree", "Evolution Begins With a Big Tree", mb_id=4711)
     e = json.load(open(p, encoding="utf-8"))["overrides"]["evolutionbeginswithbigtree"]
-    assert e["baka"] == 910 and e["type"] == "manhua" and e["mb_id"] == 4711
+    assert e["type"] == "manhua" and e["mb_id"] == 4711
+    # baka folgt dem neuen Pin — sonst gewaenne in assemble_rows die ALTE ID (baka or mb_id)
+    assert e["baka"] == 4711
+    rows = enrich.assemble_rows({"evolutionbeginswithbigtree": {"name": "evo", "chap": 1, "lv": 0}},
+                                {}, config.load_overrides(p))
+    assert rows[0]["md_id"] == "mb:4711"
 
 
 # ---------------- data-h statt Titel (S1/S2) ----------------
@@ -194,6 +233,21 @@ CACHE = {
 ])
 def test_cache_keys_for_h(h, keys):
     assert enrich.cache_keys_for_h(CACHE, h) == keys
+
+
+def test_cache_keys_for_h_heutige_id_vor_frueherer():
+    cache = {"yserie": {"md_id": "mb:7", "id_hist": ["mb:500"]}, "xserie": {"md_id": "mb:500"}}
+    assert enrich.cache_keys_for_h(cache, "mb:500") == ["xserie"]
+
+
+def test_assemble_rows_veraendert_id_hist_im_cache_nicht():
+    cache = {"a": {"title": "A", "md_id": "mb:1", "id_hist": ["al:1"], "v": 99},
+             "b": {"title": "A", "md_id": "mb:1", "id_hist": ["al:2"], "v": 99}}
+    items = {"a": {"name": "A", "chap": 1, "lv": 0, "url": "https://x/a/chapter-1"},
+             "b": {"name": "A", "chap": 2, "lv": 0, "url": "https://x/a/chapter-2"}}
+    rows = enrich.assemble_rows(items, cache, {})
+    assert sorted(rows[0]["id_hist"]) == ["al:1", "al:2"]
+    assert cache["a"]["id_hist"] == ["al:1"] and cache["b"]["id_hist"] == ["al:2"]
 
 
 def test_quellen_bestaetigung_schreibt_unter_cache_key(tmp_path):
@@ -218,10 +272,23 @@ def test_quellen_bestaetigung_schreibt_unter_cache_key(tmp_path):
     assert so_ov["sololeveling"]["name"] == "Solo Leveling"
 
 
-def test_render_mig_kennt_fruehere_id_aber_nie_einen_lebenden_schluessel():
+def _mig(tmp_path, items, cache):
+    from syncmanga import render
+    rows = enrich.assemble_rows(items, cache, {})
+    out = str(tmp_path / "out")
+    render.render(rows, out, os.path.join(out, "l.html"), lang="de")
+    html_out = open(os.path.join(out, "l.html"), encoding="utf-8").read()
+    return json.loads(re.search(r"var MIG=(\{.*?\});", html_out).group(1))
+
+
+def test_render_mig_kennt_fruehere_id_aber_nie_einen_lebenden_schluessel(tmp_path):
     """id_hist landet als Alias in MIG — ausser er ist selbst der Schluessel einer anderen Zeile."""
-    src = open(os.path.join(ROOT, "syncmanga", "render.py"), encoding="utf-8").read()
-    assert "e.get('id_hist')" in src and "set(mig) & live_keys" in src
+    solo = {"title": "Solo Leveling", "md_id": "mb:9", "id_hist": ["al:105398"], "v": 99}
+    items = {"solo": {"name": "Solo Leveling", "chap": 5, "lv": 0}}
+    assert _mig(tmp_path / "a", items, {"solo": solo})["al:105398"] == "mb:9"
+    items["alt"] = {"name": "Alt ID", "chap": 1, "lv": 0}
+    mig = _mig(tmp_path / "b", items, {"solo": solo, "alt": {"title": "Alt ID", "md_id": "al:105398", "v": 99}})
+    assert "al:105398" not in mig                                  # lebender Schluessel bleibt, wo er ist
 
 
 # ---------------- Updater: nicht vom exe-Asset abhaengig (S11a) ----------------
@@ -240,6 +307,27 @@ def test_release_nur_mit_setup_ist_verfuegbar():
 def test_release_ohne_passendes_asset_ist_nicht_verfuegbar():
     info = update.check_release("0.4.4", lambda: {"tag_name": "v.0.5.0", "assets": [_asset("readme.txt")]})
     assert info["available"] is False
+
+
+def test_tray_meldet_setup_hinweis_einmal_und_ohne_installiert_meldung(monkeypatch):
+    import threading
+
+    from syncmanga import tray
+    info = {"available": True, "version": "0.5.0", "exe_url": "", "setup_url": "https://x/s.exe"}
+    monkeypatch.setattr(update, "check_release", lambda *a: info)
+    monkeypatch.setattr(update, "programm_exe", lambda *a: ("C:/SyncManga/SyncManga.exe", ""))
+    monkeypatch.setattr(update, "installiert_via_setup", lambda *a: False)
+    msgs = []
+
+    class Fake:
+        lang, settings, busy = "de", {"auto_update": True}, threading.Lock()
+        _upd_seen = _update_pending = ""
+        _notify = lambda self, t: msgs.append(t)  # noqa: E731
+        _refresh_icon = lambda self: None  # noqa: E731
+    f = Fake()
+    for _ in range(3):
+        tray.TrayApp._self_update(f)
+    assert len(msgs) == 1 and "Installer" in msgs[0]
 
 
 def test_i18n_kennt_setup_hinweis_in_beiden_sprachen():
@@ -269,17 +357,17 @@ def _node(code):
 
 
 def test_chapfix_neuerer_scan_gewinnt():
-    code = _js_funcs("cfN", "cfB", "scanRc", "cfLive") + """
+    code = _js_funcs("cfN", "scanRc", "cfLive") + """
 function tr(rc){return {dataset:{rc:String(rc)},querySelector:function(){return {dataset:{}}}}}
 console.log(JSON.stringify([
   cfLive({n:50,b:50}, tr(50)),   // Scan steht noch -> Handwert gilt
   cfLive({n:50,b:50}, tr(70)),   // danach bis 70 gelesen -> Scan gewinnt (war: fuer immer 50)
   cfLive({n:60,b:50}, tr(55)),   // am Handy weiter als der Scan -> Handwert bleibt
   cfLive({n:20,b:100}, tr(100)), // Korrektur nach unten gilt, solange der Scan steht
-  cfLive(50, tr(70)),            // Alt-Eintrag (Zahl) wird vom Scan ueberholt
-  cfLive(50, tr(40))             // Alt-Eintrag vor dem Scan -> gilt
+  cfLive(3, tr(5)),              // Alt-Zahl unter dem Scan: bleibt (wird zu {n:3,b:5}), nie geloescht
+  cfLive(50, tr(40))             // Alt-Zahl ueber dem Scan -> gilt
 ]))"""
-    assert _node(code) == [True, False, True, True, False, True]
+    assert _node(code) == [True, False, True, True, True, True]
 
 
 def test_cfrelink_ersetzt_nur_das_letzte_eigene_token():
@@ -288,8 +376,10 @@ function rel(u,n){var t=cfTok(u);if(!t)return u;var st=t.index+t[1].length+t[2].
 console.log(JSON.stringify([
   rel('https://x.com/manga/the-witch-2/chapter-5/','9'),
   rel('https://weebcentral.com/chapters/01J76XYCH2B6ABC','9'),
-  rel('https://x.com/chapter/1-2-prince-chapter-7/','9')
+  rel('https://x.com/chapter/1-2-prince-chapter-7/','9'),
+  rel('https://x.com/manga/y/chapter-100th/','9')
 ]))"""
     assert _node(code) == ["https://x.com/manga/the-witch-2/chapter-9/",
                            "https://weebcentral.com/chapters/01J76XYCH2B6ABC",
-                           "https://x.com/chapter/1-2-prince-chapter-9/"]
+                           "https://x.com/chapter/1-2-prince-chapter-9/",
+                           "https://x.com/manga/y/chapter-9th/"]

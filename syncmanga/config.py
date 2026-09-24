@@ -246,6 +246,10 @@ def save_override(path, key, name, search=None, mb_id=None):
             entry["mb_id"] = int(mb_id)
         except (TypeError, ValueError):
             entry["mb_id"] = mb_id
+        # Ein alter baka-Pin wuerde gewinnen (assemble_rows: baka or mb_id) -> die Zeile truege
+        # die ALTE ID trotz neuer Bestaetigung (Gegenpruefung 24.09.2026). baka folgt dem neuen Pin.
+        if "baka" in entry:
+            entry["baka"] = entry["mb_id"]
     ov[key] = entry
     tmp = path + ".tmp"
     with open(tmp, "w", encoding="utf-8") as f:

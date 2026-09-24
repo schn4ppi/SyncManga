@@ -428,6 +428,16 @@ class TrayApp:
                 self._update_pending = v
                 self._refresh_icon()
             return
+        if not update.installiert_via_setup(exe) and not info.get("exe_url"):
+            # Einzeldatei-exe, aber das Release bringt nur noch den Installer: kein Tausch moeglich.
+            # Hinweis EINMAL je Version (nicht nach jedem Sync) und NICHT erst "wird installiert".
+            if manual or v != self._upd_seen:
+                self._upd_seen = v
+                self._notify(s["upd_need_setup"].format(v=v))
+            if v != self._update_pending:
+                self._update_pending = v
+                self._refresh_icon()
+            return
         self._notify(s["upd_installing"].format(v=v))
         try:
             if update.installiert_via_setup(exe):
@@ -445,11 +455,6 @@ class TrayApp:
                     pass
                 # kehrt nicht zurueck (Setup + Neustart); `arg` startet bei v2 das Skript
                 update.apply_setup_update(neu, exe, arg)
-            if not info.get("exe_url"):
-                # Einzeldatei-exe, aber das Release bringt nur noch den Installer: nicht still
-                # scheitern, sondern einmal den Installer-Weg nennen (kein exe-Tausch moeglich).
-                self._notify(s["upd_need_setup"].format(v=v))
-                return
             new = update.download_exe(info, os.path.dirname(exe))
             try:
                 os.remove(self.lockfile)         # sauber uebergeben wie bei on_quit

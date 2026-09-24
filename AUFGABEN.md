@@ -163,6 +163,10 @@ Markierungen: 🔒 = braucht vorher JBs Freigabe · ⭐ = hoher Nutzen bei klein
   Overrides unter altem Schlüssel).
 - **Belege:** `parse.py:67`; Korpusvergleich 24.09.2026 (864 URLs mit anderem Slug).
 - **Vorschlag:** Nur zusammen mit einer Alias-Übernahme alter Schlüssel (MIG, overrides). JB entscheidet.
+- **Verwandt (Hinweis der Gegenprüfung):** Auch der Parser-Fix E-08 ändert Schlüssel, z. B. „Zom“ → „Zom 100“.
+  Für Zeilen **mit** DB-ID ist das egal (data-h = ID). Zeilen **ohne** DB-ID bekommen eine neue data-h `n:…`
+  ohne MIG-Alias; Favorit/Archiv dieser Zeilen und Overrides unter dem alten, falschen Schlüssel greifen dann
+  nicht mehr. Prüfen, wie viele Zeilen das im echten Cache betrifft, und bei Bedarf Aliase nachtragen.
 - **Gegenprüfung:** _offen_
 
 ### A-16 Browser-DB-Kopie: `immutable` ignoriert den WAL; Kopien bleiben liegen
@@ -231,8 +235,8 @@ Markierungen: 🔒 = braucht vorher JBs Freigabe · ⭐ = hoher Nutzen bei klein
 ## Erledigt (PR „Befunde 24.09.2026“, Branch `claude/manga-leseliste-syncfindus-3bzxv5`)
 
 Die Befunde waren vorab gegengeprüft. Bei der Umsetzung wurde jeder erneut nachgestellt: Ein Test in
-`tests/test_befunde_2026_09.py` ist auf `8b74a8c` rot und jetzt grün (40 von 48 Tests rot auf dem alten
-Stand, die übrigen 8 sichern bewusst unverändertes Verhalten ab). Dazu kamen ein Browser-Durchlauf (Chromium)
+`tests/test_befunde_2026_09.py` ist auf `8b74a8c` rot und jetzt grün (die übrigen Tests sichern bewusst
+unverändertes Verhalten ab). Dazu kamen ein Browser-Durchlauf (Chromium)
 und ein Abgleich mit den 71 Parser-Tests aus SyncFindus, die vor und nach der Änderung gleich grün sind.
 
 | # | Befund | Fix |
@@ -242,9 +246,23 @@ und ein Abgleich mit den 71 Parser-Tests aus SyncFindus, die vor und nach der Ä
 | E-03 | ⚠-Meldung traf über den Titel oft nichts und verschwand trotzdem im Archiv | Die Meldung trägt `h`. `_consume_broken` und `fix_broken` lösen darüber auf. Nicht Gefundenes steht im Archiv |
 | E-04 | ID-Wechsel (al:/UUID → mb:) ließ Favorit/Archiv/chapFix verwaisen | `id_hist` im Cache, als Alias in MIG, aber nie ein lebender Schlüssel |
 | E-05 | `_alive_status` wertete Timeout/5xx als „nachweislich weg“; eine Discovery bei schlechtem Netz leerte die Reader-Liste | `'down'`, `verify_reader` dreiwertig; `discover_readers` entfernt nur bei `False` |
-| E-06 | Alter Handwert (chapFix) überdeckte neuere Scans für immer; `data-kap` blieb alt | `{n, b}`: Überholt der Scan den Handwert, gewinnt der Scan. `data-kap` folgt |
+| E-06 | Alter Handwert (chapFix) überdeckte neuere Scans für immer; `data-kap` blieb alt | `{n, b}`: Überholt der Scan den Handwert, gewinnt der Scan. `data-kap` folgt. Alte Zahlen werden zu `{n, b: aktueller Scan}` migriert, nie gelöscht |
 | E-07 | Release ohne `SyncManga.exe` hätte Installer-Nutzer still von Updates abgeschnitten | `available` hängt an exe **oder** Setup. Einzeldatei-Nutzer bekommen einen Hinweis |
 | E-08 | Titel-Parser: Pipe-Regel („… \| Weeb Central“ → 'Weeb Central') und abgeschnittene Zahlentitel ('Kaiju No', 'Zom') | `re.match` für die Pipe-Regel. Kein Zahlenschnitt nach expliziter Kapitel-Marke |
 | E-09 | Kapitel-Token ohne Wortgrenze ('switch-2-1' → 2.1, 'the-witch-2' → Slug kaputt) | Wortgrenzen in `URLCH`/`URLCH_DASH`/Slug-Schnitt/`cfRelink`, letzter Treffer zählt |
 | E-10 | CJK-Suchbegriffe wurden zu '' normiert, Ähnlichkeit 1.0 zu allem | `sim_norm` + `key_ratio`: leere Seite = 0.0 |
 | E-11 | `applyPause` warf nach einem ⚠-Klick `NotFoundError` (seit 6db3024) und ließ die restlichen Zeilen unbearbeitet | Einfügen in den Eltern-Knoten von `.srcown` |
+
+**Nachgebessert nach der Gegenprüfung des Diffs** (zweiter Agent, 6 Fehler + Anmerkungen; 16 Tests rot auf
+`196649a`, grün danach):
+
+| # | Befund der Gegenprüfung | Fix |
+|---|---|---|
+| E-12 | ✔-Pin mit neuer ID: ein alter `baka` gewann weiter (`baka or mb_id`) | `baka` folgt dem neuen `mb_id` |
+| E-13 | Tote Domains (DNS, refused, Zertifikat) galten als „nicht prüfbar“ und blieben für immer | `'gone'`: tot nur, wenn das Netz nachweislich geht (`netz_ok`, bzw. ein Treffer im selben Sweep) |
+| E-14 | `cache_keys_for_h` mischte frühere IDs vor heutige | Heutige `md_id` zuerst, `id_hist` nur ohne Treffer |
+| E-15 | Alte chapFix-Zahlen unter dem Scan wurden still gelöscht | Migration statt Löschen |
+| E-16 | Updater: „wird installiert“ vor dem Setup-Hinweis, nach jedem Sync wiederholt | Hinweis vorher und einmal je Version |
+| E-17 | `_templatize_chapter`/`swap_chapter`/`ist_opake_kapitel_id` nahmen den ersten Kapitel-Treffer | Letzter Treffer, wie `parse.URLCH` und `cfTok` |
+| E-18 | Lookahead schnitt Zahlen zurück (`chapter-100th` → 10); `Vol. 1 Ch. 5 \| X` ergab ''; `'影栗の姫 2'` = `'…件 2'` | Lookahead entfernt, Band vor der Kapitel-Marke erlaubt, `sim_norm` auch bei reinen Ziffern |
+| E-19 | ⚠ per `pop`: frühere IDs gingen verloren; `id_hist` per Referenz im Cache verändert; Werkzeuge fielen ohne Cache still auf den Titel zurück; `refreshRows`/Sweep ohne `h` | ID-Erbe, Kopie statt Referenz, `cache_fuer_werkzeuge` mit Hinweis, `h` überall |

@@ -288,6 +288,9 @@ def link_sweep(cache_path, data_dir, n=25, check=None, status_out=STATUS_OUT):
     random.shuffle(pool)
     chk = check or _alive_status
     fails, per_host, checked = [], _Counter(), 0
+    # 'gone' (DNS/Verbindung verweigert/Zertifikat) zaehlt nur als Ausfall, wenn im selben Lauf
+    # etwas anderes erreichbar war — sonst ist das eigene Netz weg, nicht der Reader.
+    gone, gone_host, ok_seen = [], _Counter(), False
     for k, u in pool:
         if checked >= n:
             break
@@ -299,9 +302,18 @@ def link_sweep(cache_path, data_dir, n=25, check=None, status_out=STATUS_OUT):
         except Exception:
             continue
         checked += 1
-        if st == "no":
-            fails.append({"name": cache[k].get("title") or k, "url": u, "ts": 0})
-            per_host[h] += 1
+        if st == "ok":
+            ok_seen = True
+        if st == "no" or st == "gone":
+            # h: stabiler Schluessel -> _consume_broken trifft die Serie auch bei abweichendem Titel
+            f = {"name": cache[k].get("title") or k, "h": "n:" + k, "url": u, "ts": 0}
+            (gone if st == "gone" else fails).append(f)
+            per_host[h] += st == "no"
+            if st == "gone":
+                gone_host[h] += 1
+    if ok_seen:
+        fails += gone
+        per_host.update(gone_host)
     if fails:
         # in den bestehenden Reparatur-Eingang einreihen (vereint, dedupe nach Name)
         p = os.path.join(data_dir, "broken_links.json")

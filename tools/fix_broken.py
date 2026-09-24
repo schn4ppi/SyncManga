@@ -20,11 +20,10 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 PKG = os.path.normpath(os.path.join(HERE, ".."))
 if PKG not in sys.path:
     sys.path.insert(0, PKG)
-from syncmanga.enrich import cache_keys_for_h  # noqa: E402
+from syncmanga.enrich import cache_fuer_werkzeuge, cache_keys_for_h  # noqa: E402
 from syncmanga.parse import norm  # noqa: E402
 
 OV = os.path.join(PKG, "data", "series_overrides.json")
-DEFAULT_CACHE = os.path.normpath(os.path.join(PKG, "..", "..", "SyncDashTray", "System", "md_cache.json"))
 BROKEN = os.path.join(PKG, "data", "broken_links.json")
 ARCHIVE = os.path.join(PKG, "data", "broken_links.done.json")   # verarbeitete Meldungen (Historie)
 
@@ -40,11 +39,7 @@ def main():
     except Exception:
         data = {"overrides": {}}
     ov = data.get("overrides") or {}
-    cache_path = sys.argv[1] if len(sys.argv) > 1 else DEFAULT_CACHE
-    try:
-        cache = json.load(open(cache_path, encoding="utf-8"))
-    except Exception:
-        cache = {}
+    cache = cache_fuer_werkzeuge(PKG, sys.argv[1] if len(sys.argv) > 1 else None)
     removed = 0
     for r in (reports or []):
         # Meldungen tragen seit 24.09.2026 den stabilen Zeilen-Schluessel "h" (data-h). Der
