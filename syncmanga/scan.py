@@ -7,8 +7,8 @@ herausgeloest (build/find_places/load_db/kids) — KEINE Verhaltensaenderung. Di
 Schritte ergaenzen die Chromium-Familie (History-SQLite + Bookmarks-JSON) und den
 Cross-Browser-Dedup-Merge; Firefox bleibt dabei 1:1.
 
-HARTE REGELN (CLAUDE.md): Browser-DBs werden NUR read-only in einen Temp-Ordner kopiert
-(gesperrte DB -> immutable-Kopie); in den Browsern wird nichts veraendert.
+HARTE REGELN (CLAUDE.md): Browser-DBs werden NUR als Kopie gelesen — samt WAL, ueber
+`fremde_datenbank`; in den Browsern wird nichts veraendert.
 
 Liefert pro Serie ein Dict `items`, keyed by `norm(name)`:
   {'name', 'status', 'chap', 'site', 'lv', 'url'}
@@ -17,11 +17,9 @@ import glob
 import json
 import os
 import re
-import shutil
-import sqlite3
 import sys
-import tempfile
 
+from . import fremde_datenbank
 from .parse import CH, GARB, URLCH, host, norm, series_from
 
 # Hosts, die nie eine Manga-Serie sind (Verlauf-/Lesezeichen-Rauschen filtern).
@@ -78,37 +76,13 @@ def folder_status(title):
     return None
 
 
-# ---------------- gemeinsame DB-Helfer (read-only) ----------------
-
-def copy_locked(src, name):
-    """Eine evtl. gesperrte DB read-only nach Temp kopieren (+ -wal/-shm). Gibt den Temp-Pfad.
-
-    `name` = Zieldateiname im Temp-Ordner (z.B. "places_copy.sqlite"). Der Browser kann
-    laufen; gelesen wird ausschliesslich die Kopie, nie das Original.
-
-    PROZESS-EIGENER Name (Befund 23.07.): der Zielname bekommt die PID angehaengt.
-    Vorher war er FEST — liefen zwei Scans gleichzeitig, ueberschrieben sie einander
-    die Kopie und lasen fremde Daten. Im Gate (8 Parallel-Prozesse) kippte dadurch
-    test_scan_firefox_history_bookmarks_and_merge sporadisch (Lesezeichen-Status
-    'Gelesen' statt 'Am Lesen'); produktiv trifft dieselbe Falle Tray-Sync + manuellen
-    Lauf zur gleichen Zeit. Aufraeumen bleibt Sache des Temp-Ordners (nie loeschen wir
-    fremde Dateien).
-    """
-    stamm, endung = os.path.splitext(name)
-    tmp = os.path.join(tempfile.gettempdir(), f"{stamm}_{os.getpid()}{endung}")
-    shutil.copy(src, tmp)
-    for ext in ("-wal", "-shm"):
-        if os.path.exists(src + ext):
-            try:
-                shutil.copy(src + ext, tmp + ext)
-            except OSError:
-                pass
-    return tmp
-
-
-def open_immutable(path):
-    """SQLite-Verbindung im immutable-Modus (rein lesend, ignoriert Locks der Kopie)."""
-    return sqlite3.connect(f"file:{path}?immutable=1", uri=True)
+# ---------------- DB-Zugriff: nur ueber fremde_datenbank ----------------
+# 17.09.2026: `copy_locked` + `open_immutable` sind entfallen. Die Kopie trug die PID im
+# Namen (Befund 23.07.: zwei gleichzeitige Scans ueberschrieben einander die Kopie), blieb
+# im Temp liegen und wurde mit `immutable=1` geoeffnet — dieser Modus liest das WAL nicht,
+# der Scan sah Kapitel 10 statt 11 und den alten Besuch. `fremde_datenbank.verbindung`
+# kopiert samt WAL in einen frischen Ordner je Lesevorgang (das deckt auch den 23.07.-Fall)
+# und raeumt danach. Waechter: SyncDashTray/System/docs/tests/test_syncmanga_wal.py.
 
 
 # ---------------- Zeit-Umrechnung der Verlauf-Zeitstempel ----------------
@@ -297,35 +271,27 @@ def _scan_firefox_cursor(cur):
     return _merge_hist_marks(hist, _firefox_marks(cur))
 
 
-def scan_firefox(places_path, tmp_name="places_copy.sqlite"):
-    """places.sqlite read-only kopieren, oeffnen und scannen -> items dict."""
-    tmp = copy_locked(places_path, tmp_name)
-    con = open_immutable(tmp)
-    try:
+def scan_firefox(places_path):
+    """places.sqlite samt WAL als Lese-Kopie oeffnen und scannen -> items dict."""
+    with fremde_datenbank.verbindung(places_path) as con:
         return _scan_firefox_cursor(con.cursor())
-    finally:
-        con.close()
 
 
 # ---------------- Chromium-Familie: History (SQLite) ----------------
 # Chrome/Edge/Brave/Opera/Vivaldi teilen das History-Schema (Tabelle `urls`).
 # Lesezeichen (Bookmarks-JSON) folgen in Schritt 3.3, der Cross-Browser-Merge in 3.5.
 
-def scan_chromium_history(history_path, tmp_name="chromium_history_copy.sqlite"):
-    """Chromium `History` read-only kopieren und den Verlauf scannen -> hist dict.
+def scan_chromium_history(history_path):
+    """Chromium `History` samt WAL als Lese-Kopie oeffnen und den Verlauf scannen -> hist dict.
 
     Liefert dieselbe Struktur wie der Firefox-Verlauf (keyed by norm(name)); der Status
     ("Gelesen") bzw. die Verschmelzung mit Lesezeichen passiert erst im Merge (3.5).
-    `tmp_name` erlaubt je Browser/Profil einen eigenen Temp-Namen (kein Ueberschreiben).
+    Jeder Lesevorgang kopiert in einen eigenen Ordner — kein Namensclash je Browser/Profil.
     """
-    tmp = copy_locked(history_path, tmp_name)
-    con = open_immutable(tmp)
-    try:
+    with fremde_datenbank.verbindung(history_path) as con:
         return _history_map(
             con.cursor().execute("select url,title,last_visit_time,visit_count from urls where title is not null"),
             chromium_time)
-    finally:
-        con.close()
 
 
 # ---------------- Chromium-Familie: Bookmarks (JSON) ----------------
@@ -380,19 +346,15 @@ def scan_chromium_bookmarks(bookmarks_path):
 # noch nicht — der Verlauf traegt den Lesestand. Hinweis: macOS verlangt fuer ~/Library/Safari
 # Vollzugriff (TCC) — ohne ihn ueberspringt scan_all die Quelle still wie jede andere.
 
-def scan_safari_history(history_path, tmp_name="safari_history_copy.sqlite"):
-    """Safari `History.db` read-only kopieren und den Verlauf scannen -> hist dict
+def scan_safari_history(history_path):
+    """Safari `History.db` samt WAL als Lese-Kopie oeffnen und den Verlauf scannen -> hist dict
     (gleiche Struktur wie Firefox/Chromium, keyed by norm(name))."""
-    tmp = copy_locked(history_path, tmp_name)
-    con = open_immutable(tmp)
-    try:
+    with fremde_datenbank.verbindung(history_path) as con:
         rows = con.cursor().execute(
             "select i.url, v.title, v.visit_time, 1 "
             "from history_items i join history_visits v on v.history_item = i.id "
             "where v.title is not null")
         return _history_map(rows, safari_time)
-    finally:
-        con.close()
 
 
 # ---------------- Browser-Discovery (generisch, beim Start pruefbar) ----------------
@@ -546,18 +508,13 @@ def merge_items(into, more):
     return into
 
 
-def _tmp_tag(src):
-    """Dateisystem-sicherer Temp-Praefix je Browser/Profil (kein Kopie-Namensclash)."""
-    return re.sub(r'[^A-Za-z0-9]+', '_', f"{src.get('browser', 'x')}_{src.get('profile', 'x')}")
-
-
 def scan_source(src):
     """Eine Discovery-Quelle (siehe discover_browsers) read-only scannen -> items dict."""
     if src["kind"] == "firefox":
-        return scan_firefox(src["places"], tmp_name=f"ff_{_tmp_tag(src)}_places.sqlite")
+        return scan_firefox(src["places"])
     if src["kind"] == "safari":
-        return scan_safari_history(src["history"], tmp_name=f"sf_{_tmp_tag(src)}_History.sqlite")
-    hist = (scan_chromium_history(src["history"], tmp_name=f"cr_{_tmp_tag(src)}_History.sqlite")
+        return scan_safari_history(src["history"])
+    hist = (scan_chromium_history(src["history"])
             if src.get("history") else {})
     marks = scan_chromium_bookmarks(src["bookmarks"]) if src.get("bookmarks") else {}
     return _merge_hist_marks(hist, marks)

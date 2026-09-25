@@ -216,6 +216,9 @@ document.body.classList.toggle('au-show',p==='1');document.body.classList.toggle
 var cb=document.getElementById('colau');
 if(cb){cb.checked=(p!==null)?p==='1':!(window.matchMedia&&matchMedia('(max-width:760px)').matches)}}
 function toggleAu(cb){try{localStorage.setItem('auPref',cb.checked?'1':'0')}catch(e){}auApply()}
+// ⚙ Spalten -> „Standard wiederherstellen" (JB 25.09.2026): alle Spalten sichtbar, Autor-Zeile wieder
+// nach Geraet (auApply ohne gespeicherte Wahl). Nur die zwei Spalten-Schluessel werden geleert.
+function resetCols(){try{localStorage.removeItem('hcols');localStorage.removeItem('auPref')}catch(e){}for(var i=4;i<=8;i++){document.body.classList.remove('hc'+i);var cb=document.getElementById('col'+i);if(cb)cb.checked=true}auApply();refreezeHead()}
 
 // --- Reader-Pausen (JB Runde 37, MangaFire-Umbau): nicht pruefbare Seiten manuell pausieren.
 // Server-Default aus sources.json (I.paused); der Nutzer kann im ⏸-Menue je Seite umschalten
@@ -226,6 +229,11 @@ function pausedGet(){try{return JSON.parse(localStorage.getItem('pausedReaders')
 function pausedEff(){var m={},ov=pausedGet();((typeof I!=='undefined'&&I.paused)||[]).forEach(function(p){m[p]=1});Object.keys(ov).forEach(function(k){if(ov[k])m[k]=1;else delete m[k]});return Object.keys(m)}
 function hostPaused(u,P){var h='';try{h=new URL(u,location.href).hostname.toLowerCase()}catch(e){return false}
 return P.some(function(p){return p&&h.indexOf(p)>=0})}
+// 🚦 Quellen (Werkzeugfenster, JB 25.09.2026): Zaehler am Knopf = eingeschaltete Pause-Schalter
+// (Gruppenschalter zaehlt als einer) + Suche ueber data-qn (Name + Domains, klein).
+function pauseZahl(boxes){var n=0;[].forEach.call(boxes,function(b){if(b.checked)n++});return n}
+function pauseZahlSetzen(){var z=document.querySelector('.pzahl');if(!z)return;var n=pauseZahl(document.querySelectorAll('.wfq input.pz'));z.textContent=n?((typeof I!=='undefined'&&I.qpn)||'· {n} pausiert').replace('{n}',n):''}
+function seitenSuche(inp){var q=(inp.value||'').trim().toLowerCase();document.querySelectorAll('.wfq .qliste [data-qn]').forEach(function(r){r.hidden=!!q&&r.dataset.qn.indexOf(q)<0});var g=document.querySelector('.wfq details.qgrp');if(g&&q)g.open=true}
 function togglePause(cb){var ov=pausedGet(),srv=((typeof I!=='undefined'&&I.paused)||[]);
 // ALLE passenden Server-Teilstrings uebersteuern, nicht nur den ersten (JB Runde 44:
 // 'mangafire' manuell + 'mangafire.to' auto gleichzeitig -> Abhaken hob nur einen auf,
@@ -277,7 +285,7 @@ var st=sh.length>22?sh.slice(0,21)+'…':sh;sc.innerHTML='<span title="'+escH(sh
 document.querySelectorAll('.srcchip[data-rh]').forEach(function(c){var d=c.querySelector('.dot');if(!d)return;var on=P.some(function(p){return p&&(c.dataset.rh||'').indexOf(p)>=0});d.textContent=on?'⏸':'●'});
 // ⏸-Menue-Haken synchron halten (data-ph kann eine Komma-Liste sein: Familie/Sammelgruppe —
 // Haken = ALLE Teile pausiert)
-document.querySelectorAll('input[data-ph]').forEach(function(cb){var parts=cb.dataset.ph.split(',').filter(Boolean);cb.checked=parts.length>0&&parts.every(function(q){return P.some(function(p){return p&&q.indexOf(p)>=0})})})}
+document.querySelectorAll('input[data-ph]').forEach(function(cb){var parts=cb.dataset.ph.split(',').filter(Boolean);cb.checked=parts.length>0&&parts.every(function(q){return P.some(function(p){return p&&q.indexOf(p)>=0})})});pauseZahlSetzen()}
 
 // --- Listen-Export (3b Etappe 1): MAL-XML (fuer MyAnimeList/AniList-Import -> MangaBaka zieht von
 // dort) + Roh-JSON. Optionen: Archivierte mitnehmen / nur Favoriten. Kapitelstand = gedeckelter Wert
@@ -422,9 +430,14 @@ else{pool=[];act.forEach(function(g){bg[g].forEach(function(r){var k=r.u||r.t;if
 pool.forEach(function(c){var s=parseFloat(c.r.s);c.score=(isNaN(s)?6:s)+1.5*c.prio+0.4*(c.hits-1)+(shuffle?Math.random()*2.2:0)});
 pool.sort(function(a,b){return b.score-a.score});pool=pool.map(function(c){return c.r})}
 if(!act.length&&shuffle){for(var i=pool.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),t=pool[i];pool[i]=pool[j];pool[j]=t}}
-grid.innerHTML=pool.slice(0,12).map(function(r){var rd=r.r?('<a class=rgo href="'+escH(r.r)+'" target=_blank rel=noopener title="'+((typeof I!=='undefined'&&I.rgo)||'Kapitel 1 lesen')+'">📖</a>'):'';return '<span class=rwrap><a class=stile href="'+escH(r.u)+'" target=_blank rel=noopener title="'+escH(r.g)+'">'+escH(r.t)+' <b>⭐'+escH(r.s)+'</b></a>'+rd+'</span>'}).join('');
+grid.innerHTML=pool.slice(0,12).map(recCard).join('');
 recsChips()}catch(e){}}
+// EINE Empfehlungs-Karte - 1:1 wie _rkarte/_rec_item_karte in render.py (Waechter vergleicht beide).
+function recCard(r){var I_=(typeof I!=='undefined'&&I)||{};var q=/mangaupdates/.test(r.u||'')?'MangaUpdates':'AniList';var rd=r.r?'<a href="'+escH(r.r)+'" target=_blank rel=noopener title="'+escH(I_.rgo||'Kapitel 1 lesen')+'">'+escH(I_.rch1||'📖 Kapitel 1')+'</a>':'';return '<div class=rcard><a class=rt href="'+escH(r.u)+'" target=_blank rel=noopener title="'+escH(r.g||'')+'">'+escH(r.t)+'</a><span class=rm>⭐ '+escH(String(r.s==null?'?':r.s).replace('.',I_.nd||'.'))+(r.g?' · '+escH(r.g):'')+'</span><span class=ra><a href="'+escH(r.u)+'" target=_blank rel=noopener>'+q+' ↗</a>'+rd+'</span></div>'}
 function shuffleRecs(){buildRecs(true)}
+// 📊 Übersicht: Reiter Statistik/Empfehlungen (JB 25.09.2026). still=1 -> nur zeigen, nicht merken.
+function ovTab(b,still){var k=b&&b.dataset.ov;if(!k)return;document.querySelectorAll('.wftab[data-ov]').forEach(function(t){t.classList.toggle('on',t.dataset.ov===k)});document.querySelectorAll('.wfov .wfsec').forEach(function(x){x.hidden=x.dataset.tab!==k});if(!still){try{localStorage.setItem('ovTab',k)}catch(e){}}}
+function ovApply(){var k=null;try{k=localStorage.getItem('ovTab')}catch(e){}var b=document.querySelector('.wftab[data-ov="'+(k||'stats')+'"]')||document.querySelector('.wftab[data-ov]');if(b)ovTab(b,1)}
 // Boot: gespeicherte/Standard-Genre-Wahl anwenden (weicht sie vom Server-Render ab, neu bauen)
 (function(){if(document.getElementById('recsgrid'))buildRecs(false)})();
 
@@ -591,9 +604,11 @@ function panelAccordion(){var ps=document.querySelectorAll('.panels>details, det
 [].forEach.call(ps,function(d){d.addEventListener('toggle',function(){
   if(d.open){[].forEach.call(ps,function(o){if(o!==d&&o.open)o.open=false});}});});
 document.addEventListener('click',function(ev){
-  [].forEach.call(ps,function(d){if(d.open&&!d.contains(ev.target))d.open=false;});});}
+  [].forEach.call(ps,function(d){if(d.open&&!d.contains(ev.target))d.open=false;});});
+// Esc schliesst das offene Fenster (Werkzeugfenster, JB 25.09.2026)
+document.addEventListener('keydown',function(ev){if(ev.key==='Escape')[].forEach.call(ps,function(d){if(d.open)d.open=false})});}
 panelAccordion();
-applyTheme();applyTips();applyChapFix();applyDense();auApply();pinFavs(true);updateAb();updateFav();regray();ff();applyTiles();applyPause();pollSync();restoreSort();/* restoreScroll() entfernt (JB 15.07.: 'startet irgendwo, war nervig') -> Liste beginnt IMMER oben */
+ovApply();applyTheme();applyTips();applyChapFix();applyDense();auApply();pinFavs(true);updateAb();updateFav();regray();ff();applyTiles();applyPause();pollSync();restoreSort();/* restoreScroll() entfernt (JB 15.07.: 'startet irgendwo, war nervig') -> Liste beginnt IMMER oben */
 
 
 // --- 🔗 Kapitel-Aufloeser (Spec Doku/SYNCMANGA_AUFLOESER_SPEC.md, 23.07.2026) ---

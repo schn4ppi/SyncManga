@@ -287,16 +287,18 @@ def next_and_unread(chap, latest):
     return nxt, unread, latest
 
 
-def status_panel(s):
-    """Quellen-Status-Panel aus srcstatus.snapshot() -> HTML (leer, wenn kein Status vorliegt).
+_QUELLE_WORT = {"ok": "legend_ok", "degraded": "legend_degraded", "down": "legend_down"}
 
-    Zeigt je externer Quelle einen farbigen Punkt (gruen ok / gelb degraded / rot down) und
-    bei Problemen die letzte Fehlermeldung als Tooltip -> sofort sichtbar, was klemmt."""
+
+def status_panel(s):
+    """Datenquellen im 🚦 Quellen-Fenster (JB 25.09.2026: Zeilen statt Fließtext): je Quelle
+    farbiger Punkt + Name (Link) + Zustand in Worten; bei Problemen die letzte Fehlermeldung als
+    Tooltip -> sofort sichtbar, was klemmt. '' ohne Status."""
     snap = srcstatus.snapshot()
     if not snap:
         return ""
     hint = s.get("src_open_hint", "im neuen Tab öffnen")
-    chips = []
+    zeilen = []
     for name in sorted(snap):
         st = snap[name]
         col = _STATUS_COLOR.get(st.get("status"), "#888")
@@ -306,14 +308,11 @@ def status_panel(s):
         # Pausiert (JB Runde 37): ⏸ statt Punkt, in der Ampelfarbe — gilt auch fuer Datenquellen.
         dom = host(_source_url(name) or "")
         paused = is_paused_reader(dom)
-        chips.append(_chip(_source_url(name), col, label,
-                           s.get("paused_tip", tip) if paused else tip,
-                           "⏸" if paused else "●", f' data-rh="{html.escape(dom)}"'))
-    label = s.get("source_status_label", "Quellen")
-    # Leerzeichen zwischen den Chips = Umbruch-Gelegenheit (Chips selbst sind nowrap) —
-    # ohne sie war die Zeile UNBRECHBAR und zwang Mobile in >1000px Breite (JB 08.07.2026).
-    # Label fett+unterstrichen (JB 21.07.: 'sonst ueberliest man das').
-    return f'<div class=statusrow><span class=srclabel>{label}:</span> {" ".join(chips)}</div>'
+        chip = _chip(_source_url(name), col, label, s.get("paused_tip", tip) if paused else tip,
+                     "⏸" if paused else "●", f' data-rh="{html.escape(dom)}"')
+        wort = s.get(_QUELLE_WORT.get(st.get("status"), "legend_none"), "")
+        zeilen.append(f'<span class=qd>{chip}<span class=qz>{html.escape(wort)}</span></span>')
+    return "".join(zeilen)
 
 
 _READER_COLOR = {"ok": "#3a7d3a", "cloudflare": "#c9952b", "no-images": "#c9952b",
@@ -338,65 +337,78 @@ def search_sites():
     return list(dict.fromkeys(doms + _CORE_SITES))[:10]
 
 
-def reader_panel(s):
-    """Reader-Ampel aus data/reader_status.json -> HTML (leer, wenn keine Daten).
-
-    Zeigt je geteilter Lese-Seite einen farbigen Punkt: gruen = funktioniert, gelb = Cloudflare
-    (im Browser nutzbar) / keine Bilder, rot = down. JBs Wunsch: sofort sehen, welche Reader gehen."""
-    import json as _json
-    try:
-        with open(_READER_DATA, encoding="utf-8") as f:
-            data = _json.load(f)
-    except Exception:
-        return ""
-    readers = data.get("readers") or {}
-    if not readers:
-        return ""
-    hint = s.get("src_open_hint", "im neuen Tab öffnen")
-    chips = []
-    # Reihenfolge = Serienzahl in DEINER Liste (JB 08.07.2026: 'immer die Seiten mit den meisten
-    # Serien'), erst dann alphabetisch. 'n' kommt aus readers.refresh_status/ampel_targets.
-    for hostn in sorted(readers, key=lambda h: (-(readers[h].get("n") or 0),
-                                                readers[h].get("name", h).lower())):
-        r = readers[hostn]
-        col = _READER_COLOR.get(r.get("status"), "#888")
-        name = r.get("name", hostn)
-        cnt = f' · {r["n"]} {s.get("ampel_series", "Serien")}' if r.get("n") else ""
-        # Tooltip: bei anderer Ampelfarbe als gruen die Ursache (note), bei gruen ein Oeffnen-Hinweis;
-        # dahinter immer die Serienzahl dieser Seite in der Liste.
-        tip = (r.get("note", "") if r.get("status") != "ok" else f"{name} — {hint}") + cnt
-        url = f"https://{hostn}" if hostn else None
-        # Pausiert (JB Runde 37, MangaFire-Umbau): ⏸ in der Ampelfarbe statt Punkt.
-        paused = is_paused_reader(hostn)
-        chips.append(_chip(url, col, name, s.get("paused_tip", tip) if paused else tip,
-                           "⏸" if paused else "●", f' data-rh="{html.escape(hostn)}"'))
-    label = s.get("reader_status_label", "Lese-Seiten")
-    return (f'<div class=statusrow><span class=srclabel>{label}:</span> '
-            f'{" ".join(chips)}</div>')  # Label fett+unterstrichen; Leerzeichen = Umbruch (s.o.)
-
-
 def _reader_legend(s):
-    """Gemeinsame Ampel-Legende — gilt fuer Datenquellen UND Lese-Seiten (eine reicht)."""
-    return (f'<div class=rlegend>'
-            f'<span><span style="color:{_READER_COLOR["ok"]}">●</span> {html.escape(s["legend_ok"])}</span>'
-            f'<span><span style="color:{_READER_COLOR["cloudflare"]}">●</span> {html.escape(s["legend_browser"])}</span>'
-            f'<span><span style="color:{_READER_COLOR["maintenance"]}">●</span> {html.escape(s["legend_maint"])}</span>'
-            f'<span><span style="color:{_READER_COLOR["down"]}">●</span> {html.escape(s["legend_down"])}</span></div>')
+    """Ampel-Legende am Fensterende — gilt fuer Datenquellen UND Lese-Seiten (eine reicht), dazu
+    was der Schalter bedeutet (Werkzeugfenster, JB 25.09.2026)."""
+    teile = [(_READER_COLOR[k], s[t]) for k, t in (("ok", "legend_ok"), ("cloudflare", "legend_browser"),
+                                                    ("maintenance", "legend_maint"), ("down", "legend_down"))]
+    return ('<div class=qlg>' + "".join(f'<span><span style="color:{c}">●</span> {html.escape(t)}</span>'
+                                        for c, t in teile)
+            + f'<span>{html.escape(s["q_switch_note"])}</span></div>')
 
 
-def _quellen_menu(s):
-    """Datenquellen- + Lese-Seiten-Ampel als AUSKLAPPBARES Panel (JB 21.07.2026:
-    'Leseseiten und Datenquellen wie +Spalten/Statistik ausklappbar, ein eigenes
-    kleines Fenster; die Ampel-Legende beim Ausklappen mit dazu'). Beim Aufklappen:
-    beide Ampel-Zeilen + die gemeinsame Legende. Leer -> Knopf taucht nicht auf."""
-    rows = status_panel(s) + reader_panel(s)
-    if not rows:
+_ZUSTAND_WORT = {"ok": "legend_ok", "cloudflare": "legend_browser", "no-images": "legend_browser",
+                 "maintenance": "legend_maint", "down": "legend_down"}
+
+
+def _seiten_zeile(s, eintrag, readers, per_base, n=None, tag="div", stop=False):
+    """EINE Lese-Seite: Ampelpunkt · Name (Link, ×n-Badge + Tooltip bei zusammengefassten Domains) ·
+    „n Serien" · Zustand in Worten · Pause-Schalter (Checkbox data-ph -> togglePause, unveraendert).
+    `tag="summary"` + `stop=True` fuer die Kopfzeile der Sammelgruppe (Schalter klappt nicht auf)."""
+    esc = html.escape
+    label, ph, allh, st_host, _kur = eintrag
+    r = readers.get(st_host) or {}
+    st = r.get("status") or ""
+    mehr = len(allh) > 1 or "," in ph
+    tip = s["pause_covers"].format(doms=", ".join(allh)) if mehr else (r.get("note") or label)
+    badge = f'<sup class=pbadge>×{len(allh)}</sup>' if mehr else ""
+    anz = n if n is not None else max(r.get("n") or 0, sum(per_base.get(b, 0) for b in ph.split(",")))
+    name = (f'<a class=qn href="https://{esc(st_host)}" target=_blank rel="noopener noreferrer" '
+            f'title="{esc(tip)}">{esc(label)}{badge}</a>' if st_host and "," not in ph
+            else f'<span class=qn title="{esc(tip)}">{esc(label)}{badge}</span>')
+    wort = s[_ZUSTAND_WORT.get(st, "legend_none")] if st_host else ""
+    an = "checked " if all(is_paused_reader(p) for p in ph.split(",")) else ""
+    stopper = ' onclick="event.stopPropagation()"' if stop else ""
+    return (f'<{tag} class=qs data-qn="{esc((label + " " + " ".join(allh)).lower())}">'
+            f'<span class=dot style="color:{_READER_COLOR.get(st, "#888")}">●</span>{name}'
+            f'<span class=qc>{esc(s["q_series_n"].format(n=anz)) if anz else ""}</span>'
+            f'<span class=qz title="{esc(r.get("note") or "")}">{esc(wort)}</span>'
+            f'<input type=checkbox class="sw pz" role=switch aria-label="{esc(s["q_pause_aria"].format(name=label))}" '
+            f'data-ph="{esc(ph)}" {an}onchange="togglePause(this)"{stopper}></{tag}>')
+
+
+def _quellen_menu(s, rows=None):
+    """🚦 Quellen (JB 21.07. + 25.09.2026): Datenquellen-Ampel und Lese-Seiten in EINEM Fenster; je
+    Lese-Seite EINE Zeile mit Ampel, Serienzahl, Zustand und Pause-Schalter (vorher doppelt: Quellen
+    zeigte die Ampel, ⏸ Pausen dieselben Seiten mit Kaestchen). Ampel + Legende erst beim Aufklappen,
+    Ueberschriften fett + unterstrichen (fixierte Parameter 22.07.). Leer -> ''."""
+    esc = html.escape
+    dq = status_panel(s)
+    haupt, einzelne, readers, per_base = _seiten_eintraege(rows)
+    if not dq and not haupt and not einzelne:
         return ""
-    label = s.get("quellen_menu", "🚦 Quellen")
-    title = s.get("quellen_menu_title", "Status der Datenquellen und Lese-Seiten")
-    return (f'<details class=quellen><summary class="pill alt" title="{html.escape(title)}">'
-            f'{label}</summary><div class=qpanel><div class=statusrows>{rows}</div>'
-            f'{_reader_legend(s)}</div></details>')
+    def _rang(e):
+        # pausiert -> Problem -> meiste Serien (JB 08.07.: 'immer die Seiten mit den meisten Serien') -> Name
+        st = (readers.get(e[3]) or {}).get("status") or ""
+        n = max((readers.get(e[3]) or {}).get("n") or 0, sum(per_base.get(b, 0) for b in e[1].split(",")))
+        return (0 if is_paused_reader(e[1].split(",")[0]) else (1 if st not in ("", "ok") else 2), -n, e[0].lower())
+    zeilen = "".join(_seiten_zeile(s, e, readers, per_base) for e in sorted(haupt, key=_rang))
+    grp = ""
+    if einzelne:
+        kopf_e = (s["pause_group"].format(n=len(einzelne)), ",".join(e[1] for e in einzelne),
+                  [h for e in einzelne for h in e[2]], "", False)
+        grp = (f'<details class=qgrp>{_seiten_zeile(s, kopf_e, readers, per_base, n=len(einzelne), tag="summary", stop=True)}'
+               f'<div class=qgi>{"".join(_seiten_zeile(s, e, readers, per_base) for e in einzelne)}</div></details>')
+    suche = (f'<input type=search class=qsuche placeholder="{esc(s["q_search"])}" oninput="seitenSuche(this)">'
+             if len(haupt) + len(einzelne) > 15 else "")
+    teile = [f'<div class=wfs>{esc(s["source_status_label"])}</div><div class=qdq>{dq}</div>' if dq else ""]
+    if zeilen or grp:
+        teile.append(f'<div class=wfs>{esc(s["reader_status_label"])}</div>{suche}'
+                     f'<div class="wfb qliste">{zeilen}{grp}</div>')
+    teile.append(_reader_legend(s))
+    kopf = f'<span class=wft>{esc(s["q_title"])}</span><span class=wfm>{esc(s["q_sub"])}</span>'
+    return _wf("wfq", f'{s["quellen_menu"]} <span class=pzahl></span>', s["quellen_menu_title"], kopf,
+               "".join(teile))
 
 
 def _type_label(t):
@@ -405,14 +417,47 @@ def _type_label(t):
     return t.upper() if t.lower() == "oel" else t.capitalize()
 
 
-def stats_panel(rows, pcnt, s):
-    """Lese-Statistik/Insights als einklappbares Panel — aus den vorhandenen Cache-Feldern.
+def _zahl(x, s, nachkomma=0):
+    """Zahl nach UI-Sprache (Werkzeugfenster, JB 25.09.2026): de 33.768 / 7,1 — en 33,768 / 7.1."""
+    t = f"{x:,.{nachkomma}f}"
+    return t.replace(",", "\x00").replace(".", s.get("num_dec", ",")).replace("\x00", s.get("num_grp", "."))
 
-    Zeigt Serienzahl, Status-Verteilung, Ø-Bewertung, gelesene Kapitel, Land-/Typ-Verteilung,
-    Top-Serie und 18+. Reine Anzeige (kein Netz), einklappbar -> stoert die Liste nicht."""
+
+# Lese-Fortschritt als EIN Balken in den festen Fortschrittsfarben (.rc.* der Liste, Backlog = Text)
+_STUFEN = (("prog_reading", "r", "pg_reading"), ("prog_caught", "f", "pg_caught"),
+           ("prog_finished", "fin", "pg_finished"), ("prog_paused", "u", "pg_paused"),
+           ("prog_backlog", "bl", "pg_backlog"))
+
+
+def _land(fl):
+    """Flaggen-Emoji -> Laenderkuerzel ('🇯🇵' -> 'JP'). Windows zeichnet Flaggen nur als winzige
+    Buchstaben (gemessen 25.09. in der Statistik); anderes bleibt, wie es ist."""
+    zeichen = [chr(ord(c) - 0x1F1E6 + 65) for c in fl or "" if 0x1F1E6 <= ord(c) <= 0x1F1FF]
+    return "".join(zeichen) if len(zeichen) == 2 else (fl or "")
+
+
+def _deckung(rows):
+    """🛟 Absicherung (JB 09.07.2026): (Prozent mit Reserve auf einem ANDEREN Host, Zahl ohne) oder
+    None ohne verlinkte Serien. Kein Netz, nur Cache."""
+    linked = [e for e in rows if e.get("read_url") or e.get("read_urls")]
+    if not linked:
+        return None
+    def _hosts(e):
+        return {host(u) or "" for u in
+                [e.get("read_url") or ""] + [u for u, _nm in (e.get("read_urls") or [])] if u}
+    mono = sum(1 for e in linked if len(_hosts(e)) < 2)
+    return round(100 * (len(linked) - mono) / len(linked)), mono
+
+
+def stats_panel(rows, pcnt, s):
+    """📊 Übersicht → Reiter Statistik (JB 25.09.2026, Vorbild AniList-/MAL-Profil): vier
+    beschriftete Kacheln, Lese-Fortschritt als EIN Balken mit Legende, Herkunft/Typ als Listen,
+    Fußzeile. Werte wie bisher aus den Cache-Feldern, kein Netz; jede Kachel behält ihren Tooltip.
+    Leer (0 Serien) -> ''. `aria-label` benennt den Abschnitt (Reiter-Titel)."""
     n = len(rows)
     if not n:
         return ""
+    esc = html.escape
     rated = [e["rating"] for e in rows if e.get("rating")]
     avg = sum(rated) / len(rated) if rated else 0
     chaps = sum(min(int(e["chap"]), 5000) for e in rows if e.get("chap"))   # Ausreißer kappen
@@ -420,90 +465,101 @@ def stats_panel(rows, pcnt, s):
     by_type = Counter(html.escape(_type_label(e.get("type"))) for e in rows if e.get("type"))
     adult = sum(1 for e in rows if e.get("adult_kind"))
     top = max(rows, key=lambda e: e.get("rating") or 0, default=None)
-    # (Text, Tooltip) -> jede Kachel erklaert sich beim Hovern (JBs Wunsch)
-    tiles = [(f'<b>{n}</b> {s["series"]}', s["stats_tip_count"]),
-             (f'📖 {pcnt.get("prog_reading", 0)} · 🏁 {pcnt.get("prog_finished", 0)} · '
-              f'✅ {pcnt.get("prog_caught", 0)} · ⏸ {pcnt.get("prog_paused", 0)} · '
-              f'📋 {pcnt.get("prog_backlog", 0)}', s["stats_tip_status"])]
+    kacheln = [(s["series"], _zahl(n, s), s["stats_tip_count"]),
+               (s["stats_chapters"], _zahl(chaps, s), s["stats_tip_chapters"])]
     if avg:
-        tiles.append((f'Ø ⭐ {avg:.1f}', s["stats_tip_rating"]))
-    tiles.append((f'📚 {chaps} {s["stats_chapters"]}', s["stats_tip_chapters"]))
-    if by_flag:
-        tiles.append((" · ".join(f"{fl} {c}" for fl, c in by_flag.most_common(6)), s["stats_tip_country"]))
-    if by_type:
-        tiles.append((" · ".join(f"{t} {c}" for t, c in by_type.most_common(5)), s["stats_tip_type"]))
-    if adult:
-        tiles.append((f'🔞 {adult}', s["stats_tip_adult"]))
+        kacheln.append((s["st_rating"], _zahl(avg, s, 1), s["stats_tip_rating"]))
+    deckung = _deckung(rows)
+    if deckung:
+        kacheln.append((s["st_cover"], f"{deckung[0]} %", s["stats_tip_cover"]))
+    kh = "".join(f'<div title="{esc(tip)}"><span class=wfm>{esc(lab)}</span><b>{wert}</b></div>'
+                 for lab, wert, tip in kacheln)
+    ges = sum(pcnt.get(k, 0) for k, _c, _l in _STUFEN) or 1
+    bar = "".join(f'<span class={c} style="width:{100 * pcnt.get(k, 0) / ges:.2f}%" '
+                  f'title="{esc(s[lk])} {pcnt.get(k, 0)}"></span>' for k, c, lk in _STUFEN if pcnt.get(k, 0))
+    lg = "".join(f'<span><i class={c}></i>{esc(s[lk])} {_zahl(pcnt.get(k, 0), s)}</span>'
+                 for k, c, lk in _STUFEN)
+    def _liste(titel, paare):
+        li = "".join(f'<li><span>{a}</span><span>{_zahl(b, s)}</span></li>' for a, b in paare)
+        return f'<div><div class=wfs>{esc(titel)}</div><ul class=stl>{li}</ul></div>'
+    spalten = ((_liste(s["st_country"], [(esc(_land(fl)), c) for fl, c in by_flag.most_common(6)]) if by_flag else "")
+               + (_liste(s["st_type"], by_type.most_common(5)) if by_type else ""))
+    fuss = []
     if top and top.get("rating"):
-        tiles.append((f'🏆 {html.escape(top["name"][:34])} ({top["rating"]})', s["stats_tip_top"]))
-    # 🛟 Absicherung (JB 09.07.2026, 'nicht aufdringlich'): wie viele Serien haetten beim
-    # Ausfall ihrer Primaer-Seite eine Reserve auf einem ANDEREN Host? Kein Netz, nur Cache.
-    linked = [e for e in rows if e.get("read_url") or e.get("read_urls")]
-    if linked:
-        def _hosts(e):
-            return {host(u) or "" for u in
-                    [e.get("read_url") or ""] + [u for u, _nm in (e.get("read_urls") or [])] if u}
-        mono = sum(1 for e in linked if len(_hosts(e)) < 2)
-        pct = round(100 * (len(linked) - mono) / len(linked))
-        tiles.append((f'🛟 {pct}% · {mono} {s["stats_mono"]}', s["stats_tip_cover"]))
-    body = "".join(f'<span class=stile title="{html.escape(tip)}">{t}</span>' for t, tip in tiles)
-    return (f'<details class=stats><summary class="pill alt" title="{html.escape(s["stats_toggle"])}">📊 {s["stats_title"]}</summary>'
-            f'<div class=pdrop><div class=statgrid>{body}</div></div></details>')
+        fuss.append(f'{esc(s["st_top"])}: {esc(top["name"][:34])} ({_zahl(top["rating"], s, 1)})')
+    if adult:
+        fuss.append(f'{esc(s["st_adult"])}: {_zahl(adult, s)}')
+    if deckung and deckung[1]:
+        fuss.append(esc(s["st_mono"].format(n=_zahl(deckung[1], s))))
+    return (f'<section class=wfsec data-tab=stats aria-label="{esc(s["stats_title"])}">'
+            f'<div class=stk>{kh}</div><div class=wfs>{esc(s["st_progress"])}</div>'
+            f'<div class=stbar>{bar}</div><div class=stlg>{lg}</div>'
+            + (f'<div class=st2>{spalten}</div>' if spalten else "")
+            + (f'<div class=stf>{" · ".join(fuss)}</div>' if fuss else "") + '</section>')
 
 
-def recommendations_panel(rows, s):
-    """EXTERNE Empfehlungen (JB-Wunsch): AniList-Top-Titel zum Genre-Profil ALLER Serien der Liste,
-    als Links auf die externe Seite; nichts, was schon in der Liste steht. Liest NUR den vom
-    Update-Lauf gefuellten Cache (recs_refresh) — kein Netz beim Rendern."""
+def _rkarte(titel, url, meta, extra="", tip=""):
+    """EINE Empfehlungs-Karte (Werkzeugfenster, JB 25.09.2026): Titel-Link, gedaempfte Metazeile,
+    Aktionen. Muss 1:1 dem JS `recCard()` entsprechen — der ↻-Knopf baut die Karten im Browser neu
+    (Waechter test_rec_card_python_und_js_identisch). `meta`/`extra` sind fertiges HTML."""
+    esc = html.escape
+    quelle = "MangaUpdates" if "mangaupdates" in (url or "") else "AniList"
+    return (f'<div class=rcard><a class=rt href="{esc(url)}" target=_blank rel=noopener title="{esc(tip)}">'
+            f'{esc(titel)}</a><span class=rm>{meta}</span><span class=ra><a href="{esc(url)}" '
+            f'target=_blank rel=noopener>{quelle} ↗</a>{extra}</span></div>')
+
+
+def _rec_item_karte(r, s):
+    """Karte fuer einen AniList-Vorschlag: ⭐ Wertung (Dezimalzeichen nach Sprache) · Genres;
+    📖 = verifizierter Kapitel-1-Link (JB Runde 38, Feature 4) nur, wenn es ihn gibt."""
+    esc = html.escape
+    g = ", ".join(r.get("genres") or [])
+    meta = f'⭐ {esc(str(r.get("score") or "?").replace(".", s["num_dec"]))}' + (f' · {esc(g)}' if g else '')
+    rd = (f'<a href="{esc(r["read"])}" target=_blank rel=noopener title="{esc(s["recs_read_tip"])}">'
+          f'{esc(s["recs_ch1"])}</a>' if r.get("read") else '')
+    return _rkarte(str(r["title"]), r["url"], meta, rd, g)
+
+
+def _mu_link(mu_id):
+    """MangaUpdates-Serienseite ueber die base36-Kennung ('' ohne gueltige ID)."""
+    try:
+        n = int(mu_id)
+    except (TypeError, ValueError):
+        return ""
+    ziffern = "0123456789abcdefghijklmnopqrstuvwxyz"
+    b36 = ""
+    while n:
+        n, rest = divmod(n, 36)
+        b36 = ziffern[rest] + b36
+    return f"https://www.mangaupdates.com/series/{b36 or '0'}"
+
+
+def recommendations_panel(rows, s, versteckt=False):
+    """📊 Übersicht → Reiter Empfehlungen: EXTERNE Vorschlaege (AniList) zum Genre-Profil ALLER Serien
+    der Liste als Karten im Raster (JB 25.09.2026, Vorbild Netflix/AniList); nichts, was schon in der
+    Liste steht. Liest NUR den vom Update-Lauf gefuellten Cache (recs_refresh) — kein Netz beim
+    Rendern. `versteckt` = zweiter Reiter (JS ovTab zeigt ihn). Ohne Daten -> '' (E98)."""
     meta, items = _enrich.recs_load(rows=rows)
     mu_anker = (meta or {}).get("mu_anker") or []
     if not items and not mu_anker:
         return ""
-    def _rchip(r):
-        # 📖 = verifizierter Kapitel-1-Link (JB Runde 38, Feature 4) NEBEN dem DB-Verweis;
-        # zwei Anker nebeneinander (nie verschachtelt), Wrapper haelt sie zusammen.
-        rd = (f'<a class=rgo href="{html.escape(r["read"])}" target=_blank rel=noopener '
-              f'title="{html.escape(s["recs_read_tip"])}">📖</a>' if r.get("read") else '')
-        return (f'<span class=rwrap><a class=stile href="{html.escape(r["url"])}" target=_blank rel=noopener '
-                f'title="{html.escape(", ".join(r.get("genres") or []))}">'
-                f'{html.escape(str(r["title"])[:38])} <b>⭐{r.get("score") or "?"}</b></a>{rd}</span>')
-    chips = "".join(_rchip(r) for r in items[:12])
-    # Punkt 5 (27.08.): „Leser deiner Reihen empfehlen“ — der
-    # SyncFindus-Anker-Weg fuer die Leseliste. Grund je Chip als
-    # title (▲Stimmen · Leser von X +n), MU-Link ueber die
-    # base36-Kennung. E98: ohne Daten (mu_recs fuellen sich erst
-    # mit dem CACHE_VER-33-Lauf) existiert die Zeile nicht.
-    def _mu_link(mu_id):
-        try:
-            n = int(mu_id)
-        except (TypeError, ValueError):
-            return ""
-        ziffern = "0123456789abcdefghijklmnopqrstuvwxyz"
-        b36 = ""
-        while n:
-            n, rest = divmod(n, 36)
-            b36 = ziffern[rest] + b36
-        return f"https://www.mangaupdates.com/series/{b36 or '0'}"
-    def _achip(z):
-        grund = f"\u25b2{z['gewicht']} \u00b7 " + s["recs_anker_grund"].format(
-            w=z.get("grund") or "?")
+    esc = html.escape
+    karten = "".join(_rec_item_karte(r, s) for r in items[:12])
+    # Punkt 5 (27.08.): „Leser deiner Reihen empfehlen" — der SyncFindus-Anker-Weg fuer die
+    # Leseliste. Grund je Karte sichtbar (▲Stimmen · Leser von X +n), MU-Link ueber base36.
+    def _anker_karte(z):
+        grund = s["recs_anker_grund"].format(w=z.get("grund") or "?")
         if (z.get("anker_n") or 0) > 1:
             grund += f" +{z['anker_n'] - 1}"
         url = _mu_link(z.get("mu_id"))
-        if not url:
-            return ""
-        return (f'<span class=rwrap><a class=stile href="{html.escape(url)}" '
-                f'target=_blank rel=noopener title="{html.escape(grund)}">'
-                f'{html.escape(str(z["name"])[:38])} '
-                f'<b>\u25b2{z["gewicht"]}</b></a></span>')
-    anker_zeile = ""
+        return _rkarte(str(z["name"]), url, f'▲{z["gewicht"]} · {esc(grund)}', "",
+                       f'▲{z["gewicht"]} · {grund}') if url else ""
+    anker = ""
     if mu_anker:
-        achips = "".join(_achip(z) for z in mu_anker[:12])
-        anker_zeile = (f'<div class="muted" style="margin:6px 0 4px;'
-                       f'font-size:12px">{s["recs_anker_titel"]}</div>'
-                       f'<div class=statgrid>{achips}</div>')
+        anker = (f'<div class=wfs>{esc(s["recs_anker_titel"].rstrip(":"))}</div>'
+                 f'<div class=rgrid>{"".join(_anker_karte(z) for z in mu_anker[:12])}</div>')
     def _slim(r):
-        return {"t": str(r["title"])[:38], "u": r["url"], "s": r.get("score") or "?",
+        return {"t": str(r["title"]), "u": r["url"], "s": r.get("score") or "?",
                 "g": ", ".join(r.get("genres") or []), "r": r.get("read") or ""}
     # Pool (bis 30) einbetten -> der ↻-Knopf mischt clientseitig neue 12 heraus (JB-Wunsch), kein Netz.
     pool = _js([_slim(r) for r in items[:30]])
@@ -516,15 +572,13 @@ def recommendations_panel(rows, s):
                      f'onclick="recsCycle(this)" title="{html.escape(s["recs_genre_tip"])}">'
                      f'{html.escape(g)}</button>' for g in order)
     gbar = f'<div class=rchips>{gchips}</div>' if gchips else ''
-    return (f'<details class=stats><summary class="pill alt" title="{html.escape(s["recs_toggle"])}">💡 {s["recs_title"]}</summary>'
-            f'<div class=pdrop>'
-            f'<div class="muted" style="margin:0 0 6px;font-size:12px">'
-            f'{s["recs_hint"].format(g=html.escape(", ".join(meta.get("genres") or [])))} '
-            f'<button class=btn onclick="shuffleRecs()" title="{html.escape(s["recs_shuffle_title"])}">{s["recs_shuffle"]}</button></div>'
-            f'{anker_zeile}'
-            f'{gbar}'
-            f'<div id=recsgrid class=statgrid>{chips}</div></div>'
-            f'<script>var RECSPOOL={pool},RECSBG={bg},RECSTOP={top};</script></details>')
+    kopf = (f'<div class=rkopf><span class=wfm>{esc(s["recs_head"])} · {esc(s["recs_chip_hint"])}</span>'
+            f'<button type=button class=wftab onclick="shuffleRecs()" title="{esc(s["recs_shuffle_title"])}">'
+            f'{esc(s["recs_shuffle"])}</button></div>')
+    grid = f'<div class=rgrid id=recsgrid>{karten}</div>' if items else ''
+    return (f'<section{" hidden" if versteckt else ""} class=wfsec data-tab=recs '
+            f'aria-label="{esc(s["recs_title"])}">{kopf}{gbar}{grid}{anker}'
+            f'<script>var RECSPOOL={pool},RECSBG={bg},RECSTOP={top};</script></section>')
 
 
 def _db_pill(e):
@@ -678,21 +732,51 @@ def _alt_cell(e, s, sites_q, nxt, full):
             f'<div class=altm>{gcombined}{res_inner}{own}</div></details>')
 
 
+def _wf(art, knopf, tip, kopf, inhalt):
+    """Gemeinsamer Werkzeugfenster-Rahmen (JB 25.09.2026): Knopf + deckendes Fenster.
+
+    `art` (wfov/wfq/wfcols) waehlt die FESTE Breite im CSS — nie `fit-content`: als schwebendes
+    Fenster schrumpfte das frueher auf die Knopfbreite (Pausen 79 px, nur noch Kaestchen).
+    `kopf` bleibt stehen; im `inhalt` darf nur ein `.wfb`-Teil innen scrollen. `knopf` ist
+    fertiges HTML (Emoji + Text, ggf. Zaehler-Span), `tip` wird escaped."""
+    return (f'<details class="wfd {art}d"><summary class="pill alt" title="{html.escape(tip)}">'
+            f'{knopf}</summary><div class="wf {art}"><div class=wfk>{kopf}</div>{inhalt}</div></details>')
+
+
+def _uebersicht_menu(rows, pcnt, s):
+    """📊 Übersicht (JB 25.09.2026): Statistik + Empfehlungen als zwei Reiter in EINEM Fenster; der
+    zweite startet versteckt, JS ovApply() stellt den zuletzt gewaehlten her (localStorage 'ovTab').
+    Ohne Empfehlungs-Daten nur Statistik ohne Reiterleiste; ohne beides -> ''."""
+    st = stats_panel(rows, pcnt, s)
+    re_ = recommendations_panel(rows, s, versteckt=bool(st))
+    teile = [(k, lab) for k, lab, h in (("stats", s["stats_title"], st), ("recs", s["recs_title"], re_)) if h]
+    if not teile:
+        return ""
+    esc = html.escape
+    if len(teile) > 1:
+        tabs = "".join(f'<button type=button class="wftab{" on" if i == 0 else ""}" data-ov="{k}" '
+                       f'onclick="ovTab(this)">{esc(lab)}</button>' for i, (k, lab) in enumerate(teile))
+        kopf = f'<span class=wft>{esc(s["ov_title"])}</span><span class=wftabs>{tabs}</span>'
+    else:
+        kopf = f'<span class=wft>{esc(teile[0][1])}</span>'
+    return _wf("wfov", s["ov_menu"], s["ov_menu_title"], kopf, f'<div class=wfb>{st}{re_}</div>')
+
+
 def _cols_menu(s):
-    """Menue 'Spalten' (neben den Panels): je optionaler Spalte eine Checkbox -> body.hc<n> ein/aus.
-    Serie (1), ⭐ (2), gelesen (3), Aktion (9), ⚠ (10) bleiben immer sichtbar. JS: toggleCol()."""
-    cols = [(4, s["col_trans"]), (5, s["col_total"]), (6, s["col_last"]),
+    """⚙ Spalten: je optionaler Spalte eine Zeile Name + Schalter -> body.hc<n> ein/aus (JS toggleCol).
+    Serie (1), ⭐ (2), gelesen (3), Aktion (9), ⚠ (10) bleiben immer sichtbar. Die Autor-Zeile hat
+    keinen Spalten-Index, sondern einen eigenen Schalter (toggleAu; mobil aus Default, JB 09.07.)."""
+    cols = [(4, s["col_trans_long"]), (5, s["col_total"]), (6, s["col_last_long"]),
             (7, s["col_source"]), (8, s["col_rating"])]
-    # KEIN Leerzeichen zwischen Kaestchen und Wort (Abstand macht allein das CSS-gap: 2px, JB-Wunsch).
-    boxes = "".join(f'<label class=colbox><input type=checkbox id=col{n} checked '
-                    f'onchange="toggleCol({n},this)">{html.escape(nm)}</label>' for n, nm in cols)
-    # Autor-Zeile (kein Tabellen-Spalten-Index, eigener Schalter): mobil aus Default, hier
-    # wieder zuschaltbar — und am Desktop abwaehlbar (JB 09.07.2026: 'soll hinzugefuegt
-    # werden koennen, falls gewuenscht'). Haken-Zustand setzt auApply() beim Laden.
-    boxes += (f'<label class=colbox><input type=checkbox id=colau '
-              f'onchange="toggleAu(this)">{html.escape(s["col_author"])}</label>')
-    return (f'<details class=cols><summary class="pill alt" title="{html.escape(s["cols_menu_title"])}">'
-            f'{s["cols_menu"]}</summary><div class=colbxs>{boxes}</div></details>')
+    zeilen = "".join(f'<label class=cl><span>{html.escape(nm)}</span><input type=checkbox class=sw '
+                     f'role=switch id=col{n} checked onchange="toggleCol({n},this)"></label>'
+                     for n, nm in cols)
+    zeilen += (f'<label class=cl><span>{html.escape(s["col_author_long"])}</span><input type=checkbox '
+               f'class=sw role=switch id=colau onchange="toggleAu(this)"></label>')
+    kopf = f'<span class=wft>{html.escape(s["cols_head"])}</span>'
+    inhalt = (f'<div class=wfb>{zeilen}</div><div class="wfm wfnote">{html.escape(s["cols_note"])}</div>'
+              f'<button type=button class=wfreset onclick="resetCols()">{html.escape(s["cols_reset"])}</button>')
+    return _wf("wfcols", s["cols_menu"], s["cols_menu_title"], kopf, inhalt)
 
 
 # Subdomain-Kosmetik fuers Pausen-Menue (Stufe 1, JB Runde 38): w1./ww2./m./test. sind
@@ -708,20 +792,18 @@ _FAMILIES = (("Asura", ("asurascans.com", "asuracomic.net", "asuratoons.info")),
 _FAMILY_MAX = 6          # groessere Gruppen bleiben aufgeloest (JB-Regel)
 
 
-def _pause_menu(s, rows=None):
-    """Menue '⏸ Pausen' (neben 'Spalten', JB Runden 37+38): ALLE Lese-Seiten, deren Pause
-    etwas bewirken kann — kuratierte Reader + jede real verlinkte Seite. KONSOLIDIERT
-    (JB Runde 38, drei Stufen): Subdomains -> Basisdomain, kuratierte Betreiber-Familien,
-    Ein-Serien-Domains in eine aufklappbare Sammelgruppe. Konsolidierte Eintraege tragen
-    ein ×n-Badge, der Tooltip nennt die enthaltenen Domains. Je Eintrag ein Status-Punkt
-    (Ampelfarbe; grau = ungeprueft). Schalter wirken CLIENTSEITIG (localStorage
-    'pausedReaders', data-ph = Komma-Liste von Teilstrings); Server-Default: sources.json."""
+def _seiten_eintraege(rows=None):
+    """ALLE Lese-Seiten, deren Pause etwas bewirken kann — kuratierte Reader + jede real verlinkte
+    Seite (vorher `_pause_menu`, JB Runden 37+38). KONSOLIDIERT in drei Stufen: Subdomains ->
+    Basisdomain, kuratierte Betreiber-Familien, Ein-Serien-Domains in eine Sammelgruppe.
+    -> (haupt, einzelne, readers, per_base); Eintrag = (label, ph_csv, alle_hosts, status_host,
+    kuratiert), per_base[basisdomain] = Serien in der Liste. Schalter wirken CLIENTSEITIG
+    (localStorage 'pausedReaders', data-ph = Komma-Liste von Teilstrings); Server-Default: sources.json."""
     try:
         with open(_READER_DATA, encoding="utf-8") as f:
             readers = json.load(f).get("readers") or {}
     except Exception:
         readers = {}
-    status = {h: (r.get("status") or "") for h, r in readers.items()}
     names = {h: r.get("name", h) for h, r in readers.items()}
     # Stufe 1: Hosts sammeln + auf Basisdomains falten; je Basisdomain die Serien zaehlen
     groups, series_ct = {}, Counter()
@@ -742,12 +824,9 @@ def _pause_menu(s, rows=None):
     drop = ("google.", "anilist", "mangabaka")
     groups = {b: hs for b, hs in groups.items()
               if b and not is_dead_reader(b) and not any(d in b for d in drop)}
-    if not groups:
-        return ""
     per_base = Counter(b for (b, _k) in series_ct)
     # Stufe 2: Familien mergen (nur real vorkommende Domains, Deckel _FAMILY_MAX)
-    entries = []                     # (label, ph_csv, all_hosts, status_host, kuratiert)
-    used = set()
+    entries, used = [], set()
     for fam_name, fam_domains in _FAMILIES:
         present = [b for b in fam_domains if b in groups]
         if 2 <= len(present) <= _FAMILY_MAX:
@@ -759,40 +838,12 @@ def _pause_menu(s, rows=None):
     for b in sorted(groups, key=lambda x: names.get(x, x).lower()):
         if b in used:
             continue
-        label = names.get(b, b)
-        item = (label, b, sorted(groups[b]), b, b in readers)
+        item = (names.get(b, b), b, sorted(groups[b]), b, b in readers)
         if b not in readers and per_base.get(b, 0) <= 1:
             singles.append(item)
         else:
             main.append(item)
-
-    def _box(label, ph, allh, st_host, stop=False):
-        col = _READER_COLOR.get(status.get(st_host), "#888")
-        badge = f'<sup class=pbadge>×{len(allh)}</sup>' if len(allh) > 1 or "," in ph else ""
-        tip = s["pause_covers"].format(doms=", ".join(allh)) if (len(allh) > 1 or "," in ph) else label
-        # stop=True: Kaestchen sitzt in einem <summary> -> Klick darf das Aufklappen nicht toggeln
-        stopper = ' onclick="event.stopPropagation()"' if stop else ""
-        return (f'<label class=colbox title="{html.escape(tip)}"{stopper}>'
-                f'<input type=checkbox data-ph="{html.escape(ph)}" '
-                f'{"checked " if all(is_paused_reader(p) for p in ph.split(",")) else ""}'
-                f'onchange="togglePause(this)">'
-                f'<span class=dot style="color:{col}">●</span>{html.escape(label)}{badge}</label>')
-
-    def _key(item):
-        label, ph, _allh, st_host, _cur = item
-        return (0 if is_paused_reader(ph.split(",")[0])
-                else (1 if status.get(st_host, "") not in ("", "ok") else 2), label.lower())
-    boxes = [_box(la, ph, ah, sh) for la, ph, ah, sh, _c in sorted(entries + main, key=_key)]
-    grp = ""
-    if singles:
-        g_ph = ",".join(ph for _la, ph, _ah, _sh, _c in singles)
-        g_all = [h for _la, _ph, ah, _sh, _c in singles for h in ah]
-        inner = "".join(_box(la, ph, ah, sh) for la, ph, ah, sh, _c in singles)
-        grp = (f'<details class=ssg><summary title="{html.escape(s["pause_group_title"])}">'
-               f'{_box(s["pause_group"].format(n=len(singles)), g_ph, g_all, "", stop=True)}'
-               f'</summary><div class=ssgi>{inner}</div></details>')
-    return (f'<details class=cols><summary class="pill alt" title="{html.escape(s["pause_menu_title"])}">'
-            f'{s["pause_menu"]}</summary><div class="colbxs pausebxs">{"".join(boxes)}{grp}</div></details>')
+    return entries + main, singles, readers, per_base
 
 
 def render(rows, out_dir, out_html, namelen=NAMELEN, lang="de", readers_snap=None):
@@ -1019,7 +1070,7 @@ def render(rows, out_dir, out_html, namelen=NAMELEN, lang="de", readers_snap=Non
     jsvars =(f'<script>var I={{"arch":"🗃 {s["archive_count"]}","fav":"{s["fav_button"]}",'
               f'"xd":"{s["export_done"]}","xs":"{s["export_skipped"]}","cq":"{s["chapfix_prompt"]}",'
               f'"imu":"{s["import_done"]}","imn":"{s["import_new"]}","sy":"{s["syncbar"]}","syp":"{s["sync_paused"]}","tp":"{s["to_top"]}","rts":{now_ts},'
-              f'"op":"{s["open"]}","brkSent":"{s["brk_sent"]}","rgo":"{s["recs_read_tip"]}",'
+              f'"op":"{s["open"]}","brkSent":"{s["brk_sent"]}","rgo":"{s["recs_read_tip"]}","rch1":"{s["recs_ch1"]}","nd":"{s["num_dec"]}","qpn":"{s["q_paused_n"]}",'
               f'"altm":"{s["alt_menu"]}",'
               f'"dudArch":"{s["dud_arch"]}","dudBack":"{s["dud_back"]}","dudAll":"{s["dud_all"]}",'
               f'"paused":{_js(sorted(_config.all_paused()))},'
@@ -1054,7 +1105,7 @@ def render(rows, out_dir, out_html, namelen=NAMELEN, lang="de", readers_snap=Non
 <!-- Kopf: Titel · Untertitel (Zusammenfassung). Die Quellen-/Reader-Ampel ist jetzt ausklappbar (🚦 Quellen) unten in .panels --><h1>📚 {s['title']} <a class=hguide href="{s['guide_file']}" target=_blank title="{html.escape(s['guide_title'])}">📖</a></h1>
 <div class=sub>{sub}</div>
 <!-- Statistik + Empfehlungen + Spalten + Quellen-Ampel (alle ausklappbar, nebeneinander) -->
-<div class=panels>{stats_panel(rows, pcnt, s)}{recommendations_panel(rows, s)}{_cols_menu(s)}{_quellen_menu(s)}{_pause_menu(s, rows)}{col_legend}</div>
+<div class=panels>{_uebersicht_menu(rows, pcnt, s)}{_quellen_menu(s, rows)}{_cols_menu(s)}{col_legend}</div>
 <!-- Steuerleiste: Fortschritts-Filter · neu/Hilfe · Suche · Typ · Genre · 18+ · Archiv -->
 <div class=ctrl>{filter_btns}{new_btn}{help_btn}
 <input id=q placeholder="{html.escape(s['search_placeholder'])}" oninput=qf()><details class=fpop><summary class=btn title="{html.escape(s['filter_title'])}">{s['filter_menu']} ▾</summary><div class=fpanel><select id=cf class=btn onchange=ff()><option value="">{s['type_all']}</option>{type_opts}</select><details class=genres><summary class=btn id=gfs title="{html.escape(s['genre_toggle'])}">{s['genre_all']} ▾</summary><div id=gf class=gchips>{genre_chips}</div></details><select id=nf class=btn onchange="setNsfw(this)" title="{html.escape(s['nsfw_title'])}"><option value="">{s['nsfw_all']}</option><option value="both">{s['nsfw_hide_both']}</option><option value="sexual">{s['nsfw_hide_sexual']}</option><option value="gore">{s['nsfw_hide_gore']}</option></select></div></details><button id=rand class=btn onclick="luckyPick()" title="{html.escape(s['lucky_title'])}">🎲</button><span class=spacer></span><button id=gear class=btn onclick="toggleGear()" title="{html.escape(s['gear_title'])}">⚙</button><span class=tools><button id=til class=btn onclick="toggleTiles()" title="{html.escape(s['tiles_title'])}">▦</button><button id=dns class=btn onclick="toggleDense()" title="{html.escape(s['dense_title'])}">⬍</button><button id=thm class=btn onclick="toggleTheme()" title="{html.escape(s['theme_title'])}">☀</button><details class=xport><summary class=btn title="{html.escape(s['export_menu_title'])}">⤴ {s['export_menu']}</summary><div class=xpanel><label><input type=checkbox id=xarch> {s['export_with_arch']}</label><label><input type=checkbox id=xfav> {s['export_fav_only']}</label><button class=btn onclick="exportMal()" title="{html.escape(s['export_mal_title'])}">{s['export_mal']}</button><button class=btn onclick="exportJson()">{s['export_json']}</button><label class=btn title="{html.escape(s['import_mal_title'])}">{s['import_mal']}<input type=file accept=".xml,text/xml" style="display:none" onchange="importMal(this)"></label><details class=xguide><summary>{s['xg_title']}</summary><div class=xhelp>{s['xg_up']}<br>{s['xg_down']}<br>{s['xg_al']}<br>{s['xg_more']}<br>{s['xg_bug']}</div></details></div></details><button id=sb class=btn onclick="saveState()" title="{html.escape(s['state_export_title'])}">💾</button></span><button id=cfb class=btn onclick="showCfm()" title="{html.escape(s['confirm_export_title'])}" style="display:none">✔ 0</button><button id=rb class=btn onclick="showBrk()" title="{html.escape(s['report_export_title'])}" style="display:none">🛠 0</button></div>

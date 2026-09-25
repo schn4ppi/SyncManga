@@ -8,12 +8,6 @@
       "chapter": "https://www.mgeko.cc/reader/en/{slug}-chapter-{n}-eng-li/"
     },
     {
-      "name": "VortexScans",
-      "host": "vortexscans.org",
-      "type": "any",
-      "chapter": "https://vortexscans.org/series/{slug}/chapter-{n}"
-    },
-    {
       "name": "ManhwaBuddy",
       "host": "manhwabuddy.com",
       "type": "manhwa",
@@ -236,16 +230,22 @@
       "chapter": "https://ravenscans.org/chapter/{slug}-chapter-{n}/"
     },
     {
-      "name": "Genztoons",
-      "host": "genztoons.org",
-      "type": "manga",
-      "chapter": "https://genztoons.org/series/{slug}/chapter-{n}/"
+      "name": "Saymanhwa",
+      "host": "saymanhwa.com",
+      "type": "manhwa",
+      "chapter": "https://saymanhwa.com/series/{slug}/chapter-{n}/"
     },
     {
-      "name": "Timelesstoons",
-      "host": "timelesstoons.org",
+      "name": "Mangago",
+      "host": "mangago.fun",
       "type": "manga",
-      "chapter": "https://timelesstoons.org/series/{slug}/chapter-{n}/"
+      "chapter": "https://mangago.fun/read/{slug}/chapter-{n}/"
+    },
+    {
+      "name": "Vortexscans",
+      "host": "vortexscans.org",
+      "type": "manhwa",
+      "chapter": "https://vortexscans.org/series/{slug}/chapter-{n}/"
     }
   ]
 }
