@@ -64,7 +64,9 @@ Das ist oft weit weniger als das Gesamtwerk — Beispiel *Junk the Black Shadow*
 - **weiterlesen** springt direkt auf dein nächstes Kapitel auf einer funktionierenden Lese-Seite;
   **＋Alt** zeigt Alternativen, **⚠** meldet einen kaputten Link (mit 1 Klick) + zeigt sofort Alternativen.
 - **Quellen-Ampel** oben: 🟢 funktioniert · 🟡 nur im Browser (Cloudflare) · 🔴 nicht erreichbar.
-- **📊 Statistik** (einklappbar) + **🆕 Neue-Kapitel-Filter** zeigen deinen Überblick auf einen Blick.
+  Das Fenster **Quellen** zeigt je Lese-Seite eine Zeile mit Ampel, Serienzahl und Pause-Schalter.
+- **📊 Übersicht** (Statistik und Empfehlungen als zwei Reiter) + **🆕 Neue-Kapitel-Filter** zeigen
+  deinen Überblick auf einen Blick; **⚙ Spalten** blendet Spalten ein und aus. Esc schließt jedes Fenster.
 - **Kapitel-Zelle anklicken** = Lesestand von Hand setzen — alle Links der Zeile (weiterlesen
   **und** Reserven) folgen; Reader ohne dieses Kapitel verweisen auf die Serien-Seite.
 
@@ -162,7 +164,9 @@ Without a known translation point the cell stays two-part (`read / total`).
 - **Continue** jumps straight to your next chapter on a working reader site; **＋Alt** shows
   alternatives, **⚠** reports a broken link (one click) and shows alternatives instantly.
 - **Source status lights** at the top: 🟢 working · 🟡 browser only (Cloudflare) · 🔴 down.
-- **📊 Statistics** (collapsible) + **🆕 New-chapters filter** give you the overview at a glance.
+  The **Sources** window lists every reader site in one row with status light, series count and pause switch.
+- **📊 Overview** (statistics and recommendations as two tabs) + **🆕 New-chapters filter** give you
+  the overview at a glance; **⚙ Columns** shows and hides columns. Esc closes every window.
 - **Click the chapter cell** to set your progress by hand — every link in the row (continue
   **and** backups) follows; readers that don't have that chapter point to the series page.
 
