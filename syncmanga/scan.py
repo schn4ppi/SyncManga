@@ -197,7 +197,7 @@ def _marks_map(folder_kids):
 def _merge_hist_marks(hist, marks):
     """Lesezeichen (marks) zuerst, dann Verlauf (hist) einfalten -> items dict.
 
-    Verlauf hebt das Kapitel eines gemerkten Eintrags an (nie darunter), setzt den
+    Verlauf hebt Kapitel, URL und Host eines gemerkten Eintrags gemeinsam an (nie darunter), setzt den
     letzten Besuch und faellt sonst als Status "Gelesen" neu hinein. Identisch zur
     bisherigen build()-Verschmelzung; in 3.5 Basis des Cross-Browser-Merges.
     """
@@ -208,6 +208,7 @@ def _merge_hist_marks(hist, marks):
             merge_readers(e.setdefault('readers', []), h.get('readers'))
             if h['chap'] and (e['chap'] is None or h['chap'] >= e['chap']):
                 e['chap'] = h['chap']; e['url'] = h['url']
+                e['site'] = h['site']
             e['lv'] = h['lv']
             if not e['site']:
                 e['site'] = h['site']
@@ -545,11 +546,16 @@ def imported_items():
     Fehlt die Datei -> {} (kein Effekt). Best-effort, nie eine Exception."""
     p = IMPORTED_PATH
     try:
-        raw = json.load(open(p, encoding="utf-8"))
+        with open(p, encoding="utf-8") as datei:
+            raw = json.load(datei)
     except (OSError, ValueError):
         return {}
+    if not isinstance(raw, dict):
+        print("[scan] Listen-Import übersprungen: JSON-Wurzel muss ein Objekt sein "
+              f"(erhalten: {type(raw).__name__}).", file=sys.stderr)
+        return {}
     out = {}
-    for k, e in (raw or {}).items():
+    for k, e in raw.items():
         if isinstance(e, dict) and e.get("name"):
             out[k] = {"name": e["name"], "status": e.get("status") or "Gelesen",
                       "chap": e.get("chap"), "site": "", "lv": e.get("lv") or 0,

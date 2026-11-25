@@ -41,7 +41,10 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 PKG = os.path.normpath(os.path.join(HERE, ".."))
 if PKG not in sys.path:
     sys.path.insert(0, PKG)
-from syncmanga.common import Pacer  # noqa: E402
+from syncmanga.common import (
+    Pacer,  # noqa: E402
+    json_aendern,  # noqa: E402
+)
 from syncmanga.readerlink import fetch_status, is_dead_read_scheme  # noqa: E402
 
 OV = os.path.join(PKG, "data", "series_overrides.json")
@@ -80,6 +83,54 @@ def regen_one(tpl, fetch=None):
     return "tot", ""
 
 
+def regeneration_speichern(pfad, gelesen, korrekturen, backups):
+    """Nur unveraenderte alte URLs heilen; aktuelle Metadaten und Sicherung erhalten."""
+    anzahl, sicherung = 0, None
+
+    def aenderung(data):
+        nonlocal anzahl, sicherung
+        ov = data.get("overrides") or {}
+        passend = [k for k in korrekturen if isinstance(ov.get(k), dict)
+                   and ov[k].get("chapter") == gelesen[k].get("chapter")]
+        if passend:
+            os.makedirs(backups, exist_ok=True)
+            stamm = os.path.join(backups, "series_overrides-vor-regen-"
+                                + time.strftime("%Y%m%d-%H%M%S"))
+            sicherung = stamm + ".json"
+            suffix = 0
+            while os.path.exists(sicherung):
+                suffix += 1
+                sicherung = f"{stamm}-{suffix}.json"
+            shutil.copy(pfad, sicherung)
+        for key in passend:
+            ov[key] = {**ov[key], "chapter": korrekturen[key], "trust": True}
+            anzahl += 1
+        data["overrides"] = ov
+
+    daten = json_aendern(pfad, aenderung, standard={}, streng=True)
+    return (anzahl, sicherung) if daten is not None else None
+
+
+def _regeneration_pruefen(todo):
+    stats, korrekturen = {"ok": 0, "blocked": 0, "tot": 0}, {}
+    t0 = time.time()
+    for i, (k, v) in enumerate(todo, 1):
+        verdikt, url = regen_one(v.get("chapter") or "")
+        if verdikt == "skip":
+            continue
+        stats[verdikt] += 1
+        if verdikt in ("ok", "blocked") and url:
+            korrekturen[k] = url
+        else:
+            print(f"  tot gelassen: {k} ({v.get('name')})", flush=True)
+        if i % 25 == 0:
+            print(f"  ... {i}/{len(todo)} ({int(time.time() - t0)}s) "
+                  f"ok={stats['ok']} blocked={stats['blocked']} tot={stats['tot']}", flush=True)
+    print(f"Fertig geprueft: ok={stats['ok']} blocked={stats['blocked']} tot={stats['tot']} "
+          f"({int(time.time() - t0)}s)", flush=True)
+    return stats, korrekturen
+
+
 def main(argv=None):
     args = list(argv if argv is not None else sys.argv[1:])
     apply_ = "--probe" not in args
@@ -101,41 +152,20 @@ def main(argv=None):
         todo = todo[:limit]
     print(f"{len(todo)} Overrides im toten /read/-Schema"
           + ("" if apply_ else "  (PROBELAUF - nichts wird geschrieben)"), flush=True)
-    stats = {"ok": 0, "blocked": 0, "tot": 0}
-    t0 = time.time()
-    for i, (k, v) in enumerate(todo, 1):
-        verdikt, url = regen_one(v.get("chapter") or "")
-        if verdikt == "skip":
-            continue
-        stats[verdikt] += 1
-        if verdikt in ("ok", "blocked") and url:
-            neu = dict(v)
-            neu["chapter"] = url            # Serien-Seite ohne {n}: Ernte zieht das Kapitel
-            neu["trust"] = True
-            ov[k] = neu
-        else:
-            print(f"  tot gelassen: {k} ({v.get('name')})", flush=True)
-        if i % 25 == 0:
-            print(f"  ... {i}/{len(todo)} ({int(time.time() - t0)}s) "
-                  f"ok={stats['ok']} blocked={stats['blocked']} tot={stats['tot']}", flush=True)
-    print(f"Fertig geprueft: ok={stats['ok']} blocked={stats['blocked']} tot={stats['tot']} "
-          f"({int(time.time() - t0)}s)", flush=True)
+    stats, korrekturen = _regeneration_pruefen(todo)
     if not apply_:
         print("PROBELAUF: nichts geschrieben.", flush=True)
         return 0
     if stats["ok"] + stats["blocked"] == 0:
         print("Nichts umzuschreiben.", flush=True)
         return 0
-    os.makedirs(BACKUPS, exist_ok=True)
-    ts = time.strftime("%Y%m%d-%H%M%S")
-    shutil.copy(OV, os.path.join(BACKUPS, f"series_overrides-vor-regen-{ts}.json"))
-    data["overrides"] = ov
-    tmp = OV + ".tmp"
-    with open(tmp, "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=1)
-    os.replace(tmp, OV)
-    print(f"Geschrieben: {stats['ok'] + stats['blocked']} Eintraege auf Serien-Seiten "
-          f"umgestellt (Backup: backups/series_overrides-vor-regen-{ts}.json).", flush=True)
+    gespeichert = regeneration_speichern(OV, dict(todo), korrekturen, BACKUPS)
+    if gespeichert is None:
+        print("Regeneration: series_overrides.json gesperrt; Aenderungen nicht gespeichert.", flush=True)
+        return 1
+    anzahl, sicherung = gespeichert
+    print(f"Geschrieben: {anzahl} Eintraege auf Serien-Seiten "
+          f"umgestellt (Backup: {sicherung}).", flush=True)
     return 0
 
 

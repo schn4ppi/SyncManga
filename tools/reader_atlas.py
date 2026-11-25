@@ -17,7 +17,7 @@ Das Tool
      Kapiteln ODER offene API vs. Cloudflare/JS-only), link_strategie (template/harvest/api/none),
   4. schreibt data/reader_atlas.json (Vollbestand) + eine Konsolen-Bilanz je Engine.
 
-Aufruf:  python -m tools.reader_atlas [--limit N] [--lang en] [--full] [--workers 16]
+Aufruf:  python -m tools.reader_atlas [--limit N] [--lang en] [--full] [--workers 4]
          --full = alle Sprachen (Default: nur EN, das ist was JB liest).
 Netz: strikt gepaced pro Host, ein Fehler killt nie den Lauf (modular-fusioniert).
 """
@@ -47,6 +47,14 @@ from syncmanga.parse import host as host_of  # noqa: E402
 # hier jetzt die ANZAHL der Eintraege, genau wie in import_keiyoushi.py.
 INDEX_URL = "https://raw.githubusercontent.com/keiyoushi/extensions/repo/index.json"
 MIN_EINTRAEGE = 50
+# Die Eintrags-Wache allein reicht nicht: Am 25.11.2026 bestand der Index sie mit 1.707
+# Eintraegen, nach dem Sprachfilter blieben aber 0 Hosts, und jede Woche ersetzte ein leerer
+# Atlas den alten. Darum zaehlt die Wache auch die Hosts, bevor geschrieben wird.
+MIN_HOSTS = 50
+# Ein Lauf ruft die Startseite jedes Hosts ab, rund 660 fremde Seiten (EN, Stand 25.11.2026).
+# Vier zugleich halten die Last fuer jede einzelne Seite und fuer JBs Leitung klein
+# (JB 25.11.2026: "Reparieren, gedrosselt"; vorher 16).
+STANDARD_ARBEITER = 4
 OUT = os.path.join(PKG, "data", "reader_atlas.json")
 _UA = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
                      "(KHTML, like Gecko) Chrome/124.0 Safari/537.36"}
@@ -94,6 +102,27 @@ def _eintraege_aus(roh):
     if isinstance(el, dict):
         return el.get("extensions") or []
     return el or roh.get("extensions") or []
+
+
+def _quellen(ext):
+    """(sprache, url, name) je Quelle, mit beiden Feld-Schreibweisen.
+
+    Ab 0.20 heissen die Felder `language` und `homeUrl` statt `lang` und `baseUrl`; der Atlas
+    fragte nur die alten ab und sah darum 0 Hosts. Dieselbe Lesart wie `_quellen` in
+    `import_keiyoushi.py` (das man hier nicht importieren kann: es ersetzt beim Import
+    `sys.stdout`).
+    """
+    for src in (ext.get("sources") or []):
+        yield (src.get("language") or src.get("lang") or "",
+               src.get("homeUrl") or src.get("baseUrl") or "",
+               src.get("name") or "")
+
+
+def _ist_nsfw(ext):
+    """Ab 0.20 traegt die Erweiterung `contentWarning` (SAFE, MIXED, NSFW) statt `nsfw`."""
+    if ext.get("contentWarning") is not None:
+        return ext.get("contentWarning") == "CONTENT_WARNING_NSFW"
+    return bool(ext.get("nsfw"))
 
 
 def load_index():
@@ -177,21 +206,27 @@ def main(argv=None):
     full = "--full" in args
     lang = args[args.index("--lang") + 1] if "--lang" in args else "en"
     limit = int(args[args.index("--limit") + 1]) if "--limit" in args else 0
-    workers = int(args[args.index("--workers") + 1]) if "--workers" in args else 16
+    workers = int(args[args.index("--workers") + 1]) if "--workers" in args else STANDARD_ARBEITER
     print("Reader-Atlas: Keiyoushi-Index laden ...", flush=True)
     idx = load_index()
     hosts, seen = [], set()
     for ext in idx:
-        ext_nsfw = bool(ext.get("nsfw"))              # nsfw steht am EXTENSION-Knoten, nicht der Quelle
-        for s in (ext.get("sources") or []):
-            if not full and s.get("lang") not in (lang, "all"):
+        ext_nsfw = _ist_nsfw(ext)                     # steht am EXTENSION-Knoten, nicht der Quelle
+        for sprache, url, name in _quellen(ext):
+            if not full and sprache not in (lang, "all"):
                 continue
-            h = host_of(s.get("baseUrl") or "")
+            h = host_of(url)
             if not h or h in seen:
                 continue
             seen.add(h)
-            hosts.append({"host": h, "url": s["baseUrl"], "name": s.get("name") or h,
-                          "lang": s.get("lang"), "nsfw": ext_nsfw})
+            hosts.append({"host": h, "url": url, "name": name or h,
+                          "lang": sprache, "nsfw": ext_nsfw})
+    if not limit and len(hosts) < MIN_HOSTS:
+        raise SystemExit(
+            f"FEHLER: Nach dem Sprachfilter blieben nur {len(hosts)} Hosts "
+            f"(erwartet >= {MIN_HOSTS}) aus {len(idx)} Index-Eintraegen.\n"
+            f"  Meist haben sich Feldnamen im Index geaendert.\n"
+            f"  Der Atlas wird NICHT ueberschrieben.")
     if limit:
         hosts = hosts[:limit]
     print(f"  {len(hosts)} eindeutige Hosts ({'alle Sprachen' if full else lang}) — fingerprinten "

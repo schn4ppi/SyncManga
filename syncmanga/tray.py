@@ -12,7 +12,9 @@ Die GUI (pystray/PIL/tkinter) wird manuell getestet; die reinen Helfer
 (menu_labels, emblem_bild, punkt_farbe, single_instance) sind unit-getestet.
 """
 import math
+import ntpath
 import os
+import shlex
 import sys
 import threading
 import webbrowser
@@ -149,11 +151,27 @@ def tooltip_text(busy=False, dead=0, names=None, lang="de"):
     return f"SyncManga — {s['tray_tip_ok']}"
 
 
-def _is_own_process(tasklist_output):
-    """True, wenn die tasklist-Ausgabe zu UNSERER App gehört — Python ODER die gepackte
-    SyncManga.exe. So greift die Single-Instance auch im .exe-Build (nicht nur unter Python)."""
-    o = (tasklist_output or "").lower()
-    return "python" in o or "syncmanga" in o
+def _is_own_process(commandline):
+    """True nur für einen Start DIESES Trays: `python -m syncmanga.tray` (so startet ihn die
+    Anleitung oben), der volle Pfad dieser Datei oder — gepackt — dieselbe SyncManga.exe.
+    Ein Bildname allein reicht nicht: eine wiederverwendete PID aus tray.lock träfe sonst einen
+    fremden Python-Prozess (Register JR68)."""
+    if not commandline:
+        return False
+    try:
+        argumente = [a.strip('"') for a in shlex.split(commandline, posix=False)]
+    except ValueError:
+        return False
+
+    def norm(pfad):
+        return ntpath.normcase(ntpath.normpath(pfad))
+
+    eigen = {norm(os.path.abspath(__file__))}
+    if getattr(sys, "frozen", False):
+        eigen.add(norm(sys.executable))
+    if any(norm(a) in eigen for a in argumente if a):
+        return True
+    return any(a == "-m" and b.lower() == "syncmanga.tray" for a, b in zip(argumente, argumente[1:]))
 
 
 def _kill_if_ours(pid):
@@ -161,16 +179,25 @@ def _kill_if_ours(pid):
     try:
         import subprocess
         flags = getattr(subprocess, "CREATE_NO_WINDOW", 0)
-        info = subprocess.run(["tasklist", "/fi", f"PID eq {pid}"],
-                              creationflags=flags, capture_output=True, text=True)
-        if _is_own_process(info.stdout):
-            subprocess.run(["taskkill", "/f", "/pid", pid], creationflags=flags, capture_output=True)
+        nummer = int(pid)
+        if nummer <= 0:
+            return
+        abfrage = (
+            "[Console]::OutputEncoding = [System.Text.UTF8Encoding]::new(); "
+            f"(Get-CimInstance Win32_Process -Filter 'ProcessId = {nummer}').CommandLine"
+        )
+        info = subprocess.run(["powershell.exe", "-NoProfile", "-NonInteractive",
+                               "-Command", abfrage], creationflags=flags,
+                              capture_output=True, text=True, encoding="utf-8", timeout=5)
+        if info.returncode == 0 and _is_own_process(info.stdout.strip()):
+            subprocess.run(["taskkill", "/f", "/pid", str(nummer)], creationflags=flags,
+                           capture_output=True, timeout=5)
     except Exception:
         pass
 
 
 def single_instance(lockfile):
-    """Genau EINE Instanz: alte Instanz (Python ODER .exe) übernehmen, eigene PID hinterlegen."""
+    """Nachgewiesene alte Tray-Instanz übernehmen und die eigene PID hinterlegen."""
     try:
         if os.path.exists(lockfile):
             old = open(lockfile, encoding="utf-8").read().strip()

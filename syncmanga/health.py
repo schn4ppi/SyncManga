@@ -164,6 +164,7 @@ def merge_auto_dead(items, cache_path, fetch=None, alive_hosts=None):
     samples = {h: u for h, u in domain_samples(items).items()
                if not config.is_dead_reader(h) and h.lower() not in alive}
     auto = check_domains(samples, cache_path, fetch=fetch)
+    auto = {h for h in auto if h.lower() not in alive}
     if auto:
         config.DEAD_READERS = tuple(config.DEAD_READERS) + tuple(sorted(auto))
     return auto

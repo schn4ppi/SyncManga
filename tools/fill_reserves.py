@@ -20,6 +20,7 @@ import os
 import sys
 import time
 from concurrent.futures import ThreadPoolExecutor
+from copy import deepcopy
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 PKG = os.path.normpath(os.path.join(HERE, ".."))       # Manga/
@@ -28,8 +29,9 @@ if PKG not in sys.path:
 
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
 
-from syncmanga import readerlink  # noqa: E402
+from syncmanga import laufsperre, readerlink  # noqa: E402
 from syncmanga.config import apply_sources, load_sources  # noqa: E402
+from syncmanga.enrich import _save_cache  # noqa: E402
 from syncmanga.parse import host, norm  # noqa: E402
 from syncmanga.sources import md_chapter_link  # noqa: E402
 
@@ -96,8 +98,9 @@ def _fill_one(k, v):
 
 
 def main():
-    if os.path.exists(LOCK):
-        sys.exit("manga_update.lock existiert — erst den laufenden Lauf beenden lassen.")
+    gesperrt, meldung = laufsperre.pruefen(LOCK)
+    if gesperrt:
+        sys.exit(meldung + " — erst den laufenden Lauf beenden lassen.")
     needle = "mangafire"
     if "--only-single-host" in sys.argv:
         needle = sys.argv[sys.argv.index("--only-single-host") + 1]
@@ -108,6 +111,7 @@ def main():
     readerlink.load_overrides(os.path.join(PKG, "data", "series_overrides.json"))
     readerlink.load_readers(os.path.join(PKG, "data", "readers_pattern.json"))
     cache = json.load(open(CACHE, encoding="utf-8"))
+    vorher = deepcopy(cache)
     fixed, dropped = _md_reserve_cleanup(cache)
     print(f"MD-Reserven-Bereinigung (EN-only): {fixed} bestaetigt/ersetzt, {dropped} entfernt.",
           flush=True)
@@ -129,14 +133,12 @@ def main():
                     cache[k]["read_url"], cache[k]["read_site"] = new[0]
                 added += 1
             if done % 25 == 0:
-                tmp = CACHE + ".tmp"
-                json.dump(cache, open(tmp, "w", encoding="utf-8"), ensure_ascii=False)
-                os.replace(tmp, CACHE)
+                if _save_cache(cache, CACHE, vorher) is None:
+                    return
                 print(f"  ... {done}/{len(targets)} geprüft, {added} ergänzt "
                       f"({int(time.time() - t0)}s)", flush=True)
-    tmp = CACHE + ".tmp"
-    json.dump(cache, open(tmp, "w", encoding="utf-8"), ensure_ascii=False)
-    os.replace(tmp, CACHE)
+    if _save_cache(cache, CACHE, vorher) is None:
+        return
     print(f"FERTIG: {done} geprüft, {added} Serien mit neuen Reserven.", flush=True)
 
 

@@ -24,7 +24,7 @@ import urllib.parse
 import urllib.request
 from urllib.parse import urlparse
 
-from .common import Pacer
+from .common import Pacer, json_aendern
 from .config import is_dead_reader
 from .parse import CH, clean_title, host, key_ratio, norm, sim_norm
 
@@ -1060,26 +1060,17 @@ def save_series_override(path, key, name, url, pin=True, template=True):
     key = norm(key or "")
     if not key or not name or not url:
         raise ValueError("key, name und url sind Pflicht")
-    data = {}
-    if os.path.exists(path):
-        try:
-            with open(path, encoding="utf-8") as f:
-                data = json.load(f)
-        except ValueError:
-            data = {}
-    if not isinstance(data, dict):
-        data = {}
-    ov = data.setdefault("overrides", {})
     if template and ist_opake_kapitel_id(url):
         template = False                      # opake ID: unveraendert pinnen, nie {n}
     entry = {"name": name, "chapter": _templatize_chapter(url) if template else url,
              "trust": True, "pin": bool(pin)}
-    ov[key] = entry
-    tmp = path + ".tmp"
-    with open(tmp, "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=1)
-    os.replace(tmp, path)
-    return entry
+    def aenderung(data):
+        if not isinstance(data, dict):
+            data = {}
+        data.setdefault("overrides", {})[key] = entry
+        return data
+    data = json_aendern(path, aenderung, standard={}, streng=True)
+    return entry if data is not None else None
 
 
 # Viele Mangas haben eine EIGENE Lesedomain (SEO-Manga-Seiten). Typische Domain-Endungen + Pfade;
@@ -1239,8 +1230,17 @@ def override_info(names, chapter, fetch=None):
     if not n:
         return "", "", False, False
     check = fetch or _alive
+    # Jeden Override-Schluessel nur EINMAL pruefen (Befund 21.10.2026): die Kandidaten
+    # (Anzeige-/EN-/Romaji-Titel, Cache-Key, Roh-Name) normalisieren oft auf denselben
+    # Schluessel; ein gescheiterter unverbuergter Link wurde je Variante neu per Netz
+    # geprueft (bis 8 Kapitel-Formen x ~4,5 Namen). Gleiches Ergebnis, ein Durchgang.
+    gesehen = set()
     for name in (names if isinstance(names, (list, tuple)) else [names]):
-        o = SERIES_OVERRIDES.get(norm(name or ""))
+        schluessel = norm(name or "")
+        if schluessel in gesehen:
+            continue
+        gesehen.add(schluessel)
+        o = SERIES_OVERRIDES.get(schluessel)
         if not o:
             continue
         tpl = o["chapter"]

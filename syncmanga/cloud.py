@@ -6,10 +6,11 @@ Sync ihre Leseliste hoch, damit der Nutzer sie am Handy sieht.
 Datensparsam & harmlos: KEINE E-Mail, kein Login-Konto. Der Server vergibt zufaellig
 Slot + Upload-Key + Zugangscode; hochgeladen wird NUR die fertige Leseliste (Titel +
 Lese-Fortschritt), niemals Verlauf/Lesezeichen/Browser-Daten. Die Zugangsdaten liegen im
-Windows-Tresor (keyring) — faellt der aus, in `data/cloud.json` (eigener PC, geringe Stakes).
+Windows-Tresor (keyring). Alte `data/cloud.json` bleiben zum Lesen unterstützt;
+neue Zugangsdaten werden ausschließlich im Tresor gespeichert.
 
-Alles hier ist rein/injizierbar (http/store) -> ohne Netz testbar. Fehler brechen NIE einen
-Sync ab: die Funktionen geben (ok, info) zurueck und werfen nicht nach aussen.
+Alles hier ist rein/injizierbar (http/store) -> ohne Netz testbar. Die Aktionen melden Fehler
+als (ok, info); save_account wirft bei einem Tresorfehler AccountSpeicherFehler.
 """
 import json
 import os
@@ -20,25 +21,25 @@ UA = "SyncManga-App/1.0 (+https://j-bk.org)"
 _SERVICE, _USER = "SyncManga-Cloud", "account"
 
 
-# ---------------- Zugangsdaten speichern/lesen (Tresor bevorzugt, Datei als Rueckfall) --------
+# ---------------- Zugangsdaten speichern/lesen (alte Dateien nur lesen) ----------------
+class AccountSpeicherFehler(RuntimeError):
+    """Zugangsdaten konnten nicht sicher im Windows-Tresor gespeichert werden."""
+
+
 def _store_path(data_dir):
     return os.path.join(data_dir, "data", "cloud.json")
 
 
 def save_account(data_dir, acc):
-    """{slot, upload_key, code} sichern. Erst Windows-Tresor, dann Datei (best-effort)."""
+    """{slot, upload_key, code} ausschließlich im Windows-Tresor sichern."""
     try:
         import keyring
         keyring.set_password(_SERVICE, _USER, json.dumps(acc))
-        return
-    except Exception:
-        pass
-    p = _store_path(data_dir)
-    os.makedirs(os.path.dirname(p), exist_ok=True)
-    tmp = p + ".tmp"
-    with open(tmp, "w", encoding="utf-8") as f:
-        json.dump(acc, f, ensure_ascii=False)
-    os.replace(tmp, p)
+    except Exception as ex:
+        raise AccountSpeicherFehler(
+            "Die Zugangsdaten konnten nicht im Windows-Tresor gespeichert werden. "
+            "Bitte den Tresor prüfen und erneut versuchen."
+        ) from ex
 
 
 def load_account(data_dir):
@@ -81,7 +82,10 @@ def register(data_dir, http=_http):
         return False, data.get("err") or "Registrierung abgelehnt."
     acc = {"slot": data["slot"], "upload_key": data["upload_key"],
            "code": data["code"], "url": data.get("url") or BASE}
-    save_account(data_dir, acc)
+    try:
+        save_account(data_dir, acc)
+    except AccountSpeicherFehler as ex:
+        return False, str(ex)
     return True, acc
 
 
@@ -127,7 +131,11 @@ def change_code(data_dir, wish=None, http=_http):
         return False, f"gerade nicht moeglich ({type(ex).__name__})"
     if status == 200 and data.get("ok") and data.get("code"):
         acc["code"] = data["code"]
-        save_account(data_dir, acc)
+        try:
+            save_account(data_dir, acc)
+        except AccountSpeicherFehler as ex:
+            return False, (f"Der Server hat den Zugangscode geändert. {ex} "
+                           f"Der neue Zugangscode lautet: {data['code']}")
         return True, data["code"]
     return False, data.get("err") or f"HTTP {status}"
 

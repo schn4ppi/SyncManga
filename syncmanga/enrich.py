@@ -23,12 +23,14 @@ import threading
 import time
 from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
+from copy import deepcopy
 from datetime import datetime
 
 from . import catalog, readerlink
 from . import (
     health as srcstatus,  # Quellen-Status (frueher srcstatus.py, jetzt in health)
 )
+from .common import json_aendern, json_delta_speichern
 from .config import CACHE_VER, is_dead_reader, is_no_read
 from .parse import (
     host,
@@ -530,6 +532,7 @@ def reserve_topup(cache_path, cap=30, needle=None):
         cache = json.load(open(cache_path, encoding="utf-8"))
     except Exception:
         return None
+    vorher = deepcopy(cache)
     targets = []
     for k, v in cache.items():
         if not isinstance(v, dict) or v.get("novel"):
@@ -564,9 +567,8 @@ def reserve_topup(cache_path, cap=30, needle=None):
             added += 1
     if done:
         try:
-            tmp = cache_path + ".tmp"
-            json.dump(cache, open(tmp, "w", encoding="utf-8"), ensure_ascii=False)
-            os.replace(tmp, cache_path)
+            if json_delta_speichern(cache_path, vorher, cache) is None:
+                return None
         except Exception:
             pass
         print(f"  [Reserve-Auffueller] {done} Serien geprüft, {added} ergänzt", flush=True)
@@ -736,9 +738,10 @@ def probe_sources(health_dir):
             grund[nm] = warum
     print("  [Quellen-Check] " + " | ".join(parts), flush=True)
     try:                                  # Gesundheit fuer den Tray hinterlegen (Icon-Farbe)
-        with open(os.path.join(health_dir, "source_health.json"), "w", encoding="utf-8") as f:
-            json.dump({"ts": datetime.now().isoformat(timespec="seconds"), "dead": dead,
-                       "grund": grund}, f, ensure_ascii=False)
+        daten = {"ts": datetime.now().isoformat(timespec="seconds"), "dead": dead, "grund": grund}
+        if json_aendern(os.path.join(health_dir, "source_health.json"),
+                           lambda _alt: daten, standard={}) is None:
+            print("  ⚠ source_health.json gesperrt; Messung nicht gespeichert", flush=True)
     except Exception as e:                # Stille waere ein zweiter Ausfall (P5)
         print(f"  ⚠ source_health.json nicht schreibbar: {type(e).__name__}: {e}", flush=True)
     if dead:
@@ -827,6 +830,8 @@ def _consume_broken(cache):
         return
     try:
         reports = json.load(open(src, encoding="utf-8"))
+        if not reports:
+            return
         from .parse import norm as _norm
         hit, miss = [], []
         for rep in reports if isinstance(reports, list) else []:
@@ -854,18 +859,27 @@ def _consume_broken(cache):
             except Exception:
                 pass
         done = os.path.join(data_dir, "broken_links.done.json")
-        hist = json.load(open(done, encoding="utf-8")) if os.path.exists(done) else []
         # "nicht_gefunden" sichtbar halten: die Liste verspricht eine Neupruefung — trifft eine
         # Meldung keine Serie, soll das im Archiv stehen statt still zu verschwinden.
-        hist.append({"ts": time.time(), "reports": reports, "recheck": hit, "nicht_gefunden": miss})
-        json.dump(hist, open(done, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
-        os.remove(src)
+        eintrag = {"ts": time.time(), "reports": reports, "recheck": hit, "nicht_gefunden": miss}
+        if _broken_archivieren(done, src, reports, eintrag) is None:
+            return
         if hit:
             print(f"  [Link kaputt] {len(hit)} gemeldete Serie(n) werden JETZT neu aufgeloest", flush=True)
         if miss:
             print(f"  [Link kaputt] {len(miss)} Meldung(en) passten zu keiner Serie: {miss[:5]}", flush=True)
     except Exception:
         pass
+
+
+def _broken_archivieren(done, src, reports, eintrag):
+    """Historie ergaenzen; nur die wirklich gelesenen Meldungen aus dem Eingang nehmen."""
+    hist = json_aendern(done, lambda alt: alt + [eintrag], standard=[], streng=True)
+    if hist is None:
+        return None
+    def entfernen(aktuell):
+        return [rep for rep in aktuell if rep not in reports]
+    return json_aendern(src, entfernen, standard=[])
 
 
 _PROGRESS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "data")
@@ -973,9 +987,16 @@ def _resolve_md_page_override(ov_url, ov_site, ov_tpl, next_chap, no_prog, md_li
     return (u, s) if u else (ov_url, ov_site)
 
 
-def bake_overrides(cache, items):
-    """Kuratierte series_overrides deterministisch (OHNE Netz, ohne Verifikation) in den GESAMTEN
-    Cache einbacken und die Zahl reparierter Serien zurueckgeben.
+def bake_overrides(cache, items, pruefen=True):
+    """Kuratierte series_overrides in den GESAMTEN Cache einbacken und die Zahl reparierter
+    Serien zurueckgeben. Verbuergte Overrides ("trust") kommen OHNE Netz und ohne Verifikation.
+
+    Unverbuergte Overrides (ohne "trust", z.B. SEO-Eigendomains) prueft override_info per echtem
+    404 — seriell, je Serie bis zu 8 Kapitel-Formen. `pruefen=False` (Kurz-Scan) laesst sie
+    unangetastet, wie einen gerade unerreichbaren Link; der Normal-Lauf prueft sie weiter.
+    Befund 21.10.2026: diese Pruefung war der Grund, warum der Kurz-Scan seit 10.09. jedes Mal
+    nach 600 s abbrach (Messlauf: 1.237 s allein in diesem Pass, Kurz-Scan gesamt 1.297 s;
+    danach 51 s).
 
     Warum noetig: Die normale Anreicherung wendet Overrides nur auf die ~cap Serien an, die pro
     Lauf frisch bearbeitet werden. Alt-Eintraege (z.B. aus einer Cache-Panne mit leeren read_urls)
@@ -988,6 +1009,7 @@ def bake_overrides(cache, items):
     Novels und Serien ohne passenden Override bleiben unberuehrt. Die Override-Vorrang-Entscheidung
     ist identisch zum Anreicherungs-Pfad (Kapitel-Override zaehlt nur bei bekanntem Lesestand)."""
     fixed = 0
+    pruefung = None if pruefen else (lambda u: False)
     for k, c in cache.items():
         if not isinstance(c, dict) or c.get("novel"):
             continue
@@ -1000,7 +1022,8 @@ def bake_overrides(cache, items):
             next_chap = int(lat)
         cands = [c.get("title_en"), c.get("title_romaji"), c.get("title"), k,
                  (it or {}).get("name")] + (c.get("alt_titles") or [])
-        ov_url, ov_site, ov_tpl, _pin = readerlink.override_info([x for x in cands if x], next_chap)
+        ov_url, ov_site, ov_tpl, _pin = readerlink.override_info([x for x in cands if x], next_chap,
+                                                                 fetch=pruefung)
         if not ov_url:
             continue
         links = [list(x) for x in (c.get("read_urls") or []) if x and x[0]]
@@ -1163,14 +1186,15 @@ def demote_series_pages(cache, items=None):
     return moved
 
 
-def _save_cache(cache, cache_path):
-    """Cache ATOMAR schreiben (tmp + os.replace, wie ueberall sonst im Projekt). Ein Kill mitten im
-    Checkpoint (JB-Vorfall: parallele Laeufe gestoppt) darf die 1-MB-Datei nie halb geschrieben
-    zuruecklassen — sonst verwirft der naechste Lauf still den GESAMTEN Cache (Stunden Anreicherung)."""
-    tmp = cache_path + ".tmp"
-    with open(tmp, "w", encoding="utf-8") as f:
-        json.dump(cache, f, ensure_ascii=False)
-    os.replace(tmp, cache_path)
+def _save_cache(cache, cache_path, vorher=None):
+    """Nur Aenderungen dieses Laufs unter gemeinsamer Prozess-/Thread-Sperre speichern."""
+    gespeichert = json_delta_speichern(cache_path, vorher or {}, cache)
+    if gespeichert is None:
+        print("  ⚠ md_cache.json gesperrt; Aenderungen dieses Laufs nicht gespeichert", flush=True)
+    if gespeichert is not None and vorher is not None:
+        vorher.clear()
+        vorher.update(deepcopy(cache))
+    return gespeichert
 
 
 def _relink_eintrag(e, c):
@@ -1580,11 +1604,14 @@ def _lese_links_setzen(e, c, nc, rec, conf, typ, force):
     nc["needs_help"] = bool(nc.get("needs_help")) and not nc.get("read_urls")
 
 
-def _vorlauf_ohne_netz(cache, items):
-    """Die netzfreien Durchgaenge vor der Anreicherung, in fester Reihenfolge. Jeder ist
-    best-effort: scheitert einer, meldet er es und die naechsten laufen trotzdem."""
-    try:                            # kuratierte Direktlinks IMMER einbacken (kein Netz) -> nie 'Alternative'
-        _baked = bake_overrides(cache, items)      # trotz vorhandenem Override (JB 07.07.2026)
+def _vorlauf_ohne_netz(cache, items, override_pruefung=True):
+    """Die Durchgaenge vor der Anreicherung, in fester Reihenfolge. Jeder ist best-effort:
+    scheitert einer, meldet er es und die naechsten laufen trotzdem. Netz braucht nur die
+    Pruefung unverbuergter Overrides in bake_overrides; override_pruefung=False (Kurz-Scan)
+    laesst sie aus, dann ist der Vorlauf wirklich netzfrei."""
+    try:                            # kuratierte Direktlinks IMMER einbacken -> nie 'Alternative'
+        _baked = bake_overrides(cache, items,      # trotz vorhandenem Override (JB 07.07.2026)
+                                pruefen=override_pruefung)
         if _baked:
             print(f"  {_baked} Serien: kuratierten Direktlink eingebacken (Override-Backfill).", flush=True)
     except Exception as ex:
@@ -1624,7 +1651,7 @@ def _id_hist_fortschreiben(k, c, nc):
 
 
 def enrich(items, cache_path, health_dir, cap, name_fix=None, cache_ver=CACHE_VER, force=False,
-           relink=False, progress_dir=None, checkpoint_render=None):
+           relink=False, progress_dir=None, checkpoint_render=None, override_pruefung=True):
     name_fix = name_fix or {}
     cache = {}
     if os.path.exists(cache_path):
@@ -1632,8 +1659,9 @@ def enrich(items, cache_path, health_dir, cap, name_fix=None, cache_ver=CACHE_VE
             cache = json.load(open(cache_path, encoding="utf-8"))
         except Exception:
             cache = {}
+    vorher = deepcopy(cache)
     _consume_broken(cache)          # ⚠-Meldungen -> betroffene Serien in diesem Lauf neu (JB-Wunsch)
-    _vorlauf_ohne_netz(cache, items)
+    _vorlauf_ohne_netz(cache, items, override_pruefung=override_pruefung)
     if relink:
         # Relink: gecachte Metadaten behalten, NUR den 'weiterlesen'-Link neu aufloesen (Override-Vorrang).
         # Kein MangaBaka -> schnell. Alle bereits gecachten (aktuellen) Serien kommen dran.
@@ -1674,7 +1702,7 @@ def enrich(items, cache_path, health_dir, cap, name_fix=None, cache_ver=CACHE_VE
             if done[0] % 5 == 0:
                 _progress("anreichern", _base + done[0], _base + len(todo), progress_dir)
             if done[0] % 25 == 0:
-                _save_cache(cache, cache_path)
+                _save_cache(cache, cache_path, vorher)
                 print(f"  ... {done[0]}/{len(todo)} angereichert ({int(time.time() - t_start)}s)", flush=True)
             # Zwischen-Render (JB: 'so oft wie Mangas reinkommen'): alle 5 Serien — seit dem
             # dynamischen Nachladen ist das nur noch ein sanfter Zeilen-Tausch, kein Reload.
@@ -1695,8 +1723,14 @@ def enrich(items, cache_path, health_dir, cap, name_fix=None, cache_ver=CACHE_VE
     with ThreadPoolExecutor(max_workers=10) as ex:
         for fut in [ex.submit(enrich_one, k, e, c, st) for (k, e, c, st) in todo]:
             fut.result()
-    _save_cache(cache, cache_path)
+    _save_cache(cache, cache_path, vorher)
     _progress("fertig", _base + len(todo), _base + len(todo), progress_dir)
+    _abschluss_melden(cache_path, new_chaps)
+    return assemble_rows(items, cache, name_fix)
+
+
+def _abschluss_melden(cache_path, new_chaps):
+    """Best-effort-Meldungen nach dem Anreicherungslauf."""
     try:
         srcstatus.save(os.path.join(os.path.dirname(cache_path), "source_status.json"))
     except Exception:
@@ -1707,9 +1741,6 @@ def enrich(items, cache_path, health_dir, cap, name_fix=None, cache_ver=CACHE_VE
                   open(ncp, "w", encoding="utf-8"), ensure_ascii=False)
     except Exception:
         pass
-
-    return assemble_rows(items, cache, name_fix)
-
 
 # Felder, die assemble_rows aus dem Cache in jede Zeile uebernimmt.
 _CACHE_ZEILEN_FELDER = (

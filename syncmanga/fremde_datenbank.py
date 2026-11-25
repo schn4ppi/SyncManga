@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Lese-Kopie einer fremden SQLite-Datenbank (Browser-Verlauf, Cookies) — samt WAL, in sich stimmig.
+"""Lese-Kopie fremder SQLite-Datenbanken — samt WAL und Rollback-Journal.
 
 Ein Browser hält seine Datenbanken im Betrieb gesperrt, also liest man eine
 Kopie. Die naheliegende Kopie liest zu wenig: Firefox und Safari schreiben im
@@ -15,17 +15,24 @@ Der eine Weg zu einer fremden Browser-Datenbank:
    neuere Hauptdatei (gemessen: Kapitel 12 fehlte, ein Zähler sprang von 9 auf
    4, `integrity_check` meldete „ok"). Zwei Fäden eines Prozesses teilen sich
    ausserdem die PID.
-2. Hauptdatei und `-wal` kopieren. Das `-shm` braucht es nicht: Die erste
-   Verbindung auf der Kopie baut den Index aus dem WAL neu auf.
+2. Hauptdatei, `-wal` und `-journal` kopieren. Das `-shm` braucht es nicht:
+   Die erste Verbindung auf der Kopie baut den Index aus dem WAL neu auf.
+   Ein heißes Rollback-Journal wird ausschließlich in der Kopie zurückgespielt.
 3. Der WAL-Kopf wird VOR der Hauptdatei gelesen und mit dem der Kopie
    verglichen. Weicht er ab, hat der Browser das WAL dazwischen neu begonnen, und
    Hauptdatei und WAL passen nicht zusammen: Was der Checkpoint in die
    Hauptdatei geschrieben hat, stünde in keiner der beiden Kopien. Dann beginnt
    der Lauf in einem neuen Unterordner von vorn, höchstens `VERSUCHE` Mal —
    danach `KopieUnstimmig` statt eines Teilstands.
+   Auch der Journal-Kopf muss vor und nach der Kopie sowie in der Kopie
+   übereinstimmen: Ein beendeter oder neu begonnener Schreibvorgang verlangt
+   einen neuen Versuch, statt Hauptdatei und falsches Journal zu verbinden.
 4. Das WAL wird mit einer normalen Verbindung IN DER KOPIE eingespielt
    (`PRAGMA wal_checkpoint(TRUNCATE)`). Danach trägt schon die Hauptdatei der
    Kopie den ganzen Stand — auch für Leser, die nur sie weitergeben (yt-dlp).
+   `PRAGMA quick_check` prüft anschließend die Struktur der Kopie. Eine beim
+   Kopieren zerrissene Datenbank wird ebenfalls bis zu `VERSUCHE` Mal neu
+   kopiert, bevor `KopieUnstimmig` den vorübergehenden Lesefehler meldet.
 5. Nach dem Block ist die Kopie weg. Kopien des Browserverlaufs bleiben nicht
    im Temp liegen.
 
@@ -44,9 +51,8 @@ import shutil
 import sqlite3
 import tempfile
 
-#: So oft darf der Browser das WAL während der Kopie neu beginnen, bevor der
-#: Lesevorgang aufgibt. Jeder Neubeginn setzt einen vollständigen Checkpoint
-#: voraus — schon zwei in derselben Sekunde sind ungewöhnlich.
+#: Höchstens so viele Kopien bei wechselndem WAL/Journal oder beschädigter
+#: Struktur. Jeder Versuch bekommt einen eigenen, vollständig frischen Ordner.
 VERSUCHE = 3
 
 #: Der WAL-Kopf: Magie, Format, Seitengrösse, Checkpoint-Nummer, Salz 1 und 2,
@@ -59,6 +65,7 @@ class KopieUnstimmig(OSError):
 
 
 def _wal_kopf(pfad: str) -> bytes | None:
+    """Erste 32 Bytes einer SQLite-Begleitdatei; auch Journal-Köpfe passen hinein."""
     try:
         with open(pfad, "rb") as f:
             return f.read(WAL_KOPF_BYTES)
@@ -67,21 +74,29 @@ def _wal_kopf(pfad: str) -> bytes | None:
 
 
 def _stimmig_kopieren(quelle: str, ziel: str) -> bool:
-    """Kopiert Hauptdatei und -wal; True, wenn beide zum selben WAL-Stand gehören."""
+    """Kopiert Hauptdatei samt Begleitdateien; True bei passenden Köpfen."""
     vorher = _wal_kopf(f"{quelle}-wal")
+    journal_vorher = _wal_kopf(f"{quelle}-journal")
     shutil.copy(quelle, ziel)
-    try:
-        shutil.copy(f"{quelle}-wal", f"{ziel}-wal")
-    except FileNotFoundError:
-        pass                          # kein WAL (mehr): der Vergleich entscheidet
-    return _wal_kopf(f"{ziel}-wal") == vorher
+    for endung in ("-wal", "-journal"):
+        try:
+            shutil.copy(f"{quelle}{endung}", f"{ziel}{endung}")
+        except FileNotFoundError:
+            pass                      # verschwunden: der Vergleich entscheidet
+    return (_wal_kopf(f"{ziel}-wal") == vorher
+            and _wal_kopf(f"{ziel}-journal") == journal_vorher
+            and _wal_kopf(f"{quelle}-journal") == journal_vorher)
 
 
 def _wal_einspielen(kopie: str) -> None:
-    """Schreibt das mitkopierte WAL in die Hauptdatei der KOPIE."""
+    """Stellt Journal/WAL nur in der KOPIE wieder her und prüft ihre Struktur."""
     con = sqlite3.connect(kopie)
     try:
+        con.execute("PRAGMA schema_version").fetchone()  # heißes Journal zurückspielen
         con.execute("PRAGMA wal_checkpoint(TRUNCATE)")
+        pruefung = con.execute("PRAGMA quick_check").fetchall()
+        if pruefung != [("ok",)]:
+            raise KopieUnstimmig("; ".join(str(zeile[0]) for zeile in pruefung))
     finally:
         con.close()
 
@@ -96,15 +111,23 @@ def lese_kopie(quelle):
     """
     quelle = os.fspath(quelle)
     with tempfile.TemporaryDirectory(prefix="lesekopie_") as ordner:
+        letzter_fehler = "WAL oder Journal wechselten während der Kopie"
         for versuch in range(1, VERSUCHE + 1):
             os.mkdir(os.path.join(ordner, str(versuch)))
             kopie = os.path.join(ordner, str(versuch), os.path.basename(quelle))
-            if _stimmig_kopieren(quelle, kopie):
-                break
+            if not _stimmig_kopieren(quelle, kopie):
+                letzter_fehler = "WAL oder Journal wechselten während der Kopie"
+                continue
+            try:
+                _wal_einspielen(kopie)
+            except (sqlite3.Error, KopieUnstimmig) as exc:
+                letzter_fehler = str(exc)
+                continue
+            break
         else:
             raise KopieUnstimmig(
-                f"Das WAL wurde während {VERSUCHE} Kopien neu begonnen: {quelle}")
-        _wal_einspielen(kopie)
+                f"Keine stimmige SQLite-Kopie nach {VERSUCHE} Versuchen: "
+                f"{quelle}; {letzter_fehler}")
         yield kopie
 
 

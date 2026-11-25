@@ -12,12 +12,84 @@ WICHTIG fuer Tests: Aufrufe gehen ueber `urllib.request.urlopen` (Modul-Attribut
 damit ein Mock von `urllib.request.urlopen` greift — keine echten Netzaufrufe in Tests.
 """
 import json
+import os
 import sys
 import threading
 import time
 import urllib.request
 
+try:
+    import familie as _fam  # Familienbetrieb: der gemeinsame Kern (CLAUDE.md, „Geteilter Zustand“)
+except ImportError:                 # eigenständige App / öffentliches Repo: dort gibt es familie.py nicht
+    _fam = None
+
 UA = {"User-Agent": "manga-leseliste/1.0"}
+
+
+def json_aendern(pfad, aenderung, standard=None, streng=False):
+    """Lesen-Ändern-Schreiben einer geteilten JSON-Datei (Register JR68).
+
+    Im Familienbetrieb über `familie.json_aendern` — dieselbe Datei-Sperre wie Tray und
+    Werkzeuge; `None` heißt: nichts geschrieben (Sperre nicht bekommen, Schreibfehler oder — mit
+    `streng` — Datei vorhanden, aber unlesbar). Das Paket bleibt in sich geschlossen (exe,
+    öffentliches Repo, vgl. `fremde_datenbank.py`): ohne `familie.py` derselbe Ablauf atomar,
+    aber ohne prozessübergreifende Sperre — dort schreibt nur die eine App."""
+    if _fam is not None:
+        return _fam.json_aendern(pfad, aenderung, standard=standard, streng=streng)
+    try:
+        with open(pfad, encoding="utf-8") as f:
+            daten = json.load(f)
+    except (OSError, ValueError):
+        if streng and os.path.exists(pfad):
+            return None
+        daten = {} if standard is None else standard
+    neu = aenderung(daten)
+    neu = daten if neu is None else neu
+    tmp = f"{pfad}.{os.getpid()}.{threading.get_ident():x}.tmp"
+    try:
+        os.makedirs(os.path.dirname(os.path.abspath(pfad)), exist_ok=True)
+        with open(tmp, "w", encoding="utf-8") as f:
+            json.dump(neu, f, ensure_ascii=False, indent=1)
+        os.replace(tmp, pfad)
+    except (OSError, TypeError, ValueError):
+        try:
+            os.remove(tmp)
+        except OSError:
+            pass
+        return None
+    return neu
+
+
+def _json_delta(aktuell, vorher, nachher):
+    """Nur lokal geaenderte Felder uebernehmen; fremde Ergaenzungen bleiben erhalten."""
+    if not all(isinstance(d, dict) for d in (aktuell, vorher, nachher)):
+        return nachher
+    for key in vorher.keys() - nachher.keys():
+        if key in aktuell and aktuell[key] == vorher[key]:
+            aktuell.pop(key)
+    for key, wert in nachher.items():
+        if key not in vorher:
+            if isinstance(wert, dict) and isinstance(aktuell.get(key), dict):
+                aktuell[key] = _json_delta(aktuell[key], {}, wert)
+            else:
+                aktuell[key] = wert
+        elif wert != vorher[key]:
+            aktuell[key] = _json_delta(aktuell.get(key), vorher[key], wert)
+    return aktuell
+
+
+def json_delta_speichern(pfad, vorher, nachher):
+    """Lange Netzarbeit ausserhalb der Sperre, ihren Feld-Delta unter Dateisperre speichern.
+
+    Immer streng: eine vorhandene, aber unlesbare Datei (z. B. md_cache.json) wird nie durch
+    den Delta allein ersetzt — der alte `_save_cache` schrieb den vollen Stand, ein Delta auf
+    `{}` hätte Stunden Anreicherung verworfen (Durchsicht JR68). Fehlt die Datei, gilt der volle
+    Stand `nachher`."""
+    leer = {}
+
+    def aenderung(aktuell):
+        return nachher if aktuell is leer else _json_delta(aktuell, vorher, nachher)
+    return json_aendern(pfad, aenderung, standard=leer, streng=True)
 
 
 def use_utf8_stdio():

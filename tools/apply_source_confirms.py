@@ -31,6 +31,7 @@ if PKG not in sys.path:
     sys.path.insert(0, PKG)
 
 from syncmanga import config, readerlink  # noqa: E402
+from syncmanga.common import json_aendern  # noqa: E402
 from syncmanga.enrich import cache_fuer_werkzeuge, cache_keys_for_h  # noqa: E402
 from syncmanga.parse import norm  # noqa: E402
 
@@ -81,14 +82,14 @@ def apply_confirms(confirms, cache=None, namefix=None, overrides=None):
             continue
         if v.get("mb_id"):                          # MangaBaka-ID-Pin -> overrides.json (Metadaten)
             # Vorhandenen Namen/Suchbegriff behalten (kuratiert), sonst den Cache-Titel.
-            old = config.load_overrides(namefix).get(ck) or {}
-            config.save_override(namefix, ck, old.get("name") or title,
-                                 search=old.get("search"), mb_id=v["mb_id"])
+            if config.save_override_pin(namefix, ck, title, mb_id=v["mb_id"]) is None:
+                return None
             written += 1
         elif v.get("url"):                          # Reader-Direktlink -> series_overrides.json
             url = v["url"]
-            readerlink.save_series_override(overrides, ck, title, url,
-                                            template=not readerlink.ist_opake_kapitel_id(url))
+            if readerlink.save_series_override(overrides, ck, title, url,
+                                             template=not readerlink.ist_opake_kapitel_id(url)) is None:
+                return None
             written += 1
     return written
 
@@ -100,15 +101,26 @@ def main():
         return
     cache = cache_fuer_werkzeuge(PKG, sys.argv[1] if len(sys.argv) > 1 else None)
     n = apply_confirms(confirms, cache)
+    if n is None:
+        print("Quellen-Bestaetigungen: Override-Datei gesperrt; Eingang bleibt erhalten.")
+        return
     print(f"{n} bestaetigte Quelle(n) in series_overrides.json geschrieben.")
     # ins .done-Archiv ueberfuehren (additiv), Eingang leeren
-    done = _load(DONE, {})
-    done.update({k: {**(v if isinstance(v, dict) else {"url": v}), "applied": time.strftime("%Y-%m-%d %H:%M")}
-                 for k, v in confirms.items()})
-    with open(DONE, "w", encoding="utf-8") as f:
-        json.dump(done, f, ensure_ascii=False, indent=1)
-    os.remove(CONFIRMS)
+    if _archivieren(confirms) is None:
+        print("Quellen-Bestaetigungen: Historie/Eingang gesperrt; Eingang bleibt erhalten.")
+        return
     print(f"Archiviert -> {os.path.basename(DONE)}; Eingang geleert.")
+
+
+def _archivieren(confirms):
+    def aenderung(done):
+        done.update({k: {**(v if isinstance(v, dict) else {"url": v}),
+                          "applied": time.strftime("%Y-%m-%d %H:%M")}
+                     for k, v in confirms.items()})
+    if json_aendern(DONE, aenderung, standard={}, streng=True) is None:
+        return None
+    return json_aendern(CONFIRMS, lambda aktuell: {k: v for k, v in aktuell.items()
+                                                    if k not in confirms or confirms[k] != v}, standard={})
 
 
 if __name__ == "__main__":

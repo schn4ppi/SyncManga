@@ -27,6 +27,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 PKG = os.path.normpath(os.path.join(HERE, ".."))
 if PKG not in sys.path:
     sys.path.insert(0, PKG)
+from syncmanga.anilist import importe_speichern, lesestaende_speichern  # noqa: E402
 from syncmanga.parse import norm  # noqa: E402
 
 DATA = os.path.join(PKG, "data")
@@ -104,30 +105,13 @@ def main():
     fixes, new = plan(entries, cache)
 
     # 1) Lesestaende -> list_state.json (SEED; nur erhoehen, vorhandene fremde Keys bleiben)
-    state = json.load(open(STATE, encoding="utf-8")) if os.path.exists(STATE) else {}
-    cf = json.loads(state.get("chapFix") or "{}")
-    raised = 0
-    for k, n in fixes.items():
-        # chapFix-Wert: Zahl (alt) oder {n, b} (list.js seit 24.09.2026)
-        _alt = cf.get(k)
-        _alt = _alt.get("n") if isinstance(_alt, dict) else _alt
-        if n > float(_alt or 0):
-            cf[k] = n
-            raised += 1
-    if raised:
-        state["chapFix"] = json.dumps(cf, ensure_ascii=False)
-        json.dump(state, open(STATE, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+    raised = lesestaende_speichern(STATE, fixes)
 
     # 2) Unbekannte Serien -> imported_series.json (naechster Lauf reichert sie an)
-    imported = json.load(open(IMPORTED, encoding="utf-8")) if os.path.exists(IMPORTED) else {}
-    added = 0
-    for e in new:
-        if e["key"] not in imported:
-            imported[e["key"]] = {"name": e["name"], "chap": e["chap"], "status": e["status"],
-                                  "mal_id": e["mal_id"], "ts": time.time()}
-            added += 1
-    if added:
-        json.dump(imported, open(IMPORTED, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+    added = importe_speichern(IMPORTED, new)
+    if raised is None or added is None:
+        print("Import: gemeinsame Datei gesperrt; XML bleibt fuer den naechsten Lauf erhalten.")
+        return
 
     done = xml_path + f".done-{time.strftime('%Y%m%d-%H%M')}"
     os.replace(xml_path, done)

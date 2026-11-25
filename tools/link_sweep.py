@@ -15,6 +15,7 @@ DRY-RUN ist Default; mit --apply werden die Aenderungen in den Cache geschrieben
 
 Aufruf:  python -m tools.link_sweep [--apply] [--deep] [--cap 200]
 """
+import copy
 import json
 import os
 import shutil
@@ -28,6 +29,7 @@ if PKG not in sys.path:
 
 from syncmanga import config, readerlink
 from syncmanga import linkhealth as lh  # noqa: E402
+from syncmanga.common import json_delta_speichern  # noqa: E402
 
 
 def find_cache():
@@ -209,6 +211,7 @@ def auto_sweep(now=None):
     if not os.path.exists(cache_path):
         return {"skipped": "kein Cache"}
     cache = json.load(open(cache_path, encoding="utf-8"))
+    vorher = copy.deepcopy(cache)                              # JR68: nur den eigenen Delta speichern
     shutil.copy(cache_path, cache_path + ".bak-autosweep")     # EIN rollierendes Backup je Lauf
     counter = {"n": 0, "bad": 0}
     aborted = False
@@ -224,9 +227,9 @@ def auto_sweep(now=None):
               "series": {k: e["lh_status"] for k, e in cache.items()
                          if isinstance(e, dict) and e.get("lh_status")}}
     _write_health(report, _merge_alive(prev, alive, now))
-    tmp = cache_path + ".tmp"
-    json.dump(cache, open(tmp, "w", encoding="utf-8"), ensure_ascii=False)
-    os.replace(tmp, cache_path)
+    if json_delta_speichern(cache_path, vorher, cache) is None:
+        print("  [Link-Sweep] md_cache.json gesperrt oder unlesbar — Ergebnis nicht gespeichert, "
+              "der naechste Lauf prueft erneut", flush=True)
     mode = "NETZ-ABBRUCH (nur Schema)" if aborted else ("deep" if deep_due else "schema-only")
     print(f"  [Auto-Sweep/{mode}] Schema-tot: {summary['schema_quarantined']}  "
           f"quarantaeniert: {summary['health_quarantined']}  beobachtet: {summary['watched']}  "
@@ -256,6 +259,7 @@ def main():
     readerlink.load_readers(os.path.join(PKG, "data", "readers_pattern.json"))
     cache_path = find_cache()
     cache = json.load(open(cache_path, encoding="utf-8"))
+    vorher = copy.deepcopy(cache)
     if apply:
         shutil.copy(cache_path, cache_path + ".bak-sweep-" + time.strftime("%Y%m%d-%H%M%S"))
     now = time.time()
@@ -269,10 +273,8 @@ def main():
               "series": {k: e["lh_status"] for k, e in cache.items()
                          if isinstance(e, dict) and e.get("lh_status")}}
     _write_health(report, _merge_alive(prev, alive, now))
-    if apply:
-        tmp = cache_path + ".tmp"
-        json.dump(cache, open(tmp, "w", encoding="utf-8"), ensure_ascii=False)
-        os.replace(tmp, cache_path)
+    if apply and json_delta_speichern(cache_path, vorher, cache) is None:
+        print("md_cache.json gesperrt oder unlesbar — nichts geschrieben.")
     mode = "ANGEWANDT" if apply else "DRY-RUN (nichts geschrieben; --apply zum Anwenden)"
     print(f"[{mode}]  Schema-tot: {summary['schema_quarantined']}  "
           f"Health-quarantaeniert: {summary['health_quarantined']}  beobachtet: {summary['watched']}  "

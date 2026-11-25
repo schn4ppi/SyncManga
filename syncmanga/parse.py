@@ -10,6 +10,10 @@ Enthält:
   host, slug_from_url, clean_title, chapter_of, series_from, norm, is_junk,
   romaji_score, pick_english, sim_norm, key_ratio  + die zugehörigen Regex-Konstanten
   (SITE_SUFFIX, CH, URLCH, GARB, ROM_PART, ROM_WORD).
+  Seit 07.10.2026 (JB-Entscheid, Lesestand-Wurzel): chapter_of liest die Kapitelzahl je
+  Host-Muster aus der Adresse (ADRESS_VORLAGEN, adress_kapitel, adresse_titel_widerspruch,
+  seite_zeigte_kein_kapitel),
+  MangaDex nur aus dem Titel; Hosts ohne Muster wie bisher (_chapter_of_bisher).
 """
 import difflib
 import html
@@ -184,7 +188,151 @@ def clean_title(t):
 MAX_CHAPTER = 5000   # kein Manga hat >5000 Kapitel -> groessere Zahl = Parse-Fehler (URL-ID/Datum)
 
 
+# ---------------------------------------------------------------------------------------------
+# Kapitel aus der ADRESSE, je Host-Muster (JB-Entscheid 07.10.2026, Klaerliste der 17 Lesestaende)
+#
+# Asura laedt neue Kapitel ohne Neuaufbau; Firefox speichert zur neuen Adresse dann oft den
+# Seitentitel der VORIGEN Seite, meist einer anderen Serie. Gemessen 07.10. an JBs Verlauf
+# (5.932 Kapitelbesuche): asuracomic.net 739 von 1.556, asurascans.com 729 von 1.231 Titeln
+# widersprechen der Adresse. chapter_of las den Titel zuerst: Aus 'Murim Login Chapter 245' auf
+# der Adresse von Demon-Faction-Kapitel 150 wurde chapFix 245, den der Auto-Sync nach AniList
+# schrieb (02./03.07.) und Findus am 11.08. von dort uebernahm.
+#
+# Die Adresse gilt vor dem Titel, aber NUR je Host-Muster: Eine pauschale Regel las bei 349 von
+# 736 MangaDex-Besuchen Ziffern der UUID als Kapitel. Hosts ohne Muster bleiben beim alten Weg
+# (_chapter_of_bisher). DIESELBE Regel steht im Findus-Verlauf-Zubringer
+# (SyncFindus/System/zubringer_verlauf.py); der Waechter test_syncmanga_seitentitel_adresse (d)
+# haelt die drei Listen gleich, SyncFindus tests/test_lw_seitentitel_adresse.py (k) ruft beide
+# Funktionen ueber jeden Fall und verlangt dieselbe Zahl. Findus prueft zusaetzlich die Titel
+# seines Registers (_titel_nennt_anderes_kapitel); SyncManga hat kein Register, die Null-Regel
+# (seite_zeigte_kein_kapitel) gilt in beiden.
+ADRESS_VORLAGEN = (
+    # Reader-Atlas (SyncFindus reader_beweis.READER, je Muster am 25.08.2026 per 404 bewiesen)
+    "https://mangabolt.com/chapter/{slug}-chapter-{n}/",
+    "https://mangack.com/chapter/{slug}-chapter-{n}/",
+    "https://www.mgeko.cc/reader/en/{slug}-chapter-{n}-eng-li/",
+    "https://comicasura.net/manga/{slug}/chapter-{n}/",
+    "https://manhwabuddy.com/manhwa/{slug}/chapter-{n}/",
+    "https://kaliscan.com/manga/{slug}/chapter-{n}/",
+    "https://vortexscans.org/series/{slug}/chapter-{n}",
+    "https://scythescans.com/chapter/{slug}-chapter-{n}/",
+    "https://manganato.gg/manga/{slug}/chapter-{n}/",
+    # JB-Entscheid 07.10.: Asura (asurascans.com heute unter /comics/)
+    "https://asuracomic.net/series/{slug}/chapter/{n}",
+    "https://asurascans.com/comics/{slug}/chapter/{n}",
+    "https://asurascans.com/series/{slug}/chapter/{n}",
+    # Auftrag der Vollstaendigkeits-Kritik 07.10., an JBs Verlauf gemessen
+    "https://mangafire.to/read/{slug}/{lang}/chapter-{n}",
+    "https://manhwaclan.com/manga/{slug}/chapter-{n}/",
+    "https://mangak.io/read/{slug}/chapter-{n}/",
+    "https://mangak.io/{slug}/chapter-{n}",
+    "https://hentairead.io/{slug}/chapter-{n}/",
+)
+# Opake Kapitel-Kennung (mangadex.org/chapter/<uuid>/<seite>): nur der Seitentitel zaehlt.
+TITEL_QUELLE_HOSTS = frozenset({"mangadex.org"})
+# Nur das Muster liefert eine Zahl: daneben stehen UUID-Kapitel und Serienseiten mit dem Titel
+# einer anderen Serie; der Titel zaehlt dort nur, wenn er dieselbe Serie nennt wie die Adresse.
+NUR_MUSTER_HOSTS = frozenset({"asuracomic.net", "asurascans.com"})
+
+_ADRESS_ZAHL = r"(\d+)(?:[.-](\d{1,2}))?"
+
+
+def _vorlage_kompilieren(vorlage):
+    """'https://host/pfad/{slug}/chapter-{n}' -> (host, Pfad-Regex mit Fangstelle fuer {n})."""
+    m = re.match(r'https?://([^/]+)(/.*)$', vorlage)
+    h = m.group(1).lower()
+    h = h[4:] if h.startswith('www.') else h
+    teile = re.split(r'(\{slug\}|\{n\}|\{lang\})', m.group(2).rstrip('/'))
+    ersatz = {'{slug}': r'[^/?#]+?', '{lang}': r'[a-z]{2}(?:-[a-z]{2})?', '{n}': _ADRESS_ZAHL}
+    rx = ''.join(ersatz.get(t, re.escape(t)) for t in teile)
+    return h, re.compile(rx + r'/?(?=[?#]|$)', re.I)
+
+
+def _muster_tabelle(vorlagen):
+    """host -> [Pfad-Regex] aus den Vorlagen."""
+    tabelle = {}
+    for vorlage in vorlagen:
+        h, rx = _vorlage_kompilieren(vorlage)
+        tabelle.setdefault(h, []).append(rx)
+    return tabelle
+
+
+_ADRESS_MUSTER = _muster_tabelle(ADRESS_VORLAGEN)
+
+
+def _host_in(h, hosts):
+    """Der Eintrag aus `hosts`, zu dem `h` gehoert (auch als Subdomain), sonst None."""
+    for k in hosts:
+        if h == k or h.endswith('.' + k):
+            return k
+    return None
+
+
+def adress_kapitel(url):
+    """Kapitelzahl, die die Adresse nach dem Muster ihres Hosts traegt, sonst None."""
+    k = _host_in(host(url).lower(), _ADRESS_MUSTER)
+    if not k:
+        return None
+    pfad = re.sub(r'^https?://[^/]+', '', url or '')
+    for rx in _ADRESS_MUSTER[k]:
+        m = rx.match(pfad)
+        if m:
+            n = float(m.group(1) + ('.' + m.group(2) if m.group(2) else ''))
+            return n if 0 < n <= MAX_CHAPTER else None
+    return None
+
+
+def _titel_kapitel(title, null_erlaubt=False):
+    """Kapitelzahl aus dem Seitentitel ('chapter 0' zaehlt nur beim Abgleich mit der Adresse:
+    so zeigt mangafire ein Kapitel, das es nicht gibt)."""
+    m = CH.search(title or '')
+    if not m:
+        return None
+    n = float(m.group(1))
+    return n if (n >= 0 if null_erlaubt else n > 0) and n <= MAX_CHAPTER else None
+
+
+def _gleiche_serie(url, title):
+    s = norm(slug_from_url(url) or '')
+    return bool(s) and s == norm(clean_title(title))
+
+
+def adresse_titel_widerspruch(url, title):
+    """True, wenn die Adresse nach ihrem Host-Muster ein Kapitel traegt und der Titel eines nennt,
+    das mehr als ein GANZES Kapitel daneben liegt (11 vor 12.1 ist ein Schritt, kein Widerspruch:
+    Asura, mangafire, manhwaclan zeigen beim Weiterblaettern oft noch den vorigen Titel)."""
+    a = adress_kapitel(url)
+    t = _titel_kapitel(title, null_erlaubt=True)
+    return a is not None and t is not None and abs(int(a) - int(t)) > 1
+
+
+def seite_zeigte_kein_kapitel(url, title):
+    """Die Seite zeigte nicht, was die Adresse verlangte: Der Titel nennt ein Kapitel mehr als eins
+    neben der Adresse, und zwar dieselbe Serie ODER 'chapter 0'. Mit 'chapter 0' zeigt mangafire
+    ein Kapitel, das es nicht gibt, gleich unter welchem Namen (Abnahme 07.10. abends: Slug
+    eternally-regressing-knight, Titel 'The Knight Only Lives Today chapter 0' auf .../chapter-250;
+    der Textvergleich sieht zwei Serien, gezeigt wurde trotzdem kein Kapitel 250)."""
+    return adresse_titel_widerspruch(url, title) and (
+        _gleiche_serie(url, title) or _titel_kapitel(title, null_erlaubt=True) == 0)
+
+
 def chapter_of(url, title):
+    """Kapitelnummer zu Adresse + Seitentitel (JB-Entscheid 07.10.2026): MangaDex nur Titel;
+    Host mit Muster: die Adresse, ausser die Seite zeigte nicht, was die Adresse verlangte
+    (seite_zeigte_kein_kapitel -> None); sonst wie bisher."""
+    h = host(url).lower()
+    if _host_in(h, TITEL_QUELLE_HOSTS):
+        return _titel_kapitel(title)
+    a = adress_kapitel(url)
+    if a is not None:
+        return None if seite_zeigte_kein_kapitel(url, title) else a
+    if _host_in(h, NUR_MUSTER_HOSTS):
+        t = _titel_kapitel(title)
+        return t if t is not None and _gleiche_serie(url, title) else None
+    return _chapter_of_bisher(url, title)
+
+
+def _chapter_of_bisher(url, title):
     # Bindestrich-Dezimal im PFAD hat Vorrang (chapter-953-5 -> 953.5); die URL ist die
     # Ground-Truth fuers Link-Ziel, konservativ (nur 1-2-Ziffern-Tail, s. URLCH_DASH).
     md = URLCH_DASH.search(url or '')

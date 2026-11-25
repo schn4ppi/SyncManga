@@ -27,6 +27,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 PKG = os.path.normpath(os.path.join(HERE, ".."))
 if PKG not in sys.path:
     sys.path.insert(0, PKG)
+from syncmanga.common import json_aendern  # noqa: E402
 from syncmanga.parse import norm  # noqa: E402
 
 DEFAULT_CACHE = os.path.normpath(os.path.join(PKG, "..", "..", "SyncDashTray", "System", "md_cache.json"))
@@ -63,11 +64,8 @@ def cover_suspects(ent, ov):
             for cu, ids in sorted(by_cover.items()) if len(ids) > 1]
 
 
-def main():
-    cache_path = sys.argv[1] if len(sys.argv) > 1 else DEFAULT_CACHE
-    cache = json.load(open(cache_path, encoding="utf-8"))
-    ent = {k: v for k, v in cache.items() if isinstance(v, dict) and (v.get("title") or "").strip()}
-
+def duplikate_speichern(path, ent):
+    """Auto-Pins gegen das gesperrte Override-Dokument pruefen und ergaenzen."""
     # Titel-Index der Eintraege MIT MangaBaka-ID
     by_title = {}
     for k, v in ent.items():
@@ -78,9 +76,16 @@ def main():
                 if nt:
                     by_title.setdefault(nt, (k, int(mid[3:]), v.get("title")))
 
-    ovdata = json.load(open(OV, encoding="utf-8")) if os.path.exists(OV) else {"overrides": {}}
-    ov = ovdata.get("overrides", {})
     pinned, same_id = [], {}
+    def aenderung(ovdata):
+        ov = ovdata.setdefault("overrides", {})
+        _duplikate_eintragen(ent, by_title, ov, pinned, same_id)
+        return ovdata
+    data = json_aendern(path, aenderung, standard={"overrides": {}}, streng=True)
+    return (data["overrides"], pinned, same_id) if data is not None else None
+
+
+def _duplikate_eintragen(ent, by_title, ov, pinned, same_id):
     for k, v in ent.items():
         mid = str(v.get("md_id") or "")
         if mid.startswith("mb:"):
@@ -91,11 +96,18 @@ def main():
             twin_key, twin_id, twin_title = hit
             ov[k] = {"mb_id": twin_id, "name": twin_title}
             pinned.append({"key": k, "titel": v.get("title"), "zwilling": twin_key, "mb_id": twin_id})
-    n_groups = sum(1 for ks in same_id.values() if len(ks) > 1)   # normal (Render verschmilzt sie)
 
-    if pinned:
-        ovdata["overrides"] = ov
-        json.dump(ovdata, open(OV, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
+
+def main():
+    cache_path = sys.argv[1] if len(sys.argv) > 1 else DEFAULT_CACHE
+    cache = json.load(open(cache_path, encoding="utf-8"))
+    ent = {k: v for k, v in cache.items() if isinstance(v, dict) and (v.get("title") or "").strip()}
+    gespeichert = duplikate_speichern(OV, ent)
+    if gespeichert is None:
+        print("Duplikat-Waechter: overrides.json gesperrt; keine Auto-Pins gespeichert.")
+        return
+    ov, pinned, same_id = gespeichert
+    n_groups = sum(1 for ks in same_id.values() if len(ks) > 1)
     suspects = cover_suspects(ent, ov)             # Klasse 3: nach den Auto-Pins = effektive Sicht
     json.dump({"ts": time.time(), "auto_pins": pinned, "cache_zwillinge_normal": n_groups,
                "cover_verdacht": suspects},

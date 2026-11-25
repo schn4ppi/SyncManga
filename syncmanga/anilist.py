@@ -16,7 +16,7 @@ import json
 import os
 import time
 
-from .common import Pacer, post_json
+from .common import Pacer, json_aendern, post_json
 
 API = "https://graphql.anilist.co"
 TOKEN_SERVICE = "claude-sync-anilist"
@@ -114,6 +114,45 @@ def plan_pull(entries, cache):
     return fixes, new
 
 
+def lesestaende_speichern(state_p, fixes):
+    """Kapitelkorrekturen unter gemeinsamer Sperre nur anheben."""
+    raised = 0
+    def aenderung(state):
+        nonlocal raised
+        try:
+            cf = json.loads(state.get("chapFix") or "{}")
+        except ValueError:
+            cf = {}
+        for k, n in fixes.items():
+            alt = cf.get(k)
+            alt = alt.get("n") if isinstance(alt, dict) else alt
+            if n > float(alt or 0):
+                cf[k] = n
+                raised += 1
+        if raised:
+            state["chapFix"] = json.dumps(cf, ensure_ascii=False)
+    if not fixes:
+        return 0
+    return raised if json_aendern(state_p, aenderung, standard={}, streng=True) is not None else None
+
+
+def importe_speichern(imp_p, new, src=None):
+    """Neue Serien im frisch geladenen Import-Vorrat vormerken."""
+    added = 0
+    def aenderung(imported):
+        nonlocal added
+        for e in new:
+            if e["key"] not in imported:
+                imported[e["key"]] = {"name": e["name"], "chap": e["chap"], "status": e["status"],
+                                      "mal_id": e["mal_id"], "ts": time.time()}
+                if src:
+                    imported[e["key"]]["src"] = src
+                added += 1
+    if not new:
+        return 0
+    return added if json_aendern(imp_p, aenderung, standard={}, streng=True) is not None else None
+
+
 def pull_library(cache_path, data_dir):
     """AniList-RUECKWEG (JB: 'absolut'): die eigene AniList-Bibliothek lesen und einarbeiten —
     was du unterwegs am Handy pflegst, erscheint hier von selbst. Nicht-destruktiv:
@@ -140,44 +179,12 @@ def pull_library(cache_path, data_dir):
         if len(new) > max(20, len(entries) // 4):
             new = []
 
-        raised = 0
         state_p = os.path.join(data_dir, "list_state.json")
-        try:
-            state = json.load(open(state_p, encoding="utf-8")) if os.path.exists(state_p) else {}
-        except (OSError, ValueError):
-            state = {}
-        try:
-            cf = json.loads(state.get("chapFix") or "{}")
-        except ValueError:
-            cf = {}
-        for k, n in fixes.items():
-            # chapFix-Wert: Zahl (alt) oder {n, b} (list.js seit 24.09.2026)
-            _alt = cf.get(k)
-            _alt = _alt.get("n") if isinstance(_alt, dict) else _alt
-            if n > float(_alt or 0):
-                cf[k] = n
-                raised += 1
-        if raised:
-            state["chapFix"] = json.dumps(cf, ensure_ascii=False)
-            tmp = state_p + ".tmp"
-            json.dump(state, open(tmp, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
-            os.replace(tmp, state_p)
-
-        added = 0
+        raised = lesestaende_speichern(state_p, fixes)
         imp_p = os.path.join(data_dir, "imported_series.json")
-        try:
-            imported = json.load(open(imp_p, encoding="utf-8")) if os.path.exists(imp_p) else {}
-        except (OSError, ValueError):
-            imported = {}
-        for e in new:
-            if e["key"] not in imported:
-                imported[e["key"]] = {"name": e["name"], "chap": e["chap"], "status": e["status"],
-                                      "mal_id": e["mal_id"], "ts": time.time(), "src": "anilist"}
-                added += 1
-        if added:
-            tmp = imp_p + ".tmp"
-            json.dump(imported, open(tmp, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
-            os.replace(tmp, imp_p)
+        added = importe_speichern(imp_p, new, src="anilist")
+        if raised is None or added is None:
+            return None
 
         if raised or added:
             print(f"  [AniList-Pull] {raised} Lesestände angehoben, {added} neue Serien vorgemerkt",
@@ -206,7 +213,11 @@ def push_progress(rows):
         for attempt in (0, 1):
             try:
                 AL_PACER.wait()
-                post_json(API, {"query": _MUTATION, "variables": {"id": al, "p": p}}, headers=hdr)
+                antwort = post_json(API, {"query": _MUTATION, "variables": {"id": al, "p": p}}, headers=hdr)
+                if (antwort.get("errors") or
+                        ((antwort.get("data") or {}).get("SaveMediaListEntry") or {}).get("progress") is None):
+                    err += 1
+                    break
                 synced[str(al)] = p
                 ok += 1
                 break

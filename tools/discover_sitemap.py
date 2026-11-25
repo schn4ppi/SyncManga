@@ -24,6 +24,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 PKG = os.path.normpath(os.path.join(HERE, ".."))
 if PKG not in sys.path:
     sys.path.insert(0, PKG)
+from syncmanga.common import json_aendern  # noqa: E402
 from syncmanga.parse import norm  # noqa: E402
 from syncmanga.readerlink import entry_slugs  # noqa: E402
 
@@ -138,6 +139,24 @@ def save_map(mapfile, m):
         os.remove(mapfile)
 
 
+def treffer_speichern(pfad, treffer):
+    """Normalisierte Schluessel erst im frisch gesperrten Vorrat vergleichen."""
+    hinzu = 0
+
+    def aenderung(data):
+        nonlocal hinzu
+        ov = data.get("overrides") or {}
+        known = {norm(k) for k in ov}
+        for key, eintrag in treffer.items():
+            if norm(key) not in known:
+                ov[key] = eintrag
+                known.add(norm(key))
+                hinzu += 1
+        data["overrides"] = ov
+
+    return hinzu if json_aendern(pfad, aenderung, standard={}, streng=True) is not None else None
+
+
 def main():
     try:
         c = json.load(open(CACHE, encoding="utf-8"))
@@ -152,7 +171,7 @@ def main():
     # Roh-Keys wie 'Duke Pendragon, Master of ...' matchten norm(t) nie -> stilles Duplikat,
     # das sich beim Laden gegenseitig ueberschreibt).
     known = {norm(k) for k in ov}
-    total = 0
+    treffer = {}
     for site in SITES:
         print(f"{site['name']}: Sitemap laden ...", flush=True)
         m = build_map(site)
@@ -170,16 +189,14 @@ def main():
                     url = heal_read_scheme(url)
                     if not url:
                         continue
-                ov[norm(t)] = {"name": t, "chapter": url, "trust": True, "auto": site["name"]}
+                treffer[norm(t)] = {"name": t, "chapter": url, "trust": True, "auto": site["name"]}
                 known.add(norm(t))
                 found += 1
-        total += found
         print(f"  {len(m)} Serien in DB, {found} neue Overrides.", flush=True)
-    data["overrides"] = ov
-    tmp = OV + ".tmp"                              # atomar schreiben -> nie eine halb geschriebene
-    with open(tmp, "w", encoding="utf-8") as f:    # Datei; gefahrlos parallel zu einem Manga-Lauf.
-        json.dump(data, f, ensure_ascii=False, indent=2)
-    os.replace(tmp, OV)
+    total = treffer_speichern(OV, treffer)
+    if total is None:
+        print("Sitemap-Suche: series_overrides.json gesperrt; Treffer nicht gespeichert.", flush=True)
+        return None
     print(f"Fertig: {total} Sitemap-Overrides ergaenzt -> {OV}", flush=True)
 
 

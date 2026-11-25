@@ -17,6 +17,7 @@ import os
 import time
 import urllib.request
 
+from .common import json_aendern
 from .parse import host
 
 SECTIONS = (
@@ -266,35 +267,23 @@ def _broken_einreihen(data_dir, fails):
     """Ausfaelle des Link-Sweeps in den bestehenden Reparatur-Eingang einreihen
     (data/broken_links.json, vereint, dedupe nach Name)."""
     p = os.path.join(data_dir, "broken_links.json")
-    try:
-        old = json.load(open(p, encoding="utf-8"))
+    def aenderung(old):
         if not isinstance(old, list):
             old = []
-    except (OSError, ValueError):
-        old = []
-    seen = {r.get("name") for r in old if isinstance(r, dict)}
-    merged = old + [f for f in fails if f["name"] not in seen]
-    tmp = p + ".tmp"
-    json.dump(merged, open(tmp, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
-    os.replace(tmp, p)
+        seen = {r.get("name") for r in old if isinstance(r, dict)}
+        return old + [f for f in fails if f["name"] not in seen]
+    return json_aendern(p, aenderung, standard=[]) is not None
 
 
 def _auto_pause_ergaenzen(status_out, burst):
     """Ausfall-Muster einer Domain -> Auto-Pause ERGAENZEN (reader_status.json + live)."""
     from . import config as _c
-    try:
-        data = json.load(open(status_out, encoding="utf-8"))
-    except Exception:
-        data = {}
-    auto = sorted(set(data.get("auto_paused") or []) | set(burst))
-    data["auto_paused"] = auto
-    try:
-        tmp = status_out + ".tmp"
-        json.dump(data, open(tmp, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
-        os.replace(tmp, status_out)
-    except Exception:
-        pass
-    _c.set_auto_paused(auto)
+    def aenderung(data):
+        data["auto_paused"] = sorted(set(data.get("auto_paused") or []) | set(burst))
+    data = json_aendern(status_out, aenderung, standard={})
+    if data is not None:
+        _c.set_auto_paused(data["auto_paused"])
+    return data
 
 
 def link_sweep(cache_path, data_dir, n=25, check=None, status_out=STATUS_OUT):
@@ -377,24 +366,26 @@ def refresh_status(out=STATUS_OUT, workers=8, cache_path=None):
     # ZWEI aufeinanderfolgenden down/maintenance-Messungen (ein einzelner Flacker beim
     # 10-Minuten-Check togglet sonst die Links hin und her); aufgehoben wird SOFORT bei 'ok'
     # (schnelle Heilung). Manuelle Pausen (sources.json) bleiben davon unberuehrt.
-    try:
-        prev = json.load(open(out, encoding="utf-8"))
-    except Exception:
-        prev = {}
+    def aenderung(prev):
+        return _status_aktualisieren(prev, readers)
+    data = json_aendern(out, aenderung, standard={})
+    if data is None:
+        return {"checked": time.strftime("%Y-%m-%d %H:%M"), "readers": readers,
+                "auto_paused": []}
+    from . import config
+    config.set_auto_paused(data["auto_paused"])
+    if data["auto_paused"]:
+        print("  [Reader-Check] AUTO-PAUSE (down/Wartung): "
+              + ", ".join(data["auto_paused"]), flush=True)
+    return data
+
+
+def _status_aktualisieren(prev, readers):
+    """Vollstaendigen Messsatz und Hysterese unter derselben Dateisperre berechnen."""
     prev_bad = {h for h, r in (prev.get("readers") or {}).items()
                 if isinstance(r, dict) and r.get("status") in ("down", "maintenance")}
     prev_auto = set(prev.get("auto_paused") or [])
     bad_now = {h for h, r in readers.items() if r.get("status") in ("down", "maintenance")}
-    auto = sorted((bad_now & (prev_bad | prev_auto)))    # 2x schlecht ODER schon pausiert
-    data = {"checked": time.strftime("%Y-%m-%d %H:%M"), "readers": readers,
-            "auto_paused": auto}
-    from . import config
-    config.set_auto_paused(auto)
-    if auto:
-        print(f"  [Reader-Check] AUTO-PAUSE (down/Wartung): {', '.join(auto)}", flush=True)
-    try:
-        with open(out, "w", encoding="utf-8") as f:
-            json.dump(data, f, ensure_ascii=False, indent=2)
-    except Exception:
-        pass
-    return data
+    auto = sorted(bad_now & (prev_bad | prev_auto))
+    return {"checked": time.strftime("%Y-%m-%d %H:%M"),
+            "readers": readers, "auto_paused": auto}

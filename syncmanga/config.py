@@ -7,6 +7,8 @@ bleiben vorerst in der Fassade SyncEngine/manga_update.py, damit das laufende Sy
 unveraendert weiterlaeuft; die Standalone-App setzt sie spaeter selbst (Phase 5/7).
 """
 
+from .common import json_aendern
+
 # Datenversion: hochzaehlen erzwingt beim naechsten Lauf eine vollstaendige Neu-Anreicherung
 # (Titel/Flaggen/Bewertung/Autor), sonst nur fehlende/veraltete Eintraege ("resume").
 CACHE_VER = 33         # 33: mu_recs (MangaUpdates-Empfehlungs-Paare) fuer ALLE Serien
@@ -218,16 +220,16 @@ def save_override(path, key, name, search=None, mb_id=None):
     `mb_id` (MangaBaka-ID) = Ground-Truth-Pin: die Anreicherung holt den Record dann per
     catalog.lookup_id statt per Suche (kein Fehlmatch, JB 07.07.2026).
     Das ist die Datei-Haelfte des "Braucht Hilfe"-Flows (Spec §2a) — reine Nutzer-Daten."""
-    import json
-    import os
     if not (key and name):
         raise ValueError("save_override braucht key und name")
-    data = {}
-    try:
-        with open(path, encoding="utf-8") as f:
-            data = json.load(f)
-    except (OSError, ValueError):
-        data = {}
+    def aenderung(data):
+        return _override_eintragen(data, key, name, search, mb_id)
+    data = json_aendern(path, aenderung, standard={}, streng=True)
+    return data["overrides"][key] if data is not None else None
+
+
+def _override_eintragen(data, key, name, search, mb_id):
+    """Den einzelnen Pin im frisch gesperrt geladenen Dokument ergaenzen."""
     if not isinstance(data, dict):
         data = {}
     data.setdefault("_doc", "Seltene Titel-Korrekturen (reine DATEN, kein Code). "
@@ -251,11 +253,20 @@ def save_override(path, key, name, search=None, mb_id=None):
         if "baka" in entry:
             entry["baka"] = entry["mb_id"]
     ov[key] = entry
-    tmp = path + ".tmp"
-    with open(tmp, "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
-    os.replace(tmp, path)            # atomar ersetzen -> kein halb-geschriebenes overrides.json
-    return entry
+    return data
+
+
+def save_override_pin(path, key, name, mb_id):
+    """Nur die ID bestaetigen; Namen/Suchbegriff aus dem gesperrten Ist-Stand behalten."""
+    def aenderung(data):
+        if not isinstance(data, dict):
+            data = {}
+        ov = data.get("overrides")
+        old = ov.get(key) if isinstance(ov, dict) else None
+        old = old if isinstance(old, dict) else {}
+        return _override_eintragen(data, key, old.get("name") or name, old.get("search"), mb_id)
+    data = json_aendern(path, aenderung, standard={}, streng=True)
+    return data["overrides"][key] if data is not None else None
 
 
 # Standalone-Einstellungen (config.json der eigenstaendigen App). Bewusst getrennt von JBs
