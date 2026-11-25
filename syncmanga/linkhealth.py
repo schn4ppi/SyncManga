@@ -263,6 +263,19 @@ def quarantine_link(cache_entry, url, reason):
     return True
 
 
+def quarantaene_urls(cache_entry):
+    """Die Adressen in der Quarantaene eines Cache-Eintrags als Menge.
+
+    Im echten Cache sind die Eintraege Dicts (siehe quarantine_link), Tests und Alt-Daten nutzen
+    teils Listen [url, …]; beides wird gelesen."""
+    urls = set()
+    for q in (cache_entry or {}).get("quarantine") or []:
+        u = q.get("url") if isinstance(q, dict) else (q[0] if q else "")
+        if u:
+            urls.add(u)
+    return urls
+
+
 def restore_link(cache_entry, url):
     """Einen quarantaenierten Link zurueck an die SPITZE von read_urls holen (Selbst-Erneuerung).
     Gibt True zurueck, wenn wiederhergestellt wurde."""

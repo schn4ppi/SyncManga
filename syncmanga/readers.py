@@ -17,6 +17,7 @@ import os
 import time
 import urllib.request
 
+from . import netz
 from .common import json_aendern
 from .parse import host
 
@@ -56,7 +57,7 @@ def parse_section(html, category):
 
 def _fetch(url, timeout=15):
     req = urllib.request.Request(url, headers=_UA)
-    with urllib.request.urlopen(req, timeout=timeout) as r:
+    with netz.oeffnen(req, timeout=timeout) as r:
         return r.read().decode("utf-8", "replace")
 
 

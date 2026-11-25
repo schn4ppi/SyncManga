@@ -17,6 +17,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
+from . import netz
 from .common import UA, Pacer, get_json, post_json
 from .parse import key_ratio, norm, pick_english, sim_norm
 
@@ -62,7 +63,7 @@ def _mf_get(url):
     MF_PACER.wait()
     try:
         req = urllib.request.Request(url, headers=_MF_HEAD)
-        with urllib.request.urlopen(req, timeout=12) as r:
+        with netz.oeffnen(req, timeout=12) as r:
             import json as _json
             return _json.load(r)
     except Exception:
@@ -190,7 +191,7 @@ def _mf_verify(url):
     MF_PACER.wait()
     try:
         req = urllib.request.Request(url, headers={**_MF_HEAD, "Accept": "text/html"})
-        with urllib.request.urlopen(req, timeout=12) as r:
+        with netz.oeffnen(req, timeout=12) as r:
             final = r.geturl() or url
             if getattr(r, "status", 200) != 200 or urlparse(final).path.rstrip("/") != urlparse(url).path.rstrip("/"):
                 return False
@@ -222,7 +223,7 @@ def _dy_get(url, as_json=False):
     try:
         req = urllib.request.Request(url, headers={**_DY_HEAD,
                                      "Accept": "application/json" if as_json else "text/html"})
-        with urllib.request.urlopen(req, timeout=15) as r:
+        with netz.oeffnen(req, timeout=15) as r:
             import json as _json
             return _json.load(r) if as_json else r.read(80000).decode("utf-8", "replace")
     except Exception:
@@ -707,7 +708,7 @@ def al_lookup(name):
                     .get("data", {}).get("Page", {}).get("media", [])
                 break
             except urllib.error.HTTPError as e:        # AniList drosselt -> kurz warten, 1x neu
-                if e.code == 429 and attempt == 0:
+                if e.code == 429 and attempt == 0 and not netz.nicht_gesendet(e):
                     time.sleep(min(int(e.headers.get("Retry-After", "3")), 4) + 1)   # max ~5s, kein Minuten-Hang
                     continue
                 raise
@@ -909,7 +910,7 @@ def mu_suche_id(titel):
             headers={**UA, "Accept": "application/json",
                      "Content-Type": "application/json"},
             method="POST")
-        with _ur.urlopen(req, timeout=25) as r:
+        with netz.oeffnen(req, timeout=25) as r:
             daten = _json.load(r)
         for treffer in (daten.get("results") or []):
             rec = treffer.get("record") or {}
@@ -1054,7 +1055,7 @@ def webtoon_author(url, timeout=8):
             return ""
         page = f"{m_base.group(1)}/list?title_no={m_no.group(1)}"
         req = urllib.request.Request(page, headers={**UA, "Accept-Language": "en"})
-        with urllib.request.urlopen(req, timeout=timeout) as r:
+        with netz.oeffnen(req, timeout=timeout) as r:
             body = r.read(60000).decode("utf-8", "replace")
         m = _WT_AUTHOR.search(body)
         return (m.group(1).strip() if m else "")[:80]
@@ -1068,7 +1069,7 @@ def link_ok(url):
     for method in ("HEAD", "GET"):
         try:
             req = urllib.request.Request(url, method=method, headers={"User-Agent": "Mozilla/5.0"})
-            with urllib.request.urlopen(req, timeout=8) as r:
+            with netz.oeffnen(req, timeout=8) as r:
                 return getattr(r, "status", 200) < 400
         except urllib.error.HTTPError as e:
             return e.code in (403, 405, 429)

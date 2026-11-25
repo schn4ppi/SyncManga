@@ -79,8 +79,10 @@ def _load_index(path):
         roh = json.load(open(path, encoding="utf-8"))
     else:
         import urllib.request
+
+        from syncmanga import netz
         req = urllib.request.Request(INDEX_URL, headers={"User-Agent": "SyncManga"})
-        with urllib.request.urlopen(req, timeout=30) as r:
+        with netz.oeffnen(req, timeout=30) as r:
             roh = json.load(r)
     eintraege = _eintraege(roh)
     if len(eintraege) < MIN_EINTRAEGE:

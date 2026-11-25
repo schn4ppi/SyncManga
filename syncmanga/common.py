@@ -8,7 +8,8 @@ Konsolidiert den zuvor in jeder Lookup-Funktion wiederholten urllib-Aufbau
     (z.B. Kitsu `application/vnd.api+json`) koennen ueberschrieben werden.
   - post_json: setzt UA + Content-Type/Accept = application/json (wie AniList/MangaUpdates).
 
-WICHTIG fuer Tests: Aufrufe gehen ueber `urllib.request.urlopen` (Modul-Attribut),
+Gesendet wird ueber den einen Netz-Ausgang `netz.oeffnen` (Budget, Takt je Host, Bremse).
+WICHTIG fuer Tests: der Ausgang sendet ueber `urllib.request.urlopen` (Modul-Attribut),
 damit ein Mock von `urllib.request.urlopen` greift — keine echten Netzaufrufe in Tests.
 """
 import json
@@ -17,6 +18,8 @@ import sys
 import threading
 import time
 import urllib.request
+
+from . import netz
 
 try:
     import familie as _fam  # Familienbetrieb: der gemeinsame Kern (CLAUDE.md, „Geteilter Zustand“)
@@ -122,7 +125,7 @@ class Pacer:
 def get_json(url, headers=None, timeout=10):
     """GET -> JSON. Standard-Header = UA; `headers` ueberschreibt komplett (wie bisher)."""
     req = urllib.request.Request(url, headers=headers or UA)
-    with urllib.request.urlopen(req, timeout=timeout) as r:
+    with netz.oeffnen(req, timeout=timeout) as r:
         return json.load(r)
 
 
@@ -133,5 +136,5 @@ def post_json(url, payload, headers=None, timeout=10):
     if headers:
         h.update(headers)
     req = urllib.request.Request(url, data=body, headers=h)
-    with urllib.request.urlopen(req, timeout=timeout) as r:
+    with netz.oeffnen(req, timeout=timeout) as r:
         return json.load(r)

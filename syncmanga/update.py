@@ -277,20 +277,24 @@ def verify_exe(data, expected_size=0, expected_sha=""):
 def fetch_release_json(url=None, timeout=20):
     """GET /releases/latest (echtes Netz). GitHub verlangt einen User-Agent."""
     import urllib.request
+
+    from . import netz
     req = urllib.request.Request(url or RELEASE_API,
                                  headers={"User-Agent": "SyncManga-Updater",
                                           "Accept": "application/vnd.github+json"})
-    with urllib.request.urlopen(req, timeout=timeout) as r:
+    with netz.oeffnen(req, timeout=timeout) as r:
         return json.load(r)
 
 
 def fetch_https(url, timeout=300):
     """Bytes einer HTTPS-URL (echtes Netz) — alles andere wird abgelehnt, nie umgeschrieben."""
     import urllib.request
+
+    from . import netz
     if not str(url).startswith("https://"):
         raise ValueError(f"nur HTTPS erlaubt: {url!r}")
     req = urllib.request.Request(url, headers={"User-Agent": "SyncManga-Updater"})
-    with urllib.request.urlopen(req, timeout=timeout) as r:
+    with netz.oeffnen(req, timeout=timeout) as r:
         return r.read()
 
 

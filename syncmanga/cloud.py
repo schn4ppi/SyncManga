@@ -16,6 +16,8 @@ import json
 import os
 import urllib.request
 
+from . import netz
+
 BASE = "https://manga.j-bk.org"
 UA = "SyncManga-App/1.0 (+https://j-bk.org)"
 _SERVICE, _USER = "SyncManga-Cloud", "account"
@@ -61,7 +63,7 @@ def load_account(data_dir):
 def _http(method, path, headers=None, body=None, timeout=60):
     req = urllib.request.Request(BASE + path, data=body, method=method,
                                  headers={"User-Agent": UA, **(headers or {})})
-    with urllib.request.urlopen(req, timeout=timeout) as resp:
+    with netz.oeffnen(req, timeout=timeout) as resp:
         return resp.status, resp.read()
 
 

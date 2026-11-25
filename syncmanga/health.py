@@ -26,6 +26,7 @@ import urllib.error
 import urllib.request
 from urllib.parse import urlparse
 
+from . import netz
 from .common import Pacer
 from .parse import host
 
@@ -65,7 +66,7 @@ def _fetch(url, timeout=6):
     req = urllib.request.Request(url, headers={
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
                       "(KHTML, like Gecko) Chrome/124.0 Safari/537.36"})
-    with urllib.request.urlopen(req, timeout=timeout) as r:
+    with netz.oeffnen(req, timeout=timeout) as r:
         body = r.read(4000).decode("utf-8", "replace")
         return r.geturl(), getattr(r, "status", 200), body
 
@@ -221,6 +222,14 @@ def snapshot():
     """Kopie des gesamten Status (fuer Render-Panel/Tray)."""
     with _LOCK:
         return {k: dict(v) for k, v in _STATE.items()}
+
+
+def vergessen(source):
+    """Eine Quelle aus dem Status nehmen (z. B. nicht mehr geprüft) -> True, wenn sie drin war.
+    Sonst bliebe ihr letzter Stand (etwa „down“) für immer in source_status.json stehen und
+    färbte die Dashboard-Ampel, obwohl niemand sie mehr prüft."""
+    with _LOCK:
+        return _STATE.pop(source, None) is not None
 
 
 def reset():

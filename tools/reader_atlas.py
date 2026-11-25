@@ -34,6 +34,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 PKG = os.path.normpath(os.path.join(HERE, ".."))
 if PKG not in sys.path:
     sys.path.insert(0, PKG)
+from syncmanga import netz  # noqa: E402
 from syncmanga.parse import host as host_of  # noqa: E402
 
 # JB/Claude 10.08.2026: Hier stand `index.min.json` — dieselbe tote Adresse, die am
@@ -127,7 +128,7 @@ def _ist_nsfw(ext):
 
 def load_index():
     req = urllib.request.Request(INDEX_URL, headers=_UA)
-    with urllib.request.urlopen(req, timeout=30) as r:
+    with netz.oeffnen(req, timeout=30) as r:
         eintraege = _eintraege_aus(json.load(r))
     # ⚠️ Nicht den Status pruefen, sondern die MENGE. Die alte Adresse antwortete mit
     # HTTP 200 und zwei Grabsteinen — heil, aber leer. Wer nur auf 200 schaut, merkt
@@ -145,7 +146,7 @@ def load_index():
 def _fetch(url, timeout=12, nbytes=220000):
     req = urllib.request.Request(url, headers=_UA)
     try:
-        with urllib.request.urlopen(req, timeout=timeout) as r:
+        with netz.oeffnen(req, timeout=timeout) as r:
             return getattr(r, "status", 200), (r.geturl() or url), r.read(nbytes).decode("utf-8", "replace")
     except urllib.error.HTTPError as e:
         return e.code, url, ""

@@ -716,14 +716,23 @@ def probe_once(fn, retries=1, pause=0.8):
     return False
 
 
+QUELLEN_OHNE_CHECK = ("myanimelist",)   # bewusst nicht im Quellen-Check (Begründung dort)
+
+
 def probe_sources(health_dir):
     """Quellen-Check zu Beginn: Antwortzeit + ob jede Quelle liefert. Speist srcstatus + Tray-Ampel."""
     from . import sources as S
     checks = [("MangaBaka", lambda: catalog.mb_search("one piece")[0].get("title")),
               ("AniList", lambda: S.al_lookup("one piece").get("al_id")),
               ("MangaUpdates", lambda: S.mu_rating("one piece").get("mu_id")),
-              ("Kitsu", lambda: S.kitsu_rating("one piece").get("title")),
-              ("MyAnimeList", lambda: S.jikan_lookup("one piece").get("title"))]
+              ("Kitsu", lambda: S.kitsu_rating("one piece").get("title"))]
+    # MyAnimeList (Jikan) ist nicht mehr im Check (JB 25.11.2026): Es liefert nur englischen
+    # Titel und MAL-Score, und nur im Rückfall `catalog._fallback`, wenn MangaBaka eine Serie
+    # nicht findet (34 von 17.713 Abrufen am 25.11.). Seine Ausfälle kosteten jeden Lauf 40 s
+    # Timeout und färbten das Tray-Symbol, obwohl die Liste vollständig entstand. Der Rückfall
+    # fragt Jikan weiter; der alte Status-Eintrag wird entfernt, damit er die Ampel nicht färbt.
+    for nicht_mehr_geprueft in QUELLEN_OHNE_CHECK:
+        srcstatus.vergessen(nicht_mehr_geprueft)
     parts, dead, grund = [], [], {}
     for nm, fn in checks:
         t0 = time.time()
@@ -1080,6 +1089,7 @@ def promote_history_chapters(cache, items):
     """
     if not items:
         return 0
+    from .linkhealth import quarantaene_urls
     from .parse import chapter_of
     promoted = 0
     for k, c in cache.items():
@@ -1091,6 +1101,10 @@ def promote_history_chapters(cache, items):
         it = items.get(k)
         if not it:
             continue
+        # Vom Link-Audit nachweislich tot beiseitegelegte Adressen nie aus dem Verlauf zurueckholen.
+        # Befund 25.11.2026: ohne diese Sperre stand jeder geleerte tote Link beim naechsten
+        # Listenbau wieder vorn (Dur-An-Ki, Maerchen Crown, Planetes auf mangabolt.com, 404).
+        gesperrt = quarantaene_urls(c)
         want = c.get("read_chap") or it.get("chap")
         try:
             want = float(want) if want else None
@@ -1106,6 +1120,8 @@ def promote_history_chapters(cache, items):
             hh = r.get("host") or host(u)
             if not u or not hh or is_dead_reader(hh) or is_dynamic(hh) or is_no_read(hh):
                 continue                 # is_no_read: mangadex nie aus dem Verlauf fischen (JB 14.07.)
+            if u in gesperrt:
+                continue                 # in Quarantaene: nachweislich tot
             if not readerlink.is_chapter_url(u):
                 continue                 # nur echte Kapitel-URLs
             if readerlink.has_chapter_token(u) and readerlink.series_page_of(u) == u:
@@ -1683,6 +1699,7 @@ def enrich(items, cache_path, health_dir, cap, name_fix=None, cache_ver=CACHE_VE
     def enrich_one(k, e, c, stale):
         if relink and c:
             nc = _relink_eintrag(e, c)
+            _linkzustand_mitnehmen(c, nc)
             with lock:
                 cache[k] = nc
                 done[0] += 1
@@ -1691,6 +1708,7 @@ def enrich(items, cache_path, health_dir, cap, name_fix=None, cache_ver=CACHE_VE
             return
         nc, rec, conf, typ = _metadaten_eintrag(k, e, c, stale, name_fix, cache_ver)
         _lese_links_setzen(e, c, nc, rec, conf, typ, force)
+        _linkzustand_mitnehmen(c, nc)
         _id_hist_fortschreiben(k, c, nc)
         old_latest =c.get("latest") if c else None             # neue Kapitel seit letztem Lauf?
         if old_latest and nc.get("latest") and nc["latest"] > old_latest and not nc.get("novel"):
@@ -1760,6 +1778,19 @@ _CACHE_ZEILEN_FELDER = (
     # norm(alter Anzeigetitel) -> render baut daraus die Alias-Map MIG
     "title_romaji", "alt_titles",
 )
+
+
+def _linkzustand_mitnehmen(c, nc):
+    """Das Link-Gedaechtnis eines Eintrags ueber dessen Neuaufbau retten.
+
+    enrich_one baut den Cache-Eintrag von Grund auf neu (cache[k] = nc). Ohne Mitnahme gingen
+    dabei die Quarantaene (linkhealth.quarantine_link) und der Audit-Zaehler `audit_tot`
+    verloren, und ein nachweislich toter Link kaeme beim naechsten Verlaufs-Pass zurueck."""
+    if not c:
+        return
+    for feld in ("quarantine", "audit_tot"):
+        if c.get(feld) and feld not in nc:
+            nc[feld] = c[feld]
 
 
 def _id_hist_vom_id_zwilling(o, e):

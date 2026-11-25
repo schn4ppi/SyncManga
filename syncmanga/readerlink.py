@@ -24,6 +24,7 @@ import urllib.parse
 import urllib.request
 from urllib.parse import urlparse
 
+from . import netz
 from .common import Pacer, json_aendern
 from .config import is_dead_reader
 from .parse import CH, clean_title, host, key_ratio, norm, sim_norm
@@ -245,7 +246,7 @@ def _images_hard_blocked(body, page_url, fetch_img=None):
                                                      "Sec-Fetch-Mode": "no-cors",
                                                      "Sec-Fetch-Site": "cross-site"})
             try:
-                with urllib.request.urlopen(req, timeout=8) as r:
+                with netz.oeffnen(req, timeout=8) as r:
                     return getattr(r, "status", 200)
             except urllib.error.HTTPError as e:
                 return e.code
@@ -280,7 +281,7 @@ def _alive_status(url, titles=None):
         hp.wait()
     req = urllib.request.Request(url, headers=_UA)
     try:
-        with urllib.request.urlopen(req, timeout=8) as r:
+        with netz.oeffnen(req, timeout=8) as r:
             status = getattr(r, "status", 200)
             final = r.geturl() or url
             if status != 200:
@@ -327,9 +328,11 @@ def netz_ok(urls=("https://api.github.com", "https://www.cloudflare.com/cdn-cgi/
     """Referenz-Abfrage: geht das EIGENE Netz? Erst dann darf 'gone' als tot gelten."""
     for u in urls:
         try:
-            with urllib.request.urlopen(urllib.request.Request(u, headers=_UA), timeout=timeout):
+            with netz.oeffnen(urllib.request.Request(u, headers=_UA), timeout=timeout):
                 return True
-        except urllib.error.HTTPError:
+        except urllib.error.HTTPError as e:
+            if netz.nicht_gesendet(e):
+                continue                           # der Ausgang hat nicht gesendet -> kein Beleg
             return True                            # Antwort kam an -> Netz geht
         except Exception:
             continue
@@ -346,7 +349,7 @@ def fetch_status(url, timeout=10, body_bytes=80000):
     status 403 = Cloudflare (im Browser nutzbar), 0 = Timeout/Verbindungsfehler (down)."""
     req = urllib.request.Request(url, headers=_UA)
     try:
-        with urllib.request.urlopen(req, timeout=timeout) as r:
+        with netz.oeffnen(req, timeout=timeout) as r:
             return getattr(r, "status", 200), (r.geturl() or url), r.read(body_bytes).decode("utf-8", "replace")
     except urllib.error.HTTPError as e:
         return e.code, url, ""
@@ -1327,7 +1330,7 @@ def _fast_alive(url, timeout=5):
     """Wie _alive, aber OHNE globalen Pacer + kuerzerer Timeout (fuer die parallele Discovery)."""
     req = urllib.request.Request(url, headers=_UA)
     try:
-        with urllib.request.urlopen(req, timeout=timeout) as r:
+        with netz.oeffnen(req, timeout=timeout) as r:
             return _ok(getattr(r, "status", 200), r.geturl() or url, url)
     except urllib.error.HTTPError:
         return False

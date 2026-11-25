@@ -16,6 +16,7 @@ import json
 import os
 import time
 
+from . import netz
 from .common import Pacer, json_aendern, post_json
 
 API = "https://graphql.anilist.co"
@@ -224,7 +225,7 @@ def push_progress(rows):
             except urllib.error.HTTPError as ex:
                 # 429 = Rate-Limit -> die vom Server genannte Pause einhalten und EINMAL wiederholen
                 # (kein Haemmern; AniList nennt in Retry-After die Sekunden bis zur Freigabe).
-                if ex.code == 429 and attempt == 0:
+                if ex.code == 429 and attempt == 0 and not netz.nicht_gesendet(ex):
                     try:
                         wait = min(int(ex.headers.get("Retry-After") or 60), 90)
                     except (TypeError, ValueError):

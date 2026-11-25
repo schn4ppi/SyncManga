@@ -22,6 +22,7 @@ from urllib.parse import quote
 from . import (
     health as srcstatus,  # Quellen-Status (frueher srcstatus.py, jetzt in health)
 )
+from . import netz
 from .common import Pacer, get_json
 from .parse import key_ratio, norm, sim_norm
 
@@ -215,7 +216,8 @@ def _mb_fetch(path):
             try:
                 return get_json(API_MB + path, headers=MB_HEADERS, timeout=12)
             except urllib.error.HTTPError as e:
-                if e.code == 429 and attempt < MB_MAX_RETRY - 1:
+                # Nicht gesendet (Bremse/Budget des Netz-Ausgangs) -> nicht blind wiederholen.
+                if e.code == 429 and attempt < MB_MAX_RETRY - 1 and not netz.nicht_gesendet(e):
                     time.sleep(min(int(e.headers.get("Retry-After", "2") or 2), 3) + 0.4)
                     continue
                 raise

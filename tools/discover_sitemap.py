@@ -24,6 +24,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 PKG = os.path.normpath(os.path.join(HERE, ".."))
 if PKG not in sys.path:
     sys.path.insert(0, PKG)
+from syncmanga import netz  # noqa: E402
 from syncmanga.common import json_aendern  # noqa: E402
 from syncmanga.parse import norm  # noqa: E402
 from syncmanga.readerlink import entry_slugs  # noqa: E402
@@ -37,7 +38,7 @@ _UA = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/124.0",
 
 def _get(url):
     try:
-        with urllib.request.urlopen(urllib.request.Request(url, headers=_UA), timeout=25) as r:
+        with netz.oeffnen(urllib.request.Request(url, headers=_UA), timeout=25) as r:
             raw = r.read()
             if r.headers.get("Content-Encoding") == "gzip":
                 raw = gzip.decompress(raw)
